@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Card, 
   CardContent, 
@@ -19,7 +19,7 @@ import {
 import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt } from "lucide-react";
 import { format } from "date-fns";
 import { type FullReceipt } from "@shared/schema";
-import BlockchainInfo from "@/components/blockchain/BlockchainInfo";
+import BlockchainActions from "@/components/blockchain/BlockchainActions";
 
 const ReceiptDetail: React.FC = () => {
   const { id } = useParams();

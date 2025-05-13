@@ -1,10 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import blockchainRoutes from "./routes/blockchain";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   // All routes are prefixed with /api
+  
+  // Register blockchain routes
+  app.use('/api/blockchain', blockchainRoutes);
 
   // Get categories
   app.get("/api/categories", async (req, res) => {
