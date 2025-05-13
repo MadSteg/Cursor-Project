@@ -1,6 +1,7 @@
-import { pgTable, text, serial, integer, boolean, numeric, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, numeric, timestamp, jsonb, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // Base user schema as provided
 export const users = pgTable("users", {
@@ -51,6 +52,9 @@ export const receiptItems = pgTable("receipt_items", {
   name: text("name").notNull(),
   price: numeric("price").notNull(),
   quantity: integer("quantity").notNull().default(1),
+  productId: integer("product_id"), // Reference to identified product from retailer database
+  categoryId: integer("category_id"), // Category for the item
+  matchConfidence: numeric("match_confidence"), // Confidence score for product matching
 });
 
 export const insertReceiptItemSchema = createInsertSchema(receiptItems).pick({
@@ -58,6 +62,9 @@ export const insertReceiptItemSchema = createInsertSchema(receiptItems).pick({
   name: true,
   price: true,
   quantity: true,
+  productId: true,
+  categoryId: true,
+  matchConfidence: true,
 });
 
 // Define receipts
@@ -66,6 +73,7 @@ export const receipts = pgTable("receipts", {
   userId: integer("user_id").notNull(),
   merchantId: integer("merchant_id").notNull(),
   categoryId: integer("category_id").notNull(),
+  retailerId: integer("retailer_id"), // Optional link to specific retailer
   date: timestamp("date").notNull().defaultNow(),
   subtotal: numeric("subtotal").notNull(),
   tax: numeric("tax").notNull(),
@@ -74,12 +82,22 @@ export const receipts = pgTable("receipts", {
   blockchainVerified: boolean("blockchain_verified").default(false),
   blockNumber: integer("block_number"),
   nftTokenId: text("nft_token_id"),
+  receiptImageUrl: text("receipt_image_url"), // URL to receipt image if scanned
+  rawReceiptText: text("raw_receipt_text"), // OCR text from receipt scan
+  processingStatus: text("processing_status").default("completed"), // pending, processing, completed, failed
+  source: text("source"), // 'email', 'scan', 'manual', 'import'
+  sourceIdentifier: text("source_identifier"), // Email ID, scan batch ID, etc.
+  storeLocation: text("store_location"), // Physical store location
+  storeId: text("store_id"), // Store identifier within retailer chain
+  orderNumber: text("order_number"), // Order/transaction number from receipt
+  paymentMethod: text("payment_method"), // Credit card, cash, etc.
 });
 
 export const insertReceiptSchema = createInsertSchema(receipts).pick({
   userId: true,
   merchantId: true,
   categoryId: true,
+  retailerId: true,
   date: true,
   subtotal: true,
   tax: true,
@@ -88,6 +106,15 @@ export const insertReceiptSchema = createInsertSchema(receipts).pick({
   blockchainVerified: true,
   blockNumber: true,
   nftTokenId: true,
+  receiptImageUrl: true,
+  rawReceiptText: true,
+  processingStatus: true,
+  source: true,
+  sourceIdentifier: true,
+  storeLocation: true,
+  storeId: true,
+  orderNumber: true,
+  paymentMethod: true,
 });
 
 // Define spending stats
@@ -106,6 +133,98 @@ export const insertSpendingStatSchema = createInsertSchema(spendingStats).pick({
   year: true,
   categoryId: true,
   amount: true,
+});
+
+// Define retailers for SKU integrations
+export const retailers = pgTable("retailers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  apiEndpoint: text("api_endpoint"),
+  apiKey: text("api_key"),
+  apiSecretKey: text("api_secret_key"),
+  logo: text("logo"),
+  website: text("website"),
+  dataFormat: text("data_format"), // JSON, XML, etc.
+  lastSynced: timestamp("last_synced"),
+  syncEnabled: boolean("sync_enabled").default(true),
+});
+
+export const insertRetailerSchema = createInsertSchema(retailers).pick({
+  name: true,
+  apiEndpoint: true,
+  apiKey: true,
+  apiSecretKey: true,
+  logo: true,
+  website: true,
+  dataFormat: true,
+  lastSynced: true,
+  syncEnabled: true,
+});
+
+// Define products table for retailer inventory
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  retailerId: integer("retailer_id").notNull(), // Which retailer this product belongs to
+  merchantId: integer("merchant_id"), // Optional connection to our merchant
+  externalId: text("external_id").notNull(), // SKU or product ID from retailer
+  name: text("name").notNull(),
+  description: text("description"),
+  price: numeric("price"),
+  categoryId: integer("category_id"),
+  imageUrl: text("image_url"),
+  barcode: text("barcode"), // UPC, EAN, etc.
+  barcodeType: text("barcode_type"), // UPC, EAN, etc.
+  brandName: text("brand_name"),
+  departmentName: text("department_name"),
+  lastUpdated: timestamp("last_updated"),
+  isActive: boolean("is_active").default(true),
+  metadata: jsonb("metadata"), // Additional product data in JSON format
+}, (table) => {
+  return {
+    uniqueProductConstraint: unique().on(table.retailerId, table.externalId),
+  }
+});
+
+export const insertProductSchema = createInsertSchema(products).pick({
+  retailerId: true,
+  merchantId: true,
+  externalId: true,
+  name: true,
+  description: true,
+  price: true,
+  categoryId: true,
+  imageUrl: true,
+  barcode: true,
+  barcodeType: true,
+  brandName: true,
+  departmentName: true,
+  lastUpdated: true,
+  isActive: true,
+  metadata: true,
+});
+
+// Define retailer API sync logs
+export const retailerSyncLogs = pgTable("retailer_sync_logs", {
+  id: serial("id").primaryKey(),
+  retailerId: integer("retailer_id").notNull(),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  status: text("status").notNull(), // success, failure, in_progress
+  productsAdded: integer("products_added").default(0),
+  productsUpdated: integer("products_updated").default(0),
+  productsRemoved: integer("products_removed").default(0),
+  errorMessage: text("error_message"),
+});
+
+export const insertRetailerSyncLogSchema = createInsertSchema(retailerSyncLogs).pick({
+  retailerId: true,
+  startTime: true,
+  endTime: true,
+  status: true,
+  productsAdded: true,
+  productsUpdated: true,
+  productsRemoved: true,
+  errorMessage: true,
 });
 
 // Define receipt with items and merchant for API responses
@@ -158,4 +277,101 @@ export type InsertReceipt = z.infer<typeof insertReceiptSchema>;
 export type SpendingStat = typeof spendingStats.$inferSelect;
 export type InsertSpendingStat = z.infer<typeof insertSpendingStatSchema>;
 
+export type Retailer = typeof retailers.$inferSelect;
+export type InsertRetailer = z.infer<typeof insertRetailerSchema>;
+
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+
+export type RetailerSyncLog = typeof retailerSyncLogs.$inferSelect;
+export type InsertRetailerSyncLog = z.infer<typeof insertRetailerSyncLogSchema>;
+
 export type FullReceipt = z.infer<typeof fullReceiptSchema>;
+
+// Define relationships between tables
+export const usersRelations = relations(users, ({ many }) => ({
+  receipts: many(receipts),
+  spendingStats: many(spendingStats),
+}));
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  receipts: many(receipts),
+  receiptItems: many(receiptItems),
+  products: many(products),
+  spendingStats: many(spendingStats),
+}));
+
+export const merchantsRelations = relations(merchants, ({ many }) => ({
+  receipts: many(receipts),
+}));
+
+export const receiptItemsRelations = relations(receiptItems, ({ one }) => ({
+  receipt: one(receipts, {
+    fields: [receiptItems.receiptId],
+    references: [receipts.id],
+  }),
+  category: one(categories, {
+    fields: [receiptItems.categoryId],
+    references: [categories.id],
+  }),
+  product: one(products, {
+    fields: [receiptItems.productId],
+    references: [products.id],
+  }),
+}));
+
+export const receiptsRelations = relations(receipts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [receipts.userId],
+    references: [users.id],
+  }),
+  merchant: one(merchants, {
+    fields: [receipts.merchantId],
+    references: [merchants.id],
+  }),
+  category: one(categories, {
+    fields: [receipts.categoryId],
+    references: [categories.id],
+  }),
+  retailer: one(retailers, {
+    fields: [receipts.retailerId],
+    references: [retailers.id],
+  }),
+  items: many(receiptItems),
+}));
+
+export const spendingStatsRelations = relations(spendingStats, ({ one }) => ({
+  user: one(users, {
+    fields: [spendingStats.userId],
+    references: [users.id],
+  }),
+  category: one(categories, {
+    fields: [spendingStats.categoryId],
+    references: [categories.id],
+  }),
+}));
+
+export const retailersRelations = relations(retailers, ({ many }) => ({
+  products: many(products),
+  syncLogs: many(retailerSyncLogs),
+  receipts: many(receipts),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  retailer: one(retailers, {
+    fields: [products.retailerId],
+    references: [retailers.id],
+  }),
+  category: one(categories, {
+    fields: [products.categoryId],
+    references: [categories.id],
+  }),
+  receiptItems: many(receiptItems),
+}));
+
+export const retailerSyncLogsRelations = relations(retailerSyncLogs, ({ one }) => ({
+  retailer: one(retailers, {
+    fields: [retailerSyncLogs.retailerId],
+    references: [retailers.id],
+  }),
+}));
