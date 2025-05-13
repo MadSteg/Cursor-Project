@@ -10,7 +10,7 @@ import { Receipt, ReceiptItem } from '@shared/schema';
 import { encryptJSON, decryptJSON } from '../utils/aes';
 import { pinToIPFS, getFromIPFS } from '../utils/ipfs';
 
-// ABI for the ReceiptNFT contract
+// ABI for the Receipt1155 contract
 const RECEIPT_NFT_ABI = [
   // ERC1155 standard functions
   "function balanceOf(address account, uint256 id) external view returns (uint256)",
@@ -20,11 +20,9 @@ const RECEIPT_NFT_ABI = [
   "function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external",
   "function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external",
   
-  // Custom functions
-  "function mint(address to, string memory encryptedData) external returns (uint256)",
-  "function getReceiptData(uint256 tokenId) external view returns (string memory)",
-  "function getTokenMetadata(uint256 tokenId) external view returns (uint256 mintTimestamp, address minter, string memory encryptedData)",
-  "function getTokensForAddress(address addr) external view returns (uint256[] memory)"
+  // Custom functions from Receipt1155 contract
+  "function mint(address to, uint256 skuId, uint256 amount, string calldata uri_) external",
+  "function uri(uint256 skuId) public view returns (string memory)"
 ];
 
 export class BlockchainService {
