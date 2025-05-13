@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Database, CheckCircle, AlertTriangle, ExternalLink } from "lucide-react";
+import { Database, CheckCircle, AlertCircle, ExternalLink, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +12,14 @@ interface BlockchainStatusResponse {
   chainId?: number;
   contractAddress?: string;
   message?: string;
+}
+
+interface MintResponse {
+  success: boolean;
+  txHash: string;
+  blockNumber: number;
+  tokenId: number;
+  encryptionKey: string;
 }
 
 interface BlockchainActionsProps {
@@ -41,8 +48,12 @@ export function BlockchainActions({
   const checkBlockchainStatus = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest('/api/blockchain/status');
-      setStatus(response as BlockchainStatusResponse);
+      const response = await fetch('/api/blockchain/status');
+      if (!response.ok) {
+        throw new Error('Failed to fetch blockchain status');
+      }
+      const data = await response.json();
+      setStatus(data as BlockchainStatusResponse);
     } catch (error) {
       toast({
         title: "Error",
@@ -61,18 +72,28 @@ export function BlockchainActions({
 
     setMinting(true);
     try {
-      const response = await apiRequest(`/api/blockchain/mint/${receiptId}`, {
+      const response = await fetch(`/api/blockchain/mint/${receiptId}`, {
         method: 'POST',
-      } as RequestInit);
-
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mint receipt as NFT');
+      }
+      
+      const data = await response.json();
+      const mintResponse = data as MintResponse;
+      
       toast({
         title: "Success",
         description: "Receipt minted as NFT successfully",
       });
 
       // Store encryption key securely (this is just for demo)
-      if (response && typeof response === 'object' && 'encryptionKey' in response) {
-        localStorage.setItem(`receipt_key_${receiptId}`, response.encryptionKey as string);
+      if (mintResponse.encryptionKey) {
+        localStorage.setItem(`receipt_key_${receiptId}`, mintResponse.encryptionKey);
       }
 
       if (onMintSuccess) {
@@ -89,11 +110,30 @@ export function BlockchainActions({
     }
   };
 
-  // Format blockchain explorer URL
+  // Format blockchain explorer URL for transaction
   const getExplorerUrl = (txHash?: string) => {
     if (!txHash) return '#';
-    // Using Mumbai Polygonscan
-    return `https://mumbai.polygonscan.com/tx/${txHash}`;
+    
+    // Check if we're on Mumbai testnet or Polygon mainnet
+    if (status?.chainId === 80001) {
+      return `https://mumbai.polygonscan.com/tx/${txHash}`;
+    } else {
+      // Default to Polygon mainnet
+      return `https://polygonscan.com/tx/${txHash}`;
+    }
+  };
+  
+  // Format blockchain explorer URL for token
+  const getTokenExplorerUrl = (tokenId?: string) => {
+    if (!tokenId || !status?.contractAddress) return '#';
+    
+    // Check if we're on Mumbai testnet or Polygon mainnet
+    if (status?.chainId === 80001) {
+      return `https://mumbai.polygonscan.com/token/${status.contractAddress}?a=${tokenId}`;
+    } else {
+      // Default to Polygon mainnet
+      return `https://polygonscan.com/token/${status.contractAddress}?a=${tokenId}`;
+    }
   };
 
   return (
@@ -150,7 +190,7 @@ export function BlockchainActions({
           </div>
         ) : !status.available ? (
           <div className="flex items-center text-amber-600">
-            <AlertTriangle className="h-5 w-5 mr-2" />
+            <AlertCircle className="h-5 w-5 mr-2" />
             <span>Blockchain integration not configured</span>
           </div>
         ) : (
@@ -173,17 +213,31 @@ export function BlockchainActions({
         )}
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="flex flex-col space-y-2">
         {blockchainVerified ? (
-          <a 
-            href={getExplorerUrl(blockchainTxHash)} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
-          >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View on Blockchain Explorer
-          </a>
+          <>
+            <a 
+              href={getExplorerUrl(blockchainTxHash)} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View Transaction
+            </a>
+            
+            {nftTokenId && (
+              <a 
+                href={getTokenExplorerUrl(nftTokenId)} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
+              >
+                <Database className="mr-2 h-4 w-4" />
+                View NFT Token
+              </a>
+            )}
+          </>
         ) : status === null ? (
           <Button onClick={checkBlockchainStatus} disabled={loading} className="w-full">
             {loading ? "Checking..." : "Check Blockchain Status"}
