@@ -29,6 +29,13 @@ const config: HardhatUserConfig = {
       accounts: [WALLET_PRIVATE_KEY],
       chainId: 8453,
     },
+    mumbai: {
+      url: process.env.ALCHEMY_RPC || "",
+      accounts: process.env.WALLET_PRIVATE_KEY
+        ? [process.env.WALLET_PRIVATE_KEY]
+        : [],
+      chainId: 80001,
+    },
   },
   paths: {
     sources: "./contracts",
