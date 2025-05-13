@@ -179,6 +179,7 @@ export class BlockchainService {
     minter?: string;
     encryptedData?: string;
     ipfsCid?: string;
+    ipfsUrl?: string;
     error?: string;
   }> {
     if (!this.initialized) {

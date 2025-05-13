@@ -537,6 +537,9 @@ export class MemStorage implements IStorage {
         verified: receipt.blockchainVerified,
         blockNumber: receipt.blockNumber,
         nftTokenId: receipt.nftTokenId,
+        ipfsCid: receipt.ipfsCid,
+        ipfsUrl: receipt.ipfsUrl,
+        encryptionKey: receipt.encryptionKey,
       },
     };
   }

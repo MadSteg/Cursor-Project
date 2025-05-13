@@ -69,6 +69,9 @@ router.post('/mint/:receiptId', async (req, res) => {
       blockchainTxHash: result.txHash,
       blockNumber: result.blockNumber,
       nftTokenId: result.tokenId.toString(),
+      ipfsCid: result.ipfsCid,
+      ipfsUrl: result.ipfsCid ? `https://ipfs.io/ipfs/${result.ipfsCid}` : undefined,
+      encryptionKey: result.encryptionKey,
     });
     
     return res.json({
