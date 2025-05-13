@@ -9,6 +9,7 @@
     "dev:server": "ts-node-dev --respawn --transpile-only src/server.ts",
     "dev:frontend": "cd src/frontend && vite",
     "dev:webhook": "npx stripe listen --forward-to localhost:3000/webhook/stripe",
+    "mock": "node scripts/mockMint.js",
     "build": "hardhat compile && tsc",
     "build:frontend": "cd src/frontend && vite build",
     "test": "vitest run",
