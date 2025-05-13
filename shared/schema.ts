@@ -82,6 +82,9 @@ export const receipts = pgTable("receipts", {
   blockchainVerified: boolean("blockchain_verified").default(false),
   blockNumber: integer("block_number"),
   nftTokenId: text("nft_token_id"),
+  ipfsCid: text("ipfs_cid"), // IPFS Content Identifier
+  ipfsUrl: text("ipfs_url"), // IPFS Gateway URL for easy access
+  encryptionKey: text("encryption_key"), // Encryption key for IPFS data
   receiptImageUrl: text("receipt_image_url"), // URL to receipt image if scanned
   rawReceiptText: text("raw_receipt_text"), // OCR text from receipt scan
   processingStatus: text("processing_status").default("completed"), // pending, processing, completed, failed
@@ -106,6 +109,9 @@ export const insertReceiptSchema = createInsertSchema(receipts).pick({
   blockchainVerified: true,
   blockNumber: true,
   nftTokenId: true,
+  ipfsCid: true,
+  ipfsUrl: true,
+  encryptionKey: true,
   receiptImageUrl: true,
   rawReceiptText: true,
   processingStatus: true,
@@ -255,6 +261,9 @@ export const fullReceiptSchema = z.object({
     verified: z.boolean(),
     blockNumber: z.number().optional(),
     nftTokenId: z.string().optional(),
+    ipfsCid: z.string().optional(),
+    ipfsUrl: z.string().optional(),
+    encryptionKey: z.string().optional(),
   }),
 });
 
