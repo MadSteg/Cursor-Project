@@ -8,141 +8,126 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
  * @title ReceiptNFT
- * @dev ERC1155 contract for storing encrypted receipt data on-chain
+ * @dev This contract implements an ERC1155 NFT for digital receipts.
+ * Each receipt is a unique token with encrypted data stored on-chain.
  */
 contract ReceiptNFT is ERC1155, Ownable, ERC1155Supply {
     using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    Counters.Counter private _tokenIdCounter;
+
+    // Mapping from token ID to receipt data
+    mapping(uint256 => string) private _receiptData;
     
-    // Struct to store receipt metadata
-    struct ReceiptMetadata {
-        string cid;           // IPFS Content ID or other identifier for encrypted receipt data
-        string merchantName;  // Name of the merchant (plaintext)
-        uint256 timestamp;    // Timestamp of the transaction
-        uint256 totalAmount;  // Total amount of the transaction (stored in pennies/cents)
-        address minter;       // Address of the minter
+    // Mapping from token ID to metadata
+    mapping(uint256 => TokenMetadata) private _tokenMetadata;
+    
+    // Mapping from address to their tokens
+    mapping(address => uint256[]) private _userTokens;
+    
+    struct TokenMetadata {
+        uint256 mintTimestamp;
+        address minter;
+        string encryptedData;
     }
     
-    // Maps tokenId to metadata
-    mapping(uint256 => ReceiptMetadata) private _receiptMetadata;
-    
-    // Event emitted when a new receipt is minted
     event ReceiptMinted(
+        address indexed to,
         uint256 indexed tokenId,
-        string cid,
-        string merchantName,
-        uint256 timestamp,
-        uint256 totalAmount,
-        address indexed minter
+        uint256 timestamp
     );
 
-    constructor() ERC1155("") {
-        // URI will be set per token
+    constructor() ERC1155("ipfs://QmRoF8Hgje8Z9SZbZgS2jZfVzWLSLMKDnPuDpkYSLVpWjU/{id}") {
+        // Starting at token ID 1 (rather than 0)
+        _tokenIdCounter.increment();
     }
-    
+
     /**
-     * @dev Mints a new receipt NFT
-     * @param to Address to mint the receipt to
-     * @param cid Content identifier for the encrypted receipt data
-     * @param merchantName Name of the merchant
-     * @param timestamp Timestamp of the transaction
-     * @param totalAmount Total amount of the transaction (in pennies/cents)
-     * @param uri URI for the token metadata
-     * @return The new token ID
+     * @dev Mints a new receipt NFT.
+     * @param to The address that will own the minted NFT
+     * @param encryptedData The encrypted receipt data
+     * @return The ID of the newly minted token
      */
-    function mintReceipt(
-        address to,
-        string memory cid,
-        string memory merchantName,
-        uint256 timestamp,
-        uint256 totalAmount,
-        string memory uri
-    ) public returns (uint256) {
-        _tokenIds.increment();
-        uint256 newItemId = _tokenIds.current();
+    function mint(address to, string memory encryptedData) 
+        external 
+        onlyOwner 
+        returns (uint256) 
+    {
+        uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
         
-        _mint(to, newItemId, 1, "");
+        _mint(to, tokenId, 1, "");
         
-        // Store receipt metadata
-        _receiptMetadata[newItemId] = ReceiptMetadata({
-            cid: cid,
-            merchantName: merchantName,
-            timestamp: timestamp,
-            totalAmount: totalAmount,
-            minter: msg.sender
+        // Store receipt data and metadata
+        _receiptData[tokenId] = encryptedData;
+        _tokenMetadata[tokenId] = TokenMetadata({
+            mintTimestamp: block.timestamp,
+            minter: to,
+            encryptedData: encryptedData
         });
         
-        // Set URI for this token
-        _setURI(newItemId, uri);
+        // Add to user tokens
+        _userTokens[to].push(tokenId);
         
-        // Emit event
-        emit ReceiptMinted(
-            newItemId,
-            cid,
-            merchantName,
-            timestamp,
-            totalAmount,
-            msg.sender
-        );
+        emit ReceiptMinted(to, tokenId, block.timestamp);
         
-        return newItemId;
+        return tokenId;
     }
     
     /**
-     * @dev Get receipt metadata for a token
-     * @param tokenId The token ID
-     * @return The receipt metadata
+     * @dev Returns the receipt data for a specific token
+     * @param tokenId The ID of the token to query
+     * @return The receipt data
      */
-    function getReceiptMetadata(uint256 tokenId) public view returns (
-        string memory cid,
-        string memory merchantName,
-        uint256 timestamp,
-        uint256 totalAmount,
-        address minter
-    ) {
-        require(exists(tokenId), "ReceiptNFT: Receipt query for nonexistent token");
-        
-        ReceiptMetadata memory metadata = _receiptMetadata[tokenId];
-        return (
-            metadata.cid,
-            metadata.merchantName,
-            metadata.timestamp,
-            metadata.totalAmount,
-            metadata.minter
-        );
-    }
-
-    /**
-     * @dev Sets the URI for a specific token ID
-     * @param tokenId The token ID
-     * @param newuri The new URI
-     */
-    function setURI(uint256 tokenId, string memory newuri) public onlyOwner {
-        require(exists(tokenId), "ReceiptNFT: URI set of nonexistent token");
-        _setURI(tokenId, newuri);
-    }
-
-    /**
-     * @dev Sets the token URI for a token ID
-     */
-    function _setURI(uint256 tokenId, string memory newuri) internal virtual {
-        // This stores the token URI in contract storage
-        _receiptMetadata[tokenId].cid = newuri;
-    }
-
-    /**
-     * @dev Get the URI for a token ID
-     */
-    function uri(uint256 tokenId) public view virtual override returns (string memory) {
-        require(exists(tokenId), "ReceiptNFT: URI query for nonexistent token");
-        return _receiptMetadata[tokenId].cid;
-    }
-
-    // The following functions are overrides required by Solidity.
-    function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        internal
-        override(ERC1155, ERC1155Supply)
+    function getReceiptData(uint256 tokenId) 
+        external 
+        view 
+        returns (string memory) 
     {
+        require(exists(tokenId), "ReceiptNFT: Query for nonexistent token");
+        return _receiptData[tokenId];
+    }
+    
+    /**
+     * @dev Returns metadata about a token
+     * @param tokenId The ID of the token to query
+     * @return mintTimestamp The timestamp when the token was minted
+     * @return minter The address that minted the token
+     * @return encryptedData The encrypted receipt data
+     */
+    function getTokenMetadata(uint256 tokenId) 
+        external 
+        view 
+        returns (uint256 mintTimestamp, address minter, string memory encryptedData) 
+    {
+        require(exists(tokenId), "ReceiptNFT: Query for nonexistent token");
+        TokenMetadata memory metadata = _tokenMetadata[tokenId];
+        return (metadata.mintTimestamp, metadata.minter, metadata.encryptedData);
+    }
+    
+    /**
+     * @dev Returns all tokens owned by an address
+     * @param addr The owner address to query
+     * @return Array of token IDs owned by the address
+     */
+    function getTokensForAddress(address addr) 
+        external 
+        view 
+        returns (uint256[] memory) 
+    {
+        return _userTokens[addr];
+    }
+    
+    /**
+     * @dev See {ERC1155-_beforeTokenTransfer}.
+     */
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override(ERC1155, ERC1155Supply) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 }
