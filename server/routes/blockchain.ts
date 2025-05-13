@@ -118,4 +118,57 @@ router.get('/verify/:tokenId', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/blockchain/mock-mint/:receiptId
+ * Mint a receipt using the mock server (for testing)
+ */
+router.post('/mock-mint/:receiptId', async (req, res) => {
+  try {
+    const { receiptId } = req.params;
+    const receipt = await storage.getReceipt(parseInt(receiptId, 10));
+    
+    if (!receipt) {
+      return res.status(404).json({ error: 'Receipt not found' });
+    }
+    
+    // Call the mock server to mint a receipt
+    const response = await fetch('http://localhost:4000/receipt/mock', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        receiptId: receipt.id
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Mock server returned ${response.status}: ${response.statusText}`);
+    }
+    
+    const mockResult = await response.json();
+    
+    // Update receipt with mock blockchain information
+    await storage.updateReceipt(receipt.id, {
+      blockchainVerified: true,
+      blockchainTxHash: mockResult.txHash,
+      nftTokenId: mockResult.tokenId.toString(),
+      ipfsCid: mockResult.cid,
+      ipfsUrl: mockResult.cid ? `https://ipfs.io/ipfs/${mockResult.cid}` : undefined
+    });
+    
+    return res.json({
+      success: true,
+      message: 'Receipt minted using mock server',
+      ...mockResult
+    });
+  } catch (error) {
+    console.error('Error using mock mint service:', error);
+    return res.status(500).json({ 
+      error: 'Failed to mint receipt with mock service',
+      details: String(error)
+    });
+  }
+});
+
 export default router;
