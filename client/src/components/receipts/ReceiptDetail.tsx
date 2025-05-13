@@ -120,12 +120,12 @@ const ReceiptDetail: React.FC = () => {
           
           <Button 
             variant="outline" 
-            className={`w-full mt-4 ${receipt.blockchainVerified ? 'bg-blue-50 border-blue-100 text-primary hover:bg-blue-100' : ''}`}
+            className={`w-full mt-4 ${receipt.blockchain?.verified ? 'bg-blue-50 border-blue-100 text-primary hover:bg-blue-100' : ''}`}
             onClick={() => setShowBlockchainInfo(true)}
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center">
-                {receipt.blockchainVerified ? (
+                {receipt.blockchain?.verified ? (
                   <>
                     <div className="mr-2 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
                       <CheckCircle className="text-success" size={12} />
