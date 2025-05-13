@@ -13,6 +13,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register email scanning routes
   app.use('/api/email', emailRoutes);
+  
+
 
   // Get categories
   app.get("/api/categories", async (req, res) => {

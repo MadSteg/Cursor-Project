@@ -3,7 +3,7 @@ require("@nomiclabs/hardhat-ethers");  // Using the existing ethers v5 plugin
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.17",
+  solidity: "0.8.20",
   defaultNetwork: "mumbai",
   networks: {
     mumbai: {

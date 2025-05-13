@@ -1,24 +1,10 @@
-// Blockchain Service - TypeScript implementation
-// Provides both real blockchain interactions and mock functionality
+// Mock Blockchain Service - CommonJS module 
+// This avoids ESM/CommonJS conflicts by implementing a mock service
+// that can be used until the real contract is deployed
 
-import crypto from 'crypto';
-import { Receipt, FullReceipt } from '@shared/schema';
+const crypto = require('crypto');
 
-// Interface for blockchain service
-export interface IBlockchainService {
-  createReceiptHash(receipt: FullReceipt): string;
-  mintReceipt(receipt: FullReceipt): Promise<any>;
-  verifyReceipt(tokenId: string, receipt: FullReceipt): Promise<any>;
-  getNetworkStatus(): Promise<any>;
-}
-
-// Mock implementation for testing and development
-export class MockBlockchainService implements IBlockchainService {
-  private tokenIdCounter: number;
-  private mockContracts: { [key: string]: { address: string } };
-  private mockWallet: { address: string };
-  private mockProvider: { network: { name: string, chainId: number } };
-
+class MockBlockchainService {
   constructor() {
     this.tokenIdCounter = 1000;
     this.mockContracts = {
@@ -38,7 +24,7 @@ export class MockBlockchainService implements IBlockchainService {
   }
 
   // Create receipt hash
-  createReceiptHash(receipt: FullReceipt): string {
+  createReceiptHash(receipt) {
     // Create a deterministic hash of the receipt data
     const receiptData = JSON.stringify({
       merchant: receipt.merchant.name,
@@ -55,7 +41,7 @@ export class MockBlockchainService implements IBlockchainService {
   }
 
   // Mock mint a receipt
-  async mintReceipt(receipt: FullReceipt): Promise<any> {
+  async mintReceipt(receipt) {
     const tokenId = this.tokenIdCounter++;
     const txHash = '0x' + crypto.randomBytes(32).toString('hex');
     const blockNumber = Math.floor(Math.random() * 1000000) + 15000000;
@@ -76,7 +62,7 @@ export class MockBlockchainService implements IBlockchainService {
   }
 
   // Mock verify a receipt
-  async verifyReceipt(tokenId: string, receipt: FullReceipt): Promise<any> {
+  async verifyReceipt(tokenId, receipt) {
     const receiptHash = this.createReceiptHash(receipt);
     
     // Simulate network delay
@@ -95,7 +81,7 @@ export class MockBlockchainService implements IBlockchainService {
   }
 
   // Get mock network status
-  async getNetworkStatus(): Promise<any> {
+  async getNetworkStatus() {
     return {
       available: true,
       network: this.mockProvider.network.name,
@@ -107,6 +93,5 @@ export class MockBlockchainService implements IBlockchainService {
   }
 }
 
-// Export the mock service as default for now
-// This will be replaced by the real blockchain service once deployed
-export const blockchainService = new MockBlockchainService();
+// Export the mock service
+module.exports = new MockBlockchainService();

@@ -1,20 +1,28 @@
-import { ethers } from "hardhat";
+// deploy.ts
+// This script deploys the Receipt1155 contract to Mumbai testnet
+import * as hre from "hardhat";
 
 async function main() {
-  console.log("Deploying Receipt1155 contract...");
+  console.log("Deploying Receipt1155 ERC-1155 contract to network...");
   
-  const Receipt1155 = await ethers.getContractFactory("Receipt1155");
-  const receipt = await Receipt1155.deploy();
+  const [deployer] = await hre.ethers.getSigners();
+  console.log(`Deploying with account: ${deployer.address}`);
   
-  await receipt.deployed();
+  const Receipt1155 = await hre.ethers.getContractFactory("Receipt1155");
+  const receipt1155 = await Receipt1155.deploy();
   
-  console.log("Receipt1155 deployed to:", receipt.address);
-  console.log("RECEIPT_NFT_CONTRACT_ADDRESS=", receipt.address);
+  await receipt1155.deployed();
+  
+  console.log(`Receipt1155 deployed to: ${receipt1155.address}`);
+  return receipt1155.address;
 }
 
 main()
-  .then(() => process.exit(0))
+  .then((address) => {
+    console.log(`Deployment successful: ${address}`);
+    process.exit(0);
+  })
   .catch((error) => {
-    console.error(error);
+    console.error("Deployment failed:", error);
     process.exit(1);
   });
