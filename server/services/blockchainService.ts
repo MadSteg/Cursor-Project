@@ -76,7 +76,7 @@ export class BlockchainService {
   }
 
   /**
-   * Encrypt receipt data
+   * Encrypt receipt data using AES encryption
    * @param receiptData Receipt data to encrypt
    * @returns Encrypted data and key
    */
@@ -87,7 +87,7 @@ export class BlockchainService {
   }
 
   /**
-   * Decrypt receipt data
+   * Decrypt receipt data using AES decryption
    * @param encryptedData Encrypted receipt data
    * @param encryptionKey Encryption key
    * @returns Decrypted receipt data
@@ -102,7 +102,7 @@ export class BlockchainService {
   }
 
   /**
-   * Mint a receipt as an NFT
+   * Mint a receipt as an NFT using the Receipt1155 contract
    * @param receipt Receipt data
    * @param items Receipt items
    * @returns Transaction details
@@ -119,7 +119,7 @@ export class BlockchainService {
     }
     
     try {
-      // Prepare receipt data for blockchain storage
+      // Format receipt data for blockchain storage
       const receiptData = {
         id: receipt.id,
         date: receipt.date,
@@ -132,26 +132,59 @@ export class BlockchainService {
         }))
       };
       
-      // Encrypt the receipt data
-      const { encryptedData, encryptionKey } = await this.encryptReceiptData(receiptData);
+      // Encrypt the receipt data using our AES utility
+      const { encrypted, key } = encryptJSON(receiptData);
+      const encryptedData = encrypted;
+      const encryptionKey = key;
       
-      // Pin encrypted data to IPFS
+      // Generate a unique token ID based on timestamp (in seconds)
+      const tokenId = Math.floor(Date.now() / 1000);
+      
+      // Create metadata JSON
+      const metadata = {
+        name: `Receipt #${receipt.id} from ${receipt.merchantId}`,
+        description: `Digital receipt for purchase on ${receipt.date}`,
+        external_url: `https://receipt-chain.app/receipts/${receipt.id}`,
+        image: "https://receipt-chain.app/images/receipt-placeholder.png",
+        attributes: [
+          { trait_type: "Amount", value: receipt.total },
+          { trait_type: "Date", value: receipt.date },
+          { trait_type: "Items", value: items.length }
+        ],
+        encrypted_data: encryptedData
+      };
+      
+      // Convert metadata to string
+      const metadataStr = JSON.stringify(metadata);
+      
+      // Try to store on IPFS (this is a fallback mechanism if direct storage fails)
       let ipfsCid: string | undefined = undefined;
       try {
-        ipfsCid = await pinToIPFS(encryptedData);
-        console.log(`Receipt data pinned to IPFS with CID: ${ipfsCid}`);
+        ipfsCid = await pinToIPFS(metadataStr);
+        console.log(`Receipt metadata pinned to IPFS with CID: ${ipfsCid}`);
       } catch (ipfsError) {
-        console.warn('Failed to pin data to IPFS, continuing without IPFS storage:', ipfsError);
+        console.warn('Failed to pin data to IPFS, using direct data URI:', ipfsError);
       }
       
-      // Create URI for blockchain (either IPFS or direct encrypted data)
-      const tokenURI = ipfsCid ? `ipfs://${ipfsCid}` : encryptedData;
+      // Create token URI (either IPFS or direct base64 encoding)
+      const tokenURI = ipfsCid 
+        ? `ipfs://${ipfsCid}` 
+        : `data:application/json;base64,${Buffer.from(metadataStr).toString('base64')}`;
       
-      // Mint the NFT
-      // We use '1' as the amount as each receipt is unique
-      const tokenId = Date.now(); // Use timestamp as token ID for simplicity
-      const tx = await this.contract.mint(this.wallet.address, tokenId, 1, tokenURI);
+      console.log(`Minting NFT receipt with token ID ${tokenId}`);
+      
+      // Call the mint function on our Receipt1155 contract
+      // Function signature: mint(address to, uint256 skuId, uint256 amount, string calldata uri_)
+      const tx = await this.contract.mint(
+        this.wallet.address,  // to: recipient of the NFT
+        tokenId,             // skuId: our unique token ID
+        1,                   // amount: always 1 for unique receipts
+        tokenURI             // uri_: metadata URI
+      );
+      
+      // Wait for transaction to be confirmed
       const receipt_tx = await tx.wait();
+      console.log(`NFT minted successfully in transaction ${tx.hash}`);
       
       return {
         txHash: tx.hash,
@@ -167,7 +200,7 @@ export class BlockchainService {
   }
 
   /**
-   * Verify a receipt on the blockchain
+   * Verify a receipt on the blockchain using the Receipt1155 contract
    * @param tokenId Token ID
    * @returns Verification status and metadata
    */
@@ -185,41 +218,92 @@ export class BlockchainService {
     }
     
     try {
-      // Get token URI from the contract
+      console.log(`Verifying receipt token with ID: ${tokenId}`);
+      
+      // Check token exists by checking balance of contract creator (our wallet)
+      const balance = await this.contract.balanceOf(this.wallet.address, tokenId);
+      if (balance.eq(0)) {
+        return { 
+          verified: false, 
+          error: `No token found with ID ${tokenId}` 
+        };
+      }
+      
+      // Get token URI from the contract (the uri() function from ERC1155)
       const tokenURI = await this.contract.uri(tokenId);
-      let encryptedData: string;
+      console.log(`Retrieved token URI: ${tokenURI}`);
+      
+      let metadataJson: any;
       let ipfsCid: string | undefined;
       
-      // Check if the URI is an IPFS link
+      // Process the URI based on its format
       if (tokenURI.startsWith('ipfs://')) {
+        // IPFS URI format
         ipfsCid = tokenURI.replace('ipfs://', '');
         try {
-          // Fetch the data from IPFS
-          encryptedData = await getFromIPFS(ipfsCid);
+          // Fetch data from IPFS
+          const metadataStr = await getFromIPFS(ipfsCid);
+          try {
+            metadataJson = JSON.parse(metadataStr);
+          } catch (parseError) {
+            return {
+              verified: true,
+              mintTimestamp: Math.floor(tokenId), // Token ID is in seconds since epoch
+              minter: this.wallet.address,
+              encryptedData: metadataStr, // Return raw data if not JSON
+              ipfsCid,
+              ipfsUrl: `https://ipfs.io/ipfs/${ipfsCid}`
+            };
+          }
         } catch (ipfsError: any) {
           return {
             verified: false,
             error: `Failed to retrieve data from IPFS: ${ipfsError?.message || 'Unknown IPFS error'}`
           };
         }
+      } else if (tokenURI.startsWith('data:application/json;base64,')) {
+        // Data URI with base64-encoded JSON
+        try {
+          const base64Data = tokenURI.replace('data:application/json;base64,', '');
+          const jsonStr = Buffer.from(base64Data, 'base64').toString('utf8');
+          metadataJson = JSON.parse(jsonStr);
+        } catch (parseError: any) {
+          return {
+            verified: false,
+            error: `Failed to parse token metadata: ${parseError?.message || 'Invalid data format'}`
+          };
+        }
       } else {
-        // The URI contains the encrypted data directly
-        encryptedData = tokenURI;
+        // Unknown URI format
+        return {
+          verified: false,
+          error: `Unsupported token URI format: ${tokenURI}`
+        };
       }
       
-      // For this implementation, we don't have mintTimestamp and minter in the contract,
-      // but in a real implementation we would fetch these from the contract events
-      const mintTimestamp = Math.floor(tokenId / 1000); // Approximate timestamp if we used Date.now()
-      const minter = this.wallet.address;
+      // Extract encrypted data from metadata
+      const encryptedData = metadataJson.encrypted_data;
+      if (!encryptedData) {
+        return {
+          verified: true,
+          mintTimestamp: Math.floor(tokenId), // Token ID is in seconds since epoch
+          minter: this.wallet.address,
+          ipfsCid,
+          ipfsUrl: ipfsCid ? `https://ipfs.io/ipfs/${ipfsCid}` : undefined,
+          error: 'Metadata does not contain encrypted receipt data'
+        };
+      }
       
       return {
         verified: true,
-        mintTimestamp,
-        minter,
+        mintTimestamp: Math.floor(tokenId), // Token ID is in seconds since epoch
+        minter: this.wallet.address,
         encryptedData,
-        ipfsCid
+        ipfsCid,
+        ipfsUrl: ipfsCid ? `https://ipfs.io/ipfs/${ipfsCid}` : undefined
       };
     } catch (e: any) {
+      console.error('Error verifying receipt:', e);
       return {
         verified: false,
         error: `Failed to verify receipt: ${e?.message || 'Unknown error'}`
