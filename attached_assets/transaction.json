@@ -1,0 +1,22 @@
+{
+  "id": "txn_123456",
+  "merchant": "Demo Supermarket",
+  "date": "2025-05-13T12:00:00Z",
+  "items": [
+    {
+      "sku": "milk-1l",
+      "name": "Whole Milk 1L",
+      "qty": 2,
+      "price": 3.5
+    },
+    {
+      "sku": "bread-loaf",
+      "name": "Sourdough Bread",
+      "qty": 1,
+      "price": 4.0
+    }
+  ],
+  "subtotal": 11.0,
+  "tax": 0.88,
+  "total": 11.88
+}

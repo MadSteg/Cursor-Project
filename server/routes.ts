@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import blockchainRoutes from "./routes/blockchain";
+import emailRoutes from "./routes/email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -9,6 +10,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register blockchain routes
   app.use('/api/blockchain', blockchainRoutes);
+  
+  // Register email scanning routes
+  app.use('/api/email', emailRoutes);
 
   // Get categories
   app.get("/api/categories", async (req, res) => {

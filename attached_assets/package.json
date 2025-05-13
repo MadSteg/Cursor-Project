@@ -1,0 +1,22 @@
+{
+  "name": "memorychain-poc",
+  "version": "0.1.0",
+  "description": "Proof of concept for MemoryChain receipt NFTs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "deploy": "npx hardhat run scripts/deploy.js --network mumbai"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.0",
+    "ethers": "^6.10.2",
+    "express": "^4.19.2",
+    "ipfs-http-client": "^64.1.2"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "nodemon": "^3.0.3"
+  }
+}
