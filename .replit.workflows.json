@@ -1,0 +1,13 @@
+{
+  "workflows": {
+    "mock-server": {
+      "name": "Mock Blockchain Server",
+      "commands": ["node memchain-mock.cjs"],
+      "restartOn": {
+        "files": ["memchain-mock.cjs"]
+      },
+      "onBoot": true,
+      "primary": false
+    }
+  }
+}
