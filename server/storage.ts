@@ -5,6 +5,9 @@ import {
   receipts, 
   receiptItems,
   spendingStats,
+  retailers,
+  products,
+  retailerSyncLogs,
   type User, 
   type InsertUser, 
   type Category,
@@ -17,6 +20,12 @@ import {
   type InsertReceiptItem,
   type SpendingStat,
   type InsertSpendingStat,
+  type Retailer,
+  type InsertRetailer,
+  type Product,
+  type InsertProduct,
+  type RetailerSyncLog,
+  type InsertRetailerSyncLog,
   type FullReceipt
 } from "@shared/schema";
 
@@ -49,7 +58,9 @@ export interface IStorage {
   
   // Receipt Item methods
   getReceiptItems(receiptId: number): Promise<ReceiptItem[]>;
+  getReceiptItem(id: number): Promise<ReceiptItem | undefined>;
   createReceiptItem(item: InsertReceiptItem): Promise<ReceiptItem>;
+  updateReceiptItem(id: number, updates: Partial<InsertReceiptItem>): Promise<ReceiptItem | undefined>;
   
   // Spending stats methods
   getSpendingStatsByMonth(userId: number, month: number, year: number): Promise<SpendingStat[]>;
@@ -57,6 +68,30 @@ export interface IStorage {
   createOrUpdateSpendingStat(stat: InsertSpendingStat): Promise<SpendingStat>;
   getCategoryBreakdown(userId: number, month: number, year: number): Promise<{category: Category, amount: string, percentage: number}[]>;
   getMonthlySpending(userId: number, year: number): Promise<{month: number, total: string}[]>;
+  
+  // Retailer methods
+  getRetailers(): Promise<Retailer[]>;
+  getRetailer(id: number): Promise<Retailer | undefined>;
+  createRetailer(retailer: InsertRetailer): Promise<Retailer>;
+  updateRetailer(id: number, updates: Partial<InsertRetailer>): Promise<Retailer | undefined>;
+  
+  // Product methods
+  getProduct(id: number): Promise<Product | undefined>;
+  getProductByExternalId(retailerId: number, externalId: string): Promise<Product | undefined>;
+  findProductsByName(name: string): Promise<Product[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product | undefined>;
+  searchProducts(query: string, options?: {
+    limit?: number;
+    offset?: number;
+    retailerId?: number;
+    categoryId?: number;
+  }): Promise<Product[]>;
+  
+  // Retailer sync logs methods
+  getRetailerSyncLogs(retailerId: number, limit?: number): Promise<RetailerSyncLog[]>;
+  createRetailerSyncLog(log: InsertRetailerSyncLog): Promise<RetailerSyncLog>;
+  updateRetailerSyncLog(id: number, updates: Partial<InsertRetailerSyncLog>): Promise<RetailerSyncLog>;
 }
 
 export class MemStorage implements IStorage {
