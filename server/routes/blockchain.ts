@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { storage } from '../storage';
 import { blockchainService } from '../services/blockchainService';
+import { getIpfsUrl } from '../utils/ipfs';
 
 const router = Router();
 
@@ -70,7 +71,7 @@ router.post('/mint/:receiptId', async (req, res) => {
       blockNumber: result.blockNumber,
       nftTokenId: result.tokenId.toString(),
       ipfsCid: result.ipfsCid,
-      ipfsUrl: result.ipfsCid ? `https://ipfs.io/ipfs/${result.ipfsCid}` : undefined,
+      ipfsUrl: result.ipfsCid ? getIpfsUrl(result.ipfsCid) : undefined,
       encryptionKey: result.encryptionKey,
     });
     
@@ -104,7 +105,7 @@ router.get('/verify/:tokenId', async (req, res) => {
     
     // Add IPFS URL for easy access
     if (result.verified && result.ipfsCid) {
-      result.ipfsUrl = `https://ipfs.io/ipfs/${result.ipfsCid}`;
+      result.ipfsUrl = getIpfsUrl(result.ipfsCid);
     }
     
     return res.json(result);
