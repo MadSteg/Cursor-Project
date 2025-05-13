@@ -161,13 +161,6 @@ const ReceiptDetail: React.FC = () => {
           </DialogHeader>
           <BlockchainActions 
             receiptId={Number(id)}
-            blockchainVerified={receipt.blockchain?.verified || false}
-            blockchainTxHash={receipt.blockchain?.txHash}
-            blockNumber={receipt.blockchain?.blockNumber}
-            nftTokenId={receipt.blockchain?.nftTokenId}
-            ipfsCid={receipt.blockchain?.ipfsCid}
-            ipfsUrl={receipt.blockchain?.ipfsUrl}
-            onMintSuccess={handleMintSuccess}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowBlockchainInfo(false)}>

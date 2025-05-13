@@ -1,341 +1,252 @@
-import React, { useState } from "react";
-import { Database, CheckCircle, AlertCircle, ExternalLink, ShieldAlert } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
-interface BlockchainStatusResponse {
+interface BlockchainStatus {
   available: boolean;
-  networkName?: string;
-  chainId?: number;
-  contractAddress?: string;
-  message?: string;
-}
-
-interface MintResponse {
-  success: boolean;
-  txHash: string;
-  blockNumber: number;
-  tokenId: number;
-  encryptionKey: string;
-  ipfsCid?: string;
-  ipfsUrl?: string;
+  network: string;
+  chainId: number;
+  contractAddress: string;
+  walletAddress: string;
+  mockMode: boolean;
 }
 
 interface BlockchainActionsProps {
   receiptId: number;
-  blockchainVerified: boolean;
-  blockchainTxHash?: string;
-  blockNumber?: number;
-  nftTokenId?: string;
-  ipfsCid?: string;
-  ipfsUrl?: string;
-  onMintSuccess?: () => void;
 }
 
-export function BlockchainActions({
-  receiptId,
-  blockchainVerified,
-  blockchainTxHash,
-  blockNumber,
-  nftTokenId,
-  ipfsCid,
-  ipfsUrl,
-  onMintSuccess
-}: BlockchainActionsProps) {
-  const [loading, setLoading] = useState(false);
-  const [minting, setMinting] = useState(false);
-  const [status, setStatus] = useState<BlockchainStatusResponse | null>(null);
+export function BlockchainActions({ receiptId }: BlockchainActionsProps) {
+  const [status, setStatus] = useState<BlockchainStatus | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [minting, setMinting] = useState<boolean>(false);
+  const [mintResult, setMintResult] = useState<any>(null);
+  const [verifying, setVerifying] = useState<boolean>(false);
+  const [verifyResult, setVerifyResult] = useState<any>(null);
   const { toast } = useToast();
 
-  // Check blockchain status
-  const checkBlockchainStatus = async () => {
+  useEffect(() => {
+    // Fetch blockchain status on mount
+    fetchBlockchainStatus();
+  }, []);
+
+  const fetchBlockchainStatus = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/blockchain/status');
-      if (!response.ok) {
-        throw new Error('Failed to fetch blockchain status');
-      }
+      const response = await apiRequest('GET', '/api/blockchain/status');
       const data = await response.json();
-      setStatus(data as BlockchainStatusResponse);
+      setStatus(data);
     } catch (error) {
+      console.error('Error fetching blockchain status:', error);
       toast({
         title: "Error",
-        description: "Failed to check blockchain status",
-        variant: "destructive",
+        description: "Failed to fetch blockchain status",
+        variant: "destructive"
       });
-      setStatus({ available: false, message: "Failed to connect to blockchain service" });
     } finally {
       setLoading(false);
     }
   };
 
-  // Mint receipt as NFT
-  const mintReceiptAsNFT = async () => {
-    if (!receiptId) return;
-
+  const mintReceipt = async () => {
     setMinting(true);
     try {
-      const response = await fetch(`/api/blockchain/mint/${receiptId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to mint receipt as NFT');
-      }
-      
+      const response = await apiRequest('POST', `/api/blockchain/mint/${receiptId}`);
       const data = await response.json();
-      const mintResponse = data as MintResponse;
-      
+      setMintResult(data);
       toast({
         title: "Success",
-        description: "Receipt minted as NFT successfully",
+        description: "Receipt minted successfully"
       });
-
-      // Store encryption key securely (this is just for demo)
-      if (mintResponse.encryptionKey) {
-        localStorage.setItem(`receipt_key_${receiptId}`, mintResponse.encryptionKey);
-      }
-
-      if (onMintSuccess) {
-        onMintSuccess();
-      }
     } catch (error) {
+      console.error('Error minting receipt:', error);
       toast({
         title: "Error",
-        description: "Failed to mint receipt as NFT",
-        variant: "destructive",
-      });
-    } finally {
-      setMinting(false);
-    }
-  };
-  
-  // Mock mint receipt (for testing)
-  const mockMintReceiptAsNFT = async () => {
-    if (!receiptId) return;
-
-    setMinting(true);
-    try {
-      const response = await fetch(`/api/blockchain/mock-mint/${receiptId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to mock mint receipt as NFT');
-      }
-      
-      const data = await response.json();
-      
-      toast({
-        title: "Success",
-        description: "Receipt mock minted as NFT successfully",
-      });
-
-      if (onMintSuccess) {
-        onMintSuccess();
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mock mint receipt as NFT",
-        variant: "destructive",
+        description: "Failed to mint receipt",
+        variant: "destructive"
       });
     } finally {
       setMinting(false);
     }
   };
 
-  // Format blockchain explorer URL for transaction
-  const getExplorerUrl = (txHash?: string) => {
-    if (!txHash) return '#';
-    
-    // Check if we're on Mumbai testnet or Polygon mainnet
-    if (status?.chainId === 80001) {
-      return `https://mumbai.polygonscan.com/tx/${txHash}`;
-    } else {
-      // Default to Polygon mainnet
-      return `https://polygonscan.com/tx/${txHash}`;
+  const verifyReceipt = async () => {
+    if (!mintResult?.receipt?.blockchain?.tokenId) {
+      toast({
+        title: "Error",
+        description: "No token ID available. Please mint the receipt first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      const tokenId = mintResult.receipt.blockchain.tokenId;
+      const response = await apiRequest('GET', `/api/blockchain/verify/${tokenId}`);
+      const data = await response.json();
+      setVerifyResult(data);
+      toast({
+        title: data.verified ? "Verified" : "Not Verified",
+        description: data.verified 
+          ? "Receipt verified successfully on blockchain" 
+          : "Receipt could not be verified on blockchain",
+        variant: data.verified ? "default" : "destructive"
+      });
+    } catch (error) {
+      console.error('Error verifying receipt:', error);
+      toast({
+        title: "Error",
+        description: "Failed to verify receipt",
+        variant: "destructive"
+      });
+    } finally {
+      setVerifying(false);
     }
   };
-  
-  // Format blockchain explorer URL for token
-  const getTokenExplorerUrl = (tokenId?: string) => {
-    if (!tokenId || !status?.contractAddress) return '#';
-    
-    // Check if we're on Mumbai testnet or Polygon mainnet
-    if (status?.chainId === 80001) {
-      return `https://mumbai.polygonscan.com/token/${status.contractAddress}?a=${tokenId}`;
-    } else {
-      // Default to Polygon mainnet
-      return `https://polygonscan.com/token/${status.contractAddress}?a=${tokenId}`;
-    }
-  };
+
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Blockchain Status</CardTitle>
+          <CardDescription>Checking blockchain connection...</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center py-6">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!status?.available) {
+    return (
+      <Card className="w-full border-destructive">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            Blockchain Unavailable
+          </CardTitle>
+          <CardDescription>
+            Could not connect to blockchain network
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>Please check your network connection and try again.</p>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={fetchBlockchainStatus} variant="outline">
+            Retry Connection
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center">
-          <Database className="mr-2 h-5 w-5 text-primary" />
-          Blockchain Verification
-        </CardTitle>
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Blockchain Actions</CardTitle>
+          <Badge variant={status.mockMode ? "outline" : "default"}>
+            {status.mockMode ? "Mock Mode" : status.network}
+          </Badge>
+        </div>
         <CardDescription>
-          Permanently store your receipt on the blockchain as an NFT
+          Store and verify receipt information on blockchain
         </CardDescription>
       </CardHeader>
+      <CardContent className="space-y-4">
+        {status.mockMode && (
+          <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
+            <p className="text-sm text-yellow-700">
+              Running in mock mode - no actual blockchain transactions will be made
+            </p>
+          </div>
+        )}
 
-      <CardContent>
-        {blockchainVerified ? (
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-              <span className="font-medium">Verified on Blockchain</span>
-              <Badge className="ml-auto" variant="outline">Polygon Mumbai</Badge>
-            </div>
+        <div className="space-y-2">
+          <h4 className="font-medium">Network Information</h4>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="text-muted-foreground">Network</div>
+            <div>{status.network}</div>
+            <div className="text-muted-foreground">Chain ID</div>
+            <div>{status.chainId}</div>
+            <div className="text-muted-foreground">Contract</div>
+            <div className="truncate">{status.contractAddress}</div>
+          </div>
+        </div>
 
-            <div className="space-y-2 text-sm">
-              {nftTokenId && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">NFT Token ID:</span>
-                  <span className="font-mono">{nftTokenId}</span>
-                </div>
-              )}
-              
-              {blockNumber && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Block Number:</span>
-                  <span className="font-mono">{blockNumber}</span>
-                </div>
-              )}
-              
-              {blockchainTxHash && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Transaction Hash:</span>
-                  <span className="font-mono truncate max-w-[180px]">
-                    {blockchainTxHash.substring(0, 10)}...{blockchainTxHash.substring(blockchainTxHash.length - 8)}
-                  </span>
-                </div>
-              )}
-              
-              {ipfsCid && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">IPFS CID:</span>
-                  <span className="font-mono truncate max-w-[180px]">
-                    {ipfsCid.substring(0, 10)}...{ipfsCid.substring(ipfsCid.length - 8)}
-                  </span>
-                </div>
-              )}
+        {mintResult && (
+          <div className="space-y-2 bg-green-50 p-4 rounded-md border border-green-200">
+            <h4 className="font-medium flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Receipt Minted
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-muted-foreground">Token ID</div>
+              <div>{mintResult.receipt.blockchain.tokenId}</div>
+              <div className="text-muted-foreground">Transaction</div>
+              <div className="truncate">{mintResult.receipt.blockchain.transactionHash}</div>
+              <div className="text-muted-foreground">Block #</div>
+              <div>{mintResult.receipt.blockchain.blockNumber}</div>
+              <div className="text-muted-foreground">Receipt Hash</div>
+              <div className="truncate">{mintResult.receipt.blockchain.receiptHash}</div>
             </div>
           </div>
-        ) : status === null ? (
-          <div className="space-y-3 py-2">
-            <Skeleton className="h-5 w-full" />
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-5 w-5/6" />
-          </div>
-        ) : !status.available ? (
-          <div className="flex items-center text-amber-600">
-            <AlertCircle className="h-5 w-5 mr-2" />
-            <span>Blockchain integration not configured</span>
-          </div>
-        ) : (
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Network:</span>
-              <span>{status.networkName}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Chain ID:</span>
-              <span className="font-mono">{status.chainId}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Contract:</span>
-              <span className="font-mono truncate max-w-[180px]">{status.contractAddress}</span>
-            </div>
+        )}
+
+        {verifyResult && (
+          <div className={`space-y-2 p-4 rounded-md border ${
+            verifyResult.verified 
+              ? "bg-green-50 border-green-200" 
+              : "bg-red-50 border-red-200"
+          }`}>
+            <h4 className="font-medium flex items-center gap-2">
+              {verifyResult.verified ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  Receipt Verified
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  Verification Failed
+                </>
+              )}
+            </h4>
+            {verifyResult.verified && (
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-muted-foreground">Owner</div>
+                <div className="truncate">{verifyResult.receipt.blockchain.owner}</div>
+                <div className="text-muted-foreground">URI</div>
+                <div className="truncate">{verifyResult.receipt.blockchain.uri}</div>
+                <div className="text-muted-foreground">Receipt Hash</div>
+                <div className="truncate">{verifyResult.receipt.blockchain.receiptHash}</div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
-
-      <CardFooter className="flex flex-col space-y-2">
-        {blockchainVerified ? (
-          <>
-            <a 
-              href={getExplorerUrl(blockchainTxHash)} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              View Transaction
-            </a>
-            
-            {nftTokenId && (
-              <a 
-                href={getTokenExplorerUrl(nftTokenId)} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
-              >
-                <Database className="mr-2 h-4 w-4" />
-                View NFT Token
-              </a>
-            )}
-            
-            {ipfsUrl && (
-              <a 
-                href={ipfsUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
-              >
-                <ShieldAlert className="mr-2 h-4 w-4" />
-                View on IPFS
-              </a>
-            )}
-          </>
-        ) : status === null ? (
-          <Button onClick={checkBlockchainStatus} disabled={loading} className="w-full">
-            {loading ? "Checking..." : "Check Blockchain Status"}
-          </Button>
-        ) : status.available ? (
-          <>
-            <Button onClick={mintReceiptAsNFT} disabled={minting} className="w-full mb-2">
-              {minting ? "Minting..." : "Mint Receipt as NFT"}
-            </Button>
-            <Button 
-              onClick={mockMintReceiptAsNFT} 
-              disabled={minting} 
-              variant="outline" 
-              className="w-full"
-            >
-              {minting ? "Minting..." : "Mock Mint (Test)"}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button disabled className="w-full mb-2">
-              Blockchain Not Available
-            </Button>
-            <Button 
-              onClick={mockMintReceiptAsNFT} 
-              disabled={minting} 
-              variant="outline" 
-              className="w-full"
-            >
-              {minting ? "Minting..." : "Mock Mint (Test)"}
-            </Button>
-          </>
-        )}
+      <CardFooter className="flex gap-2">
+        <Button 
+          onClick={mintReceipt} 
+          disabled={minting || mintResult !== null}
+        >
+          {minting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {mintResult ? "Receipt Minted" : "Mint Receipt"}
+        </Button>
+        <Button
+          onClick={verifyReceipt}
+          disabled={verifying || !mintResult}
+          variant="outline"
+        >
+          {verifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Verify Receipt
+        </Button>
       </CardFooter>
     </Card>
   );
