@@ -19,15 +19,21 @@ import {
 import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt } from "lucide-react";
 import { format } from "date-fns";
 import { type FullReceipt } from "@shared/schema";
-import BlockchainActions from "@/components/blockchain/BlockchainActions";
+import { BlockchainActions } from "@/components/blockchain/BlockchainActions";
 
 const ReceiptDetail: React.FC = () => {
   const { id } = useParams();
   const [showBlockchainInfo, setShowBlockchainInfo] = React.useState(false);
+  const queryClient = useQueryClient();
   
   const { data: receipt, isLoading } = useQuery<FullReceipt>({
     queryKey: [`/api/receipts/${id}`],
   });
+  
+  // Handle blockchain mint success
+  const handleMintSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: [`/api/receipts/${id}`] });
+  };
 
   if (isLoading) {
     return (
@@ -144,12 +150,13 @@ const ReceiptDetail: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Blockchain Information</DialogTitle>
           </DialogHeader>
-          <BlockchainInfo 
-            txHash={receipt.blockchain.txHash || "Processing..."}
-            blockNumber={receipt.blockchain.blockNumber}
-            verified={receipt.blockchain.verified}
-            nftTokenId={receipt.blockchain.nftTokenId}
-            timestamp={receipt.date}
+          <BlockchainActions 
+            receiptId={Number(id)}
+            blockchainVerified={receipt.blockchain?.verified || false}
+            blockchainTxHash={receipt.blockchain?.txHash}
+            blockNumber={receipt.blockchain?.blockNumber}
+            nftTokenId={receipt.blockchain?.nftTokenId}
+            onMintSuccess={handleMintSuccess}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowBlockchainInfo(false)}>

@@ -3,10 +3,10 @@
  * 
  * This file defines the API routes for interacting with the blockchain.
  */
-
 import { Router } from 'express';
-import { blockchainService } from '../services/blockchainService';
+import { z } from 'zod';
 import { storage } from '../storage';
+import { blockchainService } from '../services/blockchainService';
 
 const router = Router();
 
@@ -16,28 +16,23 @@ const router = Router();
  */
 router.get('/status', async (req, res) => {
   try {
-    const isAvailable = blockchainService.isAvailable();
-    
-    if (!isAvailable) {
+    if (!blockchainService.isAvailable()) {
       return res.json({
         available: false,
-        message: 'Blockchain integration is not available. Check environment variables.'
+        message: 'Blockchain integration is not configured',
       });
     }
-    
+
     const networkInfo = await blockchainService.getNetworkInfo();
-    
     return res.json({
       available: true,
-      networkName: networkInfo.networkName,
-      chainId: networkInfo.chainId,
-      contractAddress: networkInfo.contractAddress
+      ...networkInfo,
     });
   } catch (error) {
-    console.error('Error getting blockchain status:', error);
+    console.error('Error checking blockchain status:', error);
     return res.status(500).json({
-      error: 'Failed to get blockchain status',
-      available: false
+      available: false,
+      message: 'Failed to connect to blockchain service',
     });
   }
 });
@@ -49,9 +44,8 @@ router.get('/status', async (req, res) => {
 router.post('/mint/:receiptId', async (req, res) => {
   try {
     const { receiptId } = req.params;
+    const receipt = await storage.getReceipt(parseInt(receiptId, 10));
     
-    // Get the receipt
-    const receipt = await storage.getReceipt(parseInt(receiptId));
     if (!receipt) {
       return res.status(404).json({ error: 'Receipt not found' });
     }
@@ -59,30 +53,36 @@ router.post('/mint/:receiptId', async (req, res) => {
     // Get receipt items
     const items = await storage.getReceiptItems(receipt.id);
     
-    // Mint the NFT
+    // Get merchant details
+    const merchant = await storage.getMerchant(receipt.merchantId);
+    
+    if (!merchant) {
+      return res.status(404).json({ error: 'Merchant not found' });
+    }
+    
+    // Mint the receipt as an NFT
     const result = await blockchainService.mintReceiptNFT(receipt, items);
     
-    // Update the receipt with blockchain info
+    // Update receipt with blockchain information
     await storage.updateReceipt(receipt.id, {
-      blockchainTxHash: result.txHash,
       blockchainVerified: true,
+      blockchainTxHash: result.txHash,
       blockNumber: result.blockNumber,
-      nftTokenId: result.tokenId.toString()
+      nftTokenId: result.tokenId.toString(),
     });
     
     return res.json({
       success: true,
-      tokenId: result.tokenId,
       txHash: result.txHash,
       blockNumber: result.blockNumber,
-      encryptionKey: result.encryptionKey, // Note: In production, this should be stored securely or shared securely
-      cid: result.cid
+      tokenId: result.tokenId,
+      encryptionKey: result.encryptionKey,
     });
   } catch (error) {
-    console.error('Error minting receipt NFT:', error);
-    return res.status(500).json({
-      error: 'Failed to mint receipt NFT',
-      message: error.message
+    console.error('Error minting receipt:', error);
+    return res.status(500).json({ 
+      error: 'Failed to mint receipt as NFT',
+      details: String(error)
     });
   }
 });
@@ -95,14 +95,14 @@ router.get('/verify/:tokenId', async (req, res) => {
   try {
     const { tokenId } = req.params;
     
-    const result = await blockchainService.verifyReceipt(parseInt(tokenId));
+    const result = await blockchainService.verifyReceipt(parseInt(tokenId, 10));
     
     return res.json(result);
   } catch (error) {
     console.error('Error verifying receipt:', error);
-    return res.status(500).json({
-      error: 'Failed to verify receipt',
-      message: error.message
+    return res.status(500).json({ 
+      error: 'Failed to verify receipt on blockchain',
+      details: String(error)
     });
   }
 });

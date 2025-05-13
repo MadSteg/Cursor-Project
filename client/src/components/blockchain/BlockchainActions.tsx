@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Database, CheckCircle, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -41,8 +41,8 @@ export function BlockchainActions({
   const checkBlockchainStatus = async () => {
     setLoading(true);
     try {
-      const response = await apiRequest<BlockchainStatusResponse>('/api/blockchain/status');
-      setStatus(response);
+      const response = await apiRequest('/api/blockchain/status');
+      setStatus(response as BlockchainStatusResponse);
     } catch (error) {
       toast({
         title: "Error",
@@ -63,7 +63,7 @@ export function BlockchainActions({
     try {
       const response = await apiRequest(`/api/blockchain/mint/${receiptId}`, {
         method: 'POST',
-      });
+      } as RequestInit);
 
       toast({
         title: "Success",
@@ -71,7 +71,9 @@ export function BlockchainActions({
       });
 
       // Store encryption key securely (this is just for demo)
-      localStorage.setItem(`receipt_key_${receiptId}`, response.encryptionKey);
+      if (response && typeof response === 'object' && 'encryptionKey' in response) {
+        localStorage.setItem(`receipt_key_${receiptId}`, response.encryptionKey as string);
+      }
 
       if (onMintSuccess) {
         onMintSuccess();

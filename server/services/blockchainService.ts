@@ -4,20 +4,25 @@
  * This service handles interactions with the blockchain for receipt NFTs.
  * It uses ethers.js to interact with the ReceiptNFT smart contract.
  */
-
 import { ethers } from 'ethers';
-import crypto from 'crypto-js';
-import dotenv from 'dotenv';
-import type { Receipt, ReceiptItem } from '@shared/schema';
+import CryptoJS from 'crypto-js';
+import { Receipt, ReceiptItem } from '@shared/schema';
 
-// Load environment variables
-dotenv.config();
-
-// Smart contract ABI (only the functions we need)
-const CONTRACT_ABI = [
-  "function mintReceipt(address to, string memory cid, string memory merchantName, uint256 timestamp, uint256 totalAmount, string memory uri) public returns (uint256)",
-  "function getReceiptMetadata(uint256 tokenId) public view returns (string memory cid, string memory merchantName, uint256 timestamp, uint256 totalAmount, address minter)",
-  "event ReceiptMinted(uint256 indexed tokenId, string cid, string merchantName, uint256 timestamp, uint256 totalAmount, address indexed minter)"
+// ABI for the ReceiptNFT contract
+const RECEIPT_NFT_ABI = [
+  // ERC1155 standard functions
+  "function balanceOf(address account, uint256 id) external view returns (uint256)",
+  "function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids) external view returns (uint256[] memory)",
+  "function setApprovalForAll(address operator, bool approved) external",
+  "function isApprovedForAll(address account, address operator) external view returns (bool)",
+  "function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external",
+  "function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external",
+  
+  // Custom functions
+  "function mint(address to, string memory encryptedData) external returns (uint256)",
+  "function getReceiptData(uint256 tokenId) external view returns (string memory)",
+  "function getTokenMetadata(uint256 tokenId) external view returns (uint256 mintTimestamp, address minter, string memory encryptedData)",
+  "function getTokensForAddress(address addr) external view returns (uint256[] memory)"
 ];
 
 export class BlockchainService {
@@ -27,8 +32,7 @@ export class BlockchainService {
   private initialized: boolean = false;
 
   constructor() {
-    // We'll initialize on demand to make environment variables optional
-    this.initialized = false;
+    this.initialize();
   }
 
   /**
@@ -36,26 +40,30 @@ export class BlockchainService {
    */
   private initialize(): boolean {
     try {
-      const rpcUrl = process.env.RPC_URL;
-      const privateKey = process.env.PRIVATE_KEY;
-      const contractAddress = process.env.CONTRACT_ADDRESS;
-
+      // Check for required environment variables
+      const rpcUrl = process.env.POLYGON_MUMBAI_RPC_URL;
+      const privateKey = process.env.BLOCKCHAIN_PRIVATE_KEY;
+      const contractAddress = process.env.RECEIPT_NFT_CONTRACT_ADDRESS;
+      
       if (!rpcUrl || !privateKey || !contractAddress) {
-        console.error('Missing environment variables for blockchain integration');
+        console.warn('Blockchain service not configured: Missing environment variables');
         return false;
       }
-
-      // Initialize provider and wallet
+      
+      // Setup provider, wallet and contract
       this.provider = new ethers.providers.JsonRpcProvider(rpcUrl);
       this.wallet = new ethers.Wallet(privateKey, this.provider);
-      
-      // Initialize contract
-      this.contract = new ethers.Contract(contractAddress, CONTRACT_ABI, this.wallet);
+      this.contract = new ethers.Contract(
+        contractAddress,
+        RECEIPT_NFT_ABI,
+        this.wallet
+      );
       
       this.initialized = true;
       return true;
-    } catch (error) {
-      console.error('Error initializing blockchain service:', error);
+    } catch (e) {
+      console.error('Failed to initialize blockchain service:', e);
+      this.initialized = false;
       return false;
     }
   }
@@ -64,9 +72,6 @@ export class BlockchainService {
    * Check if blockchain integration is available
    */
   isAvailable(): boolean {
-    if (!this.initialized) {
-      return this.initialize();
-    }
     return this.initialized;
   }
 
@@ -77,10 +82,10 @@ export class BlockchainService {
    */
   async encryptReceiptData(receiptData: any): Promise<{ encryptedData: string, encryptionKey: string }> {
     // Generate a random encryption key
-    const encryptionKey = crypto.lib.WordArray.random(16).toString();
+    const encryptionKey = CryptoJS.lib.WordArray.random(16).toString();
     
-    // Encrypt the receipt data
-    const encryptedData = crypto.AES.encrypt(
+    // Encrypt the data with AES
+    const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(receiptData),
       encryptionKey
     ).toString();
@@ -96,11 +101,12 @@ export class BlockchainService {
    */
   async decryptReceiptData(encryptedData: string, encryptionKey: string): Promise<any> {
     try {
-      const decryptedBytes = crypto.AES.decrypt(encryptedData, encryptionKey);
-      const decryptedText = decryptedBytes.toString(crypto.enc.Utf8);
-      return JSON.parse(decryptedText);
-    } catch (error) {
-      console.error('Error decrypting receipt data:', error);
+      // Decrypt the data
+      const bytes = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
+      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+      
+      return JSON.parse(decryptedData);
+    } catch (e) {
       throw new Error('Failed to decrypt receipt data');
     }
   }
@@ -112,76 +118,48 @@ export class BlockchainService {
    * @returns Transaction details
    */
   async mintReceiptNFT(receipt: Receipt, items: ReceiptItem[]): Promise<{
-    tokenId: number;
     txHash: string;
-    blockNumber: number;
+    tokenId: number;
     encryptionKey: string;
-    cid: string;
+    blockNumber: number;
   }> {
-    if (!this.isAvailable()) {
-      throw new Error('Blockchain service is not available');
+    if (!this.initialized) {
+      throw new Error('Blockchain service not initialized');
     }
-
+    
     try {
-      // Prepare receipt data for blockchain
+      // Prepare receipt data for blockchain storage
       const receiptData = {
-        receipt: {
-          id: receipt.id,
-          merchantName: receipt.merchant?.name || 'Unknown',
-          date: receipt.date,
-          subtotal: receipt.subtotal.toString(),
-          tax: receipt.tax.toString(),
-          total: receipt.total.toString(),
-        },
+        id: receipt.id,
+        date: receipt.date,
+        total: receipt.total,
+        merchant: receipt.merchantId,
         items: items.map(item => ({
           name: item.name,
-          price: item.price.toString(),
-          quantity: item.quantity,
+          price: item.price,
+          quantity: item.quantity
         }))
       };
-
+      
       // Encrypt the receipt data
       const { encryptedData, encryptionKey } = await this.encryptReceiptData(receiptData);
       
-      // In a real implementation, we would upload encryptedData to IPFS
-      // or another decentralized storage system and get back a CID.
-      // For now, we'll mock this with a hash of the encrypted data.
-      const cid = crypto.SHA256(encryptedData).toString();
-
-      // Convert the purchase date to a timestamp
-      const timestamp = new Date(receipt.date).getTime() / 1000;
-      
-      // Convert the total amount to pennies/cents (integer)
-      // totalAmount is a string from the database, convert to number and then to pennies
-      const totalAmount = Math.round(parseFloat(receipt.total.toString()) * 100);
-      
       // Mint the NFT
-      const tx = await this.contract.mintReceipt(
-        this.wallet.address, // to
-        cid,                 // cid (content identifier)
-        receipt.merchant?.name || 'Unknown', // merchantName
-        timestamp,           // timestamp
-        totalAmount,         // totalAmount in pennies/cents
-        cid                  // uri (same as cid for now)
-      );
+      const tx = await this.contract.mint(this.wallet.address, encryptedData);
+      const receipt_tx = await tx.wait();
       
-      // Wait for the transaction to be confirmed
-      const receipt1 = await tx.wait();
-      
-      // Find the ReceiptMinted event
-      const event = receipt1.events?.find(e => e.event === 'ReceiptMinted');
-      const tokenId = event?.args?.tokenId.toNumber() || 0;
+      // Get the token ID from the transaction events (implementation depends on contract)
+      const tokenId = receipt_tx.events[0].args[3].toNumber(); // Adjust based on actual event structure
       
       return {
-        tokenId,
         txHash: tx.hash,
-        blockNumber: receipt1.blockNumber,
+        tokenId,
         encryptionKey,
-        cid
+        blockNumber: receipt_tx.blockNumber
       };
-    } catch (error) {
-      console.error('Error minting receipt NFT:', error);
-      throw new Error('Failed to mint receipt NFT');
+    } catch (e) {
+      console.error('Error minting receipt NFT:', e);
+      throw new Error(`Failed to mint receipt NFT: ${e.message}`);
     }
   }
 
@@ -193,34 +171,30 @@ export class BlockchainService {
    */
   async verifyReceipt(tokenId: number): Promise<{
     verified: boolean;
-    metadata?: {
-      cid: string;
-      merchantName: string;
-      timestamp: number;
-      totalAmount: number;
-      minter: string;
-    };
+    mintTimestamp?: number;
+    minter?: string;
+    encryptedData?: string;
+    error?: string;
   }> {
-    if (!this.isAvailable()) {
-      throw new Error('Blockchain service is not available');
+    if (!this.initialized) {
+      return { verified: false, error: 'Blockchain service not initialized' };
     }
-
+    
     try {
-      const metadata = await this.contract.getReceiptMetadata(tokenId);
+      // Get token metadata from the contract
+      const [mintTimestamp, minter, encryptedData] = await this.contract.getTokenMetadata(tokenId);
       
       return {
         verified: true,
-        metadata: {
-          cid: metadata[0],
-          merchantName: metadata[1],
-          timestamp: metadata[2].toNumber(),
-          totalAmount: metadata[3].toNumber(),
-          minter: metadata[4]
-        }
+        mintTimestamp: mintTimestamp.toNumber(),
+        minter,
+        encryptedData
       };
-    } catch (error) {
-      console.error('Error verifying receipt:', error);
-      return { verified: false };
+    } catch (e) {
+      return {
+        verified: false,
+        error: `Failed to verify receipt: ${e.message}`
+      };
     }
   }
 
@@ -232,18 +206,30 @@ export class BlockchainService {
     chainId: number;
     contractAddress: string;
   }> {
-    if (!this.isAvailable()) {
-      throw new Error('Blockchain service is not available');
+    if (!this.initialized) {
+      throw new Error('Blockchain service not initialized');
     }
-
+    
     const network = await this.provider.getNetwork();
+    let networkName;
+    
+    switch (network.chainId) {
+      case 80001:
+        networkName = 'Polygon Mumbai';
+        break;
+      case 137:
+        networkName = 'Polygon Mainnet';
+        break;
+      default:
+        networkName = network.name;
+    }
+    
     return {
-      networkName: network.name,
+      networkName,
       chainId: network.chainId,
       contractAddress: this.contract.address
     };
   }
 }
 
-// Export a singleton instance
 export const blockchainService = new BlockchainService();
