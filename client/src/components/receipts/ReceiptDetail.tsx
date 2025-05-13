@@ -16,7 +16,7 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt } from "lucide-react";
+import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt, Database } from "lucide-react";
 import { format } from "date-fns";
 import { type FullReceipt } from "@shared/schema";
 import { BlockchainActions } from "@/components/blockchain/BlockchainActions";
@@ -120,15 +120,24 @@ const ReceiptDetail: React.FC = () => {
           
           <Button 
             variant="outline" 
-            className="w-full mt-4 bg-blue-50 border-blue-100 text-primary hover:bg-blue-100"
+            className={`w-full mt-4 ${receipt.blockchainVerified ? 'bg-blue-50 border-blue-100 text-primary hover:bg-blue-100' : ''}`}
             onClick={() => setShowBlockchainInfo(true)}
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center">
-                <div className="mr-2 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="text-success" size={12} />
-                </div>
-                <span>Blockchain Verified</span>
+                {receipt.blockchainVerified ? (
+                  <>
+                    <div className="mr-2 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                      <CheckCircle className="text-success" size={12} />
+                    </div>
+                    <span>Blockchain Verified</span>
+                  </>
+                ) : (
+                  <>
+                    <Database className="mr-2 h-5 w-5 text-primary" />
+                    <span>Blockchain Options</span>
+                  </>
+                )}
               </div>
               <span className="text-xs">View Details</span>
             </div>

@@ -115,6 +115,44 @@ export function BlockchainActions({
       setMinting(false);
     }
   };
+  
+  // Mock mint receipt (for testing)
+  const mockMintReceiptAsNFT = async () => {
+    if (!receiptId) return;
+
+    setMinting(true);
+    try {
+      const response = await fetch(`/api/blockchain/mock-mint/${receiptId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mock mint receipt as NFT');
+      }
+      
+      const data = await response.json();
+      
+      toast({
+        title: "Success",
+        description: "Receipt mock minted as NFT successfully",
+      });
+
+      if (onMintSuccess) {
+        onMintSuccess();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mock mint receipt as NFT",
+        variant: "destructive",
+      });
+    } finally {
+      setMinting(false);
+    }
+  };
 
   // Format blockchain explorer URL for transaction
   const getExplorerUrl = (txHash?: string) => {
@@ -270,13 +308,33 @@ export function BlockchainActions({
             {loading ? "Checking..." : "Check Blockchain Status"}
           </Button>
         ) : status.available ? (
-          <Button onClick={mintReceiptAsNFT} disabled={minting} className="w-full">
-            {minting ? "Minting..." : "Mint Receipt as NFT"}
-          </Button>
+          <>
+            <Button onClick={mintReceiptAsNFT} disabled={minting} className="w-full mb-2">
+              {minting ? "Minting..." : "Mint Receipt as NFT"}
+            </Button>
+            <Button 
+              onClick={mockMintReceiptAsNFT} 
+              disabled={minting} 
+              variant="outline" 
+              className="w-full"
+            >
+              {minting ? "Minting..." : "Mock Mint (Test)"}
+            </Button>
+          </>
         ) : (
-          <Button disabled className="w-full">
-            Blockchain Not Available
-          </Button>
+          <>
+            <Button disabled className="w-full mb-2">
+              Blockchain Not Available
+            </Button>
+            <Button 
+              onClick={mockMintReceiptAsNFT} 
+              disabled={minting} 
+              variant="outline" 
+              className="w-full"
+            >
+              {minting ? "Minting..." : "Mock Mint (Test)"}
+            </Button>
+          </>
         )}
       </CardFooter>
     </Card>

@@ -120,7 +120,7 @@ router.get('/verify/:tokenId', async (req, res) => {
 
 /**
  * POST /api/blockchain/mock-mint/:receiptId
- * Mint a receipt using the mock server (for testing)
+ * Mint a receipt using mock blockchain data (for testing)
  */
 router.post('/mock-mint/:receiptId', async (req, res) => {
   try {
@@ -131,41 +131,52 @@ router.post('/mock-mint/:receiptId', async (req, res) => {
       return res.status(404).json({ error: 'Receipt not found' });
     }
     
-    // Call the mock server to mint a receipt
-    const response = await fetch('http://localhost:4000/receipt/mock', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        receiptId: receipt.id
-      })
-    });
+    // Get receipt items
+    const items = await storage.getReceiptItems(receipt.id);
     
-    if (!response.ok) {
-      throw new Error(`Mock server returned ${response.status}: ${response.statusText}`);
-    }
+    // Create mock blockchain transaction data
+    const mockTxHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+    const mockTokenId = Math.floor(Date.now() / 1000);
+    const mockCid = `bafybei${Math.random().toString(36).substring(2, 30)}`;
+    const mockBlockNumber = Math.floor(14000000 + Math.random() * 1000000);
     
-    const mockResult = await response.json();
+    // Mock the blockchain encryption key
+    const mockEncryptionKey = `key-${Math.random().toString(36).substring(2, 10)}`;
+    
+    console.log(`✅ Mock transaction hash: ${mockTxHash}`);
+    console.log(`🔑 Mock token ID: ${mockTokenId}`);
+    console.log(`📦 Mock IPFS CID: ${mockCid}`);
     
     // Update receipt with mock blockchain information
     await storage.updateReceipt(receipt.id, {
       blockchainVerified: true,
-      blockchainTxHash: mockResult.txHash,
-      nftTokenId: mockResult.tokenId.toString(),
-      ipfsCid: mockResult.cid,
-      ipfsUrl: mockResult.cid ? `https://ipfs.io/ipfs/${mockResult.cid}` : undefined
+      blockchainTxHash: mockTxHash,
+      blockNumber: mockBlockNumber,
+      nftTokenId: mockTokenId.toString(),
+      ipfsCid: mockCid,
+      ipfsUrl: `https://ipfs.io/ipfs/${mockCid}`,
+      encryptionKey: mockEncryptionKey
     });
+    
+    // Mock result to match the real mintReceiptNFT response format
+    const mockResult = {
+      txHash: mockTxHash,
+      tokenId: mockTokenId,
+      blockNumber: mockBlockNumber,
+      encryptionKey: mockEncryptionKey,
+      ipfsCid: mockCid,
+      ipfsUrl: `https://ipfs.io/ipfs/${mockCid}`
+    };
     
     return res.json({
       success: true,
-      message: 'Receipt minted using mock server',
+      message: 'Receipt minted using mock blockchain data',
       ...mockResult
     });
   } catch (error) {
-    console.error('Error using mock mint service:', error);
+    console.error('Error creating mock blockchain data:', error);
     return res.status(500).json({ 
-      error: 'Failed to mint receipt with mock service',
+      error: 'Failed to create mock blockchain data',
       details: String(error)
     });
   }
