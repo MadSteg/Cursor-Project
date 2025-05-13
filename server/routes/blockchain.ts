@@ -77,6 +77,8 @@ router.post('/mint/:receiptId', async (req, res) => {
       blockNumber: result.blockNumber,
       tokenId: result.tokenId,
       encryptionKey: result.encryptionKey,
+      ipfsCid: result.ipfsCid,
+      ipfsUrl: result.ipfsCid ? `https://ipfs.io/ipfs/${result.ipfsCid}` : undefined
     });
   } catch (error) {
     console.error('Error minting receipt:', error);
@@ -96,6 +98,11 @@ router.get('/verify/:tokenId', async (req, res) => {
     const { tokenId } = req.params;
     
     const result = await blockchainService.verifyReceipt(parseInt(tokenId, 10));
+    
+    // Add IPFS URL for easy access
+    if (result.verified && result.ipfsCid) {
+      result.ipfsUrl = `https://ipfs.io/ipfs/${result.ipfsCid}`;
+    }
     
     return res.json(result);
   } catch (error) {

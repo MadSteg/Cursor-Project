@@ -156,6 +156,8 @@ const ReceiptDetail: React.FC = () => {
             blockchainTxHash={receipt.blockchain?.txHash}
             blockNumber={receipt.blockchain?.blockNumber}
             nftTokenId={receipt.blockchain?.nftTokenId}
+            ipfsCid={receipt.blockchain?.ipfsCid}
+            ipfsUrl={receipt.blockchain?.ipfsUrl}
             onMintSuccess={handleMintSuccess}
           />
           <DialogFooter>

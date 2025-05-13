@@ -20,6 +20,8 @@ interface MintResponse {
   blockNumber: number;
   tokenId: number;
   encryptionKey: string;
+  ipfsCid?: string;
+  ipfsUrl?: string;
 }
 
 interface BlockchainActionsProps {
@@ -28,6 +30,8 @@ interface BlockchainActionsProps {
   blockchainTxHash?: string;
   blockNumber?: number;
   nftTokenId?: string;
+  ipfsCid?: string;
+  ipfsUrl?: string;
   onMintSuccess?: () => void;
 }
 
@@ -37,6 +41,8 @@ export function BlockchainActions({
   blockchainTxHash,
   blockNumber,
   nftTokenId,
+  ipfsCid,
+  ipfsUrl,
   onMintSuccess
 }: BlockchainActionsProps) {
   const [loading, setLoading] = useState(false);
@@ -180,6 +186,15 @@ export function BlockchainActions({
                   </span>
                 </div>
               )}
+              
+              {ipfsCid && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">IPFS CID:</span>
+                  <span className="font-mono truncate max-w-[180px]">
+                    {ipfsCid.substring(0, 10)}...{ipfsCid.substring(ipfsCid.length - 8)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         ) : status === null ? (
@@ -235,6 +250,18 @@ export function BlockchainActions({
               >
                 <Database className="mr-2 h-4 w-4" />
                 View NFT Token
+              </a>
+            )}
+            
+            {ipfsUrl && (
+              <a 
+                href={ipfsUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full"
+              >
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                View on IPFS
               </a>
             )}
           </>
