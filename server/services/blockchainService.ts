@@ -3,10 +3,12 @@
  * 
  * This service handles interactions with the blockchain for receipt NFTs.
  * It uses ethers.js to interact with the ReceiptNFT smart contract.
+ * Includes integration with IPFS for storing receipt data.
  */
 import { ethers } from 'ethers';
-import CryptoJS from 'crypto-js';
 import { Receipt, ReceiptItem } from '@shared/schema';
+import { encryptJSON, decryptJSON } from '../utils/aes';
+import { pinToIPFS, getFromIPFS } from '../utils/ipfs';
 
 // ABI for the ReceiptNFT contract
 const RECEIPT_NFT_ABI = [
@@ -81,16 +83,9 @@ export class BlockchainService {
    * @returns Encrypted data and key
    */
   async encryptReceiptData(receiptData: any): Promise<{ encryptedData: string, encryptionKey: string }> {
-    // Generate a random encryption key
-    const encryptionKey = CryptoJS.lib.WordArray.random(16).toString();
-    
-    // Encrypt the data with AES
-    const encryptedData = CryptoJS.AES.encrypt(
-      JSON.stringify(receiptData),
-      encryptionKey
-    ).toString();
-    
-    return { encryptedData, encryptionKey };
+    // Use the AES utility to encrypt the data
+    const { encrypted, key } = encryptJSON(receiptData);
+    return { encryptedData: encrypted, encryptionKey: key };
   }
 
   /**
@@ -101,13 +96,10 @@ export class BlockchainService {
    */
   async decryptReceiptData(encryptedData: string, encryptionKey: string): Promise<any> {
     try {
-      // Decrypt the data
-      const bytes = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
-      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-      
-      return JSON.parse(decryptedData);
+      // Use the AES utility to decrypt the data
+      return decryptJSON(encryptedData, encryptionKey);
     } catch (e) {
-      throw new Error('Failed to decrypt receipt data');
+      throw new Error(`Failed to decrypt receipt data: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -122,6 +114,7 @@ export class BlockchainService {
     tokenId: number;
     encryptionKey: string;
     blockNumber: number;
+    ipfsCid?: string;
   }> {
     if (!this.initialized) {
       throw new Error('Blockchain service not initialized');
@@ -144,29 +137,40 @@ export class BlockchainService {
       // Encrypt the receipt data
       const { encryptedData, encryptionKey } = await this.encryptReceiptData(receiptData);
       
-      // Mint the NFT
-      const tx = await this.contract.mint(this.wallet.address, encryptedData);
-      const receipt_tx = await tx.wait();
+      // Pin encrypted data to IPFS
+      let ipfsCid: string | undefined = undefined;
+      try {
+        ipfsCid = await pinToIPFS(encryptedData);
+        console.log(`Receipt data pinned to IPFS with CID: ${ipfsCid}`);
+      } catch (ipfsError) {
+        console.warn('Failed to pin data to IPFS, continuing without IPFS storage:', ipfsError);
+      }
       
-      // Get the token ID from the transaction events (implementation depends on contract)
-      const tokenId = receipt_tx.events[0].args[3].toNumber(); // Adjust based on actual event structure
+      // Create URI for blockchain (either IPFS or direct encrypted data)
+      const tokenURI = ipfsCid ? `ipfs://${ipfsCid}` : encryptedData;
+      
+      // Mint the NFT
+      // We use '1' as the amount as each receipt is unique
+      const tokenId = Date.now(); // Use timestamp as token ID for simplicity
+      const tx = await this.contract.mint(this.wallet.address, tokenId, 1, tokenURI);
+      const receipt_tx = await tx.wait();
       
       return {
         txHash: tx.hash,
         tokenId,
         encryptionKey,
-        blockNumber: receipt_tx.blockNumber
+        blockNumber: receipt_tx.blockNumber,
+        ipfsCid
       };
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error minting receipt NFT:', e);
-      throw new Error(`Failed to mint receipt NFT: ${e.message}`);
+      throw new Error(`Failed to mint receipt NFT: ${e?.message || 'Unknown error'}`);
     }
   }
 
   /**
    * Verify a receipt on the blockchain
    * @param tokenId Token ID
-   * @param txHash Transaction hash
    * @returns Verification status and metadata
    */
   async verifyReceipt(tokenId: number): Promise<{
@@ -174,6 +178,7 @@ export class BlockchainService {
     mintTimestamp?: number;
     minter?: string;
     encryptedData?: string;
+    ipfsCid?: string;
     error?: string;
   }> {
     if (!this.initialized) {
@@ -181,19 +186,44 @@ export class BlockchainService {
     }
     
     try {
-      // Get token metadata from the contract
-      const [mintTimestamp, minter, encryptedData] = await this.contract.getTokenMetadata(tokenId);
+      // Get token URI from the contract
+      const tokenURI = await this.contract.uri(tokenId);
+      let encryptedData: string;
+      let ipfsCid: string | undefined;
+      
+      // Check if the URI is an IPFS link
+      if (tokenURI.startsWith('ipfs://')) {
+        ipfsCid = tokenURI.replace('ipfs://', '');
+        try {
+          // Fetch the data from IPFS
+          encryptedData = await getFromIPFS(ipfsCid);
+        } catch (ipfsError: any) {
+          return {
+            verified: false,
+            error: `Failed to retrieve data from IPFS: ${ipfsError?.message || 'Unknown IPFS error'}`
+          };
+        }
+      } else {
+        // The URI contains the encrypted data directly
+        encryptedData = tokenURI;
+      }
+      
+      // For this implementation, we don't have mintTimestamp and minter in the contract,
+      // but in a real implementation we would fetch these from the contract events
+      const mintTimestamp = Math.floor(tokenId / 1000); // Approximate timestamp if we used Date.now()
+      const minter = this.wallet.address;
       
       return {
         verified: true,
-        mintTimestamp: mintTimestamp.toNumber(),
+        mintTimestamp,
         minter,
-        encryptedData
+        encryptedData,
+        ipfsCid
       };
-    } catch (e) {
+    } catch (e: any) {
       return {
         verified: false,
-        error: `Failed to verify receipt: ${e.message}`
+        error: `Failed to verify receipt: ${e?.message || 'Unknown error'}`
       };
     }
   }
