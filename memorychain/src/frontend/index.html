@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MemoryChain | Blockchain-Powered Digital Receipts</title>
+  <meta name="description" content="Transform your credit card transactions into NFT-based receipts with advanced analytics and blockchain verification." />
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="MemoryChain | Blockchain-Powered Digital Receipts" />
+  <meta property="og:description" content="Transform your credit card transactions into NFT-based receipts with advanced analytics and blockchain verification." />
+  <meta property="og:image" content="/og-image.png" />
+  <meta property="og:url" content="https://memorychain.app/" />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+  
+  <!-- For MetaMask and Web3 wallet detection -->
+  <script>
+    window.addEventListener('load', function() {
+      // Initialize wallet detection
+      if (window.ethereum) {
+        console.log('Web3 wallet detected');
+        
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', function (accounts) {
+          console.log('Account changed:', accounts[0]);
+          // Refresh the page to update UI state
+          window.location.reload();
+        });
+        
+        // Listen for chain changes
+        window.ethereum.on('chainChanged', function (chainId) {
+          console.log('Network changed:', chainId);
+          // Refresh the page to update UI state
+          window.location.reload();
+        });
+      } else {
+        console.log('No Web3 wallet detected');
+      }
+    });
+  </script>
+</body>
+</html>
