@@ -1,14 +1,9 @@
 // A simple mock server implementation for MemoryChain on Mumbai
-import express from 'express';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-
-// Get the directory name in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
 
 // Load environment variables from memorychain/.env
 dotenv.config({ path: path.join(__dirname, 'memorychain', '.env') });
@@ -49,18 +44,18 @@ app.get('/', (req, res) => {
     message: 'MemoryChain mock service running',
     config: {
       stripeEnabled: false,
-      mumbaiEnabled: process.env.WALLET_PRIVATE_KEY !== '0xYOUR_TEST_WALLET_PRIVATE_KEY'
+      mumbaiEnabled: process.env.BLOCKCHAIN_PRIVATE_KEY ? true : false
     }
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`✅ Server listening on port ${PORT}`);
   console.log(`⚠️  Stripe disabled (using dummy keys)`);
   console.log(`⚠️  IPFS disabled (using mock CID generation)`);
   
-  if (process.env.WALLET_PRIVATE_KEY === '0xYOUR_TEST_WALLET_PRIVATE_KEY') {
+  if (!process.env.BLOCKCHAIN_PRIVATE_KEY) {
     console.log(`⚠️  Using example wallet key - replace with your real key in .env file`);
   }
 });
