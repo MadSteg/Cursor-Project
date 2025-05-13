@@ -26,9 +26,9 @@ const RECEIPT_NFT_ABI = [
 ];
 
 export class BlockchainService {
-  private provider: ethers.providers.JsonRpcProvider;
-  private contract: ethers.Contract;
-  private wallet: ethers.Wallet;
+  private provider!: ethers.providers.JsonRpcProvider;
+  private contract!: ethers.Contract;
+  private wallet!: ethers.Wallet;
   private initialized: boolean = false;
 
   constructor() {
@@ -242,17 +242,25 @@ export class BlockchainService {
         ipfsCid = tokenURI.replace('ipfs://', '');
         try {
           // Fetch data from IPFS
-          const metadataStr = await getFromIPFS(ipfsCid);
-          try {
-            metadataJson = JSON.parse(metadataStr);
-          } catch (parseError) {
+          if (ipfsCid) {
+            // ipfsCid is already checked in the if condition above
+            const metadataStr = await getFromIPFS(ipfsCid as string);
+            try {
+              metadataJson = JSON.parse(metadataStr);
+            } catch (parseError) {
+              return {
+                verified: true,
+                mintTimestamp: Math.floor(tokenId), // Token ID is in seconds since epoch
+                minter: this.wallet.address,
+                encryptedData: metadataStr, // Return raw data if not JSON
+                ipfsCid,
+                ipfsUrl: `https://ipfs.io/ipfs/${ipfsCid}`
+              };
+            }
+          } else {
             return {
-              verified: true,
-              mintTimestamp: Math.floor(tokenId), // Token ID is in seconds since epoch
-              minter: this.wallet.address,
-              encryptedData: metadataStr, // Return raw data if not JSON
-              ipfsCid,
-              ipfsUrl: `https://ipfs.io/ipfs/${ipfsCid}`
+              verified: false,
+              error: "Missing IPFS CID"
             };
           }
         } catch (ipfsError: any) {
