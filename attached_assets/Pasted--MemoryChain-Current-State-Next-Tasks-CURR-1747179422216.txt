@@ -1,0 +1,78 @@
+### MemoryChain – Current State & Next Tasks
+
+# ─────────────────────────────────────────────
+# CURRENT STATE (May 13 2025)
+# ─────────────────────────────────────────────
+• Repo already exists in this Repl.
+• Node + pnpm installed.  
+• package.json includes "ethers": "^6…"  ➜ hardhat plugins still expect v5.
+• .env exists with:
+    ALCHEMY_RPC=https://polygon-mumbai.g.alchemy.com/v2/aW44pWE6n-X1AhiLXaJQPu3POOrIlArr
+    WALLET_PRIVATE_KEY=<my private key>
+    RECEIPT_MINTER_ADDRESS=   (blank)
+• hardhat.config.ts is present but may not yet list the Mumbai network.
+• No contracts/ directory, no deploy script, backend code compiles but fails on ethers v6 conflict.
+
+# ─────────────────────────────────────────────
+# GOAL FOR THIS SESSION
+# ─────────────────────────────────────────────
+1. **Fix ethers version conflict**  
+   – Pin ethers to ^5.7.2  
+   – Add @nomicfoundation/hardhat-ethers ^2.2.x
+
+2. **Create & deploy a minimal ERC-1155 “Receipt1155” contract** to Polygon Mumbai.
+
+3. **Write the deployed contract address back into .env** under RECEIPT_MINTER_ADDRESS.
+
+4. **Start the backend** (`pnpm dev`) so I can hit /receipt/mock and see an NFT mint on Mumbai.
+
+# ─────────────────────────────────────────────
+# EXACT TASKS
+# ─────────────────────────────────────────────
+A. **package.json**
+   • Change "ethers" to "^5.7.2"  
+   • Ensure no other ethers v6 dependency.  
+   • Add dev dependency "@nomicfoundation/hardhat-ethers@^2.2.2"
+
+B. **Install fresh deps**
+   • Delete pnpm-lock.yaml  
+   • Run `pnpm install`
+
+C. **hardhat.config.ts**
+   • Under networks, add:
+     mumbai: {
+       url: process.env.ALCHEMY_RPC || "",
+       accounts: process.env.WALLET_PRIVATE_KEY ? [process.env.WALLET_PRIVATE_KEY] : [],
+     }
+
+D. **contracts/Receipt1155.sol**  
+   (OpenZeppelin ERC-1155 + Ownable, with simple mint() and uri() mapping.)
+
+E. **scripts/deploy.ts**  
+   – Compile & deploy Receipt1155.  
+   – Log the deployed address on success.
+
+F. **Deployment**
+   – Run `npx hardhat compile`  
+   – Run `npx hardhat run scripts/deploy.ts --network mumbai`  
+   – Capture the printed address.
+
+G. **.env update**  
+   – Write the captured address into RECEIPT_MINTER_ADDRESS=… (keep existing keys).
+
+H. **Start backend**
+   – `pnpm dev`  
+   – Confirm the server runs without ethers errors.
+
+I. **Sanity check route**  
+   – If /receipt/mock doesn’t exist, create a simple Express route that mints tokenId 1 to the owner for dev testing.
+
+# ─────────────────────────────────────────────
+# DELIVERABLES
+# ─────────────────────────────────────────────
+✓ Working backend on port 3000 (Stripe/IPFS disabled is fine).  
+✓ Contract deployed to Polygon Mumbai.  
+✓ .env updated with RECEIPT_MINTER_ADDRESS.  
+✓ Quick console log showing successful /receipt/mock mint.
+
+Please execute the above steps in order. Output commands and any relevant logs in the console so I can follow along.
