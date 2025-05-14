@@ -12,6 +12,10 @@ import Checkout from "@/pages/Checkout";
 import CryptoCheckout from "@/pages/CryptoCheckout";
 import EncryptedCheckout from "@/pages/EncryptedCheckout";
 import EncryptionSettings from "@/pages/EncryptionSettings";
+import ThemePreview from "@/pages/ThemePreview";
+import Inventory from "@/pages/Inventory";
+import InventoryDetail from "@/pages/InventoryDetail";
+import InventoryUpload from "@/pages/InventoryUpload";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -28,6 +32,10 @@ function Router() {
         <Route path="/crypto-checkout" component={CryptoCheckout} />
         <Route path="/encrypted-checkout" component={EncryptedCheckout} />
         <Route path="/encryption-settings" component={EncryptionSettings} />
+        <Route path="/theme-preview" component={ThemePreview} />
+        <Route path="/inventory" component={Inventory} />
+        <Route path="/inventory/:id" component={InventoryDetail} />
+        <Route path="/inventory-upload" component={InventoryUpload} />
         <Route component={NotFound} />
       </Switch>
       <Footer />
