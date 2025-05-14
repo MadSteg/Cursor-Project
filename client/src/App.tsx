@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Receipts from "@/pages/Receipts";
 import ReceiptDetail from "@/pages/ReceiptDetail";
 import Analytics from "@/pages/Analytics";
+import Checkout from "@/pages/Checkout";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -20,6 +21,7 @@ function Router() {
         <Route path="/receipts" component={Receipts} />
         <Route path="/receipts/:id" component={ReceiptDetail} />
         <Route path="/analytics" component={Analytics} />
+        <Route path="/checkout" component={Checkout} />
         <Route component={NotFound} />
       </Switch>
       <Footer />
