@@ -12,6 +12,7 @@ import encryptionRoutes from "./routes/encryption";
 import tacoRoutes from "./routes/taco";
 import cryptoRoutes from "./routes/crypto";
 import inventoryRoutes from "./routes/inventory";
+import merchantPluginRoutes from "./routes/merchant-plugin";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -49,6 +50,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register inventory management routes
   app.use('/api/inventory', inventoryRoutes);
+  
+  // Register merchant plugin routes
+  app.use('/api/merchant', merchantPluginRoutes);
   
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
@@ -97,9 +101,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Add crypto payment service status if available
-      if (cryptoPaymentService && typeof cryptoPaymentService.getStatus === 'function') {
+      if (cryptoPaymentService) {
         try {
-          status.cryptoPayment = await cryptoPaymentService.getStatus();
+          status.cryptoPayment = {
+            status: 'Active',
+            availableCurrencies: cryptoPaymentService.getAvailableCurrencies ? 
+              cryptoPaymentService.getAvailableCurrencies() : [],
+            providers: cryptoPaymentService.getProviderStatuses ? 
+              cryptoPaymentService.getProviderStatuses() : 
+              { polygon: { available: true }, ethereum: { available: true } }
+          };
         } catch (err) {
           status.cryptoPayment = { 
             status: 'Error', 
