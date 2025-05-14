@@ -8,6 +8,11 @@ import {
   retailers,
   products,
   retailerSyncLogs,
+  encryptionKeys,
+  sharedAccess,
+  inventoryItems,
+  inventoryCollections,
+  inventoryItemCollections,
   type User, 
   type InsertUser, 
   type Category,
@@ -26,7 +31,18 @@ import {
   type InsertProduct,
   type RetailerSyncLog,
   type InsertRetailerSyncLog,
-  type FullReceipt
+  type EncryptionKey,
+  type InsertEncryptionKey,
+  type SharedAccess,
+  type InsertSharedAccess,
+  type InventoryItem,
+  type InsertInventoryItem,
+  type InventoryCollection,
+  type InsertInventoryCollection,
+  type InventoryItemCollection,
+  type InsertInventoryItemCollection,
+  type FullReceipt,
+  type FullInventoryItem
 } from "@shared/schema";
 
 // Storage interface
@@ -107,6 +123,45 @@ export interface IStorage {
   updateSharedAccess(id: number, updates: Partial<InsertSharedAccess>): Promise<SharedAccess | undefined>;
   getSharedAccessesByOwner(userId: number): Promise<SharedAccess[]>;
   getSharedAccessesByTarget(userId: number): Promise<SharedAccess[]>;
+  
+  // Inventory methods
+  getInventoryItems(userId: number, options?: {
+    categoryId?: number;
+    status?: string;
+    searchTerm?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<InventoryItem[]>;
+  
+  getInventoryItem(id: number): Promise<InventoryItem | undefined>;
+  
+  createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
+  
+  updateInventoryItem(id: number, updates: Partial<InsertInventoryItem>): Promise<InventoryItem | undefined>;
+  
+  deleteInventoryItem(id: number): Promise<boolean>;
+  
+  getFullInventoryItem(id: number): Promise<FullInventoryItem | undefined>;
+  
+  // Inventory collections methods
+  getInventoryCollections(userId: number): Promise<InventoryCollection[]>;
+  
+  getInventoryCollection(id: number): Promise<InventoryCollection | undefined>;
+  
+  createInventoryCollection(collection: InsertInventoryCollection): Promise<InventoryCollection>;
+  
+  updateInventoryCollection(id: number, updates: Partial<InsertInventoryCollection>): Promise<InventoryCollection | undefined>;
+  
+  deleteInventoryCollection(id: number): Promise<boolean>;
+  
+  // Inventory item-collection methods
+  addItemToCollection(itemId: number, collectionId: number): Promise<InventoryItemCollection>;
+  
+  removeItemFromCollection(itemId: number, collectionId: number): Promise<boolean>;
+  
+  getItemCollections(itemId: number): Promise<InventoryCollection[]>;
+  
+  getCollectionItems(collectionId: number): Promise<InventoryItem[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -121,6 +176,9 @@ export class MemStorage implements IStorage {
   private retailerSyncLogs: Map<number, RetailerSyncLog>;
   private encryptionKeys: Map<number, EncryptionKey>;
   private sharedAccesses: Map<number, SharedAccess>;
+  private inventoryItems: Map<number, InventoryItem>;
+  private inventoryCollections: Map<number, InventoryCollection>;
+  private inventoryItemCollections: Map<number, InventoryItemCollection>;
   
   private currentUserId: number;
   private currentCategoryId: number;
@@ -133,6 +191,9 @@ export class MemStorage implements IStorage {
   private currentRetailerSyncLogId: number;
   private currentEncryptionKeyId: number;
   private currentSharedAccessId: number;
+  private currentInventoryItemId: number;
+  private currentInventoryCollectionId: number;
+  private currentInventoryItemCollectionId: number;
   
   constructor() {
     this.users = new Map();
@@ -146,6 +207,9 @@ export class MemStorage implements IStorage {
     this.retailerSyncLogs = new Map();
     this.encryptionKeys = new Map();
     this.sharedAccesses = new Map();
+    this.inventoryItems = new Map();
+    this.inventoryCollections = new Map();
+    this.inventoryItemCollections = new Map();
     
     this.currentUserId = 1;
     this.currentCategoryId = 1;
@@ -158,6 +222,9 @@ export class MemStorage implements IStorage {
     this.currentRetailerSyncLogId = 1;
     this.currentEncryptionKeyId = 1;
     this.currentSharedAccessId = 1;
+    this.currentInventoryItemId = 1;
+    this.currentInventoryCollectionId = 1;
+    this.currentInventoryItemCollectionId = 1;
 
     this.initializeDemoData();
   }

@@ -601,6 +601,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   tacoKeys: many(tacoKeys),
   sharedReceiptsOwned: many(sharedReceipts, { relationName: "owner" }),
   sharedReceiptsReceived: many(sharedReceipts, { relationName: "target" }),
+  inventoryItems: many(inventoryItems),
+  inventoryCollections: many(inventoryCollections),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -608,6 +610,7 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   receiptItems: many(receiptItems),
   products: many(products),
   spendingStats: many(spendingStats),
+  inventoryItems: many(inventoryItems),
 }));
 
 export const merchantsRelations = relations(merchants, ({ many }) => ({
@@ -736,5 +739,201 @@ export const sharedAccessRelations = relations(sharedAccess, ({ one }) => ({
     fields: [sharedAccess.targetUserId],
     references: [users.id],
     relationName: "target",
+  }),
+}));
+
+// Define inventory items schema
+export const inventoryItems = pgTable("inventory_items", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  receiptId: integer("receipt_id"), // Optional if manually added without receipt
+  productId: integer("product_id"), // Optional link to product if identified
+  name: text("name").notNull(),
+  description: text("description"),
+  quantity: integer("quantity").default(1).notNull(),
+  purchasePrice: numeric("purchase_price"),
+  purchaseDate: date("purchase_date"),
+  expiryDate: date("expiry_date"),
+  categoryId: integer("category_id"),
+  brandName: text("brand_name"),
+  modelNumber: text("model_number"),
+  serialNumber: text("serial_number"),
+  barcode: text("barcode"),
+  imageUrl: text("image_url"),
+  currentLocation: text("current_location"), // Where is this item now (Home, Office, etc.)
+  status: text("status").default("active").notNull(), // active, used, expired, sold, donated, etc.
+  lastUsedDate: date("last_used_date"),
+  warrantyExpiryDate: date("warranty_expiry_date"),
+  isReplaceable: boolean("is_replaceable").default(true), // Is this a consumable that would need to be replaced?
+  replacementInterval: integer("replacement_interval"), // Days until replacement recommended
+  replacementReminder: boolean("replacement_reminder").default(false), // Should system remind user to replace
+  notes: text("notes"),
+  tags: text("tags").array(), // Array of tags for better searching
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  metadata: jsonb("metadata"), // Additional metadata
+});
+
+export const insertInventoryItemSchema = createInsertSchema(inventoryItems).pick({
+  userId: true,
+  receiptId: true,
+  productId: true,
+  name: true,
+  description: true,
+  quantity: true,
+  purchasePrice: true,
+  purchaseDate: true,
+  expiryDate: true,
+  categoryId: true,
+  brandName: true,
+  modelNumber: true,
+  serialNumber: true,
+  barcode: true,
+  imageUrl: true,
+  currentLocation: true,
+  status: true,
+  lastUsedDate: true,
+  warrantyExpiryDate: true,
+  isReplaceable: true,
+  replacementInterval: true,
+  replacementReminder: true,
+  notes: true,
+  tags: true,
+  metadata: true,
+});
+
+export type InventoryItem = typeof inventoryItems.$inferSelect;
+export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
+
+// Inventory collections (e.g., "Kitchen Appliances", "Electronics", etc.)
+export const inventoryCollections = pgTable("inventory_collections", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon"), // Icon for the collection
+  color: text("color"), // Color for the collection
+  isDefault: boolean("is_default").default(false), // Is this a default collection
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertInventoryCollectionSchema = createInsertSchema(inventoryCollections).pick({
+  userId: true,
+  name: true,
+  description: true,
+  icon: true,
+  color: true,
+  isDefault: true,
+});
+
+export type InventoryCollection = typeof inventoryCollections.$inferSelect;
+export type InsertInventoryCollection = z.infer<typeof insertInventoryCollectionSchema>;
+
+// Items in collections
+export const inventoryItemCollections = pgTable("inventory_item_collections", {
+  id: serial("id").primaryKey(),
+  itemId: integer("item_id").notNull(),
+  collectionId: integer("collection_id").notNull(),
+  addedAt: timestamp("added_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    uniqueItemCollectionConstraint: unique().on(table.itemId, table.collectionId),
+  }
+});
+
+export const insertInventoryItemCollectionSchema = createInsertSchema(inventoryItemCollections).pick({
+  itemId: true,
+  collectionId: true,
+});
+
+export type InventoryItemCollection = typeof inventoryItemCollections.$inferSelect;
+export type InsertInventoryItemCollection = z.infer<typeof insertInventoryItemCollectionSchema>;
+
+// Full inventory item for API responses
+export const fullInventoryItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().optional(),
+  quantity: z.number(),
+  purchasePrice: z.string().optional(), // numeric comes as string
+  purchaseDate: z.string().optional(),
+  expiryDate: z.string().optional(),
+  category: z.object({
+    id: z.number(),
+    name: z.string(),
+    color: z.string(),
+    icon: z.string(),
+  }).optional(),
+  receipt: z.object({
+    id: z.number(),
+    date: z.string(),
+    merchant: z.object({
+      name: z.string(),
+      logo: z.string().optional(),
+    }),
+    blockchainVerified: z.boolean().optional(),
+    nftTokenId: z.string().optional(),
+  }).optional(),
+  brand: z.string().optional(),
+  model: z.string().optional(),
+  serial: z.string().optional(),
+  warranty: z.object({
+    expiryDate: z.string().optional(),
+    daysRemaining: z.number().optional(),
+    status: z.string().optional(), // active, expired, etc.
+  }).optional(),
+  location: z.string().optional(),
+  status: z.string(),
+  lastUsed: z.string().optional(),
+  isReplaceable: z.boolean().optional(),
+  collections: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    color: z.string().optional(),
+    icon: z.string().optional(),
+  })).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export type FullInventoryItem = z.infer<typeof fullInventoryItemSchema>;
+
+// Define inventory relations
+export const inventoryItemsRelations = relations(inventoryItems, ({ one, many }) => ({
+  user: one(users, {
+    fields: [inventoryItems.userId],
+    references: [users.id],
+  }),
+  receipt: one(receipts, {
+    fields: [inventoryItems.receiptId],
+    references: [receipts.id],
+  }),
+  product: one(products, {
+    fields: [inventoryItems.productId],
+    references: [products.id],
+  }),
+  category: one(categories, {
+    fields: [inventoryItems.categoryId],
+    references: [categories.id],
+  }),
+  collections: many(inventoryItemCollections),
+}));
+
+export const inventoryCollectionsRelations = relations(inventoryCollections, ({ one, many }) => ({
+  user: one(users, {
+    fields: [inventoryCollections.userId],
+    references: [users.id],
+  }),
+  items: many(inventoryItemCollections),
+}));
+
+export const inventoryItemCollectionsRelations = relations(inventoryItemCollections, ({ one }) => ({
+  inventoryItem: one(inventoryItems, {
+    fields: [inventoryItemCollections.itemId],
+    references: [inventoryItems.id],
+  }),
+  collection: one(inventoryCollections, {
+    fields: [inventoryItemCollections.collectionId],
+    references: [inventoryCollections.id],
   }),
 }));
