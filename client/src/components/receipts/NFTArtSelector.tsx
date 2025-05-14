@@ -131,9 +131,9 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelec
     : availableNFTs.filter(nft => nft.type === activeTab);
   
   // Map collection types for tabs
-  const collectionTypes = [
-    ...new Set(NFT_ART_COLLECTIONS.map(collection => collection.type))
-  ].sort();
+  const collectionTypes = Array.from(
+    new Set(NFT_ART_COLLECTIONS.map(collection => collection.type))
+  ).sort();
   
   return (
     <div className="space-y-4">

@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { NftArtOption, NftArtTier, determineReceiptTier } from '@/data/nftArtManifest';
+import { NFTArtItem } from '@/data/nftArtManifest';
+import { ReceiptTier, determineReceiptTier } from '@/lib/receiptOcr';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -43,7 +44,7 @@ interface FullReceiptData {
   blockchainTxHash?: string;
   blockchainVerified: boolean;
   blockNumber?: number;
-  nftArt?: NftArtOption;
+  nftArt?: NFTArtItem;
   artId?: string; // ID of the selected NFT art
 }
 
@@ -81,7 +82,7 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
   const { toast } = useToast();
   
   // Determine tier based on receipt total
-  const tier = receipt.nftArt?.tier || determineReceiptTier(receipt.total);
+  const tier = receipt.nftArt?.tier || determineReceiptTier(receipt.total / 100); // Convert cents to dollars
   
   // Helpers
   const formatCurrency = (amount: number) => {
@@ -103,15 +104,15 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
   };
   
   // Get tier-based styling
-  const getTierStyling = (tier: NftArtTier) => {
+  const getTierStyling = (tier: ReceiptTier) => {
     switch (tier) {
-      case 'standard':
+      case ReceiptTier.STANDARD:
         return 'bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900';
-      case 'premium':
+      case ReceiptTier.PREMIUM:
         return 'bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-700 dark:to-slate-900';
-      case 'luxury':
+      case ReceiptTier.LUXURY:
         return 'bg-gradient-to-br from-amber-100 to-amber-300 dark:from-amber-700 dark:to-amber-950';
-      case 'ultra':
+      case ReceiptTier.ULTRA:
         return 'bg-gradient-to-br from-violet-100 to-purple-300 dark:from-violet-700 dark:to-purple-950';
       default:
         return 'bg-white dark:bg-gray-800';
@@ -196,11 +197,11 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
       {/* Tier Badge */}
       <div className="absolute top-2 right-2">
         <Badge variant={
-          tier === 'standard' ? 'default' :
-          tier === 'premium' ? 'secondary' :
-          tier === 'luxury' ? 'destructive' : 'outline'
+          tier === ReceiptTier.STANDARD ? 'default' :
+          tier === ReceiptTier.PREMIUM ? 'secondary' :
+          tier === ReceiptTier.LUXURY ? 'destructive' : 'outline'
         }>
-          {tier.charAt(0).toUpperCase() + tier.slice(1)} Tier
+          {tier} Tier
         </Badge>
       </div>
       

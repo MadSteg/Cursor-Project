@@ -9,7 +9,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { NftArtOption, determineReceiptTier } from '@/data/nftArtManifest';
+import { NFTArtItem } from '@/data/nftArtManifest';
+import { determineReceiptTier, ReceiptTier } from '@/lib/receiptOcr';
 import NFTArtSelector from './NFTArtSelector';
 import { 
   Card, 
@@ -98,7 +99,7 @@ export const CreateNFTReceiptForm: React.FC<CreateNFTReceiptFormProps> = ({
 }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedArt, setSelectedArt] = useState<NftArtOption | null>(null);
+  const [selectedArt, setSelectedArt] = useState<NFTArtItem | null>(null);
   const [items, setItems] = useState<ReceiptItem[]>(initialData?.items || []);
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
@@ -130,9 +131,9 @@ export const CreateNFTReceiptForm: React.FC<CreateNFTReceiptFormProps> = ({
   const receiptTier = determineReceiptTier(watchTotal);
   
   // Handle art selection
-  const handleArtSelected = (art: NftArtOption) => {
+  const handleArtSelected = (art: NFTArtItem) => {
     setSelectedArt(art);
-    form.setValue('selectedArtId', art.id);
+    form.setValue('artId', art.id);
   };
   
   // Add a new item to the receipt
@@ -595,9 +596,9 @@ export const CreateNFTReceiptForm: React.FC<CreateNFTReceiptFormProps> = ({
             {/* NFT Art Selection Tab */}
             <TabsContent value="nft-art" className="space-y-6">
               <NFTArtSelector 
-                totalAmount={form.getValues('total')}
-                onArtSelected={handleArtSelected}
-                preselectedArtId={form.getValues('selectedArtId')}
+                receiptTier={determineReceiptTier(form.getValues('total') / 100)} // Convert cents to dollars
+                onSelectNFT={handleArtSelected}
+                selectedNFTId={form.getValues('artId')}
               />
               
               <div className="flex justify-between">
