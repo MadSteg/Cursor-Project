@@ -11,7 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 // NFT Receipt Features (New Focus)
 import UserNFTWallet from "@/pages/UserNFTWallet";
 import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
-import ScanReceipt from "@/pages/ScanReceipt";
+import ScanReceipt from "@/pages/ScanReceiptPage";
 import VerifyReceipt from "@/pages/VerifyReceipt";
 import MerchantDashboard from "@/pages/MerchantDashboard";
 
