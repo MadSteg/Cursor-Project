@@ -293,7 +293,7 @@ class BlockchainService implements IBlockchainService {
             available: true,
             network: 'amoy-mock',
             chainId: 80002,
-            contractAddress: process.env.RECEIPT_MINTER_ADDRESS || '0xMockContractAddress',
+            contractAddress: process.env.RECEIPT_MINTER_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
             walletAddress: '0xMockWalletAddress',
             mockMode: true,
             message: 'Connection to Amoy failed, running in mock mode.'
@@ -320,7 +320,7 @@ class BlockchainService implements IBlockchainService {
         available: true,
         network: 'amoy-mock',
         chainId: 80002,
-        contractAddress: process.env.RECEIPT_MINTER_ADDRESS || '0xMockContractAddress',
+        contractAddress: process.env.RECEIPT_MINTER_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         walletAddress: '0xMockWalletAddress',
         mockMode: true,
         error: error.message || 'Unknown error',
