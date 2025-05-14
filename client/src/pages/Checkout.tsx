@@ -65,7 +65,6 @@ export default function Checkout() {
         toast({
           title: "Payment Successful",
           description: "Your mock payment has been processed successfully.",
-          variant: "success",
         });
         
         // Invalidate receipt queries to refresh data
@@ -117,7 +116,6 @@ export default function Checkout() {
           toast({
             title: "Payment Intent Created",
             description: "Mock payment intent created successfully.",
-            variant: "success",
           });
           
           // Invalidate receipt queries to refresh data
