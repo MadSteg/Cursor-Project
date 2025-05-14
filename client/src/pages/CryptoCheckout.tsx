@@ -469,7 +469,7 @@ export default function CryptoCheckout() {
               </div>
               <div className="flex items-center gap-1 bg-primary/10 text-primary rounded-full px-3 py-1 text-sm">
                 <Bitcoin className="h-3.5 w-3.5" />
-                MATIC
+                {selectedCurrency}
               </div>
             </div>
             

@@ -429,7 +429,7 @@ export default function Checkout() {
                       <Wallet className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-medium">Web3 Payment</p>
-                        <p className="text-blue-700">Pay with MATIC on the Polygon network. You'll be redirected to connect your crypto wallet.</p>
+                        <p className="text-blue-700">Pay with MATIC, USDC, or other cryptocurrencies on the Polygon network. You'll be redirected to select your preferred currency.</p>
                       </div>
                     </div>
                   )}
