@@ -131,10 +131,22 @@ export default function Checkout() {
     try {
       setIsLoading(true);
       
+      // Calculate total with optional NFT fee
+      const totalAmount = calculateTotal();
+      
+      // Add NFT metadata if option is selected
+      const metadata: Record<string, string> = {};
+      if (mintNFT) {
+        metadata.mintNFT = 'true';
+        metadata.nftTheme = nftTheme;
+        metadata.nftFee = NFT_RECEIPT_FEE.toString();
+      }
+      
       // Create payment intent
       const paymentIntent = await createPaymentIntent(
-        parseFloat(amount),
-        receiptId
+        totalAmount,
+        receiptId,
+        metadata
       );
       
       if (paymentIntent.success) {
@@ -142,11 +154,17 @@ export default function Checkout() {
         // But since we're in mock mode, we can simulate a successful payment
         if (paymentIntent.mockMode) {
           setIsSuccess(true);
-          setPaymentInfo(paymentIntent);
+          setPaymentInfo({
+            ...paymentIntent,
+            mintNFT: mintNFT,
+            nftTheme: nftTheme
+          });
           
           toast({
             title: "Payment Intent Created",
-            description: "Mock payment intent created successfully.",
+            description: mintNFT 
+              ? "Payment intent created and blockchain receipt will be minted."
+              : "Payment intent created successfully.",
           });
           
           // Invalidate receipt queries to refresh data
@@ -300,6 +318,73 @@ export default function Checkout() {
                     <Input id="cvc" placeholder="123" disabled={isLoading} />
                   </div>
                 </div>
+                
+                <Separator className="my-4" />
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="nft-receipt"
+                        checked={mintNFT}
+                        onCheckedChange={(checked) => setMintNFT(checked as boolean)}
+                        disabled={isLoading}
+                      />
+                      <div className="grid gap-1.5">
+                        <Label
+                          htmlFor="nft-receipt"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Add Blockchain Receipt (+${NFT_RECEIPT_FEE.toFixed(2)})
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get a permanent, verified proof of purchase on the blockchain
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {mintNFT && (
+                    <div className="rounded-md border p-4 bg-slate-50">
+                      <div className="flex space-x-4 items-start">
+                        <Shield className="h-10 w-10 text-primary flex-shrink-0" />
+                        <div className="space-y-2">
+                          <h4 className="font-semibold">Blockchain Receipt Benefits</h4>
+                          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                            <li>Permanent proof of purchase that can't be lost</li>
+                            <li>Verify authenticity of your purchase anytime</li>
+                            <li>Enhanced warranty and return claim support</li>
+                            <li>Access to exclusive rewards and benefits</li>
+                          </ul>
+                          
+                          <div className="pt-2">
+                            <Label htmlFor="nft-theme" className="text-sm font-medium mb-1.5 block">Receipt Theme</Label>
+                            <RadioGroup 
+                              id="nft-theme" 
+                              value={nftTheme}
+                              onValueChange={setNftTheme}
+                              className="flex flex-wrap gap-2"
+                              disabled={isLoading}
+                            >
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="default" id="theme-default" />
+                                <Label htmlFor="theme-default" className="cursor-pointer">Default</Label>
+                              </div>
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="luxury" id="theme-luxury" />
+                                <Label htmlFor="theme-luxury" className="cursor-pointer">Luxury</Label>
+                              </div>
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="minimal" id="theme-minimal" />
+                                <Label htmlFor="theme-minimal" className="cursor-pointer">Minimal</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
             
@@ -351,6 +436,73 @@ export default function Checkout() {
                 <div className="bg-muted p-4 rounded-md text-sm">
                   <p className="font-medium">Test Payment</p>
                   <p className="text-muted-foreground">This option simulates a payment for testing purposes. No real charges will be made.</p>
+                </div>
+                
+                <Separator className="my-4" />
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="mock-nft-receipt"
+                        checked={mintNFT}
+                        onCheckedChange={(checked) => setMintNFT(checked as boolean)}
+                        disabled={isLoading}
+                      />
+                      <div className="grid gap-1.5">
+                        <Label
+                          htmlFor="mock-nft-receipt"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Add Blockchain Receipt (+${NFT_RECEIPT_FEE.toFixed(2)})
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get a permanent, verified proof of purchase on the blockchain
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {mintNFT && (
+                    <div className="rounded-md border p-4 bg-slate-50">
+                      <div className="flex space-x-4 items-start">
+                        <BadgeCheck className="h-10 w-10 text-primary flex-shrink-0" />
+                        <div className="space-y-2">
+                          <h4 className="font-semibold">Blockchain Receipt Benefits</h4>
+                          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                            <li>Permanent proof of purchase that can't be lost</li>
+                            <li>Verify authenticity of your purchase anytime</li>
+                            <li>Enhanced warranty and return claim support</li>
+                            <li>Access to exclusive rewards and benefits</li>
+                          </ul>
+                          
+                          <div className="pt-2">
+                            <Label htmlFor="mock-nft-theme" className="text-sm font-medium mb-1.5 block">Receipt Theme</Label>
+                            <RadioGroup 
+                              id="mock-nft-theme" 
+                              value={nftTheme}
+                              onValueChange={setNftTheme}
+                              className="flex flex-wrap gap-2"
+                              disabled={isLoading}
+                            >
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="default" id="mock-theme-default" />
+                                <Label htmlFor="mock-theme-default" className="cursor-pointer">Default</Label>
+                              </div>
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="luxury" id="mock-theme-luxury" />
+                                <Label htmlFor="mock-theme-luxury" className="cursor-pointer">Luxury</Label>
+                              </div>
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="minimal" id="mock-theme-minimal" />
+                                <Label htmlFor="mock-theme-minimal" className="cursor-pointer">Minimal</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
