@@ -1,245 +1,213 @@
 /**
- * Blockchain API Routes for Polygon Amoy
+ * Blockchain API Routes for Polygon Amoy Testnet
  * 
  * This file defines the API routes for interacting with the Polygon Amoy blockchain.
  */
-
-import { Router, Request, Response } from 'express';
-import { blockchainService } from '../services/blockchainServiceAmoy';
+import express, { Request, Response } from 'express';
+import { blockchainServiceAmoy } from '../services/blockchainServiceAmoy';
 import { storage } from '../storage';
 
-const router = Router();
+const router = express.Router();
 
 /**
- * GET /api/blockchain/status
- * Get blockchain integration status
+ * GET /api/blockchain/amoy/status
+ * Get blockchain integration status for Amoy testnet
  */
 router.get('/status', async (req: Request, res: Response) => {
   try {
-    const isAvailable = await blockchainService.isAvailable();
-    
-    if (!isAvailable) {
-      return res.status(503).json({
-        status: 'error',
-        message: 'Blockchain integration is not available'
-      });
-    }
-    
-    const networkInfo = await blockchainService.getNetworkInfo();
-    
-    res.json({
-      status: 'success',
-      data: {
-        available: true,
-        network: networkInfo.name,
-        chainId: networkInfo.chainId,
-        blockNumber: networkInfo.blockNumber,
-        mockMode: networkInfo.mockMode
-      }
-    });
+    const status = await blockchainServiceAmoy.isAvailable();
+    res.json(status);
   } catch (error) {
-    console.error('Error checking blockchain status:', error);
+    console.error('Error getting blockchain status:', error);
     res.status(500).json({
-      status: 'error',
-      message: `Failed to check blockchain status: ${error.message}`
+      success: false,
+      error: 'Failed to get blockchain status',
+      message: error instanceof Error ? error.message : String(error)
     });
   }
 });
 
 /**
- * POST /api/blockchain/mint/:receiptId
- * Mint a receipt as an NFT
+ * POST /api/blockchain/amoy/mint/:receiptId
+ * Mint a receipt as an NFT on Amoy blockchain
  */
 router.post('/mint/:receiptId', async (req: Request, res: Response) => {
   try {
-    const { receiptId } = req.params;
-    const receiptIdNum = parseInt(receiptId, 10);
+    const receiptId = parseInt(req.params.receiptId);
     
-    if (isNaN(receiptIdNum)) {
+    if (isNaN(receiptId)) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid receipt ID'
+        success: false,
+        error: 'Invalid receipt ID'
       });
     }
     
-    // Get the receipt from storage
-    const receipt = await storage.getReceipt(receiptIdNum);
+    // Get receipt from storage
+    const receipt = await storage.getReceipt(receiptId);
     
     if (!receipt) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Receipt not found'
+        success: false,
+        error: 'Receipt not found'
       });
     }
     
-    // Get the receipt items
-    const items = await storage.getReceiptItems(receiptIdNum);
-    
-    if (!items || items.length === 0) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Receipt items not found'
-      });
-    }
-    
-    // Check if the receipt is already on the blockchain
-    if (receipt.nftTokenId) {
+    // Check if receipt already has blockchain data
+    if (receipt.blockchainTxHash || receipt.blockchainTokenId) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Receipt is already minted as an NFT'
+        success: false,
+        error: 'Receipt already minted to blockchain',
+        receiptId,
+        blockchainTxHash: receipt.blockchainTxHash,
+        blockchainTokenId: receipt.blockchainTokenId
       });
     }
     
-    // Mint the NFT
-    const result = await blockchainService.mintReceiptNFT(receipt, items);
+    // Get receipt items
+    const receiptItems = await storage.getReceiptItems(receiptId);
     
-    // Update the receipt with the token ID and block number
-    const updatedReceipt = await storage.updateReceipt(receiptIdNum, {
-      nftTokenId: result.tokenId,
-      blockNumber: result.blockNumber
-    });
-    
-    res.json({
-      status: 'success',
-      data: {
-        receipt: updatedReceipt,
-        tokenId: result.tokenId,
-        txHash: result.txHash,
-        blockNumber: result.blockNumber
-      }
-    });
-  } catch (error) {
-    console.error('Error minting receipt NFT:', error);
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to mint receipt NFT: ${error.message}`
-    });
-  }
-});
-
-/**
- * GET /api/blockchain/verify/:tokenId
- * Verify a receipt on the blockchain
- */
-router.get('/verify/:tokenId', async (req: Request, res: Response) => {
-  try {
-    const { tokenId } = req.params;
-    
-    if (!tokenId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Token ID is required'
-      });
-    }
-    
-    // Find the receipt with this token ID
-    const receipts = await storage.getReceipts(1); // TODO: Get the proper user ID
-    const receipt = receipts.find(r => r.nftTokenId === tokenId);
-    
-    if (!receipt) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Receipt with this token ID not found'
-      });
-    }
-    
-    // Get the full receipt with items
-    const fullReceipt = await storage.getFullReceipt(receipt.id);
+    // Get full receipt with merchant and category details
+    const fullReceipt = await storage.getFullReceipt(receiptId);
     
     if (!fullReceipt) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Full receipt not found'
+        success: false,
+        error: 'Full receipt details not found'
       });
     }
     
-    // Verify the receipt on the blockchain
-    const verificationResult = await blockchainService.verifyReceipt(tokenId, fullReceipt);
+    // Mint receipt to blockchain
+    const mintResult = await blockchainServiceAmoy.mintReceiptNFT(fullReceipt, receiptItems);
     
-    if (!verificationResult.valid) {
-      return res.status(400).json({
-        status: 'error',
-        message: verificationResult.message
+    if (!mintResult.success) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to mint receipt',
+        details: mintResult.error
       });
     }
     
-    res.json({
-      status: 'success',
-      data: {
-        valid: true,
-        receipt: fullReceipt,
-        blockchainData: verificationResult.data
-      }
-    });
+    // Update receipt with blockchain data
+    if (!mintResult.mockMode) {
+      // In non-mock mode, update the database with real blockchain data
+      await storage.updateReceipt(receiptId, {
+        blockchainTxHash: mintResult.txHash,
+        blockchainTokenId: mintResult.tokenId.toString()
+      });
+    }
+    
+    res.json(mintResult);
   } catch (error) {
-    console.error('Error verifying receipt:', error);
+    console.error('Error minting receipt to blockchain:', error);
     res.status(500).json({
-      status: 'error',
-      message: `Failed to verify receipt: ${error.message}`
+      success: false,
+      error: 'Failed to mint receipt',
+      message: error instanceof Error ? error.message : String(error)
     });
   }
 });
 
 /**
- * POST /api/blockchain/mock-mint/:receiptId
+ * GET /api/blockchain/amoy/verify/:tokenId
+ * Verify a receipt on the Amoy blockchain
+ */
+router.get('/verify/:tokenId', async (req: Request, res: Response) => {
+  try {
+    const tokenId = parseInt(req.params.tokenId);
+    
+    if (isNaN(tokenId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid token ID'
+      });
+    }
+    
+    // Find receipt by blockchain token ID
+    let receipt;
+    const receipts = await storage.getReceipts(1); // Assuming user ID 1 for now
+    
+    for (const r of receipts) {
+      if (r.blockchainTokenId === tokenId.toString()) {
+        receipt = r;
+        break;
+      }
+    }
+    
+    // If receipt found, get full details
+    let fullReceipt;
+    
+    if (receipt) {
+      fullReceipt = await storage.getFullReceipt(receipt.id);
+    }
+    
+    // Verify receipt on blockchain
+    const verifyResult = await blockchainServiceAmoy.verifyReceipt(tokenId, fullReceipt);
+    
+    res.json(verifyResult);
+  } catch (error) {
+    console.error('Error verifying receipt on blockchain:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to verify receipt',
+      message: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
+/**
+ * POST /api/blockchain/amoy/mock-mint/:receiptId
  * Mint a receipt using mock blockchain data (for testing)
  */
 router.post('/mock-mint/:receiptId', async (req: Request, res: Response) => {
   try {
-    const { receiptId } = req.params;
-    const receiptIdNum = parseInt(receiptId, 10);
+    const receiptId = parseInt(req.params.receiptId);
     
-    if (isNaN(receiptIdNum)) {
+    if (isNaN(receiptId)) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid receipt ID'
+        success: false,
+        error: 'Invalid receipt ID'
       });
     }
     
-    // Get the receipt from storage
-    const receipt = await storage.getReceipt(receiptIdNum);
+    // Get receipt from storage
+    const receipt = await storage.getReceipt(receiptId);
     
     if (!receipt) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Receipt not found'
+        success: false,
+        error: 'Receipt not found'
       });
     }
     
-    // Get the receipt items
-    const items = await storage.getReceiptItems(receiptIdNum);
+    // Get receipt items
+    const receiptItems = await storage.getReceiptItems(receiptId);
     
-    if (!items || items.length === 0) {
+    // Get full receipt with merchant and category details
+    const fullReceipt = await storage.getFullReceipt(receiptId);
+    
+    if (!fullReceipt) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Receipt items not found'
+        success: false,
+        error: 'Full receipt details not found'
       });
     }
     
-    // Force mock mode by using the mintReceiptNFT method directly
-    const result = await blockchainService.mintReceiptNFT(receipt, items);
+    // Mock mint receipt to blockchain
+    const mockMintResult = await blockchainServiceAmoy.mockMintReceipt(fullReceipt, receiptItems);
     
-    // Update the receipt with the token ID and block number
-    const updatedReceipt = await storage.updateReceipt(receiptIdNum, {
-      nftTokenId: result.tokenId,
-      blockNumber: result.blockNumber
+    // Update receipt with mock blockchain data
+    await storage.updateReceipt(receiptId, {
+      blockchainTxHash: mockMintResult.txHash,
+      blockchainTokenId: mockMintResult.tokenId.toString()
     });
     
-    res.json({
-      status: 'success',
-      data: {
-        receipt: updatedReceipt,
-        tokenId: result.tokenId,
-        txHash: result.txHash,
-        blockNumber: result.blockNumber,
-        mockMode: true
-      }
-    });
+    res.json(mockMintResult);
   } catch (error) {
-    console.error('Error mock minting receipt NFT:', error);
+    console.error('Error mock minting receipt:', error);
     res.status(500).json({
-      status: 'error',
-      message: `Failed to mock mint receipt NFT: ${error.message}`
+      success: false,
+      error: 'Failed to mock mint receipt',
+      message: error instanceof Error ? error.message : String(error)
     });
   }
 });

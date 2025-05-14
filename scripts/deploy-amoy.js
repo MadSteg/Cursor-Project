@@ -1,8 +1,9 @@
 // Deploy Receipt1155 contract to Polygon Amoy network
-const { ethers } = require("hardhat");
-const fs = require("fs");
-const path = require("path");
-const dotenv = require("dotenv");
+import { ethers } from "hardhat";
+import fs from "fs";
+import path from "path";
+import * as dotenv from "dotenv";
+import { fileURLToPath } from 'url';
 
 async function main() {
   try {
@@ -31,6 +32,10 @@ async function main() {
 
 function updateEnvFile(contractAddress) {
   try {
+    // Get the directory name properly in ESM
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    
     // Load existing .env file
     const envPath = path.resolve(__dirname, "../.env");
     const envConfig = dotenv.parse(fs.readFileSync(envPath));

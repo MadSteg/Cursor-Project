@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import blockchainRoutes from "./routes/blockchain-fixed";
-import blockchainAmoyRoutes from "./routes/blockchain-amoy";
+import blockchainAmoyRoutes from "./routes/blockchainAmoy";
 import emailRoutes from "./routes/email";
 
 export async function registerRoutes(app: Express): Promise<Server> {

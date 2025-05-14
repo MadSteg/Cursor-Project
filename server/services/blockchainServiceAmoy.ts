@@ -1,256 +1,351 @@
+/**
+ * Blockchain Service for Polygon Amoy Testnet
+ * This service handles interactions with the Polygon Amoy blockchain for Receipt NFTs
+ */
 import { ethers } from 'ethers';
-import Receipt1155Artifact from '../../artifacts/contracts/Receipt1155.sol/Receipt1155.json';
-import type { FullReceipt, Receipt } from '@shared/schema';
+import dotenv from 'dotenv';
+import crypto from 'crypto';
+import type { Receipt, ReceiptItem } from '@shared/schema';
+import { Receipt1155Abi } from '../lib/Receipt1155Abi';
 
-export interface IBlockchainService {
-  isAvailable(): Promise<boolean>;
-  getNetworkInfo(): Promise<{
+dotenv.config();
+
+export interface ReceiptData {
+  receiptId: number;
+  merchant: string;
+  total: string;
+  date: string;
+  items: Array<{
     name: string;
-    chainId: number;
-    blockNumber: number;
-    mockMode: boolean;
-  }>;
-  mintReceiptNFT(receipt: Receipt, items: any[]): Promise<{
-    tokenId: string;
-    txHash: string;
-    blockNumber: number;
-  }>;
-  verifyReceipt(tokenId: string, receipt: any): Promise<{
-    valid: boolean;
-    message: string;
-    data?: any;
+    price: string;
+    quantity: number;
   }>;
 }
 
-class BlockchainServiceAmoy implements IBlockchainService {
-  private provider?: ethers.providers.JsonRpcProvider;
-  private wallet?: ethers.Wallet;
-  private contract?: ethers.Contract;
-  private mockMode: boolean = true; // Start in mock mode by default
-
+class BlockchainServiceAmoy {
+  private provider: ethers.providers.JsonRpcProvider | null = null;
+  private wallet: ethers.Wallet | null = null;
+  private contract: ethers.Contract | null = null;
+  private mockMode = false;
+  private initialized = false;
+  private chainId = 80002; // Polygon Amoy chainId
+  
   constructor() {
-    this.initialize().catch(err => {
-      console.warn('Error initializing blockchain service, using mock mode:', err.message);
-    });
+    this.initialize();
   }
-
+  
   async initialize() {
-    // Check if environment variables are available
-    if (!process.env.ALCHEMY_RPC || 
-        !process.env.WALLET_PRIVATE_KEY || 
-        !process.env.RECEIPT_MINTER_ADDRESS) {
-      console.warn('Missing Polygon Amoy configuration, using mock mode');
-      return;
-    }
-
     try {
-      console.log('Initializing blockchain service for Polygon Amoy...');
+      console.log('Initializing Amoy blockchain service...');
       
-      // Initialize provider with the Amoy testnet
-      console.log('Using Amoy RPC URL:', process.env.ALCHEMY_RPC);
+      // Check if required environment variables are set
+      const rpcUrl = process.env.ALCHEMY_RPC;
+      const privateKey = process.env.WALLET_PRIVATE_KEY;
+      const contractAddress = process.env.RECEIPT_MINTER_ADDRESS;
       
-      // Use JsonRpcProvider with Amoy network details
-      const amoyNetwork = {
-        name: 'amoy',
-        chainId: 80002
-      };
+      if (!rpcUrl || !privateKey || !contractAddress) {
+        console.warn('Missing Amoy blockchain environment variables, using mock mode');
+        this.mockMode = true;
+        this.initialized = true;
+        return;
+      }
       
-      this.provider = new ethers.providers.JsonRpcProvider(
-        process.env.ALCHEMY_RPC,
-        amoyNetwork
-      );
+      // Create provider and wallet
+      this.provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      this.wallet = new ethers.Wallet(privateKey, this.provider);
       
-      // Test connection by trying to get the network
+      // Create contract instance
+      this.contract = new ethers.Contract(contractAddress, Receipt1155Abi, this.wallet);
+      
+      // Test connection
       try {
         const network = await this.provider.getNetwork();
-        console.log('Connected to blockchain network:', network.name, 'chainId:', network.chainId);
-        
-        // Create wallet with the provided private key
-        this.wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, this.provider);
-        
-        // Initialize contract with the contract address and ABI
-        this.contract = new ethers.Contract(
-          process.env.RECEIPT_MINTER_ADDRESS,
-          Receipt1155Artifact.abi,
-          this.wallet
-        );
-        
-        // If we make it here, we can use real blockchain mode
+        console.log(`Connected to Amoy network: ${network.name} (${network.chainId})`);
+        this.chainId = network.chainId;
         this.mockMode = false;
-        console.log('Blockchain service initialized successfully with contract:', process.env.RECEIPT_MINTER_ADDRESS);
       } catch (error) {
-        console.error('Could not connect to blockchain network:', error);
-        throw new Error(`Could not connect to blockchain network: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error initializing blockchain service:', error);
-      console.warn('Falling back to mock mode');
-    }
-  }
-
-  async isAvailable(): Promise<boolean> {
-    if (this.mockMode) {
-      console.log('Using mock mode for blockchain operations');
-      return true;
-    }
-
-    try {
-      if (!this.provider) {
-        return false;
+        console.error('Could not connect to Amoy blockchain network:', error);
+        this.mockMode = true;
       }
       
-      // Check if we can connect to the network
-      await this.provider.getNetwork();
-      
-      return true;
+      this.initialized = true;
     } catch (error) {
-      console.error('Blockchain network is not available:', error);
-      return false;
+      console.error('Error initializing Amoy blockchain service:', error);
+      this.mockMode = true;
+      this.initialized = true;
     }
   }
-
-  async getNetworkInfo() {
+  
+  /**
+   * Check if the blockchain service is available
+   */
+  async isAvailable() {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
     if (this.mockMode) {
       return {
-        name: 'mock-amoy',
-        chainId: 80002,
-        blockNumber: 12345678,
-        mockMode: true
+        available: true,
+        network: 'amoy-mock',
+        chainId: this.chainId,
+        contractAddress: '0xMockContractAddress',
+        walletAddress: '0xMockWalletAddress',
+        mockMode: true,
+        message: 'Running in mock mode. Blockchain operations will be simulated.'
       };
     }
-
+    
     try {
-      if (!this.provider) {
-        throw new Error('Provider not initialized');
-      }
-      
-      const network = await this.provider.getNetwork();
-      const blockNumber = await this.provider.getBlockNumber();
+      const network = await this.provider!.getNetwork();
+      const blockNumber = await this.provider!.getBlockNumber();
       
       return {
-        name: network.name,
+        available: true,
+        network: network.name,
         chainId: network.chainId,
         blockNumber,
+        contractAddress: this.contract!.address,
+        walletAddress: this.wallet!.address,
         mockMode: false
       };
     } catch (error) {
-      console.error('Error getting network info:', error);
-      throw new Error(`Failed to get network info: ${error.message}`);
-    }
-  }
-
-  async mintReceiptNFT(receipt: Receipt, items: any[]) {
-    if (this.mockMode) {
-      console.log('Using mock mode for mintReceiptNFT');
-      
-      // Generate a mock token ID and transaction hash
-      const tokenId = `mock-${Date.now()}`;
-      const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      
+      console.error('Error checking Amoy blockchain availability:', error);
       return {
-        tokenId,
-        txHash,
-        blockNumber: 12345678
+        available: false,
+        error: 'Could not connect to Amoy blockchain network',
+        mockMode: this.mockMode
       };
     }
-
+  }
+  
+  /**
+   * Create a hash of the receipt data for blockchain verification
+   */
+  createReceiptHash(receipt: Receipt, items: ReceiptItem[]) {
+    // Create a standardized string representation of the receipt and hash it
+    const receiptString = JSON.stringify({
+      receiptId: receipt.id,
+      merchantId: receipt.merchantId,
+      date: receipt.date,
+      total: receipt.total,
+      items: items.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+      }))
+    });
+    
+    return '0x' + crypto.createHash('sha256').update(receiptString).digest('hex');
+  }
+  
+  /**
+   * Mint a receipt as an NFT on the blockchain
+   */
+  async mintReceiptNFT(receipt: Receipt, items: ReceiptItem[]) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
+    if (this.mockMode) {
+      return this.mockMintReceipt(receipt, items);
+    }
+    
     try {
-      if (!this.contract || !this.wallet) {
-        throw new Error('Contract or wallet not initialized');
-      }
-      
-      // Create a JSON representation of the receipt and its items
+      // Create receipt data
       const receiptData = {
-        id: receipt.id,
-        merchant: receipt.merchantId,
-        date: receipt.date,
+        receiptId: receipt.id,
+        merchant: receipt.merchant.name,
         total: receipt.total,
+        date: receipt.date.toISOString(),
         items: items.map(item => ({
-          id: item.id,
           name: item.name,
           price: item.price,
           quantity: item.quantity
         }))
       };
       
-      // For now, we'll use a simple tokenId generation
-      // In a production environment, we'd use a more sophisticated approach
-      const tokenId = Date.now().toString();
+      // Hash the receipt data for on-chain verification
+      const receiptHash = this.createReceiptHash(receipt, items);
       
-      // Mint the NFT
-      const tx = await this.contract.mint(
-        this.wallet.address,
+      // Generate a random token ID that will be unique for this receipt
+      // We use the receipt ID + 1000 to ensure no conflicts
+      const tokenId = receipt.id + 1000;
+      
+      // Create a simple encryption key for demonstration purposes
+      // In a production environment, use a more secure method
+      const encryptionKey = crypto.randomBytes(16).toString('hex');
+      
+      // In a real implementation, we would encrypt the receipt data with this key
+      // and upload it to IPFS, then store the IPFS CID on-chain
+      // For simplicity, we'll mock the IPFS upload here
+      const mockIpfsCid = `QmReceipt${tokenId}`;
+      
+      // Mint the NFT - this calls the smart contract
+      const tx = await this.contract!.mintReceipt(
         tokenId,
-        1,
-        JSON.stringify(receiptData),
+        receiptHash,
+        `ipfs://${mockIpfsCid}`,
         { gasLimit: 500000 }
       );
       
-      // Wait for the transaction to be mined
+      // Wait for transaction to be mined
       const receipt = await tx.wait();
       
       return {
-        tokenId,
-        txHash: tx.hash,
-        blockNumber: receipt.blockNumber
+        success: true,
+        receipt: {
+          id: receipt.id,
+          merchant: receipt.merchant.name,
+          date: receipt.date.toISOString(),
+          total: receipt.total,
+          blockchain: {
+            tokenId: tokenId.toString(),
+            transactionHash: tx.hash,
+            blockNumber: receipt.blockNumber,
+            network: 'amoy',
+            receiptHash
+          }
+        }
       };
     } catch (error) {
-      console.error('Error minting receipt NFT:', error);
-      throw new Error(`Failed to mint receipt NFT: ${error.message}`);
+      console.error('Error minting receipt NFT on Amoy blockchain:', error);
+      
+      // Fall back to mock mode if actual minting fails
+      return {
+        success: false,
+        error: `Failed to mint receipt NFT: ${error}`,
+        mockResult: this.mockMintReceipt(receipt, items)
+      };
     }
   }
-
-  async verifyReceipt(tokenId: string, receiptData: any) {
-    if (this.mockMode) {
-      console.log('Using mock mode for verifyReceipt');
-      
-      // Always return valid in mock mode
-      return {
-        valid: true,
-        message: 'Receipt verified (mock mode)',
-        data: {
-          tokenId,
-          owner: '0xMockOwnerAddress',
-          uri: 'ipfs://MockCID',
-          metadata: receiptData
-        }
-      };
+  
+  /**
+   * Mock minting a receipt NFT - for testing purposes
+   */
+  mockMintReceipt(receipt: Receipt, items: ReceiptItem[]) {
+    // Create a mock hash
+    const receiptHash = this.createReceiptHash(receipt, items);
+    
+    // Generate a deterministic token ID based on receipt ID
+    const tokenId = receipt.id + 1000;
+    
+    // Generate deterministic mock data
+    const mockTxHash = '0x' + crypto.createHash('md5').update(tokenId.toString()).digest('hex').substring(0, 12);
+    const mockBlockNumber = 1000000 + Math.floor(Math.random() * 1000);
+    const mockKey = `mock-key-${receipt.id}`;
+    const mockIpfsCid = `QmMock${Math.floor(Math.random() * 1000000)}`;
+    
+    return {
+      success: true,
+      message: "Receipt minted using mock Amoy blockchain data",
+      txHash: mockTxHash,
+      tokenId,
+      blockNumber: mockBlockNumber,
+      encryptionKey: mockKey,
+      ipfsCid: mockIpfsCid,
+      ipfsUrl: `https://ipfs.io/ipfs/${mockIpfsCid}`,
+      mockMode: true
+    };
+  }
+  
+  /**
+   * Verify a receipt on the blockchain
+   */
+  async verifyReceipt(tokenId: number, receipt?: Receipt) {
+    if (!this.initialized) {
+      await this.initialize();
     }
-
+    
+    if (this.mockMode) {
+      return this.mockVerifyReceipt(tokenId, receipt);
+    }
+    
     try {
-      if (!this.contract) {
-        throw new Error('Contract not initialized');
+      // Call the contract to get the tokenURI and hash
+      const tokenURI = await this.contract!.uri(tokenId);
+      const storedHash = await this.contract!.receiptHashes(tokenId);
+      const owner = await this.contract!.ownerOf(tokenId);
+      
+      // If a receipt is provided, verify the hash matches
+      let verified = true;
+      let calculatedHash = '';
+      
+      if (receipt) {
+        // Get receipt items
+        const items = await Promise.resolve([]);  // We would fetch items from storage here
+        calculatedHash = this.createReceiptHash(receipt, items);
+        verified = calculatedHash === storedHash;
       }
       
-      // Get the token owner
-      const owner = await this.contract.ownerOf(tokenId);
-      
-      // Get the token URI
-      const uri = await this.contract.uri(tokenId);
-      
-      // In a real implementation, we would fetch the metadata from IPFS
-      // and verify it against the provided receipt data
-      
       return {
-        valid: true,
-        message: 'Receipt verified',
-        data: {
-          tokenId,
-          owner,
-          uri,
-          metadata: receiptData
-        }
+        success: true,
+        verified,
+        receipt: receipt ? {
+          id: receipt.id,
+          merchant: receipt.merchant.name,
+          date: receipt.date.toISOString(),
+          total: receipt.total,
+          blockchain: {
+            tokenId: tokenId.toString(),
+            verified,
+            uri: tokenURI,
+            receiptHash: calculatedHash,
+            storedHash,
+            owner
+          }
+        } : null
       };
     } catch (error) {
-      console.error('Error verifying receipt:', error);
+      console.error('Error verifying receipt on Amoy blockchain:', error);
       
+      // Fall back to mock verification
       return {
-        valid: false,
-        message: `Failed to verify receipt: ${error.message}`
+        success: false,
+        error: `Failed to verify receipt: ${error}`,
+        mockResult: this.mockVerifyReceipt(tokenId, receipt)
       };
     }
+  }
+  
+  /**
+   * Mock verifying a receipt - for testing purposes
+   */
+  mockVerifyReceipt(tokenId: number, receipt?: Receipt) {
+    // Generate deterministic mock data
+    const mockIpfsCid = `QmMock${tokenId % 10}`;
+    const mockOwner = '0xMockOwnerAddress';
+    
+    // If a receipt is provided, use it to generate a hash
+    let verified = true;
+    let receiptHash = '0xc45734ed5448263415f642a651767b04707530ab6505cb8a948999c042e1bb46';
+    
+    if (receipt) {
+      // Get receipt items - in a real implementation, we would fetch these from storage
+      const items: ReceiptItem[] = [];
+      receiptHash = this.createReceiptHash(receipt, items);
+    }
+    
+    return {
+      success: true,
+      verified,
+      receipt: receipt ? {
+        id: receipt.id,
+        merchant: receipt.merchant.name,
+        date: receipt.date.toISOString(),
+        total: receipt.total,
+        blockchain: {
+          tokenId: tokenId.toString(),
+          verified,
+          uri: `ipfs://${mockIpfsCid}`,
+          receiptHash,
+          storedHash: receiptHash,
+          owner: mockOwner,
+          mockMode: true
+        }
+      } : null
+    };
   }
 }
 
-// Export a singleton instance
-export const blockchainService = new BlockchainServiceAmoy();
+export const blockchainServiceAmoy = new BlockchainServiceAmoy();
