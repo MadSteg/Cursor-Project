@@ -411,6 +411,32 @@ export const insertSharedAccessSchema = createInsertSchema(sharedAccess).pick({
   isRevoked: true,
 });
 
+// API keys for merchant plugin integration
+export const apiKeys = pgTable("api_keys", {
+  id: serial("id").primaryKey(),
+  merchantId: integer("merchant_id").notNull(),
+  key: text("key").notNull().unique(),
+  name: text("name").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastUsed: timestamp("last_used"),
+  allowedIps: text("allowed_ips"), // Optional list of allowed IPs
+  allowedOrigins: text("allowed_origins"), // Optional list of allowed origins
+  permissions: jsonb("permissions"), // Optional permissions JSON
+  expiresAt: timestamp("expires_at"), // Optional expiration date
+});
+
+export const insertApiKeySchema = createInsertSchema(apiKeys).pick({
+  merchantId: true,
+  key: true,
+  name: true,
+  isActive: true,
+  allowedIps: true,
+  allowedOrigins: true,
+  permissions: true,
+  expiresAt: true,
+});
+
 // Define receipt with items and merchant for API responses
 export const fullReceiptSchema = z.object({
   id: z.number(),

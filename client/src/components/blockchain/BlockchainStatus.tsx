@@ -61,6 +61,12 @@ export const BlockchainStatus = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/blockchain/multi-status"],
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 3,
+    retryDelay: 1000,
+    onError: () => {
+      console.warn("Unable to fetch blockchain status. Using fallback mode.");
+    },
+    staleTime: 10000
   });
 
   const handleManualRefresh = () => {

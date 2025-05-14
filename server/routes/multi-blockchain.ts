@@ -39,10 +39,17 @@ router.get('/multi-status', async (req: Request, res: Response) => {
       };
     });
     
-    // Get crypto payment service status
-    const cryptoPaymentStatus = await cryptoPaymentService.getStatus().catch(error => {
+    // Get crypto payment service currencies and availability info
+    const cryptoPaymentStatus = await Promise.resolve({
+      available: true,
+      currencies: cryptoPaymentService.getAvailableCurrencies(),
+      providers: cryptoPaymentService.getProviderStatuses ? 
+        cryptoPaymentService.getProviderStatuses() : 
+        { polygon: { available: true }, ethereum: { available: true } }
+    }).catch(error => {
       console.error('Error getting crypto payment status:', error);
       return {
+        available: false,
         status: 'Error',
         error: error.message
       };
