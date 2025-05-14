@@ -15,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Lock, Shield, CreditCard, Receipt } from 'lucide-react';
-import { tacoThresholdCrypto } from '../../lib/thresholdCrypto';
+import { tacoThresholdCrypto } from '../../lib/tacoThresholdCrypto';
 import MobileWalletPreview from './MobileWalletPreview';
 
 // Mock user ID for demo purposes
