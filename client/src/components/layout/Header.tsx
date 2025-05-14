@@ -48,6 +48,12 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
+            <Link href="/about">
+              <span className={`text-sm font-medium ${currentLocation === "/about" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <FileCheck className="h-4 w-4 mr-1.5" /> About
+              </span>
+            </Link>
+            
             {/* NFT Receipts - Primary Feature */}
             <Link href="/nft-wallet">
               <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
@@ -122,6 +128,11 @@ const Header: React.FC = () => {
                     <Link href="/">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                         <Menu className="h-5 w-5" /> Dashboard
+                      </span>
+                    </Link>
+                    <Link href="/about">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <FileCheck className="h-5 w-5" /> About
                       </span>
                     </Link>
                   </div>
