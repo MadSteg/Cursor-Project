@@ -383,18 +383,56 @@ export default function CryptoCheckout() {
       case "awaitingPayment":
         return (
           <div className="space-y-6">
-            <div className="rounded-lg border p-4 bg-muted/30">
-              <div className="flex flex-col items-center mb-4">
-                <Bitcoin className="h-12 w-12 text-primary mb-2" />
-                <p className="text-lg font-medium">Send exactly:</p>
-                <p className="text-2xl font-bold text-primary">{formatCryptoAmount(paymentAmount!, selectedCurrency)}</p>
+            <div className="rounded-lg border p-6 bg-gradient-to-b from-white to-gray-50">
+              <div className="flex flex-col items-center mb-6">
+                {selectedCurrency === 'BTC' ? (
+                  <Bitcoin className="h-16 w-16 text-amber-500 mb-3" />
+                ) : selectedCurrency === 'ETH' ? (
+                  <svg className="h-16 w-16 text-blue-500 mb-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                    <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
+                  </svg>
+                ) : selectedCurrency === 'MATIC' ? (
+                  <svg className="h-16 w-16 text-purple-600 mb-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38.4 33.5">
+                    <path fill="currentColor" d="M29,10.2c-0.7-0.4-1.6-0.4-2.4,0L21,13.5l-3.8,2.1l-5.5,3.3c-0.7,0.4-1.6,0.4-2.4,0L5,16.3 c-0.7-0.4-1.2-1.2-1.2-2.1v-5c0-0.8,0.4-1.6,1.2-2.1l4.3-2.5c0.7-0.4,1.6-0.4,2.4,0L16,7.2c0.7,0.4,1.2,1.2,1.2,2.1v3.3l3.8-2.2V7 c0-0.8-0.4-1.6-1.2-2.1l-8-4.7c-0.7-0.4-1.6-0.4-2.4,0L1.2,5C0.4,5.4,0,6.2,0,7v9.4c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l5.5-3.2l3.8-2.2l5.5-3.2c0.7-0.4,1.6-0.4,2.4,0l4.3,2.5c0.7,0.4,1.2,1.2,1.2,2.1v5c0,0.8-0.4,1.6-1.2,2.1 L29,28.8c-0.7,0.4-1.6,0.4-2.4,0l-4.3-2.5c-0.7-0.4-1.2-1.2-1.2-2.1V21l-3.8,2.2v3.3c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l8.1-4.7c0.7-0.4,1.2-1.2,1.2-2.1V17c0-0.8-0.4-1.6-1.2-2.1L29,10.2z"/>
+                  </svg>
+                ) : selectedCurrency === 'SOL' ? (
+                  <svg className="h-16 w-16 text-[#14F195] mb-3" viewBox="0 0 397 311" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="currentColor" d="M64.6 237.9c2.1-2.1 5-3.3 7.9-3.3h324.2c4.7 0 7.1 5.7 3.7 9l-64.6 64c-2.1 2.1-4.9 3.3-7.9 3.3H3.7c-4.7 0-7.1-5.7-3.7-9l64.6-64zm0-164.8c2.1-2.1 5-3.3 7.9-3.3h324.2c4.7 0 7.1 5.7 3.7 9l-64.6 64c-2.1 2.1-4.9 3.3-7.9 3.3H3.7c-4.7 0-7.1-5.7-3.7-9l64.6-64zm328-64c-2.1-2.1-4.9-3.3-7.9-3.3H60.5c-4.7 0-7.1 5.7-3.7 9l64.6 64c2.1 2.1 5 3.3 7.9 3.3h324.2c4.7 0 7.1-5.7 3.7-9l-64.6-64z" />
+                  </svg>
+                ) : selectedCurrency === 'USDC' ? (
+                  <svg className="h-16 w-16 text-blue-500 mb-3" viewBox="0 0 2000 2000" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="currentColor" d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z"/>
+                    <path fill="white" d="M1275 1158.33c0-145.83-87.5-195.83-262.5-216.66-125-16.67-150-50-150-108.34s41.67-95.83 125-95.83c75 0 116.67 25 137.5 87.5 4.17 12.5 16.67 20.83 29.17 20.83h66.66c16.67 0 29.17-12.5 29.17-29.16v-4.17c-16.67-91.67-91.67-162.5-187.5-170.83v-100c0-16.67-12.5-29.17-33.33-33.34h-62.5c-16.67 0-29.17 12.5-33.34 33.34v95.83c-125 16.67-204.16 100-204.16 204.17 0 137.5 83.33 191.66 258.33 212.5 116.67 20.83 154.17 45.83 154.17 112.5s-58.34 120.83-137.5 120.83c-108.34 0-145.84-45.83-158.34-108.33-4.16-16.67-16.66-25-29.16-25h-70.84c-16.66 0-29.16 12.5-29.16 29.17v4.16c16.66 104.17 83.33 179.17 220.83 200v100c0 16.67 12.5 29.17 33.34 33.34h62.5c16.66 0 29.16-12.5 33.33-33.34v-100c125-20.83 208.33-108.33 208.33-220.83z"/>
+                    <path fill="white" d="M787.5 1595.83c-325-116.66-491.67-479.16-370.83-800 62.5-175 200-308.33 370.83-370.83 16.67-8.33 25-20.83 25-41.67V325c0-16.67-8.33-29.17-25-33.33-4.17 0-12.5 0-16.67 4.16-395.83 125-612.5 545.84-487.5 941.67 75 233.33 254.17 412.5 487.5 487.5 16.67 8.33 33.34 0 37.5-16.67 4.17-4.16 4.17-8.33 4.17-16.66v-58.34c0-12.5-12.5-29.16-25-37.5zM1229.17 295.83c-16.67-8.33-33.34 0-37.5 16.67-4.17 4.17-4.17 8.33-4.17 16.67v58.33c0 16.67 12.5 33.33 25 41.67 325 116.66 491.67 479.16 370.83 800-62.5 175-200 308.33-370.83 370.83-16.67 8.33-25 20.83-25 41.67V1700c0 16.67 8.33 29.17 25 33.33 4.17 0 12.5 0 16.67-4.16 395.83-125 612.5-545.84 487.5-941.67-75-237.5-258.34-416.67-487.5-491.67z"/>
+                  </svg>
+                ) : (
+                  <Coins className="h-16 w-16 text-primary mb-3" />
+                )}
+                
+                <div className="text-center">
+                  <p className="text-lg font-medium text-muted-foreground">Send exactly</p>
+                  <p className="text-3xl font-bold text-primary bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
+                    {formatCryptoAmount(paymentAmount!, selectedCurrency)}
+                  </p>
+                  <div className="flex items-center justify-center mt-1">
+                    <span className={`text-xs px-2 py-1 rounded-full border ${
+                      selectedCurrency === 'BTC' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                      selectedCurrency === 'ETH' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      selectedCurrency === 'MATIC' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                      selectedCurrency === 'SOL' ? 'bg-green-50 text-green-700 border-green-200' :
+                      'bg-gray-50 text-gray-700 border-gray-200'
+                    }`}>
+                      {selectedCurrencyDetails?.network || 'Network'}
+                    </span>
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">To this address:</p>
+                  <p className="text-sm font-medium">To this address:</p>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm" 
                     className="h-8 gap-1"
                     onClick={() => paymentAddress && copyToClipboard(paymentAddress)}
@@ -403,16 +441,17 @@ export default function CryptoCheckout() {
                     Copy
                   </Button>
                 </div>
-                <div className="p-3 bg-muted rounded-md font-mono text-xs break-all">
+                <div className="p-3 bg-muted/70 rounded-md font-mono text-xs break-all border border-muted-foreground/10">
                   {paymentAddress || 'Generating address...'}
                 </div>
               </div>
               
-              <Alert className="mt-4 bg-amber-50 text-amber-800 border-amber-200">
+              <Alert className="mt-5 bg-amber-50 text-amber-800 border-amber-200">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Important</AlertTitle>
                 <AlertDescription>
-                  Send only {selectedCurrencyDetails?.name || selectedCurrency} on the {selectedCurrencyDetails?.network || 'correct'} network. Sending other tokens may result in permanent loss.
+                  Send only {selectedCurrencyDetails?.name || selectedCurrency} on the {selectedCurrencyDetails?.network || 'correct'} network. 
+                  Sending other tokens may result in permanent loss.
                 </AlertDescription>
               </Alert>
             </div>
@@ -426,25 +465,36 @@ export default function CryptoCheckout() {
         
       case "verifyingPayment":
         return (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-                <div>
-                  <h3 className="font-medium text-blue-800">Verifying Transaction</h3>
-                  <p className="text-sm text-blue-700">
-                    We're confirming your transaction on the blockchain. This may take a moment.
+          <div className="space-y-6">
+            <div className="rounded-lg border p-6 bg-gradient-to-b from-white to-blue-50">
+              <div className="flex flex-col items-center text-center space-y-4 py-6">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-blue-100 animate-ping opacity-50"></div>
+                  <div className="relative bg-gradient-to-br from-blue-400 to-indigo-500 p-4 rounded-full shadow-md">
+                    <Loader2 className="h-12 w-12 animate-spin text-white" />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Verifying Your Payment
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-md mt-2">
+                    We're confirming your transaction on the blockchain network. This may take a moment depending on network conditions.
                   </p>
                 </div>
               </div>
             </div>
             
             {transactionHash && (
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Transaction Hash:</p>
-                <div className="p-2 bg-muted rounded-md font-mono text-xs break-all">
+              <div className="space-y-2 border rounded-lg p-4 bg-gray-50">
+                <div className="flex items-center gap-2">
+                  <FileSearch className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm font-medium">Transaction Hash</p>
+                </div>
+                <div className="p-3 bg-white rounded-md font-mono text-xs break-all border border-muted">
                   {transactionHash}
                 </div>
+                <p className="text-xs text-muted-foreground italic">You can use this hash to verify the transaction on a blockchain explorer</p>
               </div>
             )}
           </div>
@@ -452,28 +502,40 @@ export default function CryptoCheckout() {
         
       case "paymentConfirmed":
         return (
-          <div className="space-y-4">
-            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <div className="space-y-5">
+            <div className="rounded-lg border-2 border-green-200 p-6 bg-gradient-to-br from-green-50 to-green-100/50">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-full shadow-sm">
+                  <CheckCircle2 className="h-8 w-8 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-medium text-green-800">Payment Confirmed</h3>
-                  <p className="text-sm text-green-700">
-                    Your crypto payment has been successfully verified on the blockchain.
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    Payment Confirmed
+                  </h3>
+                  <p className="text-sm text-green-700 mt-1">
+                    Your cryptocurrency payment has been successfully verified on the blockchain. Thank you for your purchase!
                   </p>
                 </div>
               </div>
             </div>
             
             {mintNFT && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <div className="flex items-start gap-3">
-                  <BadgeCheck className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div className="rounded-lg border-2 border-indigo-200 p-6 bg-gradient-to-br from-blue-50 to-indigo-50/50">
+                <div className="flex items-start gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-500 p-3 rounded-full shadow-sm mt-0.5">
+                    <BadgeCheck className="h-8 w-8 text-white" />
+                  </div>
                   <div>
-                    <h3 className="font-medium text-blue-800">Blockchain Receipt</h3>
-                    <p className="text-sm text-blue-700">
-                      Your NFT receipt is being minted. This process may take a few minutes to complete.
+                    <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                      NFT Receipt Being Minted
+                    </h3>
+                    <p className="text-sm text-indigo-700 mt-1">
+                      Your blockchain-verified NFT receipt is now being minted. This creates a permanent, tamper-proof record of your purchase that you'll be able to access anytime.
                     </p>
+                    <div className="mt-3 flex items-center text-xs text-indigo-600">
+                      <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+                      This process typically takes 1-3 minutes to complete
+                    </div>
                   </div>
                 </div>
               </div>
