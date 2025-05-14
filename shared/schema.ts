@@ -8,11 +8,25 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email").unique(),
+  fullName: text("full_name"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastLogin: timestamp("last_login"),
+  
+  // Blockchain and encryption keys
+  blockchainWalletAddress: text("blockchain_wallet_address"),
+  encryptionPublicKey: text("encryption_public_key"),
+  preferEncryption: boolean("prefer_encryption").default(false),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
+  fullName: true,
+  blockchainWalletAddress: true,
+  encryptionPublicKey: true,
+  preferEncryption: true,
 });
 
 // Define receipt categories
@@ -264,6 +278,53 @@ export const insertRetailerSyncLogSchema = createInsertSchema(retailerSyncLogs).
   errorMessage: true,
 });
 
+// Threshold encryption keys for users
+export const encryptionKeys = pgTable("encryption_keys", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  publicKey: text("public_key").notNull(),
+  encryptedPrivateKey: text("encrypted_private_key").notNull(), // Private key encrypted with user's master password
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastUsed: timestamp("last_used"),
+  keyType: text("key_type").default("threshold").notNull(), // threshold, wallet, standard, etc.
+  keyVersion: integer("key_version").default(1).notNull(),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertEncryptionKeySchema = createInsertSchema(encryptionKeys).pick({
+  userId: true,
+  publicKey: true,
+  encryptedPrivateKey: true,
+  keyType: true,
+  keyVersion: true,
+  isActive: true,
+});
+
+// Shared access for encrypted receipts
+export const sharedAccess = pgTable("shared_access", {
+  id: serial("id").primaryKey(),
+  receiptId: integer("receipt_id").notNull(),
+  ownerUserId: integer("owner_user_id").notNull(),
+  targetUserId: integer("target_user_id").notNull(),
+  reEncryptionKey: text("re_encryption_key").notNull(),
+  reEncryptionCommitment: text("re_encryption_commitment").notNull(),
+  accessLevel: text("access_level").notNull(), // full, limited, verification-only
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  isRevoked: boolean("is_revoked").default(false),
+});
+
+export const insertSharedAccessSchema = createInsertSchema(sharedAccess).pick({
+  receiptId: true,
+  ownerUserId: true,
+  targetUserId: true,
+  reEncryptionKey: true,
+  reEncryptionCommitment: true,
+  accessLevel: true,
+  expiresAt: true,
+  isRevoked: true,
+});
+
 // Define receipt with items and merchant for API responses
 export const fullReceiptSchema = z.object({
   id: z.number(),
@@ -286,6 +347,7 @@ export const fullReceiptSchema = z.object({
     name: z.string(),
     price: z.string(),
     quantity: z.number(),
+    categoryId: z.number().optional(),
   })),
   blockchain: z.object({
     txHash: z.string().optional(),
@@ -294,8 +356,29 @@ export const fullReceiptSchema = z.object({
     nftTokenId: z.string().optional(),
     ipfsCid: z.string().optional(),
     ipfsUrl: z.string().optional(),
-    encryptionKey: z.string().optional(),
+    network: z.string().optional(),
+    contractAddress: z.string().optional(),
   }),
+  encryption: z.object({
+    isEncrypted: z.boolean().default(false),
+    encryptionKey: z.string().optional(),
+    encryptionPublicKey: z.string().optional(),
+    thresholdSharedKey: z.string().optional(),
+    accessibleBy: z.array(z.object({
+      userId: z.number(),
+      publicKey: z.string(),
+      accessLevel: z.enum(['full', 'limited', 'verification-only']),
+      expiresAt: z.date().optional(),
+    })).optional(),
+  }),
+  payment: z.object({
+    paymentId: z.string().optional(),
+    paymentMethod: z.string().optional(),
+    paymentStatus: z.string().optional(),
+    paymentAmount: z.string().optional(),
+    paymentCurrency: z.string().optional(),
+    receiptUrl: z.string().optional(),
+  }).optional(),
 });
 
 // Define types
