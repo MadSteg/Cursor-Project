@@ -701,16 +701,27 @@ export default function ProductDetail() {
       </Dialog>
       
       {/* Crypto Checkout Modal */}
-      {product && (
+      {product && merchant && (
         <CryptoCheckoutModal
           open={showCryptoCheckout}
-          onClose={() => setShowCryptoCheckout(false)}
-          onSuccess={handleCryptoPaymentSuccess}
+          onOpenChange={(open) => setShowCryptoCheckout(open)}
+          productId={product.id}
           productName={product.name}
-          productPrice={product.price}
-          nftTier={selectedTier}
-          nftPrice={calculateNFTReceiptPrice(product, selectedTier as any)}
-          totalPrice={calculateTotalPrice(product, selectedTier as any)}
+          merchantId={merchant.id}
+          merchantName={merchant.name}
+          price={calculateTotalPrice(product, selectedTier as any)}
+          availableCurrencies={merchant.paymentMethods.cryptoCurrencies || ['MATIC']}
+          onCompleted={(receiptId) => {
+            toast({
+              title: "NFT Receipt Created",
+              description: `Your NFT receipt #${receiptId} has been created successfully.`,
+              variant: "default",
+            });
+            // Navigate to receipt detail page after a short delay
+            setTimeout(() => {
+              setLocation(`/nft-receipts/${receiptId}`);
+            }, 1500);
+          }}
         />
       )}
     </main>
