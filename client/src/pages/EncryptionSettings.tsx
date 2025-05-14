@@ -2,7 +2,7 @@
  * Encryption Settings Page
  * 
  * This page provides tools for managing encryption settings and shared receipts
- * using the Taco threshold encryption protocol.
+ * using BlockReceipt.ai's advanced threshold encryption technology.
  */
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
@@ -10,8 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import TacoKeyManager from "@/components/encryption/TacoKeyManager";
-import TacoSharedReceiptManager from "@/components/encryption/TacoSharedReceiptManager";
+import AdvancedEncryptionManager from "@/components/encryption/AdvancedEncryptionManager";
+import SharedReceiptManager from "@/components/encryption/SharedReceiptManager";
 import { Shield, AlertCircle, LockKeyhole, Settings, Share2 } from "lucide-react";
 
 export default function EncryptionSettings() {
