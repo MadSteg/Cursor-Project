@@ -13,6 +13,10 @@ import tacoRoutes from "./routes/taco";
 import cryptoRoutes from "./routes/crypto";
 import inventoryRoutes from "./routes/inventory";
 import merchantPluginRoutes from "./routes/merchant-plugin";
+// New product catalog routes
+import productsRoutes from "./routes/products";
+import merchantsRoutes from "./routes/merchants";
+import nftReceiptsRoutes from "./routes/nft-receipts";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -52,6 +56,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register merchant plugin routes
   app.use('/api/merchant', merchantPluginRoutes);
+  
+  // Register new catalog routes
+  app.use('/api/products', productsRoutes);
+  app.use('/api/merchants', merchantsRoutes);
+  app.use('/api/nft-receipts', nftReceiptsRoutes);
   
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
