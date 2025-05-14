@@ -28,6 +28,10 @@ const openai = new OpenAI({
 const CACHE_DIR = path.join(process.cwd(), 'cache');
 const OCR_CACHE_DIR = path.join(CACHE_DIR, 'ocr');
 
+// Ensure the directories exist
+if (!fs.existsSync(CACHE_DIR)) {
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+}
 if (!fs.existsSync(OCR_CACHE_DIR)) {
   fs.mkdirSync(OCR_CACHE_DIR, { recursive: true });
 }
@@ -503,8 +507,8 @@ export async function inferReceiptCategory(
  */
 async function fallbackCategorization(merchantName: string, itemDescriptions: string): Promise<string> {
   try {
-    // Try to use the more advanced Tesseract categorization algorithm
-    const { inferCategoryFromText } = await import('./tesseractOcrService');
+    // Import the Tesseract OCR service
+    const tesseractService = await import('./tesseractOcrService');
     
     // Convert string itemDescriptions to array of objects for Tesseract categorization
     const items = itemDescriptions.split(',').map(item => ({
@@ -512,7 +516,7 @@ async function fallbackCategorization(merchantName: string, itemDescriptions: st
       price: 0
     }));
     
-    return inferCategoryFromText(merchantName, items);
+    return tesseractService.inferCategoryFromText(merchantName, items);
   } catch (error) {
     console.warn('Error using Tesseract categorization, falling back to basic keywords', error);
     
