@@ -1,7 +1,62 @@
 import { ethers } from 'ethers';
 import crypto from 'crypto';
 import { FullReceipt } from '@shared/schema';
-import Receipt1155Artifact from '../../artifacts-mumbai/contracts/Receipt1155.sol/Receipt1155.json';
+// We'll load the artifact dynamically once compiled
+let Receipt1155Artifact: any = { 
+  abi: [
+    // Minimal ABI for minting receipts
+    {
+      "inputs": [
+        { "internalType": "address", "name": "to", "type": "address" },
+        { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+        { "internalType": "bytes32", "name": "receiptHash", "type": "bytes32" },
+        { "internalType": "string", "name": "uri_", "type": "string" }
+      ],
+      "name": "mintReceipt",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+      ],
+      "name": "uri",
+      "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+        { "internalType": "bytes32", "name": "hash", "type": "bytes32" }
+      ],
+      "name": "verifyReceiptHash",
+      "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+      ],
+      "name": "getReceiptHash",
+      "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "account", "type": "address" },
+        { "internalType": "uint256", "name": "id", "type": "uint256" }
+      ],
+      "name": "balanceOf",
+      "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+};
 
 export interface IBlockchainService {
   createReceiptHash(receipt: FullReceipt): string;
@@ -11,9 +66,9 @@ export interface IBlockchainService {
 }
 
 class BlockchainService implements IBlockchainService {
-  private provider: ethers.providers.JsonRpcProvider;
-  private wallet: ethers.Wallet;
-  private contract: ethers.Contract;
+  private provider?: ethers.providers.JsonRpcProvider;
+  private wallet?: ethers.Wallet;
+  private contract?: ethers.Contract;
   private mockMode: boolean = false;
 
   constructor() {
