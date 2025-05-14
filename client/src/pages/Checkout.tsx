@@ -202,7 +202,11 @@ export default function Checkout() {
               <CheckCircle2 className="h-8 w-8 text-green-500" />
               <div>
                 <CardTitle className="text-green-700">Payment Successful</CardTitle>
-                <CardDescription>Your payment has been processed successfully</CardDescription>
+                <CardDescription>
+                  {paymentInfo?.mintNFT
+                    ? "Your payment has been processed and blockchain receipt is being minted"
+                    : "Your payment has been processed successfully"}
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -211,7 +215,10 @@ export default function Checkout() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm text-muted-foreground">Amount</Label>
-                  <p className="text-lg font-semibold">${amount}</p>
+                  <p className="text-lg font-semibold">
+                    ${calculateTotal().toFixed(2)}
+                    {paymentInfo?.mintNFT && <span className="text-xs text-muted-foreground ml-1">(includes NFT fee)</span>}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm text-muted-foreground">Payment ID</Label>
@@ -227,6 +234,20 @@ export default function Checkout() {
                   <Label className="text-sm text-muted-foreground">Status</Label>
                   <p className="text-lg text-green-600 font-semibold">Completed</p>
                 </div>
+                
+                {paymentInfo?.mintNFT && (
+                  <div className="col-span-2 bg-blue-50 p-3 rounded-md mt-2">
+                    <div className="flex items-start gap-3">
+                      <BadgeCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-1" />
+                      <div>
+                        <p className="font-medium text-blue-800">Blockchain Receipt</p>
+                        <p className="text-sm text-blue-700">
+                          Your verified receipt is being minted on the blockchain. This process may take a few minutes to complete.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {paymentInfo?.receiptUrl && (

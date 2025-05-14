@@ -80,14 +80,29 @@ router.post("/create-intent", async (req, res) => {
     
     // If successful and tied to a receipt, update the receipt with payment info
     if (paymentIntent.success && receiptId) {
-      await storage.updateReceipt(receiptId, {
+      // Base receipt update
+      const receiptUpdate = {
         paymentId: paymentIntent.paymentIntentId,
         paymentAmount: amount.toString(),
         paymentCurrency: "usd",
         paymentDate: new Date(),
         paymentMethod: "card",
         paymentComplete: false // Will be updated when payment completes
-      });
+      };
+      
+      // Update the receipt
+      await storage.updateReceipt(receiptId, receiptUpdate);
+      
+      // If NFT minting is requested in metadata, store this info in the payment intent
+      if (metadata.mintNFT === 'true') {
+        log(`NFT minting requested for payment intent ${paymentIntent.paymentIntentId}`, "payments");
+        
+        // In real implementation, this would be handled by a webhook when payment completes
+        // For this demo, we'll just log the NFT request and prepare for mock minting
+        paymentIntent.mintNFT = true;
+        paymentIntent.nftTheme = metadata.nftTheme || 'default';
+        paymentIntent.nftFee = metadata.nftFee || '0.99';
+      }
     }
     
     res.json(paymentIntent);
@@ -136,7 +151,8 @@ router.post("/mock-payment", async (req, res) => {
     
     // If successful and tied to a receipt, update the receipt with payment info
     if (payment.success && receiptId) {
-      await storage.updateReceipt(receiptId, {
+      // Base receipt update
+      const receiptUpdate = {
         paymentId: payment.paymentId,
         paymentAmount: amount.toString(),
         paymentCurrency: "usd",
@@ -144,7 +160,68 @@ router.post("/mock-payment", async (req, res) => {
         paymentMethod: "card",
         paymentComplete: true,
         stripeReceiptUrl: payment.receiptUrl
-      });
+      };
+      
+      // Update the receipt
+      await storage.updateReceipt(receiptId, receiptUpdate);
+      
+      // If NFT minting is requested, trigger the blockchain minting process
+      if (metadata.mintNFT === 'true') {
+        try {
+          log(`NFT minting requested for receipt ${receiptId}`, "payments");
+          
+          // Get the full receipt with items
+          const fullReceipt = await storage.getFullReceipt(receiptId);
+          if (fullReceipt) {
+            // Import the blockchain service dynamically to avoid circular dependencies
+            const { blockchainServiceAmoy } = await import("../services/blockchainServiceAmoy");
+            
+            // Mint the NFT receipt
+            const mintResult = await blockchainServiceAmoy.mockMintReceipt(
+              fullReceipt,
+              fullReceipt.items,
+              {
+                theme: metadata.nftTheme || 'default',
+                fee: metadata.nftFee || '0.99'
+              }
+            );
+            
+            if (mintResult.success) {
+              // Update receipt with blockchain info
+              await storage.updateReceipt(receiptId, {
+                blockchainTxHash: mintResult.txHash,
+                blockchainTokenId: mintResult.tokenId?.toString(),
+                blockchainVerified: true
+              });
+              
+              log(`Successfully minted NFT for receipt ${receiptId}`, "blockchain");
+              
+              // Add NFT info to the payment response
+              payment.nftInfo = {
+                minted: true,
+                tokenId: mintResult.tokenId,
+                txHash: mintResult.txHash
+              };
+            } else {
+              log(`Failed to mint NFT for receipt ${receiptId}: ${mintResult.error}`, "blockchain");
+              
+              // Add NFT info to the payment response
+              payment.nftInfo = {
+                minted: false,
+                error: mintResult.error,
+                pending: true
+              };
+            }
+          }
+        } catch (error: any) {
+          log(`Error minting NFT for receipt ${receiptId}: ${error.message}`, "blockchain");
+          payment.nftInfo = {
+            minted: false,
+            error: error.message,
+            pending: true
+          };
+        }
+      }
     }
     
     res.json(payment);
