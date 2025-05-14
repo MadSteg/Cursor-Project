@@ -17,7 +17,8 @@ import {
   Wallet, 
   Store, 
   FileCheck,
-  FileImage
+  FileImage,
+  Upload
 } from "lucide-react";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
@@ -63,6 +64,13 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
+            {/* Upload Receipt - New Feature */}
+            <Link href="/upload-receipt">
+              <span className={`text-sm font-medium ${currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Upload className="h-4 w-4 mr-1.5" /> Upload Receipt
+              </span>
+            </Link>
+            
             {/* NFT Receipts - Primary Feature */}
             <Link href="/nft-wallet">
               <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
@@ -103,6 +111,11 @@ const Header: React.FC = () => {
                     <Link href="/scan-receipt">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                         <Scan className="h-5 w-5" /> Scan Receipt
+                      </span>
+                    </Link>
+                    <Link href="/upload-receipt">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <Upload className="h-5 w-5" /> Upload Receipt
                       </span>
                     </Link>
                   </div>

@@ -1,8 +1,8 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { extractReceiptData, determineReceiptTier } = require('../../shared/utils/receiptLogic');
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { extractReceiptData, determineReceiptTier } from '../../shared/utils/receiptLogic';
 
 const router = express.Router();
 
@@ -63,12 +63,12 @@ router.post('/upload-receipt', upload.single('receipt'), async (req, res) => {
         fileId: path.basename(req.file.path)
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error processing receipt:', error);
     return res.status(500).json({ 
       success: false, 
       message: 'Failed to process receipt', 
-      error: error.message
+      error: error.message || 'Unknown error'
     });
   }
 });
@@ -85,17 +85,14 @@ router.get('/receipt/:fileId', (req, res) => {
     
     // Serve the file
     return res.sendFile(filePath);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error retrieving receipt:', error);
     return res.status(500).json({ 
       success: false, 
       message: 'Failed to retrieve receipt', 
-      error: error.message
+      error: error.message || 'Unknown error'
     });
   }
 });
 
-// For CommonJS export
-module.exports = router;
-// For ESM default export compatibility
 export default router;

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { 
   Card, 
   CardContent, 
@@ -36,7 +36,7 @@ import { useToast } from '@/hooks/use-toast';
  */
 export default function ReceiptUploader() {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const fileInputRef = useRef(null);
   
   // Component state
@@ -162,7 +162,7 @@ export default function ReceiptUploader() {
       // In a real app, this would call the NFT minting endpoint
       // For now, we'll just navigate to the NFT wallet page
       setTimeout(() => {
-        navigate('/nft-wallet');
+        setLocation('/nft-wallet');
       }, 2000);
     } catch (error) {
       console.error('Error minting NFT receipt:', error);

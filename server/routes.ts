@@ -23,6 +23,9 @@ import metadataRoutes from "./routes/metadata";
 import ocrRoutes from "./routes/ocr";
 // OCR test tool routes
 import ocrTestRoutes from "./routes/ocr-test";
+// Receipt upload routes
+// Import the uploadReceipt routes
+import uploadReceiptRoutes from "./routes/uploadReceipt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -76,6 +79,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register OCR test tool routes
   app.use('/api/ocr-test', ocrTestRoutes);
+  
+  // Register receipt upload routes
+  app.use('/api', uploadReceiptRoutes);
   
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
