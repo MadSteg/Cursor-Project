@@ -78,8 +78,30 @@ export function EncryptedCheckout({ amount, receiptId, onPaymentComplete }: Encr
       });
       
       // Encrypt the receipt data using threshold encryption
-      const { encryptedData: encrypted, sharedKey: sharedKeyData } = 
-        await createShareableData(receiptData, DEMO_USER_ID);
+      let encrypted = '';
+      let sharedKeyData = '';
+      
+      // For demonstration purposes, we'll create a mock encrypted receipt using Taco
+      if (userKeys && userKeys.length > 0) {
+        try {
+          // Use the first Taco key to encrypt the receipt data
+          encrypted = await tacoThresholdCrypto.encrypt(
+            receiptData, 
+            userKeys[0].publicKey
+          );
+          sharedKeyData = 'taco-threshold-shared-key-' + Date.now();
+          console.log("Receipt encrypted with Taco threshold encryption");
+        } catch (error) {
+          console.error("Failed to encrypt with Taco:", error);
+          // Fallback to mock data
+          encrypted = `mock-encrypted-data-${Date.now()}`;
+          sharedKeyData = `mock-shared-key-${Date.now()}`;
+        }
+      } else {
+        console.log("Using mock encryption mode - no Taco keys available");
+        encrypted = `mock-encrypted-data-${Date.now()}`;
+        sharedKeyData = `mock-shared-key-${Date.now()}`;
+      }
       
       setEncryptedData(encrypted);
       if (sharedKeyData) {

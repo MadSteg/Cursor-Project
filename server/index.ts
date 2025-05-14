@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeStripeService } from "./services/stripeService";
+import { tacoService } from "./services/tacoService";
 
 const app = express();
 app.use(express.json());
@@ -38,6 +39,15 @@ app.use((req, res, next) => {
 });
 
 // Initialize services
+log("Initializing Taco threshold encryption service...");
+tacoService.initialize().then(success => {
+  if (success) {
+    log("Taco service initialized successfully", "taco");
+  } else {
+    log("Using mock Taco service", "taco");
+  }
+});
+
 log("Initializing Stripe payment service...");
 initializeStripeService();
 
