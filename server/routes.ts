@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import blockchainRoutes from "./routes/blockchain-fixed";
 import blockchainAmoyRoutes from "./routes/blockchainAmoy";
 import emailRoutes from "./routes/email";
+import paymentRoutes from "./routes/payments";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -17,6 +18,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register email scanning routes
   app.use('/api/email', emailRoutes);
+  
+  // Register payment processing routes
+  app.use('/api/payments', paymentRoutes);
   
 
 

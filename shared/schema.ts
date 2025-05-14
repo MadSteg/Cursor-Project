@@ -94,6 +94,12 @@ export const receipts = pgTable("receipts", {
   storeId: text("store_id"), // Store identifier within retailer chain
   orderNumber: text("order_number"), // Order/transaction number from receipt
   paymentMethod: text("payment_method"), // Credit card, cash, etc.
+  paymentId: text("payment_id"), // Stripe payment ID or other payment reference
+  paymentComplete: boolean("payment_complete").default(false), // Whether payment has been processed
+  paymentAmount: numeric("payment_amount"), // Amount paid (may differ from total)
+  paymentCurrency: text("payment_currency").default("usd"), // Currency code
+  paymentDate: timestamp("payment_date"), // When payment was processed
+  stripeReceiptUrl: text("stripe_receipt_url"), // URL to Stripe receipt
 });
 
 export const insertReceiptSchema = createInsertSchema(receipts).pick({
