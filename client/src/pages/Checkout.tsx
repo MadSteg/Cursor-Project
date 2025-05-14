@@ -63,6 +63,18 @@ export default function Checkout() {
   };
   
   // Handle mock payment submission
+  // Handle adding the receipt to mobile wallet
+  const handleAddToWallet = () => {
+    toast({
+      title: "Added to Mobile Wallet",
+      description: "Your digital receipt has been added to your mobile wallet. You can now view it on your Apple Watch or iPhone.",
+      variant: "default",
+    });
+    
+    // In a real implementation, this would generate a wallet pass file
+    // and download it or send it to the user's device
+  };
+  
   const handleMockPayment = async () => {
     try {
       setIsLoading(true);
@@ -245,6 +257,16 @@ export default function Checkout() {
                         <p className="text-sm text-blue-700">
                           Your verified receipt is being minted on the blockchain. This process may take a few minutes to complete.
                         </p>
+                        
+                        <div className="mt-3 pt-3 border-t border-blue-100">
+                          <div className="flex items-center gap-2">
+                            <Smartphone className="h-4 w-4 text-blue-600" />
+                            <p className="text-sm font-medium text-blue-800">Mobile Wallet Ready</p>
+                          </div>
+                          <p className="text-xs text-blue-600 mt-1">
+                            Your receipt will be available to add to Apple Wallet or Google Pay from your receipt details page.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -252,11 +274,22 @@ export default function Checkout() {
               </div>
               
               {paymentInfo?.receiptUrl && (
-                <div className="pt-4">
+                <div className="pt-4 flex gap-2">
                   <Button variant="outline" className="gap-2" onClick={() => window.open(paymentInfo.receiptUrl, '_blank')}>
                     <Receipt className="h-4 w-4" />
                     View Receipt
                   </Button>
+                  
+                  {paymentInfo?.mintNFT && (
+                    <Button 
+                      variant="default" 
+                      className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700"
+                      onClick={handleAddToWallet}
+                    >
+                      <Smartphone className="h-4 w-4" />
+                      Add to Wallet
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
