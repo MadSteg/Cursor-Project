@@ -11,11 +11,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight, Tag, DollarSign, Landmark, ShoppingBag } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
-  processReceiptImage, 
-  processReceiptBase64, 
-  fileToBase64, 
+  uploadReceiptImage,
   ReceiptData, 
-  getReceiptTier, 
+  determineReceiptTier as getReceiptTier, 
   ReceiptTier 
 } from '@/lib/receiptOcr';
 

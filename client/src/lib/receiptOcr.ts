@@ -128,8 +128,62 @@ export function formatCurrency(amount: number, currencyCode = 'USD'): string {
   }).format(amount);
 }
 
+/**
+ * Convert a file to base64 encoding
+ * 
+ * @param file File to convert
+ * @returns Promise with base64 string
+ */
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      // Remove the data:image/*;base64, prefix
+      const base64 = base64String.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+}
+
+/**
+ * Process a receipt image from a file
+ * 
+ * @param file Image file
+ * @returns Promise with receipt data
+ */
+export async function processReceiptImage(file: File): Promise<ReceiptData> {
+  try {
+    const base64 = await fileToBase64(file);
+    return await uploadReceiptImage(base64);
+  } catch (error) {
+    console.error('Process receipt image error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Process a receipt image from base64 string
+ * 
+ * @param base64 Base64 encoded image
+ * @returns Promise with receipt data
+ */
+export async function processReceiptBase64(base64: string): Promise<ReceiptData> {
+  try {
+    return await uploadReceiptImage(base64);
+  } catch (error) {
+    console.error('Process receipt base64 error:', error);
+    throw error;
+  }
+}
+
 export default {
   uploadReceiptImage,
   determineReceiptTier,
-  formatCurrency
+  formatCurrency,
+  fileToBase64,
+  processReceiptImage,
+  processReceiptBase64
 };

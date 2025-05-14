@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 // Core pages
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
+import HomePage from "@/pages/HomePage";
+import AboutPage from "@/pages/AboutPage";
 
 // NFT Receipt Features (New Focus)
 import UserNFTWallet from "@/pages/UserNFTWallet";
@@ -47,7 +49,9 @@ function Router() {
       <Header />
       <Switch>
         {/* Core pages */}
-        <Route path="/" component={Dashboard} />
+        <Route path="/" component={HomePage} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/about" component={AboutPage} />
         
         {/* NFT Receipt Features */}
         <Route path="/nft-wallet" component={UserNFTWallet} />
