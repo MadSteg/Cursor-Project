@@ -1,8 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import blockchainRoutes from "./routes/blockchain-fixed";
-import blockchainAmoyRoutes from "./routes/blockchainAmoy";
+import blockchainRoutes from "./routes/blockchain";
+import blockchainAmoyRoutes from "./routes/blockchain-amoy";
+import multiBlockchainRoutes from "./routes/multi-blockchain";
 import emailRoutes from "./routes/email";
 import paymentRoutes from "./routes/payments";
 import thresholdReceiptRoutes from "./routes/threshold-receipt";
@@ -21,6 +22,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Amoy blockchain routes (recommended)
   app.use('/api/blockchain/amoy', blockchainAmoyRoutes);
+  
+  // Register multi-blockchain status route
+  app.use('/api/blockchain', multiBlockchainRoutes);
   
   // Register email scanning routes
   app.use('/api/email', emailRoutes);

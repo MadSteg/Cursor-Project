@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import BlockchainStatus from "@/components/blockchain/BlockchainStatus";
-import { Activity, Database, Lock, Settings, Shield, Terminal } from "lucide-react";
+import { Activity, Database, Lock, Settings, Shield, Terminal, Server, Layers } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function Admin() {
@@ -9,7 +9,9 @@ export default function Admin() {
     <main className="container mx-auto py-6 px-4 md:px-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Admin Dashboard
+          </h1>
           <p className="text-muted-foreground">
             System monitoring and administration
           </p>
@@ -36,11 +38,12 @@ export default function Admin() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="system" className="space-y-4">
+        <TabsContent value="system" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
+                  <Server className="h-4 w-4 inline mr-2" />
                   Server Status
                 </CardTitle>
                 <div className="h-4 w-4 rounded-full bg-green-500" aria-hidden />
@@ -55,6 +58,7 @@ export default function Admin() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
+                  <Layers3D className="h-4 w-4 inline mr-2" />
                   Services Status
                 </CardTitle>
                 <div className="flex space-x-1">
@@ -72,6 +76,7 @@ export default function Admin() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
+                  <Activity className="h-4 w-4 inline mr-2" />
                   API Health
                 </CardTitle>
                 <div className="h-4 w-4 rounded-full bg-green-500" aria-hidden />
@@ -85,16 +90,19 @@ export default function Admin() {
             </Card>
           </div>
           
+          {/* Blockchain Network Status - Full Width */}
           <div className="my-6">
-            <h2 className="text-xl font-semibold mb-4">Blockchain Network Status</h2>
             <BlockchainStatus />
           </div>
           
+          {/* System Resources */}
           <div className="my-6">
-            <h2 className="text-xl font-semibold mb-4">Memory Usage</h2>
             <Card>
               <CardHeader>
-                <CardTitle>System Resources</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Terminal className="h-5 w-5" />
+                  System Resources
+                </CardTitle>
                 <CardDescription>
                   Current server resource utilization
                 </CardDescription>
