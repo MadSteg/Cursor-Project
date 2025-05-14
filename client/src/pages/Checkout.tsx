@@ -11,8 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { checkPaymentStatus, createPaymentIntent, createMockPayment } from '@/lib/payments';
-import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function Checkout() {
@@ -27,6 +29,11 @@ export default function Checkout() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
+  
+  // NFT receipt options
+  const [mintNFT, setMintNFT] = useState(true); // Default to selected
+  const NFT_RECEIPT_FEE = 0.99;
+  const [nftTheme, setNftTheme] = useState('default');
   
   // Get URL search params (if any)
   useEffect(() => {
@@ -48,23 +55,47 @@ export default function Checkout() {
     });
   }, []);
   
+  // Calculate total amount with NFT fee if selected
+  const calculateTotal = () => {
+    const baseAmount = parseFloat(amount);
+    return mintNFT ? baseAmount + NFT_RECEIPT_FEE : baseAmount;
+  };
+  
   // Handle mock payment submission
   const handleMockPayment = async () => {
     try {
       setIsLoading(true);
       
+      // Calculate total with optional NFT fee
+      const totalAmount = calculateTotal();
+      
+      // Add NFT metadata if option is selected
+      const metadata: Record<string, string> = {};
+      if (mintNFT) {
+        metadata.mintNFT = 'true';
+        metadata.nftTheme = nftTheme;
+        metadata.nftFee = NFT_RECEIPT_FEE.toString();
+      }
+      
       const paymentResult = await createMockPayment(
-        parseFloat(amount),
-        receiptId
+        totalAmount,
+        receiptId,
+        metadata
       );
       
       if (paymentResult.success) {
         setIsSuccess(true);
-        setPaymentInfo(paymentResult);
+        setPaymentInfo({
+          ...paymentResult,
+          mintNFT: mintNFT,
+          nftTheme: nftTheme
+        });
         
         toast({
           title: "Payment Successful",
-          description: "Your mock payment has been processed successfully.",
+          description: mintNFT 
+            ? "Your payment has been processed and blockchain receipt will be created."
+            : "Your payment has been processed successfully.",
         });
         
         // Invalidate receipt queries to refresh data
