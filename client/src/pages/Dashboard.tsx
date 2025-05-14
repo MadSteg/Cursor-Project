@@ -58,7 +58,7 @@ const Dashboard: React.FC = () => {
         <div className="md:flex md:items-center md:justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-dark">Dashboard</h2>
-            <p className="text-sm text-gray-500 mt-1">Your blockchain receipts and spending analytics</p>
+            <p className="text-sm text-gray-500 mt-1">Your BlockReceipt.ai verified receipts and spending analytics</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center gap-3">
             <div className="flex items-center space-x-2 bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200">
@@ -160,10 +160,10 @@ const Dashboard: React.FC = () => {
       <section className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-6 my-8 text-white">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
           <div>
-            <h2 className="text-xl font-bold mb-2">Enhanced Security Checkout</h2>
+            <h2 className="text-xl font-bold mb-2">BlockReceipt.ai Premium Security</h2>
             <p className="text-blue-100 max-w-2xl">
-              Try our new threshold encryption technology that protects your payment and receipt data 
-              with advanced cryptography, while still allowing blockchain verification.
+              Experience our military-grade threshold encryption technology that protects your payment and receipt data 
+              with advanced cryptography, while maintaining full blockchain verification benefits.
             </p>
           </div>
           <Link href="/encrypted-checkout?amount=49.99">
@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
         <div className="bg-blue-800 bg-opacity-50 rounded-xl p-4 text-sm">
-          <h3 className="font-medium mb-2">Features:</h3>
+          <h3 className="font-medium mb-2">Premium Features:</h3>
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <li className="flex items-start">
               <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
@@ -191,7 +191,7 @@ const Dashboard: React.FC = () => {
               <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
                 <span className="text-xs">3</span>
               </div>
-              <span className="ml-2">Blockchain verification</span>
+              <span className="ml-2">Zero-knowledge verification</span>
             </li>
           </ul>
         </div>

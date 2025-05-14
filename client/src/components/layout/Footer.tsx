@@ -9,10 +9,10 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
                 <Receipt className="text-white h-4 w-4" />
               </div>
-              <h3 className="text-lg font-bold text-dark">BlockReceipt</h3>
+              <h3 className="text-lg font-bold text-dark">BlockReceipt<span className="text-blue-600">.ai</span></h3>
             </div>
             <p className="text-sm text-gray-500 mb-4">
               Transforming everyday purchases into blockchain-secured digital receipts. Never lose a receipt again.
@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-gray-200 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-500">© {new Date().getFullYear()} BlockReceipt. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {new Date().getFullYear()} BlockReceipt.ai. All rights reserved.</p>
           <div className="mt-4 md:mt-0 flex items-center space-x-4">
             <a href="#" className="text-sm text-gray-500 hover:text-primary">Privacy</a>
             <a href="#" className="text-sm text-gray-500 hover:text-primary">Terms</a>
