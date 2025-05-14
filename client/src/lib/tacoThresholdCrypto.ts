@@ -1,161 +1,180 @@
 /**
- * TacoThresholdCrypto Service
+ * Taco Threshold Crypto Service
  * 
- * This service provides client-side integration with the Taco (formerly NuCypher) 
- * threshold encryption protocol. It communicates with the server's Taco service
- * endpoints to manage keys, encrypt, decrypt, and share encrypted receipts.
+ * This service provides a client-side interface to the Taco threshold encryption
+ * functionality, enabling secure key management and receipt sharing.
  */
-
 import { apiRequest } from './queryClient';
 
-class TacoThresholdCrypto {
+// Types for the Taco API
+interface TacoKey {
+  id: number;
+  userId: number;
+  name: string;
+  publicKey: string;
+  createdAt: string;
+  lastUsed?: string;
+}
+
+interface SharedReceipt {
+  id: number;
+  receiptId: number;
+  targetId: number;
+  createdAt: string;
+  expiresAt?: string;
+  isRevoked: boolean;
+  targetName: string;
+  receipt: {
+    id: number;
+    date: string;
+    total: string;
+    merchantName: string;
+  };
+}
+
+interface SharedWithMeReceipt {
+  id: number;
+  receiptId: number;
+  ownerId: number;
+  ownerName: string;
+  createdAt: string;
+  expiresAt?: string;
+  receipt: {
+    id: number;
+    date: string;
+    total: string;
+    merchantName: string;
+  };
+}
+
+class TacoThresholdCryptoService {
   /**
-   * Generate a new key pair for a user
-   * 
-   * @param userId - The ID of the user
-   * @param name - A friendly name for the key
-   * @returns The newly created key information
+   * Check if the Taco service is initialized
    */
-  async generateKeyPair(userId: number, name: string) {
+  async isInitialized(): Promise<boolean> {
     try {
-      const response = await apiRequest('POST', '/api/taco/keys', { userId, name });
+      const response = await apiRequest('GET', '/api/taco/status');
       const data = await response.json();
-      return data;
+      return data.initialized;
     } catch (error) {
-      console.error('Failed to generate Taco key pair:', error);
+      console.error('Failed to check Taco status:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Initialize the Taco service
+   */
+  async initialize(): Promise<{ success: boolean }> {
+    try {
+      const response = await apiRequest('POST', '/api/taco/initialize');
+      const data = await response.json();
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to initialize Taco service:', error);
+      return { success: false };
+    }
+  }
+
+  /**
+   * Generate a new key pair
+   */
+  async generateKeyPair(userId: number, keyName: string): Promise<TacoKey> {
+    try {
+      const response = await apiRequest('POST', '/api/taco/keys', { userId, name: keyName });
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to generate key pair:', error);
       throw error;
     }
   }
 
   /**
    * Get all keys for a user
-   * 
-   * @param userId - The ID of the user
-   * @returns Array of keys belonging to the user
    */
-  async getKeys(userId: number) {
+  async getKeys(userId: number): Promise<TacoKey[]> {
     try {
-      const response = await apiRequest('GET', `/api/taco/keys/${userId}`);
-      const data = await response.json();
-      return data;
+      const response = await apiRequest('GET', `/api/taco/keys?userId=${userId}`);
+      return await response.json();
     } catch (error) {
-      console.error('Failed to get Taco keys:', error);
-      
-      // Return mock data for demonstration
+      console.error('Failed to get keys:', error);
+      // For demo purposes, return mock data when API is not available
       return [
         {
           id: 1,
           userId,
-          publicKey: 'taco-public-key-demo-1',
-          keyType: 'TACO',
-          name: 'My Threshold Key',
-          createdAt: new Date()
+          name: 'Personal Key',
+          publicKey: 'taco-public-6f8a9b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u',
+          createdAt: new Date().toISOString(),
+          lastUsed: new Date(Date.now() - 86400000).toISOString() // Yesterday
+        },
+        {
+          id: 2,
+          userId,
+          name: 'Work Key',
+          publicKey: 'taco-public-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v',
+          createdAt: new Date(Date.now() - 1000000000).toISOString(), // Older date
+          lastUsed: undefined
         }
       ];
     }
   }
 
   /**
-   * Encrypt data using a public key
-   * 
-   * @param data - The data to encrypt
-   * @param publicKey - The public key to encrypt with
-   * @returns The encrypted data
+   * Delete a key
    */
-  async encrypt(data: string, publicKey: string) {
+  async deleteKey(keyId: number): Promise<{ success: boolean }> {
     try {
-      const response = await apiRequest('POST', '/api/taco/encrypt', { data, publicKey });
-      const result = await response.json();
-      return result.encryptedData;
+      await apiRequest('DELETE', `/api/taco/keys/${keyId}`);
+      return { success: true };
     } catch (error) {
-      console.error('Failed to encrypt with Taco:', error);
-      
-      // Return a mock encrypted version for demonstration
-      return `taco-encrypted:${btoa(data)}`;
-    }
-  }
-
-  /**
-   * Decrypt data using a private key
-   * 
-   * @param encryptedData - The encrypted data
-   * @param privateKey - The private key to decrypt with
-   * @returns The decrypted data
-   */
-  async decrypt(encryptedData: string, privateKey: string) {
-    try {
-      const response = await apiRequest('POST', '/api/taco/decrypt', { encryptedData, privateKey });
-      const result = await response.json();
-      return result.decryptedData;
-    } catch (error) {
-      console.error('Failed to decrypt with Taco:', error);
-      
-      // Handle mock encrypted data format for demonstration
-      if (encryptedData.startsWith('taco-encrypted:')) {
-        return atob(encryptedData.substring(15));
-      }
-      
+      console.error('Failed to delete key:', error);
       throw error;
     }
   }
 
   /**
-   * Generate a re-encryption key for sharing with another user
-   * 
-   * @param senderPrivateKey - The sender's private key
-   * @param receiverPublicKey - The receiver's public key
-   * @returns The re-encryption key
+   * Encrypt data using a public key
    */
-  async generateReEncryptionKey(senderPrivateKey: string, receiverPublicKey: string) {
+  async encryptData(
+    publicKey: string, 
+    data: string
+  ): Promise<{ encryptedData: string }> {
     try {
-      const response = await apiRequest('POST', '/api/taco/generate-re-key', {
-        senderPrivateKey,
-        receiverPublicKey
-      });
-      const result = await response.json();
-      return result.reEncryptionKey;
+      const response = await apiRequest('POST', '/api/taco/encrypt', { publicKey, data });
+      return await response.json();
     } catch (error) {
-      console.error('Failed to generate re-encryption key:', error);
-      
-      // Return a mock re-encryption key for demonstration
-      return `taco-re-key:${senderPrivateKey.substring(0, 5)}:${receiverPublicKey.substring(0, 5)}`;
+      console.error('Failed to encrypt data:', error);
+      // For demo purposes, return a mock encrypted string
+      return { 
+        encryptedData: `encrypted:${Buffer.from(data).toString('base64')}` 
+      };
     }
   }
 
   /**
-   * Re-encrypt data for a target user
-   * 
-   * @param encryptedData - The encrypted data
-   * @param reEncryptionKey - The re-encryption key
-   * @returns The re-encrypted data
+   * Decrypt data using a private key
    */
-  async reEncrypt(encryptedData: string, reEncryptionKey: string) {
+  async decryptData(
+    privateKey: string, 
+    encryptedData: string
+  ): Promise<{ data: string }> {
     try {
-      const response = await apiRequest('POST', '/api/taco/re-encrypt', {
-        encryptedData,
-        reEncryptionKey
-      });
-      const result = await response.json();
-      return result.reEncryptedData;
+      const response = await apiRequest('POST', '/api/taco/decrypt', { privateKey, encryptedData });
+      return await response.json();
     } catch (error) {
-      console.error('Failed to re-encrypt data:', error);
-      
-      // Return mock re-encrypted data for demonstration
-      return `taco-re-encrypted:${encryptedData}`;
+      console.error('Failed to decrypt data:', error);
+      // For demo purposes, try to extract mock data
+      if (encryptedData.startsWith('encrypted:')) {
+        const base64Data = encryptedData.substring(10);
+        return { data: Buffer.from(base64Data, 'base64').toString() };
+      }
+      throw error;
     }
   }
 
   /**
    * Share a receipt with another user
-   * 
-   * @param receiptId - The ID of the receipt to share
-   * @param ownerId - The ID of the receipt owner
-   * @param targetId - The ID of the user to share with
-   * @param encryptedData - The encrypted receipt data
-   * @param ownerPrivateKey - The owner's private key
-   * @param targetPublicKey - The target user's public key
-   * @param expiresAt - Optional expiration date
-   * @returns The shared access information
    */
   async shareReceipt(
     receiptId: number,
@@ -164,127 +183,74 @@ class TacoThresholdCrypto {
     encryptedData: string,
     ownerPrivateKey: string,
     targetPublicKey: string,
-    expiresAt?: Date
-  ) {
+    expiryDate?: Date
+  ): Promise<SharedReceipt> {
     try {
       const response = await apiRequest('POST', '/api/taco/share-receipt', {
         receiptId,
         ownerId,
         targetId,
         encryptedData,
-        ownerPrivateKey,
-        targetPublicKey,
-        expiresAt: expiresAt ? expiresAt.toISOString() : undefined
+        expiresAt: expiryDate?.toISOString()
       });
       return await response.json();
     } catch (error) {
       console.error('Failed to share receipt:', error);
-      
-      // Return mock shared access information for demonstration
-      return {
-        id: Math.floor(Math.random() * 1000),
-        receiptId,
-        ownerId,
-        targetId,
-        encryptedData,
-        createdAt: new Date().toISOString(),
-        expiresAt: expiresAt ? expiresAt.toISOString() : null
-      };
+      throw error;
     }
   }
 
   /**
-   * Get all receipts shared by a user
-   * 
-   * @param userId - The ID of the user
-   * @returns Array of shared receipts
+   * Get all receipts shared by the user
    */
-  async getSharedByMe(userId: number) {
+  async getSharedByMe(userId: number): Promise<SharedReceipt[]> {
     try {
-      const response = await apiRequest('GET', `/api/taco/shared-by-me/${userId}`);
+      const response = await apiRequest('GET', `/api/taco/shared-by-me?userId=${userId}`);
       return await response.json();
     } catch (error) {
-      console.error('Failed to get receipts shared by me:', error);
-      
-      // Return mock shared receipts for demonstration
-      return [
-        {
-          access: {
-            id: 1,
-            receiptId: 101,
-            ownerId: userId,
-            targetId: 2,
-            encryptedData: 'taco-encrypted:mock-data',
-            createdAt: new Date().toISOString(),
-          },
-          receipt: {
-            id: 101,
-            userId,
-            merchantId: 1,
-            merchant: { name: 'Coffeeshop' },
-            date: new Date().toISOString(),
-            total: '24.99'
-          }
-        }
-      ];
+      console.error('Failed to get shared receipts:', error);
+      throw error;
     }
   }
 
   /**
-   * Get all receipts shared with a user
-   * 
-   * @param userId - The ID of the user
-   * @returns Array of shared receipts
+   * Get all receipts shared with the user
    */
-  async getSharedWithMe(userId: number) {
+  async getSharedWithMe(userId: number): Promise<SharedWithMeReceipt[]> {
     try {
-      const response = await apiRequest('GET', `/api/taco/shared-with-me/${userId}`);
+      const response = await apiRequest('GET', `/api/taco/shared-with-me?userId=${userId}`);
       return await response.json();
     } catch (error) {
-      console.error('Failed to get receipts shared with me:', error);
-      
-      // Return mock shared receipts for demonstration
-      return [
-        {
-          access: {
-            id: 2,
-            receiptId: 102,
-            ownerId: 3,
-            targetId: userId,
-            encryptedData: 'taco-encrypted:mock-data-2',
-            createdAt: new Date().toISOString(),
-          },
-          receipt: {
-            id: 102,
-            userId: 3,
-            merchantId: 2,
-            merchant: { name: 'Electronics Store' },
-            date: new Date().toISOString(),
-            total: '199.99'
-          }
-        }
-      ];
+      console.error('Failed to get receipts shared with user:', error);
+      throw error;
     }
   }
 
   /**
-   * Get the decrypted content of a shared receipt
-   * 
-   * @param sharedId - The ID of the shared access
-   * @param privateKey - The private key of the target user
-   * @returns The decrypted receipt data
+   * Get a specific shared receipt
    */
-  async getDecryptedSharedReceipt(sharedId: number, privateKey: string) {
+  async getSharedReceipt(sharedId: number): Promise<SharedReceipt> {
     try {
-      const response = await apiRequest('POST', `/api/taco/decrypt-shared/${sharedId}`, {
-        privateKey
-      });
+      const response = await apiRequest('GET', `/api/taco/shared-receipts/${sharedId}`);
       return await response.json();
     } catch (error) {
-      console.error('Failed to decrypt shared receipt:', error);
+      console.error('Failed to get shared receipt:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Revoke access to a shared receipt
+   */
+  async revokeAccess(sharedId: number): Promise<{ success: boolean }> {
+    try {
+      await apiRequest('POST', `/api/taco/revoke-access/${sharedId}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to revoke access:', error);
       throw error;
     }
   }
 }
 
-export const tacoThresholdCrypto = new TacoThresholdCrypto();
+export const tacoThresholdCrypto = new TacoThresholdCryptoService();

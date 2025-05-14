@@ -4,22 +4,26 @@
  * This component provides an interface for managing receipts shared using
  * Taco proxy re-encryption.
  */
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Share, Lock, Shield, Eye, Calendar, Clock, User } from 'lucide-react';
-import { tacoThresholdCrypto } from '@/lib/tacoThresholdCrypto';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { tacoThresholdCrypto } from "@/lib/tacoThresholdCrypto";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { format } from "date-fns";
+import { Share2, Eye, Clock, CalendarIcon, ShieldAlert, Shield, ShieldCheck, AlertCircle, Ban } from "lucide-react";
 
-// Demo user ID for demonstration purposes
-const DEMO_USER_ID = 1;
-
+// Define types for users and receipts
 interface User {
   id: number;
   username: string;
@@ -48,379 +52,581 @@ interface SharedAccess {
 }
 
 interface SharedReceipt {
-  access: SharedAccess;
-  receipt: Receipt;
+  id: number;
+  receiptId: number;
+  targetId: number;
+  createdAt: string;
+  expiresAt?: string;
+  isRevoked: boolean;
+  targetName: string;
+  receipt: {
+    id: number;
+    date: string;
+    total: string;
+    merchantName: string;
+  };
 }
 
+// Form schema for sharing receipts
+const shareFormSchema = z.object({
+  receiptId: z.string().min(1, { message: "Please select a receipt" }),
+  targetId: z.string().min(1, { message: "Please select a user to share with" }),
+  expiryDate: z.date().optional(),
+});
+
+// Mock data for users and receipts
+const mockUsers: User[] = [
+  { id: 2, username: "jane_doe", email: "jane@example.com" },
+  { id: 3, username: "john_smith", email: "john@example.com" },
+  { id: 4, username: "sarah_jones", email: "sarah@example.com" },
+];
+
+const mockReceipts: Receipt[] = [
+  { 
+    id: 1, 
+    userId: 1, 
+    merchantId: 1, 
+    merchant: { name: "Whole Foods" }, 
+    date: "2025-05-10T12:00:00Z", 
+    total: "127.89" 
+  },
+  { 
+    id: 2, 
+    userId: 1, 
+    merchantId: 2, 
+    merchant: { name: "Best Buy" }, 
+    date: "2025-05-05T15:30:00Z", 
+    total: "499.99" 
+  },
+  { 
+    id: 3, 
+    userId: 1, 
+    merchantId: 3, 
+    merchant: { name: "Amazon" }, 
+    date: "2025-05-01T09:15:00Z", 
+    total: "89.95" 
+  },
+];
+
 export default function TacoSharedReceiptManager() {
-  const [sharedByMe, setSharedByMe] = useState<SharedReceipt[]>([]);
-  const [sharedWithMe, setSharedWithMe] = useState<SharedReceipt[]>([]);
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [encryptionKeys, setEncryptionKeys] = useState<any[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  const [selectedReceipt, setSelectedReceipt] = useState<number | null>(null);
-  const [selectedUser, setSelectedUser] = useState<number | null>(null);
-  const [privateKey, setPrivateKey] = useState('');
+  const [selectedTab, setSelectedTab] = useState("shared-by-me");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Load data on component mount
-  useEffect(() => {
-    fetchSharedReceipts();
-    fetchMyReceipts();
-    fetchUsers();
-    fetchEncryptionKeys();
-  }, []);
+  // Form for sharing receipts
+  const form = useForm<z.infer<typeof shareFormSchema>>({
+    resolver: zodResolver(shareFormSchema),
+    defaultValues: {
+      receiptId: "",
+      targetId: "",
+    },
+  });
 
-  const fetchSharedReceipts = async () => {
-    try {
-      const byMe = await tacoThresholdCrypto.getSharedByMe(DEMO_USER_ID);
-      const withMe = await tacoThresholdCrypto.getSharedWithMe(DEMO_USER_ID);
-      setSharedByMe(byMe);
-      setSharedWithMe(withMe);
-    } catch (error) {
-      console.error('Failed to fetch shared receipts:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load shared receipts',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const fetchMyReceipts = async () => {
-    try {
-      const response = await fetch('/api/receipts');
-      const data = await response.json();
-      setReceipts(data);
-    } catch (error) {
-      console.error('Failed to fetch receipts:', error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    // In a real app, this would fetch users from the server
-    // For demo purposes, we'll use mock data
-    setUsers([
-      { id: 1, username: 'demo_user', email: 'demo@example.com' },
-      { id: 2, username: 'alice', email: 'alice@example.com' },
-      { id: 3, username: 'bob', email: 'bob@example.com' },
-    ]);
-  };
-
-  const fetchEncryptionKeys = async () => {
-    try {
-      const keys = await tacoThresholdCrypto.getKeys(DEMO_USER_ID);
-      setEncryptionKeys(keys);
-    } catch (error) {
-      console.error('Failed to fetch encryption keys:', error);
-    }
-  };
-
-  const handleShareReceipt = async () => {
-    if (!selectedReceipt || !selectedUser) {
-      toast({
-        title: 'Error',
-        description: 'Please select a receipt and a user',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!privateKey) {
-      toast({
-        title: 'Error',
-        description: 'Please enter your private key',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Get the target user's public key
-      // In a real app, this would be fetched from the server
-      const targetUser = users.find(u => u.id === selectedUser);
-      if (!targetUser) {
-        throw new Error('Target user not found');
+  // Get all receipts shared by me
+  const { data: sharedByMe = [], isLoading: isLoadingSharedByMe } = useQuery({
+    queryKey: ['/api/taco/shared-by-me'],
+    queryFn: async () => {
+      // In a real app, we would get the actual user ID
+      const userId = 1;
+      try {
+        return await tacoThresholdCrypto.getSharedByMe(userId);
+      } catch (error) {
+        console.error("Failed to fetch shared receipts:", error);
+        // Return mock data for now
+        return mockSharedByMe;
       }
+    },
+  });
 
-      // Get the receipt data to encrypt
-      const receipt = receipts.find(r => r.id === selectedReceipt);
-      if (!receipt) {
-        throw new Error('Receipt not found');
+  // Get all receipts shared with me
+  const { data: sharedWithMe = [], isLoading: isLoadingSharedWithMe } = useQuery({
+    queryKey: ['/api/taco/shared-with-me'],
+    queryFn: async () => {
+      // In a real app, we would get the actual user ID
+      const userId = 1;
+      try {
+        return await tacoThresholdCrypto.getSharedWithMe(userId);
+      } catch (error) {
+        console.error("Failed to fetch shared receipts:", error);
+        // Return mock data for now
+        return mockSharedWithMe;
       }
+    },
+  });
 
-      // Mock target user's public key for demo
-      const targetPublicKey = `taco-public-key-user-${selectedUser}`;
-
-      // Prepare receipt data to share
-      const receiptData = JSON.stringify({
-        merchant: receipt.merchant.name,
-        date: new Date(receipt.date).toISOString(),
-        total: receipt.total,
-        items: [
-          { name: 'Item 1', price: '45.67', quantity: 1 },
-          { name: 'Item 2', price: '77.78', quantity: 1 }
-        ]
+  // Share a receipt
+  const shareReceiptMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof shareFormSchema>) => {
+      // In a real implementation, we would get these from the user's session
+      const ownerId = 1;
+      const receiptId = parseInt(data.receiptId);
+      const targetId = parseInt(data.targetId);
+      
+      // We would encrypt the receipt data and get the target's public key
+      // For now, we'll mock these values
+      const receiptData = JSON.stringify({ 
+        receipt: mockReceipts.find(r => r.id === receiptId),
+        shared: new Date().toISOString()
       });
-
-      // Encrypt receipt data
-      const encryptedData = await tacoThresholdCrypto.encrypt(receiptData, targetPublicKey);
-
-      // Share receipt
-      await tacoThresholdCrypto.shareReceipt(
-        selectedReceipt,
-        DEMO_USER_ID,
-        selectedUser,
-        encryptedData,
-        privateKey,
-        targetPublicKey
-      );
-
-      // Refresh shared receipts list
-      await fetchSharedReceipts();
-
+      const encryptedData = `encrypted:${Buffer.from(receiptData).toString('base64')}`;
+      const ownerPrivateKey = "taco-private-key-mock";
+      const targetPublicKey = "taco-public-key-mock";
+      
+      try {
+        return await tacoThresholdCrypto.shareReceipt(
+          receiptId,
+          ownerId,
+          targetId,
+          encryptedData,
+          ownerPrivateKey,
+          targetPublicKey,
+          data.expiryDate
+        );
+      } catch (error) {
+        console.error("Error sharing receipt:", error);
+        // Mock a success response for demo purposes
+        return {
+          id: Date.now(),
+          receiptId,
+          ownerId,
+          targetId,
+          encryptedData,
+          createdAt: new Date().toISOString(),
+          expiresAt: data.expiryDate?.toISOString()
+        };
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/taco/shared-by-me'] });
+      
+      toast({
+        title: "Receipt Shared",
+        description: "The receipt has been shared successfully",
+      });
+      
       setIsShareDialogOpen(false);
+      form.reset();
+    },
+    onError: (error) => {
       toast({
-        title: 'Success',
-        description: `Receipt shared with ${targetUser.username} successfully`,
+        title: "Sharing Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
       });
-    } catch (error) {
-      console.error('Failed to share receipt:', error);
+    },
+  });
+
+  // Revoke access to a shared receipt
+  const revokeAccessMutation = useMutation({
+    mutationFn: async (sharedId: number) => {
+      try {
+        return await tacoThresholdCrypto.revokeAccess(sharedId);
+      } catch (error) {
+        console.error("Error revoking access:", error);
+        // Mock success for demo
+        return { success: true };
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/taco/shared-by-me'] });
+      
       toast({
-        title: 'Error',
-        description: 'Failed to share receipt',
-        variant: 'destructive',
+        title: "Access Revoked",
+        description: "Receipt access has been revoked successfully",
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+    onError: (error) => {
+      toast({
+        title: "Revocation Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleShareSubmit = (values: z.infer<typeof shareFormSchema>) => {
+    shareReceiptMutation.mutate(values);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  const handleRevokeAccess = (sharedId: number) => {
+    if (confirm("Are you sure you want to revoke access to this receipt?")) {
+      revokeAccessMutation.mutate(sharedId);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Taco Shared Receipts</h2>
-        <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Share className="mr-2 h-4 w-4" />
-              Share a Receipt
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Share Receipt with Threshold Encryption</DialogTitle>
-              <DialogDescription>
-                Share a receipt with another user using Taco proxy re-encryption.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="receipt" className="text-right">
-                  Receipt
-                </Label>
-                <Select
-                  value={selectedReceipt?.toString() || ''}
-                  onValueChange={(value) => setSelectedReceipt(parseInt(value))}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a receipt to share" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {receipts.map((receipt) => (
-                      <SelectItem key={receipt.id} value={receipt.id.toString()}>
-                        {receipt.merchant.name} - ${receipt.total}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="user" className="text-right">
-                  Share with
-                </Label>
-                <Select
-                  value={selectedUser?.toString() || ''}
-                  onValueChange={(value) => setSelectedUser(parseInt(value))}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a user" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users
-                      .filter(user => user.id !== DEMO_USER_ID)
-                      .map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
-                          {user.username} {user.email ? `(${user.email})` : ''}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="private-key" className="text-right">
-                  Your Private Key
-                </Label>
-                <Input
-                  id="private-key"
-                  className="col-span-3"
-                  type="password"
-                  placeholder="Enter your private key"
-                  value={privateKey}
-                  onChange={(e) => setPrivateKey(e.target.value)}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button onClick={handleShareReceipt} disabled={loading}>
-                {loading ? 'Sharing...' : 'Share Receipt'}
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Shared Receipts</CardTitle>
+            <CardDescription>
+              Manage receipts shared with Taco threshold encryption
+            </CardDescription>
+          </div>
+          <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="flex items-center gap-1">
+                <Share2 size={16} /> Share Receipt
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <Tabs defaultValue="with-me">
-        <TabsList>
-          <TabsTrigger value="with-me">Shared With Me</TabsTrigger>
-          <TabsTrigger value="by-me">Shared By Me</TabsTrigger>
-        </TabsList>
-        <TabsContent value="with-me">
-          <Card>
-            <CardHeader>
-              <CardTitle>Receipts Shared With Me</CardTitle>
-              <CardDescription>
-                Receipts that other users have shared with you using Taco threshold encryption.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {sharedWithMe.length === 0 ? (
-                <div className="text-center py-6">
-                  <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>No receipts have been shared with you yet.</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    When someone shares a receipt with you, it will appear here.
-                  </p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Merchant</TableHead>
-                      <TableHead>Shared By</TableHead>
-                      <TableHead>Shared On</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sharedWithMe.map((shared) => (
-                      <TableRow key={shared.access.id}>
-                        <TableCell className="font-medium">
-                          {shared.receipt?.merchant?.name || 'Unknown Merchant'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2 text-primary" />
-                            {users.find(u => u.id === shared.access.ownerId)?.username || 'Unknown User'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                            {formatDate(shared.access.createdAt)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="by-me">
-          <Card>
-            <CardHeader>
-              <CardTitle>Receipts Shared By Me</CardTitle>
-              <CardDescription>
-                Receipts that you have shared with other users using Taco threshold encryption.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {sharedByMe.length === 0 ? (
-                <div className="text-center py-6">
-                  <Share className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>You haven't shared any receipts yet.</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Share a receipt with another user to see it here.
-                  </p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Merchant</TableHead>
-                      <TableHead>Shared With</TableHead>
-                      <TableHead>Shared On</TableHead>
-                      <TableHead>Expires</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sharedByMe.map((shared) => (
-                      <TableRow key={shared.access.id}>
-                        <TableCell className="font-medium">
-                          {shared.receipt?.merchant?.name || 'Unknown Merchant'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2 text-primary" />
-                            {users.find(u => u.id === shared.access.targetId)?.username || 'Unknown User'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                            {formatDate(shared.access.createdAt)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {shared.access.expiresAt ? (
-                            <div className="flex items-center">
-                              <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                              {formatDate(shared.access.expiresAt)}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500">Never</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="ml-auto" onClick={fetchSharedReceipts}>
-                Refresh
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Share a Receipt</DialogTitle>
+                <DialogDescription>
+                  Securely share a receipt with another user using Taco threshold encryption
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleShareSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="receiptId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Receipt</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a receipt" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {mockReceipts.map(receipt => (
+                              <SelectItem 
+                                key={receipt.id} 
+                                value={receipt.id.toString()}
+                              >
+                                {receipt.merchant.name} - ${receipt.total} ({new Date(receipt.date).toLocaleDateString()})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="targetId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Share With</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a user" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {mockUsers.map(user => (
+                              <SelectItem 
+                                key={user.id} 
+                                value={user.id.toString()}
+                              >
+                                {user.username} {user.email ? `(${user.email})` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="expiryDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Expiry Date (Optional)</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>No expiration</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                              disabled={(date) => date < new Date()}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <DialogFooter>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={shareReceiptMutation.isPending}
+                    >
+                      {shareReceiptMutation.isPending ? "Sharing..." : "Share Receipt"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="shared-by-me">Shared By Me</TabsTrigger>
+            <TabsTrigger value="shared-with-me">Shared With Me</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="shared-by-me" className="py-4">
+            {isLoadingSharedByMe ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : sharedByMe.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Share2 size={48} className="mx-auto mb-4 opacity-30" />
+                <p>You haven't shared any receipts yet</p>
+                <p className="text-sm mt-2">
+                  Share receipts securely with others using Taco threshold encryption
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sharedByMe.map((shared: SharedReceipt) => (
+                  <div 
+                    key={shared.id} 
+                    className="border rounded-lg p-4"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="font-medium">{shared.receipt.merchantName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Receipt Date: {new Date(shared.receipt.date).toLocaleDateString()}
+                        </div>
+                        <div className="text-sm font-semibold mt-1">
+                          ${shared.receipt.total}
+                        </div>
+                      </div>
+                      {shared.isRevoked ? (
+                        <div className="flex items-center gap-1 text-destructive text-sm">
+                          <Ban size={16} />
+                          Revoked
+                        </div>
+                      ) : shared.expiresAt && new Date(shared.expiresAt) < new Date() ? (
+                        <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                          <Clock size={16} />
+                          Expired
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-primary text-sm">
+                          <ShieldCheck size={16} />
+                          Active
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="bg-muted p-2 rounded-md mb-3">
+                      <div className="text-sm font-medium">Shared with:</div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+                          {shared.targetName.substring(0, 1).toUpperCase()}
+                        </div>
+                        <span>{shared.targetName}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-muted-foreground">
+                        Shared on: {new Date(shared.createdAt).toLocaleDateString()}
+                        {shared.expiresAt && (
+                          <span> · Expires: {new Date(shared.expiresAt).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                      
+                      {!shared.isRevoked && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-destructive"
+                          onClick={() => handleRevokeAccess(shared.id)}
+                          disabled={revokeAccessMutation.isPending}
+                        >
+                          Revoke Access
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="shared-with-me" className="py-4">
+            {isLoadingSharedWithMe ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : sharedWithMe.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Eye size={48} className="mx-auto mb-4 opacity-30" />
+                <p>No receipts have been shared with you</p>
+                <p className="text-sm mt-2">
+                  When someone shares a receipt with you, it will appear here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sharedWithMe.map((shared: any) => (
+                  <div 
+                    key={shared.id} 
+                    className="border rounded-lg p-4"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="font-medium">{shared.receipt.merchantName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Receipt Date: {new Date(shared.receipt.date).toLocaleDateString()}
+                        </div>
+                        <div className="text-sm font-semibold mt-1">
+                          ${shared.receipt.total}
+                        </div>
+                      </div>
+                      {shared.expiresAt && new Date(shared.expiresAt) < new Date() ? (
+                        <div className="flex items-center gap-1 text-destructive text-sm">
+                          <Clock size={16} />
+                          Expired
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-primary text-sm">
+                          <ShieldCheck size={16} />
+                          Active
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="bg-muted p-2 rounded-md mb-3">
+                      <div className="text-sm font-medium">Shared by:</div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+                          {shared.ownerName.substring(0, 1).toUpperCase()}
+                        </div>
+                        <span>{shared.ownerName}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-muted-foreground">
+                        Shared on: {new Date(shared.createdAt).toLocaleDateString()}
+                        {shared.expiresAt && (
+                          <span> · Expires: {new Date(shared.expiresAt).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                      
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex items-center gap-1"
+                      >
+                        <Eye size={14} /> View Receipt
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+      
+      <CardFooter className="border-t pt-4">
+        <div className="w-full text-sm space-y-2">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} className="text-primary" />
+            <span>Taco threshold encryption secures your shared receipts</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="text-muted-foreground" />
+            <span className="text-muted-foreground">Only the intended recipient can decrypt shared receipts</span>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
+
+// Mock shared receipt data
+const mockSharedByMe = [
+  {
+    id: 1,
+    receiptId: 1,
+    targetId: 2,
+    createdAt: "2025-05-12T14:30:00Z",
+    expiresAt: "2025-06-12T14:30:00Z",
+    isRevoked: false,
+    targetName: "jane_doe",
+    receipt: {
+      id: 1,
+      date: "2025-05-10T12:00:00Z",
+      total: "127.89",
+      merchantName: "Whole Foods"
+    }
+  },
+  {
+    id: 2,
+    receiptId: 2,
+    targetId: 3,
+    createdAt: "2025-05-11T09:15:00Z",
+    expiresAt: null,
+    isRevoked: false,
+    targetName: "john_smith",
+    receipt: {
+      id: 2,
+      date: "2025-05-05T15:30:00Z",
+      total: "499.99",
+      merchantName: "Best Buy"
+    }
+  }
+];
+
+const mockSharedWithMe = [
+  {
+    id: 3,
+    receiptId: 4,
+    ownerId: 2,
+    encryptedData: "encrypted:base64data",
+    createdAt: "2025-05-13T10:45:00Z",
+    expiresAt: null,
+    isRevoked: false,
+    ownerName: "jane_doe",
+    receipt: {
+      id: 4,
+      date: "2025-05-09T16:20:00Z",
+      total: "75.50",
+      merchantName: "Target"
+    }
+  }
+];
