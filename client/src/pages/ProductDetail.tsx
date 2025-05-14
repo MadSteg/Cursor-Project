@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { NFTReceiptTier, calculateNFTReceiptPrice, calculateTotalPrice } from "@shared/products";
+import { NFTReceiptTier, calculateNFTReceiptPrice, calculateTotalPrice, type Product } from "@shared/products";
 import CryptoCheckoutModal from "@/components/checkout/CryptoCheckoutModal";
 
 export default function ProductDetail() {
@@ -409,7 +409,7 @@ export default function ProductDetail() {
               return (
                 <div key={key} className="border-b pb-2">
                   <div className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                  <div className="text-muted-foreground">{value}</div>
+                  <div className="text-muted-foreground">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</div>
                 </div>
               );
             })}
@@ -526,7 +526,7 @@ export default function ProductDetail() {
             <div className="mb-8">
               <h3 className="text-lg font-medium mb-4">Similar Products</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {relatedProducts.sameCategory.map((relatedProduct) => (
+                {relatedProducts.sameCategory.map((relatedProduct: Product) => (
                   <Card 
                     key={relatedProduct.id} 
                     className="cursor-pointer hover:shadow-md transition-shadow"
