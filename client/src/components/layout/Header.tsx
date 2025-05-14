@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Receipt, BarChart3, Settings, User, Plus, Lock } from "lucide-react";
+import { Menu, Receipt, BarChart3, Settings, User, Lock, Wallet } from "lucide-react";
+import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
 const Header: React.FC = () => {
   const [, setLocation] = useLocation();
@@ -13,11 +14,14 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
               <Receipt className="text-white" size={20} />
             </div>
             <Link href="/">
-              <h1 className="text-xl font-bold text-dark cursor-pointer">BlockReceipt</h1>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold text-dark cursor-pointer">BlockReceipt<span className="text-blue-600">.ai</span></h1>
+                <span className="text-xs text-gray-500 -mt-1">Blockchain-Verified Receipts</span>
+              </div>
             </Link>
           </div>
           
@@ -50,9 +54,9 @@ const Header: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-3">
-            <Button className="hidden md:flex" size="sm">
-              <Plus className="mr-1 h-4 w-4" /> Add Receipt
-            </Button>
+            <div className="hidden md:block">
+              <ConnectWalletButton size="sm" />
+            </div>
             
             <div className="w-9 h-9 bg-light rounded-full flex items-center justify-center cursor-pointer">
               <User className="text-dark h-5 w-5" />
@@ -91,9 +95,9 @@ const Header: React.FC = () => {
                       <Settings className="h-5 w-5" /> Settings
                     </span>
                   </Link>
-                  <Button className="mt-4">
-                    <Plus className="mr-1 h-4 w-4" /> Add Receipt
-                  </Button>
+                  <div className="mt-4">
+                    <ConnectWalletButton />
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

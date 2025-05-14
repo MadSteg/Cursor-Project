@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="64" fill="#0F172A"/>
+  <path d="M128 128H256C270.255 128 282.51 133.372 291.765 142.627C301.02 151.882 306.392 164.137 306.392 178.392C306.392 192.647 301.02 204.902 291.765 214.157C301.02 223.412 306.392 235.667 306.392 249.922C306.392 264.177 301.02 276.432 291.765 285.687C301.02 294.942 306.392 307.197 306.392 321.452C306.392 335.707 301.02 347.962 291.765 357.217C282.51 366.472 270.255 371.844 256 371.844H128V128Z" stroke="#60A5FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M383.9 128L383.9 371.844" stroke="#60A5FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M339.196 178.392H256" stroke="#60A5FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M339.196 249.922H256" stroke="#60A5FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M339.196 321.452H256" stroke="#60A5FA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path opacity="0.5" d="M306.392 128L422 128C429.732 128 436 134.268 436 142L436 359C436 366.732 429.732 373 422 373L339.196 373" stroke="#60A5FA" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle opacity="0.5" cx="384" cy="170" r="12" fill="#60A5FA"/>
+  <circle opacity="0.5" cx="384" cy="250" r="12" fill="#60A5FA"/>
+  <circle opacity="0.5" cx="384" cy="330" r="12" fill="#60A5FA"/>
+</svg>
