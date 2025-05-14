@@ -42,16 +42,24 @@ const Header: React.FC = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
-            {/* Core Navigation */}
-            <Link href="/">
-              <span className={`text-sm font-medium ${currentLocation === "/" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Menu className="h-4 w-4 mr-1.5" /> Dashboard
-              </span>
-            </Link>
-            
+            {/* Core Navigation - Rearranged as requested */}
             <Link href="/about">
               <span className={`text-sm font-medium ${currentLocation === "/about" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <FileCheck className="h-4 w-4 mr-1.5" /> About
+              </span>
+            </Link>
+            
+            {/* Security (formerly Settings) */}
+            <Link href="/encryption-settings">
+              <span className={`text-sm font-medium ${currentLocation === "/encryption-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Shield className="h-4 w-4 mr-1.5" /> Security
+              </span>
+            </Link>
+            
+            {/* Scan Receipt */}
+            <Link href="/scan-receipt">
+              <span className={`text-sm font-medium ${currentLocation === "/scan-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Scan className="h-4 w-4 mr-1.5" /> Scan Receipt
               </span>
             </Link>
             
@@ -59,12 +67,6 @@ const Header: React.FC = () => {
             <Link href="/nft-wallet">
               <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Wallet className="h-4 w-4 mr-1.5" /> NFT Wallet
-              </span>
-            </Link>
-            
-            <Link href="/scan-receipt">
-              <span className={`text-sm font-medium ${currentLocation === "/scan-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Scan className="h-4 w-4 mr-1.5" /> Scan Receipt
               </span>
             </Link>
             
@@ -84,13 +86,6 @@ const Header: React.FC = () => {
             <Link href="/merchant-dashboard">
               <span className={`text-sm font-medium ${currentLocation === "/merchant-dashboard" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Store className="h-4 w-4 mr-1.5" /> Merchant
-              </span>
-            </Link>
-            
-            {/* Settings */}
-            <Link href="/encryption-settings">
-              <span className={`text-sm font-medium ${currentLocation === "/encryption-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Settings className="h-4 w-4 mr-1.5" /> Settings
               </span>
             </Link>
           </div>
@@ -114,9 +109,19 @@ const Header: React.FC = () => {
                 <div className="flex flex-col gap-6 mt-6">
                   {/* Core Navigation */}
                   <div className="space-y-4">
-                    <Link href="/">
+                    <Link href="/about">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Menu className="h-5 w-5" /> Dashboard
+                        <FileCheck className="h-5 w-5" /> About
+                      </span>
+                    </Link>
+                    <Link href="/encryption-settings">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <Shield className="h-5 w-5" /> Security
+                      </span>
+                    </Link>
+                    <Link href="/scan-receipt">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <Scan className="h-5 w-5" /> Scan Receipt
                       </span>
                     </Link>
                   </div>
@@ -128,11 +133,6 @@ const Header: React.FC = () => {
                       <Link href="/nft-wallet">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                           <Wallet className="h-5 w-5" /> NFT Wallet
-                        </span>
-                      </Link>
-                      <Link href="/scan-receipt">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Scan className="h-5 w-5" /> Scan Receipt
                         </span>
                       </Link>
                       <Link href="/verify-receipt">
@@ -158,16 +158,11 @@ const Header: React.FC = () => {
                   
                   {/* Other */}
                   <div className="pt-2 border-t border-gray-100">
-                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Settings</p>
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Admin</p>
                     <div className="space-y-4">
-                      <Link href="/encryption-settings">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Settings className="h-5 w-5" /> Encryption Settings
-                        </span>
-                      </Link>
                       <Link href="/admin">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Activity className="h-5 w-5" /> Admin
+                          <Activity className="h-5 w-5" /> Admin Dashboard
                         </span>
                       </Link>
                     </div>
