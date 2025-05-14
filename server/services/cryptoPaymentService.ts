@@ -187,6 +187,7 @@ export class CryptoPaymentService {
         'MATIC': 2.5,    // $1 = 2.5 MATIC
         'ETH': 0.0004,   // $1 = 0.0004 ETH
         'BTC': 0.000018, // $1 = 0.000018 BTC
+        'SOL': 0.013,    // $1 = 0.013 SOL
         'USDC': 1        // $1 = 1 USDC
       };
       
@@ -202,6 +203,7 @@ export class CryptoPaymentService {
       'MATIC': 2.5,    // $1 = 2.5 MATIC
       'ETH': 0.0004,   // $1 = 0.0004 ETH
       'BTC': 0.000018, // $1 = 0.000018 BTC
+      'SOL': 0.013,    // $1 = 0.013 SOL
       'USDC': 1        // $1 = 1 USDC
     };
     
