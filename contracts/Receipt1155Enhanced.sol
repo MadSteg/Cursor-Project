@@ -6,44 +6,71 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-/**
- * @title Receipt1155Enhanced
- * @dev ERC1155 token representing digital receipts with enhanced features
- * - Role-based access control instead of simple ownership
- * - Events for better on-chain traceability
- * - Pausable for emergency stops
- * - Burn functionality for revocation
- * - Improved URI handling
- */
+/// @title Receipt1155Enhanced - Advanced ERC1155 Receipt NFT Contract
+/// @author BlockReceipt.ai
+/// @notice This contract is used to mint and manage digital receipts as NFTs
+/// @dev ERC1155 token representing digital receipts with enhanced features including role management, events, and security features
+/// @custom:security-contact security@blockreceipt.ai
 contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
     using Strings for uint256;
     
-    // Role definitions
+    /// @notice Role that grants admin privileges (pausing, revoking receipts, etc.)
+    /// @dev keccak256 hash of "ADMIN_ROLE"
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    
+    /// @notice Role that grants minting privileges
+    /// @dev keccak256 hash of "MINTER_ROLE"
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     
-    // Token URI management
+    /// @notice Maps token IDs to their specific URI
+    /// @dev This overrides the base ERC1155 URI behavior
     mapping(uint256 => string) private _tokenURIs;
+    
+    /// @notice Base URI for all token metadata
+    /// @dev Used as a prefix for all token URIs
     string private _baseURI;
     
-    // Token metadata - store additional information about each receipt
+    /// @notice Metadata structure for each receipt
+    /// @dev Stores on-chain receipt information
     struct ReceiptMetadata {
+        /// @notice Timestamp when the receipt was created
         uint256 timestamp;
+        
+        /// @notice Whether the receipt has been revoked
         bool revoked;
-        string receiptType; // standard, premium, luxury
+        
+        /// @notice Type of receipt (standard, premium, luxury)
+        string receiptType;
     }
+    
+    /// @notice Maps token IDs to their metadata
+    /// @dev Provides access to on-chain receipt information
     mapping(uint256 => ReceiptMetadata) private _receiptMetadata;
     
-    // Events
+    /// @notice Emitted when a new receipt is minted
+    /// @param to The address that received the receipt
+    /// @param tokenId The token ID of the minted receipt
+    /// @param uri The token URI for the receipt metadata
+    /// @param receiptType The type of receipt minted (standard, premium, luxury)
     event ReceiptMinted(address indexed to, uint256 indexed tokenId, string uri, string receiptType);
+    
+    /// @notice Emitted when a receipt is revoked (without burning)
+    /// @param tokenId The token ID of the revoked receipt
     event ReceiptRevoked(uint256 indexed tokenId);
+    
+    /// @notice Emitted when a receipt is burned
+    /// @param owner The address that owned the receipt
+    /// @param tokenId The token ID of the burned receipt
+    /// @param amount The amount of tokens burned
     event ReceiptBurned(address indexed owner, uint256 indexed tokenId, uint256 amount);
+    
+    /// @notice Emitted when the base URI is updated
+    /// @param newBaseURI The new base URI for all tokens
     event BaseURISet(string newBaseURI);
     
-    /**
-     * @dev Constructor
-     * @param baseURI Base URI for all tokens
-     */
+    /// @notice Initializes the contract with a base URI and sets up roles
+    /// @dev Sets the deployer as admin and minter
+    /// @param baseURI Base URI for all token metadata
     constructor(string memory baseURI) ERC1155("") {
         _baseURI = baseURI;
         
@@ -55,14 +82,14 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         emit BaseURISet(baseURI);
     }
     
-    /**
-     * @dev Mint a new receipt token
-     * @param to Address receiving the receipt
-     * @param tokenId The token/receipt identifier - made system-generated instead of user-provided
-     * @param amount Amount of tokens to mint (usually 1)
-     * @param tokenURI URI for the token's metadata
-     * @param receiptType Type of receipt (standard, premium, luxury)
-     */
+    /// @notice Mints a new receipt token
+    /// @dev Can only be called by accounts with the MINTER_ROLE
+    /// @param to Address receiving the receipt
+    /// @param tokenId The token/receipt identifier - must be unique
+    /// @param amount Amount of tokens to mint (usually 1)
+    /// @param tokenURI URI for the token's metadata
+    /// @param receiptType Type of receipt (standard, premium, luxury)
+    /// @custom:event Emits a ReceiptMinted event
     function mintReceipt(
         address to,
         uint256 tokenId,
@@ -84,14 +111,14 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         emit ReceiptMinted(to, tokenId, tokenURI, receiptType);
     }
     
-    /**
-     * @dev Batch mint multiple receipts at once
-     * @param to Address receiving the receipts
-     * @param tokenIds Array of token IDs
-     * @param amounts Array of amounts
-     * @param tokenURIs Array of token URIs
-     * @param receiptTypes Array of receipt types
-     */
+    /// @notice Batch mints multiple receipts in a single transaction
+    /// @dev Efficiently mints multiple receipts, validates that all input arrays have the same length
+    /// @param to Address receiving the receipts
+    /// @param tokenIds Array of token IDs
+    /// @param amounts Array of amounts
+    /// @param tokenURIs Array of token URIs
+    /// @param receiptTypes Array of receipt types
+    /// @custom:event Emits multiple ReceiptMinted events
     function batchMintReceipts(
         address to,
         uint256[] calldata tokenIds,
@@ -122,12 +149,12 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         _mintBatch(to, tokenIds, amounts, "");
     }
     
-    /**
-     * @dev Burn tokens - can be called by token owners or admins
-     * @param from Address that owns the tokens
-     * @param tokenId Token ID to burn
-     * @param amount Amount to burn
-     */
+    /// @notice Burns receipt tokens
+    /// @dev Can be called by token owners or admins
+    /// @param from Address that owns the tokens
+    /// @param tokenId Token ID to burn
+    /// @param amount Amount to burn
+    /// @custom:event Emits a ReceiptBurned event
     function burn(
         address from,
         uint256 tokenId,
@@ -143,10 +170,10 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         emit ReceiptBurned(from, tokenId, amount);
     }
     
-    /**
-     * @dev Revoke a receipt (mark as invalid without burning)
-     * @param tokenId The token ID to revoke
-     */
+    /// @notice Revokes a receipt (marks as invalid without burning)
+    /// @dev Only callable by ADMIN_ROLE
+    /// @param tokenId The token ID to revoke
+    /// @custom:event Emits a ReceiptRevoked event
     function revokeReceipt(uint256 tokenId) external onlyRole(ADMIN_ROLE) {
         require(bytes(_receiptMetadata[tokenId].receiptType).length > 0, "Receipt does not exist");
         require(!_receiptMetadata[tokenId].revoked, "Receipt already revoked");
@@ -156,20 +183,20 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         emit ReceiptRevoked(tokenId);
     }
     
-    /**
-     * @dev Set the base URI for all token IDs
-     * @param newBaseURI New base URI
-     */
+    /// @notice Sets the base URI for all token metadata
+    /// @dev Only callable by ADMIN_ROLE
+    /// @param newBaseURI New base URI
+    /// @custom:event Emits a BaseURISet event
     function setBaseURI(string calldata newBaseURI) external onlyRole(ADMIN_ROLE) {
         _baseURI = newBaseURI;
         
         emit BaseURISet(newBaseURI);
     }
     
-    /**
-     * @dev Get the URI for a token
-     * @param tokenId Token ID to get URI for
-     */
+    /// @notice Gets the full URI for a specific token
+    /// @dev Overrides ERC1155 uri function
+    /// @param tokenId Token ID to get URI for
+    /// @return Complete URI string for the token metadata
     function uri(uint256 tokenId) public view override returns (string memory) {
         string memory tokenURI = _tokenURIs[tokenId];
         
@@ -186,10 +213,12 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         return tokenURI;
     }
     
-    /**
-     * @dev Get receipt metadata
-     * @param tokenId Token ID to get metadata for
-     */
+    /// @notice Gets the on-chain metadata for a receipt
+    /// @dev Returns the timestamp, revocation status, and receipt type
+    /// @param tokenId Token ID to get metadata for
+    /// @return timestamp When the receipt was created
+    /// @return revoked Whether the receipt has been revoked
+    /// @return receiptType The type of receipt (standard, premium, luxury)
     function getReceiptMetadata(uint256 tokenId) external view returns (
         uint256 timestamp,
         bool revoked,
@@ -201,32 +230,35 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         return (metadata.timestamp, metadata.revoked, metadata.receiptType);
     }
     
-    /**
-     * @dev Check if a receipt is valid (exists and not revoked)
-     * @param tokenId Token ID to check
-     */
+    /// @notice Checks if a receipt exists and is not revoked
+    /// @dev Returns false if the receipt doesn't exist or has been revoked
+    /// @param tokenId Token ID to check
+    /// @return True if receipt exists and is valid, false otherwise
     function isValidReceipt(uint256 tokenId) public view returns (bool) {
         return bytes(_receiptMetadata[tokenId].receiptType).length > 0 && 
                !_receiptMetadata[tokenId].revoked;
     }
     
-    /**
-     * @dev Pause all token transfers and minting
-     */
+    /// @notice Pauses all token transfers and minting
+    /// @dev Only callable by ADMIN_ROLE
     function pause() external onlyRole(ADMIN_ROLE) {
         _pause();
     }
     
-    /**
-     * @dev Unpause token transfers and minting
-     */
+    /// @notice Unpauses token transfers and minting
+    /// @dev Only callable by ADMIN_ROLE
     function unpause() external onlyRole(ADMIN_ROLE) {
         _unpause();
     }
     
-    /**
-     * @dev Override _beforeTokenTransfer to check for paused state
-     */
+    /// @notice Hook that is called before any token transfer
+    /// @dev Ensures transfers cannot occur when contract is paused
+    /// @param operator Address performing the transfer
+    /// @param from Address tokens are transferred from
+    /// @param to Address tokens are transferred to 
+    /// @param ids Token IDs being transferred
+    /// @param amounts Amounts of tokens being transferred
+    /// @param data Additional data with no specified format
     function _beforeTokenTransfer(
         address operator,
         address from,
@@ -238,9 +270,10 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
     
-    /**
-     * @dev Required override from AccessControl
-     */
+    /// @notice Determines which interfaces the contract supports
+    /// @dev Required override to resolve inheritance conflict
+    /// @param interfaceId Interface ID to check
+    /// @return True if the interface is supported
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -250,9 +283,9 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         return super.supportsInterface(interfaceId);
     }
     
-    /**
-     * @dev Contract URI for marketplace metadata
-     */
+    /// @notice Gets the contract-level metadata URI for marketplaces
+    /// @dev Used by OpenSea and other marketplaces to display collection info
+    /// @return URI string pointing to the collection metadata
     function contractURI() public view returns (string memory) {
         return string(abi.encodePacked(_baseURI, "contract"));
     }
