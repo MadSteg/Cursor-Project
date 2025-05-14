@@ -27,10 +27,14 @@ const nodeTesseractConfig = {
 // Regular expressions for receipt data extraction
 const MERCHANT_REGEX = /^([A-Z][A-Za-z\s'&,.]+)(?:\n|$)/;
 const DATE_REGEX = /(?:\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})|(?:\d{2,4}[-\/]\d{1,2}[-\/]\d{1,2})/;
-const TOTAL_REGEX = /(?:total|amount|sum)(?:[^0-9]*)([$]?\s*\d+\.\d{2})/i;
-const TAX_REGEX = /(?:tax|vat|gst)(?:[^0-9]*)([$]?\s*\d+\.\d{2})/i;
+const TOTAL_REGEX = /(?:total|amount|sum|due)(?:[^0-9]*)([$]?\s*\d+\.\d{2})/i;
+const TAX_REGEX = /(?:tax|vat|gst|sales\s+tax)(?:[^0-9]*)([$]?\s*\d+\.\d{2})/i;
 const SUBTOTAL_REGEX = /(?:subtotal|sub-total|sub total)(?:[^0-9]*)([$]?\s*\d+\.\d{2})/i;
-const ITEM_LINE_REGEX = /([A-Za-z0-9\s-'&,.]+)(?:\s+)(\d+)(?:\s+)([$]?\s*\d+\.\d{2})/i;
+
+// Multiple item detection patterns
+const ITEM_LINE_REGEX_1 = /([A-Za-z0-9\s-'&,.]+)(?:\s+)(\d+)(?:\s+)([$]?\s*\d+\.\d{2})/i;  // Item name, quantity, price
+const ITEM_LINE_REGEX_2 = /([A-Za-z0-9\s-'&,.]+)(?:\s+)([$]?\s*\d+\.\d{2})/i;  // Item name, price only
+const ITEM_LINE_REGEX_3 = /(\d+)\s+x\s+([$]?\s*\d+\.\d{2})\s+([A-Za-z0-9\s-'&,.]+)/i;  // Quantity x price item name
 
 /**
  * Extract receipt data using Tesseract.js
@@ -183,29 +187,69 @@ function extractDataFromOcrText(text: string, confidence: number): ExtractedRece
     result.subtotal = result.total - result.tax;
   }
   
-  // Extract items
+  // Extract items with multiple regex patterns
   const lines = text.split('\n');
   const items: Array<{name: string, price: number, quantity: number}> = [];
   
   for (const line of lines) {
-    const itemMatch = line.match(ITEM_LINE_REGEX);
-    if (itemMatch && itemMatch.length >= 4) {
-      const name = itemMatch[1].trim();
-      const quantity = parseInt(itemMatch[2].trim(), 10) || 1;
-      const priceStr = itemMatch[3].replace(/[$\s]/g, '');
+    // Skip likely header or summary lines
+    if (line.match(/total|subtotal|tax|amount|receipt|date|time|thank|welcome/i)) {
+      continue;
+    }
+
+    // First pattern: Item name, quantity, price
+    let match = line.match(ITEM_LINE_REGEX_1);
+    if (match && match.length >= 4) {
+      const name = match[1].trim();
+      const quantity = parseInt(match[2].trim(), 10) || 1;
+      const priceStr = match[3].replace(/[$\s]/g, '');
       const price = parseFloat(priceStr) * 100; // Convert to cents
       
-      items.push({
-        name,
-        quantity,
-        price
-      });
+      if (name && price > 0) { // Validate item has a name and price
+        items.push({ name, quantity, price });
+        continue;
+      }
+    }
+    
+    // Second pattern: Item name, price (assume quantity 1)
+    match = line.match(ITEM_LINE_REGEX_2);
+    if (match && match.length >= 3) {
+      const name = match[1].trim();
+      const priceStr = match[2].replace(/[$\s]/g, '');
+      const price = parseFloat(priceStr) * 100; // Convert to cents
+      
+      if (name && price > 0 && name.length > 1) { // Validate item has a name and price
+        items.push({ name, quantity: 1, price });
+        continue;
+      }
+    }
+    
+    // Third pattern: Quantity x price item name
+    match = line.match(ITEM_LINE_REGEX_3);
+    if (match && match.length >= 4) {
+      const quantity = parseInt(match[1].trim(), 10) || 1;
+      const priceStr = match[2].replace(/[$\s]/g, '');
+      const price = parseFloat(priceStr) * 100; // Convert to cents
+      const name = match[3].trim();
+      
+      if (name && price > 0) { // Validate item has a name and price
+        items.push({ name, quantity, price });
+      }
     }
   }
   
+  // Additional validation to filter out non-item lines
+  const validItems = items.filter(item => {
+    // Filter out items with very short names or unrealistic prices
+    return item.name.length > 1 && 
+           item.price > 0 && 
+           item.price < 1000000 && // $10,000 max for single item
+           !item.name.match(/^[0-9.]+$/); // Name shouldn't be just numbers
+  });
+  
   // Only use extracted items if we found some, otherwise leave as empty array
-  if (items.length > 0) {
-    result.items = items;
+  if (validItems.length > 0) {
+    result.items = validItems;
   }
   
   // Ensure total is calculated if missing

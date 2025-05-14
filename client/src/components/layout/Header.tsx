@@ -16,7 +16,8 @@ import {
   Scan, 
   Wallet, 
   Store, 
-  FileCheck 
+  FileCheck,
+  FileImage
 } from "lucide-react";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
@@ -69,7 +70,7 @@ const Header: React.FC = () => {
             
             <Link href="/receipt-scanner">
               <span className={`text-sm font-medium ${currentLocation === "/receipt-scanner" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <FileImage className="h-4 w-4 mr-1.5" /> OCR Scanner
+                <Receipt className="h-4 w-4 mr-1.5" /> OCR Scanner
               </span>
             </Link>
             
