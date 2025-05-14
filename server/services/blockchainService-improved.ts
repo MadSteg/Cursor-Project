@@ -217,7 +217,6 @@ class BlockchainService implements IBlockchainService {
       total: receipt.total,
       date: receipt.date ? receipt.date.toISOString() : '',
       items: receipt.items.map(item => ({
-        id: item.id,
         name: item.name,
         price: item.price,
         quantity: item.quantity
