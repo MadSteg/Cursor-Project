@@ -104,7 +104,13 @@ export const receipts = pgTable("receipts", {
   sourceIdentifier: text("source_identifier"), // Email ID, scan batch ID, etc.
   storeLocation: text("store_location"), // Physical store location
   storeId: text("store_id"), // Store identifier within retailer chain
-  orderNumber: text("order_number") // Order/transaction number from receipt
+  orderNumber: text("order_number"), // Order/transaction number from receipt
+  
+  // Threshold encryption fields
+  nftRequested: boolean("nft_requested").default(false), // Whether user requested NFT receipt
+  isEncrypted: boolean("is_encrypted").default(false), // Whether receipt is encrypted
+  encryptionPublicKey: text("encryption_public_key"), // Public key used for encryption
+  thresholdSharedKey: text("threshold_shared_key") // Shared key for threshold encryption
 });
 
 export const insertReceiptSchema = createInsertSchema(receipts).pick({
@@ -142,6 +148,10 @@ export const insertReceiptSchema = createInsertSchema(receipts).pick({
   storeId: true,
   orderNumber: true,
   paymentMethod: true,
+  nftRequested: true,
+  isEncrypted: true,
+  encryptionPublicKey: true,
+  thresholdSharedKey: true,
 });
 
 // Define spending stats

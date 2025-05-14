@@ -152,6 +152,47 @@ const Dashboard: React.FC = () => {
 
       <BlockchainVisualization />
 
+      {/* Enhanced Security Checkout Section */}
+      <section className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-6 my-8 text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <div>
+            <h2 className="text-xl font-bold mb-2">Enhanced Security Checkout</h2>
+            <p className="text-blue-100 max-w-2xl">
+              Try our new threshold encryption technology that protects your payment and receipt data 
+              with advanced cryptography, while still allowing blockchain verification.
+            </p>
+          </div>
+          <Link href="/encrypted-checkout?amount=49.99">
+            <a className="mt-4 md:mt-0 bg-white text-blue-900 hover:bg-blue-50 px-4 py-2 rounded-md font-medium flex items-center">
+              Try Encrypted Checkout <ArrowRight className="ml-2 h-4 w-4" />
+            </a>
+          </Link>
+        </div>
+        <div className="bg-blue-800 bg-opacity-50 rounded-xl p-4 text-sm">
+          <h3 className="font-medium mb-2">Features:</h3>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
+                <span className="text-xs">1</span>
+              </div>
+              <span className="ml-2">Threshold proxy re-encryption</span>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
+                <span className="text-xs">2</span>
+              </div>
+              <span className="ml-2">Selective sharing control</span>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
+                <span className="text-xs">3</span>
+              </div>
+              <span className="ml-2">Blockchain verification</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+      
       <ScanReceipt />
     </main>
   );

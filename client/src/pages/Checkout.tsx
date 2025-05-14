@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { checkPaymentStatus, createPaymentIntent, createMockPayment } from '@/lib/payments';
 import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone } from 'lucide-react';
-import { MobileWalletPreview, MobileWalletInfo } from '@/components/blockchain/MobileWalletPreview';
+import MobileWalletPreview from '@/components/blockchain/MobileWalletPreview';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function Checkout() {
@@ -413,7 +413,10 @@ export default function Checkout() {
                             <li>Access to exclusive rewards and benefits</li>
                           </ul>
                           
-                          <MobileWalletInfo />
+                          <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded p-2 flex items-start">
+                            <Smartphone className="h-4 w-4 mr-2 text-blue-500 mt-0.5 flex-shrink-0" />
+                            <span>Your NFT receipt will be compatible with Apple Wallet and Google Pay for easy access.</span>
+                          </div>
                           
                           <div className="pt-2">
                             <Label htmlFor="nft-theme" className="text-sm font-medium mb-1.5 block">Receipt Theme</Label>
