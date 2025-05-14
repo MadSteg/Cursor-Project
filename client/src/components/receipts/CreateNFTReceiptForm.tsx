@@ -62,7 +62,7 @@ const formSchema = z.object({
   encryptTotals: z.boolean().default(false),
   
   // Selected NFT art
-  selectedArtId: z.string().optional(),
+  artId: z.string().optional(),
   
   // Additional metadata
   category: z.string().optional(),
