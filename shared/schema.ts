@@ -126,8 +126,14 @@ export const receipts = pgTable("receipts", {
   storeId: text("store_id"), // Store identifier within retailer chain
   orderNumber: text("order_number"), // Order/transaction number from receipt
   
-  // Threshold encryption fields
+  // NFT fields
   nftRequested: boolean("nft_requested").default(false), // Whether user requested NFT receipt
+  nftTierId: integer("nft_tier_id"), // ID of NFT tier requested (Standard, Premium, Luxury)
+  nftThemeId: integer("nft_theme_id"), // ID of NFT theme requested (Pokemon, Luxury, etc.)
+  nftPrice: numeric("nft_price"), // Price paid for NFT (in USD)
+  nftMetadata: jsonb("nft_metadata"), // Additional NFT metadata
+  
+  // Threshold encryption fields
   isEncrypted: boolean("is_encrypted").default(false), // Whether receipt is encrypted
   encryptionPublicKey: text("encryption_public_key"), // Public key used for encryption
   thresholdSharedKey: text("threshold_shared_key") // Shared key for threshold encryption
@@ -169,6 +175,10 @@ export const insertReceiptSchema = createInsertSchema(receipts).pick({
   orderNumber: true,
   paymentMethod: true,
   nftRequested: true,
+  nftTierId: true,
+  nftThemeId: true,
+  nftPrice: true,
+  nftMetadata: true,
   isEncrypted: true,
   encryptionPublicKey: true,
   thresholdSharedKey: true,
@@ -320,6 +330,62 @@ export const insertEncryptionKeySchema = createInsertSchema(encryptionKeys).pick
   isActive: true,
 });
 
+// NFT tiers and themes for receipt NFTs
+export const nftTiers = pgTable("nft_tiers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(), // Standard, Premium, Luxury, etc.
+  description: text("description").notNull(),
+  price: numeric("price").notNull(), // Price in USD
+  features: jsonb("features"), // Features included in this tier
+  maxItems: integer("max_items").default(50), // Maximum number of items that can be included
+  animationEnabled: boolean("animation_enabled").default(false), // Whether animation is enabled
+  specialEffects: boolean("special_effects").default(false), // Whether special effects are enabled
+  metadata: jsonb("metadata"), // Additional tier metadata
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertNftTierSchema = createInsertSchema(nftTiers).pick({
+  name: true,
+  description: true,
+  price: true,
+  features: true,
+  maxItems: true,
+  animationEnabled: true,
+  specialEffects: true,
+  metadata: true,
+  isActive: true,
+});
+
+// NFT themes for receipt NFTs
+export const nftThemes = pgTable("nft_themes", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(), // Pokemon, Luxury, Minimal, etc.
+  description: text("description").notNull(),
+  baseSvgTemplate: text("base_svg_template").notNull(), // Base SVG template for the theme
+  previewImageUrl: text("preview_image_url"), // URL to preview image
+  colorPalette: jsonb("color_palette"), // Color palette for the theme
+  fontFamily: text("font_family").default("sans-serif"), // Font family for the theme
+  specialEffects: jsonb("special_effects"), // Special effects for the theme (gradients, animations, etc.)
+  requiredTier: text("required_tier").default("standard"), // Minimum tier required for this theme
+  metadata: jsonb("metadata"), // Additional theme metadata
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertNftThemeSchema = createInsertSchema(nftThemes).pick({
+  name: true,
+  description: true,
+  baseSvgTemplate: true,
+  previewImageUrl: true,
+  colorPalette: true,
+  fontFamily: true,
+  specialEffects: true,
+  requiredTier: true,
+  metadata: true,
+  isActive: true,
+});
+
 // Shared access for encrypted receipts
 export const sharedAccess = pgTable("shared_access", {
   id: serial("id").primaryKey(),
@@ -381,6 +447,22 @@ export const fullReceiptSchema = z.object({
     ipfsUrl: z.string().optional(),
     network: z.string().optional(),
     contractAddress: z.string().optional(),
+    nft: z.object({
+      tierId: z.number().optional(),
+      tierName: z.string().optional(),
+      tierPrice: z.string().optional(),
+      themeId: z.number().optional(),
+      themeName: z.string().optional(),
+      imageUrl: z.string().optional(),
+      animation: z.boolean().optional(),
+      specialEffects: z.boolean().optional(),
+      rarity: z.string().optional(),
+      attributes: z.array(z.object({
+        trait_type: z.string(),
+        value: z.string()
+      })).optional(),
+      properties: z.record(z.string(), z.any()).optional()
+    }).optional(),
     warrantyData: z.object({
       modelNumbers: z.array(z.string()).optional(),
       serialNumbers: z.array(z.string()).optional(),
@@ -450,6 +532,12 @@ export type InsertRetailerSyncLog = z.infer<typeof insertRetailerSyncLogSchema>;
 
 export type EncryptionKey = typeof encryptionKeys.$inferSelect;
 export type InsertEncryptionKey = z.infer<typeof insertEncryptionKeySchema>;
+
+export type NftTier = typeof nftTiers.$inferSelect;
+export type InsertNftTier = z.infer<typeof insertNftTierSchema>;
+
+export type NftTheme = typeof nftThemes.$inferSelect;
+export type InsertNftTheme = z.infer<typeof insertNftThemeSchema>;
 
 export type SharedAccess = typeof sharedAccess.$inferSelect;
 export type InsertSharedAccess = z.infer<typeof insertSharedAccessSchema>;
