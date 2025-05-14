@@ -141,6 +141,11 @@ export class MemStorage implements IStorage {
     this.receipts = new Map();
     this.receiptItems = new Map();
     this.spendingStats = new Map();
+    this.retailers = new Map();
+    this.products = new Map();
+    this.retailerSyncLogs = new Map();
+    this.encryptionKeys = new Map();
+    this.sharedAccesses = new Map();
     
     this.currentUserId = 1;
     this.currentCategoryId = 1;
@@ -148,6 +153,11 @@ export class MemStorage implements IStorage {
     this.currentReceiptId = 1;
     this.currentReceiptItemId = 1;
     this.currentSpendingStatId = 1;
+    this.currentRetailerId = 1;
+    this.currentProductId = 1;
+    this.currentRetailerSyncLogId = 1;
+    this.currentEncryptionKeyId = 1;
+    this.currentSharedAccessId = 1;
 
     this.initializeDemoData();
   }
@@ -700,6 +710,183 @@ export class MemStorage implements IStorage {
     }
     
     return result.sort((a, b) => a.month - b.month);
+  }
+  
+  // Retailer methods
+  async getRetailers(): Promise<Retailer[]> {
+    return Array.from(this.retailers.values());
+  }
+
+  async getRetailer(id: number): Promise<Retailer | undefined> {
+    return this.retailers.get(id);
+  }
+
+  async createRetailer(retailer: InsertRetailer): Promise<Retailer> {
+    const id = this.currentRetailerId++;
+    const newRetailer: Retailer = { ...retailer, id };
+    this.retailers.set(id, newRetailer);
+    return newRetailer;
+  }
+
+  async updateRetailer(id: number, updates: Partial<InsertRetailer>): Promise<Retailer | undefined> {
+    const retailer = this.retailers.get(id);
+    if (!retailer) return undefined;
+    
+    const updatedRetailer: Retailer = { ...retailer, ...updates };
+    this.retailers.set(id, updatedRetailer);
+    return updatedRetailer;
+  }
+
+  // Product methods
+  async getProduct(id: number): Promise<Product | undefined> {
+    return this.products.get(id);
+  }
+
+  async getProductByExternalId(retailerId: number, externalId: string): Promise<Product | undefined> {
+    return Array.from(this.products.values()).find(
+      product => product.retailerId === retailerId && product.externalId === externalId
+    );
+  }
+
+  async findProductsByName(name: string): Promise<Product[]> {
+    const lowercaseName = name.toLowerCase();
+    return Array.from(this.products.values()).filter(
+      product => product.name.toLowerCase().includes(lowercaseName)
+    );
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const id = this.currentProductId++;
+    const newProduct: Product = { ...product, id };
+    this.products.set(id, newProduct);
+    return newProduct;
+  }
+
+  async updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product | undefined> {
+    const product = this.products.get(id);
+    if (!product) return undefined;
+    
+    const updatedProduct: Product = { ...product, ...updates };
+    this.products.set(id, updatedProduct);
+    return updatedProduct;
+  }
+
+  async searchProducts(query: string, options?: {
+    limit?: number;
+    offset?: number;
+    retailerId?: number;
+    categoryId?: number;
+  }): Promise<Product[]> {
+    const { limit = 10, offset = 0, retailerId, categoryId } = options || {};
+    
+    let results = Array.from(this.products.values());
+    
+    if (query) {
+      const lowercaseQuery = query.toLowerCase();
+      results = results.filter(product => 
+        product.name.toLowerCase().includes(lowercaseQuery) || 
+        (product.description && product.description.toLowerCase().includes(lowercaseQuery))
+      );
+    }
+    
+    if (retailerId) {
+      results = results.filter(product => product.retailerId === retailerId);
+    }
+    
+    if (categoryId) {
+      results = results.filter(product => product.categoryId === categoryId);
+    }
+    
+    return results.slice(offset, offset + limit);
+  }
+
+  // Retailer sync logs methods
+  async getRetailerSyncLogs(retailerId: number, limit?: number): Promise<RetailerSyncLog[]> {
+    const logs = Array.from(this.retailerSyncLogs.values())
+      .filter(log => log.retailerId === retailerId)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    return limit ? logs.slice(0, limit) : logs;
+  }
+
+  async createRetailerSyncLog(log: InsertRetailerSyncLog): Promise<RetailerSyncLog> {
+    const id = this.currentRetailerSyncLogId++;
+    const newLog: RetailerSyncLog = { ...log, id };
+    this.retailerSyncLogs.set(id, newLog);
+    return newLog;
+  }
+
+  async updateRetailerSyncLog(id: number, updates: Partial<InsertRetailerSyncLog>): Promise<RetailerSyncLog> {
+    const log = this.retailerSyncLogs.get(id);
+    if (!log) {
+      throw new Error(`RetailerSyncLog with id ${id} not found`);
+    }
+    
+    const updatedLog: RetailerSyncLog = { ...log, ...updates };
+    this.retailerSyncLogs.set(id, updatedLog);
+    return updatedLog;
+  }
+
+  // Encryption key methods
+  async getEncryptionKeys(userId: number): Promise<EncryptionKey[]> {
+    return Array.from(this.encryptionKeys.values())
+      .filter(key => key.userId === userId);
+  }
+
+  async getEncryptionKey(id: number): Promise<EncryptionKey | undefined> {
+    return this.encryptionKeys.get(id);
+  }
+
+  async createEncryptionKey(key: InsertEncryptionKey): Promise<EncryptionKey> {
+    const id = this.currentEncryptionKeyId++;
+    const newKey: EncryptionKey = { ...key, id };
+    this.encryptionKeys.set(id, newKey);
+    return newKey;
+  }
+
+  async updateEncryptionKey(id: number, updates: Partial<InsertEncryptionKey>): Promise<EncryptionKey | undefined> {
+    const key = this.encryptionKeys.get(id);
+    if (!key) return undefined;
+    
+    const updatedKey: EncryptionKey = { ...key, ...updates };
+    this.encryptionKeys.set(id, updatedKey);
+    return updatedKey;
+  }
+
+  // Shared access methods
+  async getSharedAccesses(receiptId: number): Promise<SharedAccess[]> {
+    return Array.from(this.sharedAccesses.values())
+      .filter(access => access.receiptId === receiptId);
+  }
+
+  async getSharedAccess(id: number): Promise<SharedAccess | undefined> {
+    return this.sharedAccesses.get(id);
+  }
+
+  async createSharedAccess(access: InsertSharedAccess): Promise<SharedAccess> {
+    const id = this.currentSharedAccessId++;
+    const newAccess: SharedAccess = { ...access, id };
+    this.sharedAccesses.set(id, newAccess);
+    return newAccess;
+  }
+
+  async updateSharedAccess(id: number, updates: Partial<InsertSharedAccess>): Promise<SharedAccess | undefined> {
+    const access = this.sharedAccesses.get(id);
+    if (!access) return undefined;
+    
+    const updatedAccess: SharedAccess = { ...access, ...updates };
+    this.sharedAccesses.set(id, updatedAccess);
+    return updatedAccess;
+  }
+
+  async getSharedAccessesByOwner(userId: number): Promise<SharedAccess[]> {
+    return Array.from(this.sharedAccesses.values())
+      .filter(access => access.ownerUserId === userId);
+  }
+
+  async getSharedAccessesByTarget(userId: number): Promise<SharedAccess[]> {
+    return Array.from(this.sharedAccesses.values())
+      .filter(access => access.targetUserId === userId);
   }
 }
 

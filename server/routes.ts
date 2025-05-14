@@ -7,6 +7,7 @@ import emailRoutes from "./routes/email";
 import paymentRoutes from "./routes/payments";
 import thresholdReceiptRoutes from "./routes/threshold-receipt";
 import encryptedPaymentRoutes from "./routes/encrypted-payments";
+import encryptionRoutes from "./routes/encryption";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
