@@ -19,6 +19,8 @@ import merchantsRoutes from "./routes/merchants";
 import nftReceiptsRoutes from "./routes/nft-receipts";
 // Metadata access control routes
 import metadataRoutes from "./routes/metadata";
+// OCR receipt scanning routes
+import ocrRoutes from "./routes/ocr";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -66,6 +68,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register metadata access control routes
   app.use('/api', metadataRoutes);
+  
+  // Register OCR routes
+  app.use('/api/ocr', ocrRoutes);
   
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
