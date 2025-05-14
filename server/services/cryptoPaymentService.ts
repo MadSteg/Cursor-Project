@@ -12,20 +12,81 @@ export class CryptoPaymentService {
     this.initialize();
   }
 
+  // Supported cryptocurrencies configuration
+  private supportedCurrencies = {
+    MATIC: {
+      name: 'Polygon MATIC',
+      network: 'polygon-mumbai',
+      rpcEnvVar: 'POLYGON_MUMBAI_RPC_URL',
+      decimals: 18,
+      provider: null as ethers.providers.JsonRpcProvider | null,
+      enabled: true
+    },
+    ETH: {
+      name: 'Ethereum',
+      network: 'ethereum-sepolia',
+      rpcEnvVar: 'ETHEREUM_SEPOLIA_RPC_URL',
+      decimals: 18,
+      provider: null as ethers.providers.JsonRpcProvider | null,
+      enabled: false // Will be set to true if RPC URL is available
+    },
+    USDC: {
+      name: 'USD Coin',
+      network: 'polygon-mumbai',
+      rpcEnvVar: 'POLYGON_MUMBAI_RPC_URL',
+      decimals: 6,
+      contractAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', // Mumbai USDC contract
+      provider: null as ethers.providers.JsonRpcProvider | null,
+      enabled: false
+    }
+  };
+
   /**
    * Initialize the crypto payment service
    */
   async initialize() {
     try {
-      const rpcUrl = process.env.POLYGON_MUMBAI_RPC_URL;
-      
-      if (!rpcUrl) {
-        logger.warn('[cryptoPayment] Missing Polygon RPC URL, using mock mode');
-        this.mockMode = true;
-        return;
+      // Initialize Polygon provider
+      const maticRpcUrl = process.env.POLYGON_MUMBAI_RPC_URL;
+      if (maticRpcUrl) {
+        try {
+          this.provider = new ethers.providers.JsonRpcProvider(maticRpcUrl);
+          this.supportedCurrencies.MATIC.provider = this.provider;
+          this.supportedCurrencies.USDC.provider = this.provider; // USDC uses same provider as MATIC
+          this.supportedCurrencies.USDC.enabled = true;
+          logger.info('[cryptoPayment] Polygon provider initialized successfully');
+        } catch (error) {
+          logger.error('[cryptoPayment] Error initializing Polygon provider:', error);
+        }
+      } else {
+        logger.warn('[cryptoPayment] Missing Polygon RPC URL');
       }
-
-      this.provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      
+      // Initialize Ethereum provider if available
+      const ethRpcUrl = process.env.ETHEREUM_SEPOLIA_RPC_URL;
+      if (ethRpcUrl) {
+        try {
+          const ethProvider = new ethers.providers.JsonRpcProvider(ethRpcUrl);
+          this.supportedCurrencies.ETH.provider = ethProvider;
+          this.supportedCurrencies.ETH.enabled = true;
+          logger.info('[cryptoPayment] Ethereum provider initialized successfully');
+        } catch (error) {
+          logger.error('[cryptoPayment] Error initializing Ethereum provider:', error);
+        }
+      }
+      
+      // If no providers are available, use mock mode
+      const availableCurrencies = Object.entries(this.supportedCurrencies)
+        .filter(([_, config]) => config.enabled)
+        .map(([code, _]) => code);
+        
+      if (availableCurrencies.length === 0) {
+        this.mockMode = true;
+        logger.warn('[cryptoPayment] No cryptocurrency providers available, using mock mode');
+      } else {
+        logger.info(`[cryptoPayment] Available cryptocurrencies: ${availableCurrencies.join(', ')}`);
+      }
+      
       logger.info('[cryptoPayment] Crypto payment service initialized successfully');
     } catch (error) {
       logger.error('[cryptoPayment] Error initializing crypto payment service:', error);
@@ -34,34 +95,111 @@ export class CryptoPaymentService {
   }
 
   /**
+   * Get available cryptocurrencies
+   */
+  async getAvailableCurrencies() {
+    if (this.mockMode) {
+      // In mock mode, return all supported currencies
+      return Object.entries(this.supportedCurrencies).map(([code, config]) => ({
+        code,
+        name: config.name,
+        enabled: true,
+        network: config.network
+      }));
+    }
+    
+    // Return only enabled currencies
+    return Object.entries(this.supportedCurrencies)
+      .filter(([_, config]) => config.enabled)
+      .map(([code, config]) => ({
+        code,
+        name: config.name,
+        enabled: true,
+        network: config.network
+      }));
+  }
+  
+  /**
+   * Convert fiat amount to cryptocurrency amount
+   */
+  private convertToTokenAmount(amount: number, currency: string): number {
+    if (this.mockMode) {
+      // Mock conversion rates for demo
+      const rates: Record<string, number> = {
+        'MATIC': 2.5,    // $1 = 2.5 MATIC
+        'ETH': 0.0004,   // $1 = 0.0004 ETH
+        'USDC': 1        // $1 = 1 USDC
+      };
+      
+      return amount * (rates[currency] || 1);
+    }
+    
+    // In a real implementation, we would:
+    // 1. Call a price oracle or exchange API to get current exchange rates
+    // 2. Convert the USD amount to the cryptocurrency amount
+    
+    // For this example, we'll just use mock rates
+    const mockRates: Record<string, number> = {
+      'MATIC': 2.5,    // $1 = 2.5 MATIC
+      'ETH': 0.0004,   // $1 = 0.0004 ETH
+      'USDC': 1        // $1 = 1 USDC
+    };
+    
+    return amount * (mockRates[currency] || 1);
+  }
+
+  /**
    * Create a payment intent for cryptocurrency
    */
-  async createPaymentIntent(amount: number, currency = 'MATIC') {
+  async createPaymentIntent(amount: number, currency = 'MATIC', metadata: Record<string, string> = {}) {
+    // Validate currency
+    if (!this.supportedCurrencies[currency]) {
+      return { 
+        success: false, 
+        error: `Unsupported cryptocurrency: ${currency}. Supported currencies are: ${Object.keys(this.supportedCurrencies).join(', ')}` 
+      };
+    }
+    
+    // Convert USD amount to crypto amount
+    const cryptoAmount = this.convertToTokenAmount(amount, currency);
+    
     if (this.mockMode) {
       logger.info('[cryptoPayment] Creating mock crypto payment intent');
       return {
         success: true,
         paymentAddress: '0x1234567890abcdef1234567890abcdef12345678',
-        amount,
+        amount: cryptoAmount,
         currency,
         expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
         paymentId: `crypto_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        metadata: metadata || {}
       };
     }
 
-    // In a real implementation, we would:
-    // 1. Generate a unique payment address or use an existing one
-    // 2. Set up monitoring for incoming transactions to that address
-    // 3. Return payment details to the client
-    
-    return {
-      success: true,
-      paymentAddress: '0x1234567890abcdef1234567890abcdef12345678', // This should be dynamic in production
-      amount,
-      currency,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
-      paymentId: `crypto_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-    };
+    try {
+      // Check if the currency is enabled
+      if (!this.supportedCurrencies[currency].enabled) {
+        return { success: false, error: `Currency ${currency} is not currently available` };
+      }
+      
+      // In a real implementation, we would:
+      // 1. Generate a unique payment address or use an existing one
+      // 2. Set up monitoring for incoming transactions to that address
+      // 3. Return payment details to the client
+      
+      return {
+        success: true,
+        paymentAddress: '0x1234567890abcdef1234567890abcdef12345678', // This should be dynamic in production
+        amount: cryptoAmount,
+        currency,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
+        paymentId: `crypto_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        metadata: metadata || {}
+      };
+    } catch (error) {
+      logger.error('[cryptoPayment] Error creating payment intent:', error);
+      return { success: false, error: 'Failed to create payment intent' };
+    }
   }
 
   /**

@@ -9,12 +9,26 @@ const router = Router();
 const createPaymentIntentSchema = z.object({
   amount: z.number().positive(),
   currency: z.string().optional().default('MATIC'),
+  metadata: z.record(z.string()).optional(),
 });
 
 // Schema for verifying a crypto payment
 const verifyPaymentSchema = z.object({
   paymentId: z.string(),
   txHash: z.string(),
+});
+
+/**
+ * Get available cryptocurrencies
+ */
+router.get('/available-currencies', async (req, res) => {
+  try {
+    const currencies = await cryptoPaymentService.getAvailableCurrencies();
+    res.json({ success: true, currencies });
+  } catch (error) {
+    logger.error('[crypto] Error getting available currencies:', error);
+    res.status(500).json({ success: false, error: 'Failed to get available currencies' });
+  }
 });
 
 /**
@@ -26,7 +40,8 @@ router.post('/create-payment-intent', async (req, res) => {
     
     const paymentIntent = await cryptoPaymentService.createPaymentIntent(
       validatedData.amount,
-      validatedData.currency
+      validatedData.currency,
+      validatedData.metadata
     );
     
     res.json(paymentIntent);
