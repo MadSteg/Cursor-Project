@@ -181,6 +181,52 @@ export class CryptoPaymentService {
       return { success: false, error: 'Failed to get transaction details' };
     }
   }
+  
+  /**
+   * Get payment status for a specific payment ID
+   */
+  async getPaymentStatus(paymentId: string) {
+    // In a real implementation, this would check a database for payment status
+    // For this mock implementation, we'll randomly select a status
+    
+    if (this.mockMode) {
+      // For demo purposes, randomly generate one of the possible statuses
+      // In a real implementation, we'd check the database or blockchain
+      const mockStatuses = ['pending', 'completed', 'expired', 'failed'];
+      const mockStatus = mockStatuses[Math.floor(Math.random() * mockStatuses.length)];
+      
+      // For completed transactions, always include a transaction hash
+      if (mockStatus === 'completed') {
+        return {
+          status: mockStatus,
+          txHash: `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+          timestamp: Date.now()
+        };
+      }
+      
+      return {
+        status: mockStatus,
+        timestamp: Date.now()
+      };
+    }
+    
+    if (!this.provider) {
+      return { status: 'failed', error: 'Provider not initialized' };
+    }
+    
+    try {
+      // In a real implementation, we would:
+      // 1. Look up the payment in our database
+      // 2. Check if it has been confirmed on the blockchain
+      // 3. Return the appropriate status
+      
+      // Since we don't have a real database, we'll just return 'pending'
+      return { status: 'pending' };
+    } catch (error) {
+      logger.error('[cryptoPayment] Error getting payment status:', error);
+      return { status: 'failed', error: 'Failed to get payment status' };
+    }
+  }
 }
 
 export const cryptoPaymentService = new CryptoPaymentService();

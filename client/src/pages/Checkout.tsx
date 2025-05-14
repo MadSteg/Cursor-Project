@@ -654,7 +654,7 @@ export default function Checkout() {
                 // Redirect to crypto checkout page with necessary parameters
                 const searchParams = new URLSearchParams();
                 searchParams.set('amount', calculateTotal().toString());
-                if (nftReceipt) {
+                if (mintNFT) {
                   searchParams.set('mintNFT', 'true');
                   searchParams.set('nftTheme', nftTheme);
                 }
