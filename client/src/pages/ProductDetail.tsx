@@ -269,7 +269,7 @@ export default function ProductDetail() {
                     <SelectValue placeholder="Select Tier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {product.nftReceipt.availableTiers.map((tier) => (
+                    {product.nftReceipt.availableTiers.map((tier: any) => (
                       <SelectItem key={tier} value={tier}>
                         {tier.charAt(0).toUpperCase() + tier.slice(1)} (${calculateNFTReceiptPrice(product, tier).toFixed(2)})
                       </SelectItem>
@@ -378,7 +378,7 @@ export default function ProductDetail() {
                 <Button 
                   variant={selectedTier === NFTReceiptTier.STANDARD ? "default" : "outline"} 
                   className="w-full"
-                  onClick={() => setSelectedTier(NFTReceiptTier.STANDARD)}
+                  onClick={() => setSelectedTier(NFTReceiptTier.STANDARD as string)}
                   disabled={!product.nftReceipt.availableTiers.includes(NFTReceiptTier.STANDARD)}
                 >
                   {selectedTier === NFTReceiptTier.STANDARD ? "Selected" : "Select"}
@@ -404,7 +404,7 @@ export default function ProductDetail() {
                 <Button 
                   variant={selectedTier === NFTReceiptTier.PREMIUM ? "default" : "outline"} 
                   className="w-full"
-                  onClick={() => setSelectedTier(NFTReceiptTier.PREMIUM)}
+                  onClick={() => setSelectedTier(NFTReceiptTier.PREMIUM as string)}
                   disabled={!product.nftReceipt.availableTiers.includes(NFTReceiptTier.PREMIUM)}
                 >
                   {selectedTier === NFTReceiptTier.PREMIUM ? "Selected" : "Select"}
@@ -431,7 +431,7 @@ export default function ProductDetail() {
                 <Button 
                   variant={selectedTier === NFTReceiptTier.LUXURY ? "default" : "outline"} 
                   className="w-full"
-                  onClick={() => setSelectedTier(NFTReceiptTier.LUXURY)}
+                  onClick={() => setSelectedTier(NFTReceiptTier.LUXURY as string)}
                   disabled={!product.nftReceipt.availableTiers.includes(NFTReceiptTier.LUXURY)}
                 >
                   {selectedTier === NFTReceiptTier.LUXURY ? "Selected" : "Select"}

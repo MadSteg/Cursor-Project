@@ -115,7 +115,7 @@ export default function ProductCatalog() {
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {Object.values(ProductCategory).map((category) => (
                       <SelectItem key={category} value={category}>
                         {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -134,8 +134,8 @@ export default function ProductCatalog() {
                     <SelectValue placeholder="All Merchants" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Merchants</SelectItem>
-                    {merchants?.map((merchant) => (
+                    <SelectItem value="all">All Merchants</SelectItem>
+                    {merchants?.map((merchant: any) => (
                       <SelectItem key={merchant.id} value={merchant.id}>
                         {merchant.name}
                       </SelectItem>
@@ -179,7 +179,7 @@ export default function ProductCatalog() {
             </div>
           ) : products && products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {products.map((product) => (
+              {products && products.map((product: any) => (
                 <Card 
                   key={product.id} 
                   className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
