@@ -20,7 +20,7 @@ const Header: React.FC = () => {
             <Link href="/">
               <div className="flex flex-col">
                 <h1 className="text-xl font-bold text-dark cursor-pointer">BlockReceipt<span className="text-blue-600">.ai</span></h1>
-                <span className="text-xs text-gray-500 -mt-1">Blockchain-Verified Receipts</span>
+                <span className="text-xs text-gray-500 -mt-1">Verifiable Digital Receipts</span>
               </div>
             </Link>
           </div>
