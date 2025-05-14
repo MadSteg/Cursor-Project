@@ -399,6 +399,44 @@ export default function Checkout() {
                 
                 <Separator className="my-4" />
                 
+                {/* Payment Method Selection */}
+                <div className="space-y-2 mb-4">
+                  <Label className="text-sm font-medium">Payment Method</Label>
+                  <RadioGroup 
+                    value={paymentMethod} 
+                    onValueChange={setPaymentMethod}
+                    className="flex flex-col space-y-1"
+                    disabled={isLoading}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="credit-card" id="credit-card" />
+                      <Label htmlFor="credit-card" className="flex items-center gap-2 cursor-pointer">
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                        Credit Card
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="crypto" id="crypto" />
+                      <Label htmlFor="crypto" className="flex items-center gap-2 cursor-pointer">
+                        <Bitcoin className="h-4 w-4 text-muted-foreground" />
+                        Cryptocurrency
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  
+                  {paymentMethod === 'crypto' && (
+                    <div className="mt-2 p-3 bg-blue-50 rounded-md text-sm text-blue-800 flex items-start gap-2">
+                      <Wallet className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Web3 Payment</p>
+                        <p className="text-blue-700">Pay with MATIC on the Polygon network. You'll be redirected to connect your crypto wallet.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Separator className="my-4" />
+                
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -627,7 +665,19 @@ export default function Checkout() {
                 Processing...
               </>
             ) : (
-              `Pay $${amount}`
+              <>
+                {paymentMethod === 'crypto' ? (
+                  <>
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Pay with Crypto (${calculateTotal().toFixed(2)})
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Pay ${calculateTotal().toFixed(2)}
+                  </>
+                )}
+              </>
             )}
           </Button>
         </CardFooter>
