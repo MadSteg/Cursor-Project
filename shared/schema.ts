@@ -69,6 +69,9 @@ export const receiptItems = pgTable("receipt_items", {
   productId: integer("product_id"), // Reference to identified product from retailer database
   categoryId: integer("category_id"), // Category for the item
   matchConfidence: numeric("match_confidence"), // Confidence score for product matching
+  modelNumber: text("model_number"), // Model number for product (e.g., PS5, Dyson V11, etc.)
+  serialNumber: text("serial_number"), // Serial number for the specific product unit
+  warrantyExpiryDate: timestamp("warranty_expiry_date"), // When the warranty expires
 });
 
 export const insertReceiptItemSchema = createInsertSchema(receiptItems).pick({
@@ -79,6 +82,9 @@ export const insertReceiptItemSchema = createInsertSchema(receiptItems).pick({
   productId: true,
   categoryId: true,
   matchConfidence: true,
+  modelNumber: true,
+  serialNumber: true,
+  warrantyExpiryDate: true,
 });
 
 // Define receipts
@@ -227,6 +233,13 @@ export const products = pgTable("products", {
   barcodeType: text("barcode_type"), // UPC, EAN, etc.
   brandName: text("brand_name"),
   departmentName: text("department_name"),
+  modelNumber: text("model_number"), // Model number (e.g., PS5, Dyson V11)
+  serialNumberPrefix: text("serial_number_prefix"), // Prefix for serial numbers of this model
+  warrantyDuration: integer("warranty_duration"), // Warranty duration in days
+  warrantyInfo: text("warranty_info"), // Additional warranty information
+  warrantyUrl: text("warranty_url"), // URL to warranty page
+  manufacturerName: text("manufacturer_name"), // Name of manufacturer
+  manufacturerSupportUrl: text("manufacturer_support_url"), // URL to manufacturer support
   lastUpdated: timestamp("last_updated"),
   isActive: boolean("is_active").default(true),
   metadata: jsonb("metadata"), // Additional product data in JSON format
@@ -249,6 +262,13 @@ export const insertProductSchema = createInsertSchema(products).pick({
   barcodeType: true,
   brandName: true,
   departmentName: true,
+  modelNumber: true,
+  serialNumberPrefix: true,
+  warrantyDuration: true,
+  warrantyInfo: true,
+  warrantyUrl: true,
+  manufacturerName: true,
+  manufacturerSupportUrl: true,
   lastUpdated: true,
   isActive: true,
   metadata: true,
