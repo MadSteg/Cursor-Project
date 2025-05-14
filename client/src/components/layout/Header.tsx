@@ -42,7 +42,7 @@ const Header: React.FC = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
-            {/* Core Navigation - Rearranged as requested */}
+            {/* Core Navigation - Simplified as requested */}
             <Link href="/about">
               <span className={`text-sm font-medium ${currentLocation === "/about" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <FileCheck className="h-4 w-4 mr-1.5" /> About
@@ -67,25 +67,6 @@ const Header: React.FC = () => {
             <Link href="/nft-wallet">
               <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Wallet className="h-4 w-4 mr-1.5" /> NFT Wallet
-              </span>
-            </Link>
-            
-            <Link href="/verify-receipt">
-              <span className={`text-sm font-medium ${currentLocation === "/verify-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <FileCheck className="h-4 w-4 mr-1.5" /> Verify Receipt
-              </span>
-            </Link>
-            
-            {/* E-commerce & Merchant Features */}
-            <Link href="/products">
-              <span className={`text-sm font-medium ${currentLocation === "/products" || currentLocation.startsWith("/product/") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <ShoppingCart className="h-4 w-4 mr-1.5" /> Products
-              </span>
-            </Link>
-            
-            <Link href="/merchant-dashboard">
-              <span className={`text-sm font-medium ${currentLocation === "/merchant-dashboard" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Store className="h-4 w-4 mr-1.5" /> Merchant
               </span>
             </Link>
           </div>
@@ -133,24 +114,6 @@ const Header: React.FC = () => {
                       <Link href="/nft-wallet">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                           <Wallet className="h-5 w-5" /> NFT Wallet
-                        </span>
-                      </Link>
-                      <Link href="/verify-receipt">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <FileCheck className="h-5 w-5" /> Verify Receipt
-                        </span>
-                      </Link>
-  
-                    </div>
-                  </div>
-                  
-                  {/* E-commerce & Merchant */}
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Merchant Tools</p>
-                    <div className="space-y-4">
-                      <Link href="/merchant-dashboard">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Store className="h-5 w-5" /> Merchant Dashboard
                         </span>
                       </Link>
                     </div>
