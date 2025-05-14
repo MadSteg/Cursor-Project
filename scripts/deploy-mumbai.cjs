@@ -1,4 +1,4 @@
-// scripts/deploy-mumbai.js
+// scripts/deploy-mumbai.cjs
 const { ethers } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
