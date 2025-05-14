@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 // Icons
-import { Lock, Unlock, Eye, Share, Copy, Info, ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { Lock, Unlock, Eye, Share, Copy, Info, ShieldCheck, ShieldAlert, AlertTriangle, Award } from 'lucide-react';
 
 interface FullReceiptData {
   id: number;
@@ -64,6 +64,7 @@ interface EnhancedNFTReceiptCardProps {
   onGrantAccess?: (address: string) => Promise<boolean>;
   onRevokeAccess?: (address: string) => Promise<boolean>;
   onViewMetadata?: () => void;
+  onClaimWarranty?: () => void;
   className?: string;
 }
 
@@ -73,6 +74,7 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
   onGrantAccess,
   onRevokeAccess,
   onViewMetadata,
+  onClaimWarranty,
   className = ''
 }) => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -357,6 +359,19 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
             >
               <Eye className="mr-2 h-4 w-4" />
               View Details
+            </Button>
+          )}
+          
+          {/* Claim Warranty Button */}
+          {accessControl.granted && onClaimWarranty && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={onClaimWarranty}
+            >
+              <Award className="mr-2 h-4 w-4" />
+              Claim Warranty
             </Button>
           )}
           
