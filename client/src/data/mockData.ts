@@ -2,7 +2,26 @@
  * Mock receipt data for development purposes
  */
 
-import { NFTReceiptProps } from '@/pages/UserNFTWallet';
+// Define NFTReceiptProps type locally to avoid circular imports
+export interface NFTReceiptProps {
+  id: string;
+  merchantName: string;
+  date: string;
+  total: number;
+  items: number;
+  txHash?: string;
+  isEncrypted?: boolean;
+  hasGrantedAccess?: boolean;
+  grantedTo?: string[];
+  tokenId?: string;
+  receiptType: string;
+  status: string;
+  warranty?: {
+    expiryDate: string;
+    duration: string;
+    isActive: boolean;
+  };
+}
 
 export const mockReceipts: NFTReceiptProps[] = [
   {
