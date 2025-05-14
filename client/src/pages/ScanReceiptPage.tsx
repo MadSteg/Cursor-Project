@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight, Tag, DollarSign, Landmark, ShoppingBag } from 'lucide-react';
+import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight, Tag, DollarSign, Landmark, ShoppingBag, Loader2, Coins } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   uploadReceiptImage,
@@ -34,10 +35,12 @@ const ScanReceiptPage = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('upload');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [receiptImage, setReceiptImage] = useState<string | null>(null);
   const [receiptTier, setReceiptTier] = useState<ReceiptTier | null>(null);
+  const [, setLocation] = useLocation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -215,6 +218,65 @@ const ScanReceiptPage = () => {
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+  
+  // Mint NFT receipt function
+  const mintNFTReceipt = async () => {
+    if (!receiptData || !receiptImage) {
+      toast({
+        title: "Missing receipt data",
+        description: "Please scan a receipt before minting an NFT",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsMinting(true);
+      
+      // Extract the base64 data if it's a data URL
+      const imageData = receiptImage.startsWith('data:') 
+        ? receiptImage 
+        : receiptImage;
+      
+      // Send request to mint the NFT
+      const response = await fetch('/api/receipts/mint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receipt: receiptData,
+          imageData: imageData,
+          tier: receiptTier
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.tokenId) {
+        toast({
+          title: "NFT Minted Successfully",
+          description: `Receipt NFT created with token ID: ${data.tokenId}`,
+        });
+        
+        // Navigate to the wallet page to view the minted NFT
+        setTimeout(() => {
+          setLocation('/wallet');
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Failed to mint NFT');
+      }
+    } catch (error) {
+      console.error('NFT minting error:', error);
+      toast({
+        title: "Minting failed",
+        description: error instanceof Error ? error.message : 'Failed to mint NFT receipt',
+        variant: "destructive"
+      });
+    } finally {
+      setIsMinting(false);
     }
   };
   
@@ -437,8 +499,22 @@ const ScanReceiptPage = () => {
                       >
                         Scan Another
                       </Button>
-                      <Button className="flex-1">
-                        Create NFT Receipt
+                      <Button 
+                        className="flex-1"
+                        onClick={mintNFTReceipt}
+                        disabled={isMinting}
+                      >
+                        {isMinting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Minting...
+                          </>
+                        ) : (
+                          <>
+                            <Coins className="h-4 w-4 mr-2" />
+                            Create NFT Receipt
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
