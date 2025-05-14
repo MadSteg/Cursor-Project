@@ -82,8 +82,8 @@ export default function MobileWalletPreview({
           text: 'text-white',
           accent: 'from-amber-400 via-orange-500 to-pink-500',
           border: 'border-fuchsia-700',
-          buttonBg: 'bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600',
-          buttonText: 'text-white font-bold',
+          buttonBg: 'bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500',
+          buttonText: 'text-black font-bold',
           secondaryText: 'text-fuchsia-100',
           logoClass: 'text-amber-300',
           decorations: true,
@@ -152,13 +152,18 @@ export default function MobileWalletPreview({
         <div className={`p-4 relative bg-gradient-to-r ${styles.accent}`}>
           <div className="flex justify-between items-center relative z-10">
             <div className="flex items-center">
-              <Receipt className={`w-5 h-5 mr-2 ${styles.logoClass}`} />
-              <span className={`font-semibold ${styles.text}`}>BlockReceipt.ai</span>
+              <div className={`relative ${theme === 'luxury' ? 'mr-3' : 'mr-2'}`}>
+                {theme === 'luxury' && (
+                  <div className="absolute inset-0 -m-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-yellow-300 rounded-full blur-sm animate-pulse"></div>
+                )}
+                <Receipt className={`w-5 h-5 relative z-10 ${styles.logoClass}`} />
+              </div>
+              <span className={`font-semibold ${styles.text} ${theme === 'luxury' ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200' : ''}`}>BlockReceipt.ai</span>
             </div>
             {encrypted && (
               <div className="flex items-center">
-                <Lock className="w-4 h-4 mr-1 text-white" />
-                <span className="text-xs text-white">Encrypted</span>
+                <Lock className={`w-4 h-4 mr-1 ${theme === 'luxury' ? 'text-amber-300' : 'text-white'}`} />
+                <span className={`text-xs ${theme === 'luxury' ? 'text-amber-200' : 'text-white'}`}>Encrypted</span>
               </div>
             )}
           </div>
@@ -276,30 +281,55 @@ export default function MobileWalletPreview({
         </div>
         
         {/* Footer */}
-        <div className={`p-3 border-t ${styles.border}`}>
-          <div className="flex space-x-2 justify-between">
+        <div className={`p-3 border-t ${styles.border} relative ${theme === 'luxury' ? 'overflow-hidden bg-gradient-to-r from-purple-900 to-indigo-900' : ''}`}>
+          {theme === 'luxury' && (
+            <>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,215,0,0.1),transparent_30%)]"></div>
+              <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-amber-500/20 to-amber-300/5 rounded-full blur-lg animate-spin-slow"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400"></div>
+            </>
+          )}
+          
+          <div className="flex space-x-2 justify-between relative z-10">
             <Button 
-              variant="outline" 
+              variant={theme === 'luxury' ? 'outline' : 'outline'}
               size="sm" 
-              className="text-xs flex-1"
+              className={`text-xs flex-1 ${
+                theme === 'luxury' 
+                  ? 'border-amber-500/50 text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 shadow-inner' 
+                  : ''
+              }`}
               onClick={() => setShowPass(!showPass)}
             >
               {showPass ? 'Hide Pass' : 'Show Pass'}
             </Button>
             <Button 
-              variant="outline" 
+              variant={theme === 'luxury' ? 'outline' : 'outline'}
               size="sm" 
-              className="text-xs flex items-center"
+              className={`text-xs flex items-center ${
+                theme === 'luxury' 
+                  ? 'border-amber-500/50 text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 shadow-inner' 
+                  : ''
+              }`}
               onClick={handleCopyShareLink}
             >
-              <Share2 className="w-3 h-3 mr-1" />
+              <Share2 className={`w-3 h-3 mr-1 ${theme === 'luxury' ? 'text-amber-400' : ''}`} />
               {copied ? 'Copied!' : 'Share'}
             </Button>
             <Button 
               size="sm" 
-              className={`text-xs ${styles.buttonBg} ${styles.buttonText} flex-1`}
+              className={`text-xs ${theme === 'luxury' 
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-black font-bold relative overflow-hidden'
+                : `${styles.buttonBg} ${styles.buttonText}`} flex-1`}
             >
-              Add to Apple Wallet
+              {theme === 'luxury' && (
+                <>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-300 to-yellow-400 opacity-30 blur-sm"></div>
+                  <div className="absolute right-0 top-0 h-8 w-8 bg-white/20 rounded-full blur-sm"></div>
+                  <div className="absolute left-1 top-1 h-2 w-2 bg-yellow-300 rounded-full animate-pulse"></div>
+                </>
+              )}
+              <span className="relative z-10">Add to Apple Wallet</span>
             </Button>
           </div>
         </div>
