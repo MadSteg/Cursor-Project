@@ -95,8 +95,19 @@ class BlockchainService implements IBlockchainService {
         throw new Error('POLYGON_MUMBAI_RPC_URL not set in environment');
       }
       
-      // Use JsonRpcProvider with Alchemy endpoint
-      this.provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_MUMBAI_RPC_URL);
+      console.log('Using Mumbai RPC URL:', process.env.POLYGON_MUMBAI_RPC_URL);
+      
+      // Use JsonRpcProvider with Alchemy endpoint and explicit network details
+      // This helps avoid network detection issues
+      const mumbaiNetwork = {
+        name: 'mumbai',
+        chainId: 80001
+      };
+      
+      this.provider = new ethers.providers.JsonRpcProvider(
+        process.env.POLYGON_MUMBAI_RPC_URL,
+        mumbaiNetwork
+      );
       
       // Test connection by trying to get the network
       try {
