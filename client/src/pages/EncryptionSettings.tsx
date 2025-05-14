@@ -1,6 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EncryptionKeyManager } from "@/components/encryption/EncryptionKeyManager";
 import { SharedAccessManager } from "@/components/encryption/SharedAccessManager";
+import { TacoKeyManager } from "@/components/encryption/TacoKeyManager";
+import { TacoSharedReceiptManager } from "@/components/encryption/TacoSharedReceiptManager";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { InfoIcon, ShieldIcon } from "lucide-react";
 
 export default function EncryptionSettings() {
   return (
@@ -12,11 +16,30 @@ export default function EncryptionSettings() {
         </p>
       </div>
 
-      <Tabs defaultValue="keys" className="w-full">
+      <Alert className="mb-6 bg-blue-50 border-blue-200">
+        <ShieldIcon className="h-4 w-4 text-blue-600" />
+        <AlertTitle className="text-blue-700">Taco Integration Available</AlertTitle>
+        <AlertDescription className="text-blue-600">
+          We've integrated with Taco (formerly NuCypher) for enhanced threshold encryption capabilities.
+          This enables secure, selective sharing of your encrypted receipts with fine-grained access control.
+        </AlertDescription>
+      </Alert>
+
+      <Tabs defaultValue="taco" className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="keys">Encryption Keys</TabsTrigger>
-          <TabsTrigger value="shared">Shared Access</TabsTrigger>
+          <TabsTrigger value="taco">Taco Threshold</TabsTrigger>
+          <TabsTrigger value="taco-shared">Taco Sharing</TabsTrigger>
+          <TabsTrigger value="keys">Standard Keys</TabsTrigger>
+          <TabsTrigger value="shared">Standard Sharing</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="taco">
+          <TacoKeyManager />
+        </TabsContent>
+
+        <TabsContent value="taco-shared">
+          <TacoSharedReceiptManager />
+        </TabsContent>
 
         <TabsContent value="keys">
           <EncryptionKeyManager />

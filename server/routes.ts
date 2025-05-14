@@ -8,6 +8,7 @@ import paymentRoutes from "./routes/payments";
 import thresholdReceiptRoutes from "./routes/threshold-receipt";
 import encryptedPaymentRoutes from "./routes/encrypted-payments";
 import encryptionRoutes from "./routes/encryption";
+import tacoRoutes from "./routes/taco";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -33,6 +34,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register encryption key and shared access routes
   app.use(encryptionRoutes);
+  
+  // Register Taco threshold encryption routes
+  app.use('/api/taco', tacoRoutes);
   
 
   // Get categories

@@ -15,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Lock, Shield, CreditCard, Receipt } from 'lucide-react';
-import { ensureUserKeys, createShareableData } from '../../lib/thresholdCrypto';
+import { tacoThresholdCrypto } from '../../lib/thresholdCrypto';
 import MobileWalletPreview from './MobileWalletPreview';
 
 // Mock user ID for demo purposes
@@ -55,7 +55,15 @@ export function EncryptedCheckout({ amount, receiptId, onPaymentComplete }: Encr
 
     try {
       // Get or generate user keys
-      const userKeys = await ensureUserKeys(DEMO_USER_ID);
+      // Get user's encryption keys from the server
+      const response = await fetch('/api/encryption-keys');
+      const keys = await response.json();
+      const userKeys = keys.filter(key => key.keyType === 'taco-threshold');
+      
+      // If no keys found, we'll need to create one
+      if (userKeys.length === 0) {
+        console.log("No Taco encryption keys found, using mock mode");
+      }
       
       // Create receipt data to encrypt
       const receiptData = JSON.stringify({

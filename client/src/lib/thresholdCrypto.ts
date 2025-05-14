@@ -1,190 +1,207 @@
 /**
- * Client-side Threshold Cryptography Implementation
+ * Client-side Taco Threshold Encryption Library
  * 
- * This library provides threshold proxy re-encryption functions for secure client-side
- * encryption and decryption of sensitive receipt data.
+ * This library provides integration with Taco (formerly NuCypher) for threshold encryption
+ * enabling selective sharing of encrypted receipts with fine-grained access control.
  */
 
-import CryptoJS from 'crypto-js';
+import * as taco from '@nucypher/taco';
 
-// Key types 
-export interface UserKeys {
-  privateKey: string;
-  publicKey: string;
-  encryptionKey: string;
-}
-
-export interface ReEncryptionKey {
-  fromPublicKey: string;
-  toPublicKey: string;
-  reKey: string;
-}
+// Initialize Taco provider
+let provider: any = null;
+let initialized = false;
 
 /**
- * Generates a pseudo-random key string with specified byte length
- * @param byteLength Length of the key in bytes
- * @returns Random key string
+ * Initialize the Taco provider
  */
-function generateRandomKey(byteLength: number = 32): string {
-  const randomArray = new Uint8Array(byteLength);
-  crypto.getRandomValues(randomArray);
-  return Array.from(randomArray, b => b.toString(16).padStart(2, '0')).join('');
-}
-
-/**
- * Generate a set of keys for threshold encryption
- * @returns Object containing public, private and encryption keys
- */
-export function generateUserKeys(): UserKeys {
-  // In a real threshold crypto system, these would be proper cryptographic keys
-  // This is a simplified implementation for demonstration
-  const privateKey = generateRandomKey(32);
-  const publicKey = CryptoJS.SHA256(privateKey).toString();
-  const encryptionKey = generateRandomKey(16);
-  
-  return {
-    privateKey,
-    publicKey,
-    encryptionKey
-  };
-}
-
-/**
- * Encrypts data using the user's public key
- * @param data The data to encrypt
- * @param publicKey The user's public key
- * @returns Encrypted data string
- */
-export function encryptData(data: string, publicKey: string): string {
-  // In a real threshold system, this would use proper threshold encryption
-  const derived = CryptoJS.HmacSHA256(publicKey, 'encryption-salt').toString();
-  return CryptoJS.AES.encrypt(data, derived).toString();
-}
-
-/**
- * Decrypts data using the user's private key
- * @param encryptedData The encrypted data to decrypt
- * @param privateKey The user's private key
- * @returns Decrypted data string
- */
-export function decryptData(encryptedData: string, privateKey: string): string {
-  // In a real threshold system, this would use proper threshold decryption
-  const publicKey = CryptoJS.SHA256(privateKey).toString();
-  const derived = CryptoJS.HmacSHA256(publicKey, 'encryption-salt').toString();
-  const bytes = CryptoJS.AES.decrypt(encryptedData, derived);
-  return bytes.toString(CryptoJS.enc.Utf8);
-}
-
-/**
- * Generates a re-encryption key that allows transforming ciphertext encrypted with
- * one public key to be decryptable by another private key
- * @param fromPrivateKey The private key of the data owner
- * @param toPublicKey The public key of the recipient
- * @returns Re-encryption key object
- */
-export function generateReEncryptionKey(fromPrivateKey: string, toPublicKey: string): ReEncryptionKey {
-  // In a real threshold system, this would generate a proper re-encryption key
-  const fromPublicKey = CryptoJS.SHA256(fromPrivateKey).toString();
-  const reKey = CryptoJS.HmacSHA256(fromPrivateKey + toPublicKey, 'rekey-salt').toString();
-  
-  return {
-    fromPublicKey,
-    toPublicKey,
-    reKey
-  };
-}
-
-/**
- * Re-encrypts data that was encrypted with one public key to be decryptable
- * with another private key using a re-encryption key
- * @param encryptedData The encrypted data
- * @param reEncryptionKey The re-encryption key
- * @returns Re-encrypted data string
- */
-export function reEncryptData(encryptedData: string, reEncryptionKey: ReEncryptionKey): string {
-  // In a real threshold system, this would properly transform the ciphertext
-  const transformKey = CryptoJS.HmacSHA256(reEncryptionKey.reKey, 'transform-salt').toString();
-  
-  // Decrypt with original key derivative (simulated)
-  const fromDerived = CryptoJS.HmacSHA256(reEncryptionKey.fromPublicKey, 'encryption-salt').toString();
-  const decrypted = CryptoJS.AES.decrypt(encryptedData, fromDerived).toString(CryptoJS.enc.Utf8);
-  
-  // Re-encrypt with the target key
-  const toDerived = CryptoJS.HmacSHA256(reEncryptionKey.toPublicKey, 'encryption-salt').toString();
-  return CryptoJS.AES.encrypt(decrypted, toDerived).toString();
-}
-
-/**
- * Retrieves or generates user encryption keys from localStorage
- * @param userId Optional user ID for multi-user scenarios
- * @returns Promise resolving to user keys
- */
-export async function ensureUserKeys(userId: number = 1): Promise<UserKeys> {
-  const storageKey = `threshold-keys-${userId}`;
-  const storedKeys = localStorage.getItem(storageKey);
-  
-  if (storedKeys) {
-    return JSON.parse(storedKeys) as UserKeys;
+export async function initializeTaco(): Promise<boolean> {
+  if (initialized) {
+    return true;
   }
-  
-  // Generate new keys if none exist
-  const newKeys = generateUserKeys();
-  localStorage.setItem(storageKey, JSON.stringify(newKeys));
-  return newKeys;
+
+  try {
+    // Create a Taco provider
+    provider = await taco.createTacoProvider();
+    console.log('Taco client initialized successfully');
+    initialized = true;
+    return true;
+  } catch (error: any) {
+    console.error(`Failed to initialize Taco client: ${error.message}`);
+    
+    // In development mode, create a mock provider
+    if (import.meta.env.DEV) {
+      provider = createMockProvider();
+      initialized = true;
+      console.log('Using mock Taco provider in development mode');
+      return true;
+    }
+    
+    return false;
+  }
 }
 
 /**
- * Creates a shareable version of encrypted data using threshold cryptography
- * @param data The data to encrypt and share
- * @param fromUserId The ID of the user sharing the data
- * @param toPublicKey The public key of the recipient
- * @returns Object containing encrypted data and sharing metadata
+ * Generate a new Taco encryption key pair
  */
-export async function createShareableData(
-  data: string, 
-  fromUserId: number = 1,
-  toPublicKey?: string
-): Promise<{encryptedData: string, sharedKey?: string}> {
-  const fromKeys = await ensureUserKeys(fromUserId);
-  const encryptedData = encryptData(data, fromKeys.publicKey);
+export async function generateKeyPair(): Promise<{ publicKey: string, privateKey: string }> {
+  await ensureInitialized();
   
-  // Only generate sharing key if recipient public key is provided
-  if (toPublicKey) {
-    const reKey = generateReEncryptionKey(fromKeys.privateKey, toPublicKey);
+  try {
+    const keyPair = await provider.generateKeyPair();
     return {
-      encryptedData,
-      sharedKey: reKey.reKey
+      publicKey: keyPair.publicKey,
+      privateKey: keyPair.privateKey
     };
+  } catch (error: any) {
+    console.error(`Error generating Taco key pair: ${error.message}`);
+    throw new Error(`Failed to generate Taco key pair: ${error.message}`);
   }
-  
-  return { encryptedData };
 }
 
 /**
- * Decrypts shared data using a shared key
- * @param encryptedData The encrypted data
- * @param sharedKey The shared re-encryption key
- * @param userId The ID of the recipient user
- * @returns Decrypted data string
+ * Encrypt data with a public key
  */
-export async function decryptSharedData(
-  encryptedData: string,
-  sharedKey: string,
-  fromPublicKey: string,
-  userId: number = 1
-): Promise<string> {
-  const toKeys = await ensureUserKeys(userId);
+export async function encrypt(data: any, publicKey: string): Promise<string> {
+  await ensureInitialized();
   
-  // Create a re-encryption key object from the shared key
-  const reEncryptionKey: ReEncryptionKey = {
-    fromPublicKey,
-    toPublicKey: toKeys.publicKey,
-    reKey: sharedKey
-  };
-  
-  // Re-encrypt the data for the recipient
-  const reEncrypted = reEncryptData(encryptedData, reEncryptionKey);
-  
-  // Decrypt with recipient's private key
-  return decryptData(reEncrypted, toKeys.privateKey);
+  try {
+    // Convert data to string
+    const dataString = JSON.stringify(data);
+    
+    // Encrypt with Taco
+    const encryptedData = await provider.encrypt(
+      dataString, 
+      publicKey, 
+      'memorychain' // Domain
+    );
+    
+    return encryptedData;
+  } catch (error: any) {
+    console.error(`Error encrypting with Taco: ${error.message}`);
+    throw new Error(`Failed to encrypt data: ${error.message}`);
+  }
 }
+
+/**
+ * Decrypt data with a private key
+ */
+export async function decrypt(encryptedData: string, privateKey: string): Promise<any> {
+  await ensureInitialized();
+  
+  try {
+    // Decrypt with Taco
+    const decryptedString = await provider.decrypt(
+      encryptedData, 
+      privateKey
+    );
+    
+    // Parse the decrypted data
+    return JSON.parse(decryptedString);
+  } catch (error: any) {
+    console.error(`Error decrypting with Taco: ${error.message}`);
+    throw new Error(`Failed to decrypt data: ${error.message}`);
+  }
+}
+
+/**
+ * Generate a re-encryption key for sharing data with another user
+ */
+export async function generateReEncryptionKey(
+  ownerPrivateKey: string, 
+  targetPublicKey: string,
+  expirationDays?: number
+): Promise<string> {
+  await ensureInitialized();
+  
+  try {
+    // Calculate expiration timestamp
+    let expiration: number | undefined = undefined;
+    if (expirationDays) {
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + expirationDays);
+      expiration = Math.floor(expirationDate.getTime() / 1000);
+    }
+    
+    // Generate re-encryption key
+    const reEncryptionKey = await provider.generateReencryptionKey(
+      ownerPrivateKey,
+      targetPublicKey,
+      { 
+        expiration,
+        domain: 'memorychain'
+      }
+    );
+    
+    return reEncryptionKey;
+  } catch (error: any) {
+    console.error(`Error generating re-encryption key: ${error.message}`);
+    throw new Error(`Failed to generate re-encryption key: ${error.message}`);
+  }
+}
+
+/**
+ * Re-encrypt data for a target user
+ */
+export async function reEncrypt(
+  encryptedData: string, 
+  reEncryptionKey: string
+): Promise<string> {
+  await ensureInitialized();
+  
+  try {
+    // Re-encrypt with Taco
+    const reEncryptedData = await provider.reencrypt(
+      encryptedData,
+      reEncryptionKey
+    );
+    
+    return reEncryptedData;
+  } catch (error: any) {
+    console.error(`Error re-encrypting data: ${error.message}`);
+    throw new Error(`Failed to re-encrypt data: ${error.message}`);
+  }
+}
+
+/**
+ * Ensure the Taco provider is initialized
+ */
+async function ensureInitialized(): Promise<void> {
+  if (!initialized) {
+    const success = await initializeTaco();
+    if (!success) {
+      throw new Error('Taco provider not initialized');
+    }
+  }
+}
+
+/**
+ * Create a mock Taco provider for development/testing
+ */
+function createMockProvider(): any {
+  return {
+    generateKeyPair: async () => ({
+      publicKey: `mock-taco-public-key-${Date.now()}`,
+      privateKey: `mock-taco-private-key-${Date.now()}`
+    }),
+    encrypt: async (data: string, publicKey: string) => 
+      `encrypted:${Buffer.from(data).toString('base64')}:${publicKey}`,
+    decrypt: async (encryptedData: string) => {
+      const parts = encryptedData.split(':');
+      return parts.length > 1 ? Buffer.from(parts[1], 'base64').toString() : '{}';
+    },
+    generateReencryptionKey: async (ownerKey: string, targetKey: string) =>
+      `reencryption-key:${ownerKey.slice(0, 8)}:${targetKey.slice(0, 8)}:${Date.now()}`,
+    reencrypt: async (encryptedData: string, reEncryptionKey: string) =>
+      `reencrypted:${encryptedData}:${reEncryptionKey.slice(0, 8)}`
+  };
+}
+
+// Export a singleton object with all the functions
+export const tacoThresholdCrypto = {
+  initialize: initializeTaco,
+  generateKeyPair,
+  encrypt,
+  decrypt,
+  generateReEncryptionKey,
+  reEncrypt
+};
