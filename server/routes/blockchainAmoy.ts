@@ -88,12 +88,18 @@ router.post('/mint/:receiptId', async (req: Request, res: Response) => {
     }
     
     // Update receipt with blockchain data
-    if (!mintResult.mockMode) {
-      // In non-mock mode, update the database with real blockchain data
-      await storage.updateReceipt(receiptId, {
-        blockchainTxHash: mintResult.txHash,
-        blockchainTokenId: mintResult.tokenId.toString()
-      });
+    if (mintResult.success && !mintResult.error) {
+      // Update the database with blockchain data
+      // The fields might be different depending on mock mode vs real mode
+      const blockchainTxHash = mintResult.txHash || (mintResult.receipt?.blockchain?.transactionHash);
+      const blockchainTokenId = mintResult.tokenId?.toString() || (mintResult.receipt?.blockchain?.tokenId);
+      
+      if (blockchainTxHash && blockchainTokenId) {
+        await storage.updateReceipt(receiptId, {
+          blockchainTxHash,
+          nftTokenId: blockchainTokenId
+        });
+      }
     }
     
     res.json(mintResult);
@@ -196,10 +202,12 @@ router.post('/mock-mint/:receiptId', async (req: Request, res: Response) => {
     const mockMintResult = await blockchainServiceAmoy.mockMintReceipt(fullReceipt, receiptItems);
     
     // Update receipt with mock blockchain data
-    await storage.updateReceipt(receiptId, {
-      blockchainTxHash: mockMintResult.txHash,
-      blockchainTokenId: mockMintResult.tokenId.toString()
-    });
+    if (mockMintResult.success) {
+      await storage.updateReceipt(receiptId, {
+        blockchainTxHash: mockMintResult.txHash,
+        nftTokenId: mockMintResult.tokenId.toString()
+      });
+    }
     
     res.json(mockMintResult);
   } catch (error) {

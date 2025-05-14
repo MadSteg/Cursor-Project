@@ -43,8 +43,16 @@ class BlockchainServiceAmoy {
       const privateKey = process.env.WALLET_PRIVATE_KEY;
       const contractAddress = process.env.RECEIPT_MINTER_ADDRESS;
       
-      if (!rpcUrl || !privateKey || !contractAddress) {
+      if (!rpcUrl || !privateKey || contractAddress === undefined) {
         console.warn('Missing Amoy blockchain environment variables, using mock mode');
+        this.mockMode = true;
+        this.initialized = true;
+        return;
+      }
+      
+      // Extra validation for empty values
+      if (privateKey.trim() === '') {
+        console.warn('Amoy blockchain private key is empty, using mock mode');
         this.mockMode = true;
         this.initialized = true;
         return;
