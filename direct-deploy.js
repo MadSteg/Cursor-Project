@@ -203,14 +203,19 @@ async function deployContract() {
     };
     
     // Load RPC URL from environment variable
-    const rpcUrl = process.env.ALCHEMY_RPC;
+    // Note: For some reason env variable is only returning the API key part
+    // So we'll construct the full URL
+    const apiKey = process.env.ALCHEMY_RPC;
     
-    console.log('DEBUG - Environment variables:');
-    console.log(`- ALCHEMY_RPC: ${rpcUrl}`);
-    
-    if (!rpcUrl || !rpcUrl.startsWith('https://')) {
-      throw new Error(`Invalid RPC URL: ${rpcUrl}. Make sure it starts with https://`);
+    if (!apiKey) {
+      throw new Error(`Missing Alchemy API key. Please provide ALCHEMY_RPC environment variable.`);
     }
+    
+    // Construct the full RPC URL with the Amoy base URL and API key
+    const rpcUrl = `https://polygon-amoy.g.alchemy.com/v2/${apiKey}`;
+    
+    console.log(`Using constructed RPC URL with Alchemy key: ${apiKey}`);
+    console.log(`Full RPC URL: ${rpcUrl}`);
     
     console.log(`Connecting to Polygon Amoy (ChainId: ${amoyNetwork.chainId}) at: ${rpcUrl}`);
     
@@ -228,7 +233,15 @@ async function deployContract() {
       throw new Error(`Cannot connect to Amoy network: ${netError.message}`);
     }
     
-    const wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, provider);
+    // Check if we have a private key
+    const privateKey = process.env.WALLET_PRIVATE_KEY;
+    
+    if (!privateKey || privateKey.trim() === '') {
+      console.log('WALLET_PRIVATE_KEY is empty. Switching to simulation mode.');
+      throw new Error('No private key available. Please provide a valid WALLET_PRIVATE_KEY with MATIC funds to deploy the contract.');
+    }
+    
+    const wallet = new ethers.Wallet(privateKey, provider);
     const walletAddress = wallet.address;
     
     console.log(`Using wallet address: ${walletAddress}`);
