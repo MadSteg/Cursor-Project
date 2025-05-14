@@ -10,6 +10,7 @@ import ReceiptDetail from "@/pages/ReceiptDetail";
 import Analytics from "@/pages/Analytics";
 import Checkout from "@/pages/Checkout";
 import EncryptedCheckout from "@/pages/EncryptedCheckout";
+import EncryptionSettings from "@/pages/EncryptionSettings";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 

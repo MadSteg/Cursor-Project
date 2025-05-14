@@ -31,6 +31,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register encrypted payment routes
   app.use('/api/encrypted-payments', encryptedPaymentRoutes);
   
+  // Register encryption key and shared access routes
+  app.use(encryptionRoutes);
+  
 
   // Get categories
   app.get("/api/categories", async (req, res) => {
