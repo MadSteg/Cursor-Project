@@ -299,7 +299,7 @@ const CATEGORY_CACHE_MAX_SIZE = 1000;
  */
 export async function inferReceiptCategory(
   merchantName: string, 
-  items: Array<{name: string; price: number}>
+  items: Array<{name: string; price: number}> | string
 ): Promise<string> {
   try {
     // Prepare the input text from merchant and items
@@ -379,11 +379,11 @@ export async function inferReceiptCategory(
       } catch (openaiError) {
         console.error('OpenAI category inference error:', openaiError);
         // Fall back to rule-based categorization
-        category = fallbackCategorization(merchantName, itemDescriptions);
+        category = await fallbackCategorization(merchantName, itemDescriptions);
       }
     } else {
       // If no API key, use rule-based categorization
-      category = fallbackCategorization(merchantName, itemDescriptions);
+      category = await fallbackCategorization(merchantName, itemDescriptions);
     }
     
     // Cache the result
