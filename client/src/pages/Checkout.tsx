@@ -312,14 +312,14 @@ export default function Checkout() {
                     View Receipt
                   </Button>
                   
-                  {paymentInfo?.mintNFT && (
+                  {paymentInfo?.mintNFT && paymentInfo?.nftTier === 'luxury' && (
                     <Button 
                       variant="default" 
                       className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700"
                       onClick={handleAddToWallet}
                     >
                       <Smartphone className="h-4 w-4" />
-                      Add to Wallet
+                      Add to Apple Wallet
                     </Button>
                   )}
                 </div>
@@ -672,6 +672,50 @@ export default function Checkout() {
                           </ul>
                           
                           <div className="pt-2">
+                            <Label htmlFor="nft-tier" className="text-sm font-medium mb-1.5 block">Receipt Tier</Label>
+                            <RadioGroup
+                              value={nftTier}
+                              onValueChange={(value) => setNftTier(value)}
+                              className="flex flex-col space-y-1 mb-4"
+                            >
+                              <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                                <RadioGroupItem value="standard" id="standard-tier" />
+                                <Label htmlFor="standard-tier" className="flex-1">
+                                  <div className="flex justify-between">
+                                    <span>Standard</span>
+                                    <span className="font-medium">${NFT_RECEIPT_TIERS.standard.price.toFixed(2)}</span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Basic blockchain verification</p>
+                                </Label>
+                              </div>
+                              
+                              <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                                <RadioGroupItem value="premium" id="premium-tier" />
+                                <Label htmlFor="premium-tier" className="flex-1">
+                                  <div className="flex justify-between">
+                                    <span>Premium</span>
+                                    <span className="font-medium">${NFT_RECEIPT_TIERS.premium.price.toFixed(2)}</span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Enhanced visual styles and Pokemon card themes</p>
+                                </Label>
+                              </div>
+                              
+                              <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                                <RadioGroupItem value="luxury" id="luxury-tier" />
+                                <Label htmlFor="luxury-tier" className="flex-1">
+                                  <div className="flex justify-between">
+                                    <span>Luxury</span>
+                                    <span className="font-medium">${NFT_RECEIPT_TIERS.luxury.price.toFixed(2)}</span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Premium styles with "shiny" effects and Apple Wallet integration</p>
+                                  <div className="flex items-center mt-1 text-xs text-green-600">
+                                    <Smartphone className="h-3 w-3 mr-1" />
+                                    Apple Watch/iPhone compatible
+                                  </div>
+                                </Label>
+                              </div>
+                            </RadioGroup>
+                            
                             <Label htmlFor="mock-nft-theme" className="text-sm font-medium mb-1.5 block">Receipt Theme</Label>
                             <RadioGroup 
                               id="mock-nft-theme" 

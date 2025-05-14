@@ -33,6 +33,14 @@ export default function CryptoCheckout() {
   const [receiptId, setReceiptId] = useState<number | undefined>(undefined);
   const [mintNFT, setMintNFT] = useState(false);
   const [nftTheme, setNftTheme] = useState('default');
+  const [nftTier, setNftTier] = useState('standard'); // 'standard', 'premium', or 'luxury'
+  
+  // NFT tiered pricing structure
+  const NFT_RECEIPT_TIERS = {
+    standard: { name: 'Standard', price: 0.99, appleWalletSupport: false },
+    premium: { name: 'Premium', price: 2.99, appleWalletSupport: false },
+    luxury: { name: 'Luxury', price: 5.00, appleWalletSupport: true },
+  };
   
   // Payment state
   const [checkoutState, setCheckoutState] = useState<CheckoutState>("initial");
