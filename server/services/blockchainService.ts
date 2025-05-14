@@ -81,6 +81,14 @@ class BlockchainService implements IBlockchainService {
   constructor() {
     // By default, use mock mode and try to initialize the blockchain
     this.mockMode = true;
+    
+    // Force initialization for testing - remove fallback to mock mode
+    // Use real keys when provided
+    if (process.env.POLYGON_MUMBAI_RPC_URL && process.env.BLOCKCHAIN_PRIVATE_KEY) {
+      console.log("Found valid Mumbai credentials - attempting real connection");
+      this.mockMode = false;
+    }
+    
     this.initialize();
   }
 

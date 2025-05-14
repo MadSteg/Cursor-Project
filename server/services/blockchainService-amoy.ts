@@ -81,10 +81,18 @@ class BlockchainService implements IBlockchainService {
   async initialize() {
     // Check if environment variables are available
     if (!process.env.ALCHEMY_RPC || 
-        !process.env.WALLET_PRIVATE_KEY || 
-        !process.env.RECEIPT_MINTER_ADDRESS) {
+        !process.env.WALLET_PRIVATE_KEY) {
       console.warn('Missing Amoy blockchain environment variables, using mock mode');
       return;
+    }
+    
+    // Use the same contract address as Mumbai if RECEIPT_MINTER_ADDRESS is not defined
+    if (!process.env.RECEIPT_MINTER_ADDRESS && process.env.RECEIPT_NFT_CONTRACT_ADDRESS) {
+      process.env.RECEIPT_MINTER_ADDRESS = process.env.RECEIPT_NFT_CONTRACT_ADDRESS;
+      console.log('Using Mumbai contract address for Amoy:', process.env.RECEIPT_MINTER_ADDRESS);
+    } else if (!process.env.RECEIPT_MINTER_ADDRESS) {
+      process.env.RECEIPT_MINTER_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // Fallback address
+      console.warn('No contract address found for Amoy, using default:', process.env.RECEIPT_MINTER_ADDRESS);
     }
 
     try {

@@ -79,7 +79,9 @@ router.get('/multi-status', async (req: Request, res: Response) => {
       },
       cryptoPayment: {
         status: cryptoPaymentStatus.available ? 'Connected' : 'Error',
-        availableCurrencies: cryptoPaymentStatus.currencies,
+        availableCurrencies: Array.isArray(cryptoPaymentStatus.currencies) ? 
+          cryptoPaymentStatus.currencies : 
+          cryptoPaymentStatus.currencies ? Object.keys(cryptoPaymentStatus.currencies) : [],
         error: cryptoPaymentStatus.error
       }
     };

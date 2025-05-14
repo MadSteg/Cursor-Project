@@ -212,7 +212,7 @@ export const BlockchainStatus = () => {
                 <StatusBadge status={statusData.cryptoPayment.status} />
               </div>
               
-              {statusData.cryptoPayment.availableCurrencies && (
+              {statusData.cryptoPayment.availableCurrencies && Array.isArray(statusData.cryptoPayment.availableCurrencies) && (
                 <div className="mt-3">
                   <div className="text-sm text-gray-500 mb-2">Available Currencies:</div>
                   <div className="flex flex-wrap gap-2">
