@@ -111,6 +111,46 @@ contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
         emit ReceiptMinted(to, tokenId, tokenURI, receiptType);
     }
     
+    /// @notice Mints a new receipt token with an auto-generated token ID
+    /// @dev Generates a unique token ID based on timestamp and randomness
+    /// @param to Address receiving the receipt
+    /// @param tokenURI URI for the token's metadata
+    /// @param receiptType Type of receipt (standard, premium, luxury)
+    /// @return tokenId The generated token ID
+    /// @custom:event Emits a ReceiptMinted event
+    function mintNewReceipt(
+        address to,
+        string calldata tokenURI,
+        string calldata receiptType
+    ) external whenNotPaused onlyRole(MINTER_ROLE) returns (uint256 tokenId) {
+        // Generate a unique token ID based on timestamp and a simple pseudorandom component
+        tokenId = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp,
+                    block.prevrandao,
+                    to,
+                    msg.sender,
+                    tokenURI
+                )
+            )
+        );
+        
+        // Mint the token with the generated ID
+        _tokenURIs[tokenId] = tokenURI;
+        _receiptMetadata[tokenId] = ReceiptMetadata({
+            timestamp: block.timestamp,
+            revoked: false,
+            receiptType: receiptType
+        });
+        
+        _mint(to, tokenId, 1, "");
+        
+        emit ReceiptMinted(to, tokenId, tokenURI, receiptType);
+        
+        return tokenId;
+    }
+    
     /// @notice Batch mints multiple receipts in a single transaction
     /// @dev Efficiently mints multiple receipts, validates that all input arrays have the same length
     /// @param to Address receiving the receipts

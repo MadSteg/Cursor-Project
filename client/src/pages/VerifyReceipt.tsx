@@ -16,8 +16,7 @@ const verifyFormSchema = z.object({
   contractAddress: z.string()
     .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum address format'),
   tokenId: z.string()
-    .refine(value => !isNaN(Number(value)), 'Token ID must be a number')
-    .transform(value => Number(value)),
+    .refine(value => !isNaN(Number(value)), 'Token ID must be a number'),
   network: z.enum(['amoy', 'mumbai', 'polygon', 'ethereum'])
 });
 
@@ -59,10 +58,11 @@ export default function VerifyReceipt() {
       
       // For demo purposes, we're simulating a response
       const isRevoked = Math.random() > 0.8; // 20% chance of being revoked for demo
+      const tokenIdNumber = Number(data.tokenId);
       
       setVerificationResult({
         contractAddress: data.contractAddress,
-        tokenId: data.tokenId,
+        tokenId: tokenIdNumber,
         receiptType: ['standard', 'premium', 'luxury'][Math.floor(Math.random() * 3)],
         timestamp: Math.floor(Date.now() / 1000) - Math.floor(Math.random() * 30 * 24 * 60 * 60), // Random time in the last 30 days
         revoked: isRevoked,
