@@ -217,6 +217,7 @@ export default function UserNFTWallet() {
             <Tabs defaultValue="all">
               <TabsList>
                 <TabsTrigger value="all">All Receipts</TabsTrigger>
+                <TabsTrigger value="encrypted">TACo Encrypted</TabsTrigger>
                 <TabsTrigger value="recent">Recent (30 Days)</TabsTrigger>
                 <TabsTrigger value="standard">Standard</TabsTrigger>
                 <TabsTrigger value="premium">Premium</TabsTrigger>
@@ -283,6 +284,90 @@ export default function UserNFTWallet() {
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="encrypted" className="space-y-4">
+                  {filteredReceipts.filter(receipt => receipt.isEncrypted).length === 0 ? (
+                    <div className="text-center py-12">
+                      <ShieldCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No TACo-encrypted receipts found</h3>
+                      <p className="text-muted-foreground max-w-sm mx-auto">
+                        You don't have any receipts with TACo encryption. Enhanced receipts with sensitive information are encrypted using Threshold Network technology.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="bg-blue-50 border border-blue-100 rounded-md p-4 mb-6">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0">
+                            <ShieldCheck className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="ml-3">
+                            <h3 className="text-sm font-medium text-blue-800">TACo-Protected Receipts</h3>
+                            <div className="mt-2 text-sm text-blue-700">
+                              <p>
+                                These receipts contain encrypted data protected by Threshold Network's TACo technology. You have full control over who can access your sensitive receipt information.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    
+                      <div className={viewMode === 'grid' ? 
+                        'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
+                        'space-y-4'
+                      }>
+                        {filteredReceipts
+                          .filter(receipt => receipt.isEncrypted)
+                          .map(receipt => (
+                            <div key={receipt.id}>
+                              {viewMode === 'grid' ? (
+                                <EnhancedNFTReceiptCard {...receipt} />
+                              ) : (
+                                <Card>
+                                  <CardContent className="p-4">
+                                    <div className="flex justify-between items-center">
+                                      <div>
+                                        <h3 className="font-medium flex items-center">
+                                          {receipt.merchant.name}
+                                          <ShieldCheck className="h-3 w-3 ml-1 text-blue-600" />
+                                        </h3>
+                                        <div className="text-sm text-muted-foreground">
+                                          {new Date(receipt.purchaseDate).toLocaleDateString()}
+                                        </div>
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
+                                        <div className="text-sm text-muted-foreground capitalize">
+                                          {receipt.receiptType} Receipt
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <Separator className="my-4" />
+                                    <div className="flex justify-between items-center">
+                                      <div className="text-xs text-muted-foreground">
+                                        Token ID: {receipt.tokenId}
+                                      </div>
+                                      <div className="flex space-x-2">
+                                        <Button variant="ghost" size="sm">
+                                          <Info className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm">
+                                          <Download className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm">
+                                          <Share2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              )}
+                            </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </TabsContent>
