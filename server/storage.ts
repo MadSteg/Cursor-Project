@@ -536,6 +536,153 @@ export class MemStorage implements IStorage {
       categoryId: transportationCategory.id,
       amount: "45.75"
     });
+
+    // Create inventory collections
+    const electronicsCollection = await this.createInventoryCollection({
+      userId: demoUser.id,
+      name: "Electronics",
+      description: "All my electronic devices and gadgets",
+      color: "#06B6D4", // cyan
+      icon: "ri-smartphone-line"
+    });
+
+    const warrantyCollection = await this.createInventoryCollection({
+      userId: demoUser.id,
+      name: "Under Warranty",
+      description: "Items still covered by warranty",
+      color: "#10B981", // green
+      icon: "ri-shield-check-line"
+    });
+
+    const clothingCollection = await this.createInventoryCollection({
+      userId: demoUser.id,
+      name: "Clothing",
+      description: "My clothing items",
+      color: "#F59E0B", // amber
+      icon: "ri-t-shirt-line" 
+    });
+
+    // Create inventory items
+    const laptop = await this.createInventoryItem({
+      userId: demoUser.id,
+      name: "MacBook Pro 16-inch",
+      description: "16-inch MacBook Pro with M1 Pro chip, 16GB RAM, 512GB SSD",
+      categoryId: electronicsCategory.id,
+      receiptId: wholeFoodsReceipt.id, // Just for demo purposes
+      serialNumber: "C02XL0GTPFRP",
+      purchasePrice: "2499.00",
+      currentValue: "1899.00",
+      condition: "Good",
+      status: "In Use",
+      location: "Home Office",
+      notes: "Work laptop, AppleCare+ until 2024",
+      tags: ["apple", "laptop", "work"],
+      purchaseDate: new Date("2023-01-15"),
+      warrantyExpiryDate: new Date("2024-01-15"),
+      imageUrl: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp16-spacegray-select-202110?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1632788574000"
+    });
+
+    const smartphone = await this.createInventoryItem({
+      userId: demoUser.id,
+      name: "iPhone 13 Pro",
+      description: "iPhone 13 Pro, 256GB, Sierra Blue",
+      categoryId: electronicsCategory.id,
+      receiptId: hmReceipt.id, // Just for demo purposes
+      serialNumber: "DNQXKCZ0KXMN",
+      purchasePrice: "1099.00",
+      currentValue: "799.00",
+      condition: "Excellent",
+      status: "In Use",
+      location: "Everyday Carry",
+      notes: "Personal phone, AppleCare+ until 2023",
+      tags: ["apple", "phone", "mobile"],
+      purchaseDate: new Date("2022-09-24"),
+      warrantyExpiryDate: new Date("2023-09-24"),
+      imageUrl: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-13-pro-blue-select?wid=940&hei=1112&fmt=png-alpha&.v=1631652954000"
+    });
+
+    const headphones = await this.createInventoryItem({
+      userId: demoUser.id,
+      name: "Sony WH-1000XM4",
+      description: "Sony WH-1000XM4 Wireless Noise-Canceling Headphones",
+      categoryId: electronicsCategory.id,
+      serialNumber: "S01234567",
+      purchasePrice: "349.99",
+      currentValue: "249.99",
+      condition: "Good",
+      status: "In Use",
+      location: "Living Room",
+      notes: "Great noise cancellation, use daily for work",
+      tags: ["audio", "headphones", "sony"],
+      purchaseDate: new Date("2022-05-10"),
+      warrantyExpiryDate: new Date("2023-05-10")
+    });
+
+    const jeans = await this.createInventoryItem({
+      userId: demoUser.id,
+      name: "Levi's 501 Original Jeans",
+      description: "Levi's 501 Original Fit Men's Jeans, Dark Wash",
+      categoryId: clothingCategory.id,
+      receiptId: hmReceipt.id,
+      purchasePrice: "59.99",
+      currentValue: "59.99",
+      condition: "New",
+      status: "In Use",
+      location: "Bedroom Closet",
+      notes: "Size: 32x32",
+      tags: ["clothing", "jeans", "levis"],
+      purchaseDate: new Date("2023-03-15")
+    });
+
+    const coffeeMaker = await this.createInventoryItem({
+      userId: demoUser.id,
+      name: "Breville Barista Express",
+      description: "Breville BES870XL Barista Express Espresso Machine",
+      categoryId: homeAppliancesCategory.id,
+      serialNumber: "BES870XL123456",
+      purchasePrice: "699.95",
+      currentValue: "599.95",
+      condition: "Excellent",
+      status: "In Use",
+      location: "Kitchen Counter",
+      notes: "Clean and descale monthly",
+      tags: ["kitchen", "coffee", "appliance"],
+      purchaseDate: new Date("2022-12-25"),
+      warrantyExpiryDate: new Date("2023-12-25")
+    });
+
+    const tvSet = await this.createInventoryItem({
+      userId: demoUser.id,
+      name: "Samsung 65\" QLED 4K TV",
+      description: "Samsung 65-inch Class QLED Q80A Series 4K UHD Smart TV",
+      categoryId: electronicsCategory.id,
+      serialNumber: "Q80A6500123",
+      purchasePrice: "1299.99",
+      currentValue: "1099.99",
+      condition: "Excellent",
+      status: "In Use",
+      location: "Living Room Wall",
+      notes: "Mounted on wall, calibrated for movie watching",
+      tags: ["tv", "samsung", "entertainment"],
+      purchaseDate: new Date("2023-02-14"),
+      warrantyExpiryDate: new Date("2025-02-14")
+    });
+
+    // Add items to collections
+    await this.addItemToCollection(laptop.id, electronicsCollection.id);
+    await this.addItemToCollection(laptop.id, warrantyCollection.id);
+    
+    await this.addItemToCollection(smartphone.id, electronicsCollection.id);
+    await this.addItemToCollection(smartphone.id, warrantyCollection.id);
+    
+    await this.addItemToCollection(headphones.id, electronicsCollection.id);
+    
+    await this.addItemToCollection(jeans.id, clothingCollection.id);
+    
+    await this.addItemToCollection(coffeeMaker.id, warrantyCollection.id);
+    
+    await this.addItemToCollection(tvSet.id, electronicsCollection.id);
+    await this.addItemToCollection(tvSet.id, warrantyCollection.id);
   }
 
   // User methods
