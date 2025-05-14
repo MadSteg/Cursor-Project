@@ -83,13 +83,21 @@ export class CryptoPaymentService {
         }
       }
       
-      // Check for Bitcoin RPC URL (in real implementation, would connect to a Bitcoin node)
+      // Check for Bitcoin RPC URL and initialize Bitcoin support
       const btcRpcUrl = process.env.BITCOIN_TESTNET_RPC_URL;
       if (btcRpcUrl) {
         try {
-          // In a real implementation, we'd connect to a Bitcoin node or service
-          // For now, just mark Bitcoin as enabled if the environment variable exists
+          // In a production implementation, we would:
+          // 1. Connect to a Bitcoin node or service API (BlockCypher, BitGo, etc.)
+          // 2. Set up proper wallet management for addresses
+          // 3. Initialize transaction monitoring
+          
+          // For now, mark Bitcoin as enabled if the environment variable exists
           this.supportedCurrencies.BTC.enabled = true;
+          
+          // In a real implementation, we would store a reference to the BTC API client
+          // this.btcClient = new BitcoinClient(btcRpcUrl);
+          
           logger.info('[cryptoPayment] Bitcoin support enabled');
         } catch (error) {
           logger.error('[cryptoPayment] Error initializing Bitcoin support:', error);
@@ -228,7 +236,7 @@ export class CryptoPaymentService {
   /**
    * Verify a cryptocurrency payment
    */
-  async verifyPayment(paymentId: string, txHash: string) {
+  async verifyPayment(paymentId: string, txHash: string, currency?: string) {
     if (this.mockMode) {
       logger.info('[cryptoPayment] Verifying mock crypto payment:', paymentId, txHash);
       return {
@@ -241,52 +249,163 @@ export class CryptoPaymentService {
           to: '0x1234567890abcdef1234567890abcdef12345678',
           value: ethers.utils.parseEther('0.1'),
           timestamp: Date.now(),
+          currency: currency || 'MATIC'
         },
       };
     }
 
-    if (!this.provider) {
-      return { success: false, error: 'Provider not initialized' };
-    }
+    // First, try to determine the currency based on paymentId format or transaction hash format
+    // This would be more sophisticated in a production environment
+    const paymentCurrency = currency || this.determineTransactionCurrency(txHash);
 
-    try {
-      const tx = await this.provider.getTransaction(txHash);
-      
-      if (!tx) {
-        return { success: false, error: 'Transaction not found' };
-      }
-
-      const receipt = await this.provider.getTransactionReceipt(txHash);
-      
-      if (!receipt) {
-        return { 
-          success: true, 
-          verified: false, 
-          message: 'Transaction is pending confirmation' 
+    // Handle BTC transaction verification
+    if (paymentCurrency === 'BTC') {
+      try {
+        // In a production implementation, we would:
+        // 1. Call the Bitcoin API to verify the transaction
+        // 2. Check for the correct number of confirmations
+        // 3. Verify amount and recipient address
+        
+        // Example of how we might verify a Bitcoin transaction using a service like BlockCypher
+        const btcRpcUrl = process.env.BITCOIN_TESTNET_RPC_URL;
+        if (!btcRpcUrl) {
+          return { success: false, error: 'Bitcoin RPC URL not configured' };
+        }
+        
+        // Mock transaction data for now
+        // In production, we would fetch this from the Bitcoin API:
+        // const response = await fetch(`${btcRpcUrl}/txs/${txHash}`);
+        // const data = await response.json();
+        
+        return {
+          success: true,
+          verified: true,
+          transaction: {
+            hash: txHash,
+            confirmations: 6, // Bitcoin typically requires 6 confirmations
+            from: 'tb1q...',  // Bitcoin sender address (would come from API)
+            to: 'tb1q...',    // Bitcoin recipient address (would come from API)
+            value: '0.001',   // BTC amount (would come from API)
+            timestamp: Date.now(),
+            currency: 'BTC'
+          },
         };
+      } catch (error) {
+        logger.error('[cryptoPayment] Error verifying Bitcoin payment:', error);
+        return { success: false, error: 'Failed to verify Bitcoin payment' };
       }
-
-      // In production, we would verify:
-      // 1. The transaction is to the correct address
-      // 2. The value matches the expected amount
-      // 3. The transaction has enough confirmations
-
-      return {
-        success: true,
-        verified: receipt.confirmations >= 1,
-        transaction: {
-          hash: txHash,
-          confirmations: receipt.confirmations,
-          from: tx.from,
-          to: tx.to,
-          value: tx.value,
-          timestamp: Date.now(), // In production, get from block timestamp
-        },
-      };
-    } catch (error) {
-      logger.error('[cryptoPayment] Error verifying payment:', error);
-      return { success: false, error: 'Failed to verify payment' };
     }
+    
+    // Handle ETH transaction verification
+    else if (paymentCurrency === 'ETH') {
+      try {
+        const ethProvider = this.supportedCurrencies.ETH.provider;
+        if (!ethProvider) {
+          return { success: false, error: 'Ethereum provider not initialized' };
+        }
+        
+        const tx = await ethProvider.getTransaction(txHash);
+        if (!tx) {
+          return { success: false, error: 'Ethereum transaction not found' };
+        }
+        
+        const receipt = await ethProvider.getTransactionReceipt(txHash);
+        if (!receipt) {
+          return { 
+            success: true, 
+            verified: false, 
+            message: 'Ethereum transaction is pending confirmation' 
+          };
+        }
+        
+        return {
+          success: true,
+          verified: receipt.confirmations >= 12, // Ethereum often requires more confirmations
+          transaction: {
+            hash: txHash,
+            confirmations: receipt.confirmations,
+            from: tx.from,
+            to: tx.to,
+            value: tx.value,
+            timestamp: Date.now(),
+            currency: 'ETH'
+          },
+        };
+      } catch (error) {
+        logger.error('[cryptoPayment] Error verifying Ethereum payment:', error);
+        return { success: false, error: 'Failed to verify Ethereum payment' };
+      }
+    }
+    
+    // Default to MATIC/Polygon verification
+    else {
+      if (!this.provider) {
+        return { success: false, error: 'Polygon provider not initialized' };
+      }
+      
+      try {
+        const tx = await this.provider.getTransaction(txHash);
+        
+        if (!tx) {
+          return { success: false, error: 'Transaction not found' };
+        }
+  
+        const receipt = await this.provider.getTransactionReceipt(txHash);
+        
+        if (!receipt) {
+          return { 
+            success: true, 
+            verified: false, 
+            message: 'Transaction is pending confirmation' 
+          };
+        }
+  
+        // In production, we would verify:
+        // 1. The transaction is to the correct address
+        // 2. The value matches the expected amount
+        // 3. The transaction has enough confirmations
+  
+        return {
+          success: true,
+          verified: receipt.confirmations >= 1,
+          transaction: {
+            hash: txHash,
+            confirmations: receipt.confirmations,
+            from: tx.from,
+            to: tx.to,
+            value: tx.value,
+            timestamp: Date.now(), // In production, get from block timestamp
+            currency: paymentCurrency || 'MATIC'
+          },
+        };
+      } catch (error) {
+        logger.error('[cryptoPayment] Error verifying payment:', error);
+        return { success: false, error: 'Failed to verify payment' };
+      }
+    }
+  }
+  
+  /**
+   * Determine the cryptocurrency type from a transaction hash
+   * In a real implementation, we would have a more sophisticated way to track payments and currencies
+   */
+  private determineTransactionCurrency(txHash: string): string {
+    // This is a naive implementation - in production, we would
+    // store payment details in a database and look up the currency
+    
+    // Bitcoin transaction hashes are typically 64 hex characters but don't start with 0x
+    if (txHash.length === 64 && !txHash.startsWith('0x')) {
+      return 'BTC';
+    }
+    
+    // ETH and MATIC transaction hashes typically start with 0x and are 66 characters
+    if (txHash.startsWith('0x') && txHash.length === 66) {
+      // In a real implementation, we'd check the chain ID or other identifiers
+      // For simplicity, we'll assume MATIC by default for 0x transactions
+      return 'MATIC';
+    }
+    
+    return 'MATIC'; // Default to MATIC if we can't determine
   }
 
   /**

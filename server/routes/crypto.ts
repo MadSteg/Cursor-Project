@@ -16,6 +16,7 @@ const createPaymentIntentSchema = z.object({
 const verifyPaymentSchema = z.object({
   paymentId: z.string(),
   txHash: z.string(),
+  currency: z.string().optional(),
 });
 
 /**
