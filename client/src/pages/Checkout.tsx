@@ -464,7 +464,7 @@ export default function Checkout() {
                           htmlFor="nft-receipt"
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          Add Blockchain Receipt (+${NFT_RECEIPT_FEE.toFixed(2)})
+                          Add Blockchain Receipt (+${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)})
                         </Label>
                         <p className="text-sm text-muted-foreground">
                           Get a permanent, verified proof of purchase on the blockchain
@@ -482,17 +482,65 @@ export default function Checkout() {
                           <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                             <li>Permanent proof of purchase that can't be lost</li>
                             <li>Verify authenticity of your purchase anytime</li>
-                            <li><span className="font-medium text-blue-600">Display on Apple Watch & iPhone</span></li>
+                            {nftTier === 'luxury' && (
+                              <li><span className="font-medium text-blue-600">Display on Apple Watch & iPhone</span></li>
+                            )}
                             <li>Enhanced warranty and return claim support</li>
                             <li>Access to exclusive rewards and benefits</li>
                           </ul>
                           
-                          <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded p-2 flex items-start">
-                            <Smartphone className="h-4 w-4 mr-2 text-blue-500 mt-0.5 flex-shrink-0" />
-                            <span>Your NFT receipt will be compatible with Apple Wallet and Google Pay for easy access.</span>
+                          {nftTier === 'luxury' && (
+                            <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded p-2 flex items-start">
+                              <Smartphone className="h-4 w-4 mr-2 text-blue-500 mt-0.5 flex-shrink-0" />
+                              <span>Your NFT receipt will be compatible with Apple Wallet and Google Pay for easy access.</span>
+                            </div>
+                          )}
+                          
+                          <div className="pt-3">
+                            <Label htmlFor="nft-tier" className="text-sm font-medium mb-2 block">Select NFT Receipt Tier</Label>
+                            <RadioGroup 
+                              id="nft-tier" 
+                              value={nftTier}
+                              onValueChange={setNftTier}
+                              className="flex flex-col space-y-2"
+                              disabled={isLoading}
+                            >
+                              <div className={`flex items-center space-x-3 border rounded-md p-3 ${nftTier === 'standard' ? 'border-primary bg-primary/5' : ''}`}>
+                                <RadioGroupItem value="standard" id="tier-standard" />
+                                <div className="flex-1">
+                                  <Label htmlFor="tier-standard" className="flex items-center justify-between cursor-pointer">
+                                    <span>Standard</span>
+                                    <span className="text-primary font-medium">${NFT_RECEIPT_TIERS.standard.price.toFixed(2)}</span>
+                                  </Label>
+                                  <p className="text-xs text-muted-foreground mt-1">Basic blockchain verification</p>
+                                </div>
+                              </div>
+                              
+                              <div className={`flex items-center space-x-3 border rounded-md p-3 ${nftTier === 'premium' ? 'border-primary bg-primary/5' : ''}`}>
+                                <RadioGroupItem value="premium" id="tier-premium" />
+                                <div className="flex-1">
+                                  <Label htmlFor="tier-premium" className="flex items-center justify-between cursor-pointer">
+                                    <span>Premium</span>
+                                    <span className="text-primary font-medium">${NFT_RECEIPT_TIERS.premium.price.toFixed(2)}</span>
+                                  </Label>
+                                  <p className="text-xs text-muted-foreground mt-1">Custom themes and advanced features</p>
+                                </div>
+                              </div>
+                              
+                              <div className={`flex items-center space-x-3 border rounded-md p-3 ${nftTier === 'luxury' ? 'border-primary bg-primary/5' : ''}`}>
+                                <RadioGroupItem value="luxury" id="tier-luxury" />
+                                <div className="flex-1">
+                                  <Label htmlFor="tier-luxury" className="flex items-center justify-between cursor-pointer">
+                                    <span>Luxury</span>
+                                    <span className="text-primary font-medium">${NFT_RECEIPT_TIERS.luxury.price.toFixed(2)}</span>
+                                  </Label>
+                                  <p className="text-xs text-muted-foreground mt-1">Apple Watch/iPhone integration & special effects</p>
+                                </div>
+                              </div>
+                            </RadioGroup>
                           </div>
                           
-                          <div className="pt-2">
+                          <div className="pt-4">
                             <Label htmlFor="nft-theme" className="text-sm font-medium mb-1.5 block">Receipt Theme</Label>
                             <RadioGroup 
                               id="nft-theme" 
