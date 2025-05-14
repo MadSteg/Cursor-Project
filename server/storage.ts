@@ -251,7 +251,7 @@ export class MemStorage implements IStorage {
     });
 
     const clothingCategory = await this.createCategory({
-      name: "Clothing",
+      name: "Clothing & Accessories",
       color: "#F59E0B", // amber
       icon: "ri-t-shirt-line"
     });
@@ -266,6 +266,31 @@ export class MemStorage implements IStorage {
       name: "Transportation",
       color: "#EC4899", // pink
       icon: "ri-car-line"
+    });
+    
+    // Additional categories for inventory management
+    const electronicsCategory = await this.createCategory({
+      name: "Electronics",
+      color: "#06B6D4", // cyan
+      icon: "ri-smartphone-line"
+    });
+    
+    const homeAppliancesCategory = await this.createCategory({
+      name: "Home Appliances",
+      color: "#64748B", // slate
+      icon: "ri-home-line"
+    });
+    
+    const furnitureCategory = await this.createCategory({
+      name: "Furniture",
+      color: "#6366F1", // indigo
+      icon: "ri-sofa-line"
+    });
+    
+    const booksCategory = await this.createCategory({
+      name: "Books & Media",
+      color: "#0EA5E9", // sky
+      icon: "ri-book-line"
     });
 
     // Create merchants

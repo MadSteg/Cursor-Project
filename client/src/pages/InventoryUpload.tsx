@@ -834,7 +834,7 @@ export default function InventoryUpload() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
+                                    <SelectItem value="none">None</SelectItem>
                                     {receipts?.map((receipt: any) => (
                                       <SelectItem 
                                         key={receipt.id} 
