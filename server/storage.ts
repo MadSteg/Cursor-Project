@@ -35,6 +35,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   
   // Category methods
   getCategories(): Promise<Category[]>;
@@ -92,6 +93,20 @@ export interface IStorage {
   getRetailerSyncLogs(retailerId: number, limit?: number): Promise<RetailerSyncLog[]>;
   createRetailerSyncLog(log: InsertRetailerSyncLog): Promise<RetailerSyncLog>;
   updateRetailerSyncLog(id: number, updates: Partial<InsertRetailerSyncLog>): Promise<RetailerSyncLog>;
+
+  // Encryption key methods
+  getEncryptionKeys(userId: number): Promise<EncryptionKey[]>;
+  getEncryptionKey(id: number): Promise<EncryptionKey | undefined>;
+  createEncryptionKey(key: InsertEncryptionKey): Promise<EncryptionKey>;
+  updateEncryptionKey(id: number, updates: Partial<InsertEncryptionKey>): Promise<EncryptionKey | undefined>;
+
+  // Shared access methods
+  getSharedAccesses(receiptId: number): Promise<SharedAccess[]>;
+  getSharedAccess(id: number): Promise<SharedAccess | undefined>;
+  createSharedAccess(access: InsertSharedAccess): Promise<SharedAccess>;
+  updateSharedAccess(id: number, updates: Partial<InsertSharedAccess>): Promise<SharedAccess | undefined>;
+  getSharedAccessesByOwner(userId: number): Promise<SharedAccess[]>;
+  getSharedAccessesByTarget(userId: number): Promise<SharedAccess[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -101,6 +116,11 @@ export class MemStorage implements IStorage {
   private receipts: Map<number, Receipt>;
   private receiptItems: Map<number, ReceiptItem>;
   private spendingStats: Map<number, SpendingStat>;
+  private retailers: Map<number, Retailer>;
+  private products: Map<number, Product>;
+  private retailerSyncLogs: Map<number, RetailerSyncLog>;
+  private encryptionKeys: Map<number, EncryptionKey>;
+  private sharedAccesses: Map<number, SharedAccess>;
   
   private currentUserId: number;
   private currentCategoryId: number;
@@ -108,6 +128,11 @@ export class MemStorage implements IStorage {
   private currentReceiptId: number;
   private currentReceiptItemId: number;
   private currentSpendingStatId: number;
+  private currentRetailerId: number;
+  private currentProductId: number;
+  private currentRetailerSyncLogId: number;
+  private currentEncryptionKeyId: number;
+  private currentSharedAccessId: number;
   
   constructor() {
     this.users = new Map();

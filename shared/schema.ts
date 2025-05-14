@@ -409,12 +409,21 @@ export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type RetailerSyncLog = typeof retailerSyncLogs.$inferSelect;
 export type InsertRetailerSyncLog = z.infer<typeof insertRetailerSyncLogSchema>;
 
+export type EncryptionKey = typeof encryptionKeys.$inferSelect;
+export type InsertEncryptionKey = z.infer<typeof insertEncryptionKeySchema>;
+
+export type SharedAccess = typeof sharedAccess.$inferSelect;
+export type InsertSharedAccess = z.infer<typeof insertSharedAccessSchema>;
+
 export type FullReceipt = z.infer<typeof fullReceiptSchema>;
 
 // Define relationships between tables
 export const usersRelations = relations(users, ({ many }) => ({
   receipts: many(receipts),
   spendingStats: many(spendingStats),
+  encryptionKeys: many(encryptionKeys),
+  ownedSharedAccess: many(sharedAccess, { relationName: "owner" }),
+  targetSharedAccess: many(sharedAccess, { relationName: "target" }),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -461,6 +470,7 @@ export const receiptsRelations = relations(receipts, ({ one, many }) => ({
     references: [retailers.id],
   }),
   items: many(receiptItems),
+  sharedAccesses: many(sharedAccess),
 }));
 
 export const spendingStatsRelations = relations(spendingStats, ({ one }) => ({
@@ -496,5 +506,31 @@ export const retailerSyncLogsRelations = relations(retailerSyncLogs, ({ one }) =
   retailer: one(retailers, {
     fields: [retailerSyncLogs.retailerId],
     references: [retailers.id],
+  }),
+}));
+
+// Add encryption key relations
+export const encryptionKeysRelations = relations(encryptionKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [encryptionKeys.userId],
+    references: [users.id],
+  }),
+}));
+
+// Add shared access relations
+export const sharedAccessRelations = relations(sharedAccess, ({ one }) => ({
+  receipt: one(receipts, {
+    fields: [sharedAccess.receiptId],
+    references: [receipts.id],
+  }),
+  owner: one(users, {
+    fields: [sharedAccess.ownerUserId],
+    references: [users.id],
+    relationName: "owner",
+  }),
+  target: one(users, {
+    fields: [sharedAccess.targetUserId],
+    references: [users.id],
+    relationName: "target",
   }),
 }));
