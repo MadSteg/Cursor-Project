@@ -58,7 +58,7 @@ export default function Admin() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  <Layers3D className="h-4 w-4 inline mr-2" />
+                  <Layers className="h-4 w-4 inline mr-2" />
                   Services Status
                 </CardTitle>
                 <div className="flex space-x-1">
