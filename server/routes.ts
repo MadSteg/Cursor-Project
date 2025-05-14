@@ -5,6 +5,7 @@ import blockchainRoutes from "./routes/blockchain-fixed";
 import blockchainAmoyRoutes from "./routes/blockchainAmoy";
 import emailRoutes from "./routes/email";
 import paymentRoutes from "./routes/payments";
+import thresholdReceiptRoutes from "./routes/threshold-receipt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -22,7 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register payment processing routes
   app.use('/api/payments', paymentRoutes);
   
-
+  // Register threshold receipt routes
+  app.use('/api/threshold-receipt', thresholdReceiptRoutes);
+  
 
   // Get categories
   app.get("/api/categories", async (req, res) => {
