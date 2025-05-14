@@ -5,6 +5,18 @@ import { insertEncryptionKeySchema, insertSharedAccessSchema } from "@shared/sch
 
 const router = Router();
 
+// Mock authentication middleware for demo purposes
+const mockAuthMiddleware = (req: any, res: any, next: any) => {
+  // For demo purposes, we'll assume the user is authenticated
+  // and set a mock user with ID 1
+  req.isAuthenticated = () => true;
+  req.user = { id: 1 };
+  next();
+};
+
+// Apply mock auth middleware to all routes
+router.use(mockAuthMiddleware);
+
 // Get encryption keys for current user
 router.get("/api/encryption-keys", async (req, res) => {
   if (!req.isAuthenticated()) {
