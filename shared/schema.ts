@@ -415,7 +415,54 @@ export type InsertEncryptionKey = z.infer<typeof insertEncryptionKeySchema>;
 export type SharedAccess = typeof sharedAccess.$inferSelect;
 export type InsertSharedAccess = z.infer<typeof insertSharedAccessSchema>;
 
+export type TacoKey = typeof tacoKeys.$inferSelect;
+export type InsertTacoKey = z.infer<typeof insertTacoKeySchema>;
+
+export type SharedReceipt = typeof sharedReceipts.$inferSelect;
+export type InsertSharedReceipt = z.infer<typeof insertSharedReceiptSchema>;
+
 export type FullReceipt = z.infer<typeof fullReceiptSchema>;
+
+// Define Taco threshold encryption keys
+export const tacoKeys = pgTable("taco_keys", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  publicKey: text("public_key").notNull(),
+  keyType: text("key_type").notNull().default("TACO"), // TACO, SHARED, etc.
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastUsed: timestamp("last_used"),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertTacoKeySchema = createInsertSchema(tacoKeys).pick({
+  userId: true,
+  publicKey: true,
+  keyType: true,
+  name: true,
+  isActive: true,
+});
+
+// Define Taco shared receipts
+export const sharedReceipts = pgTable("shared_receipts", {
+  id: serial("id").primaryKey(),
+  receiptId: integer("receipt_id").notNull(),
+  ownerId: integer("owner_id").notNull(), // User sharing the receipt
+  targetId: integer("target_id").notNull(), // User receiving the shared receipt
+  encryptedData: text("encrypted_data").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"),
+  isRevoked: boolean("is_revoked").default(false),
+});
+
+export const insertSharedReceiptSchema = createInsertSchema(sharedReceipts).pick({
+  receiptId: true,
+  ownerId: true,
+  targetId: true,
+  encryptedData: true,
+  expiresAt: true,
+  isRevoked: true,
+});
 
 // Define relationships between tables
 export const usersRelations = relations(users, ({ many }) => ({
@@ -424,6 +471,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   encryptionKeys: many(encryptionKeys),
   ownedSharedAccess: many(sharedAccess, { relationName: "owner" }),
   targetSharedAccess: many(sharedAccess, { relationName: "target" }),
+  tacoKeys: many(tacoKeys),
+  sharedReceiptsOwned: many(sharedReceipts, { relationName: "owner" }),
+  sharedReceiptsReceived: many(sharedReceipts, { relationName: "target" }),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -471,6 +521,33 @@ export const receiptsRelations = relations(receipts, ({ one, many }) => ({
   }),
   items: many(receiptItems),
   sharedAccesses: many(sharedAccess),
+  sharedReceipts: many(sharedReceipts),
+}));
+
+// Define Taco key relations
+export const tacoKeysRelations = relations(tacoKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [tacoKeys.userId],
+    references: [users.id],
+  }),
+}));
+
+// Define shared receipts relations
+export const sharedReceiptsRelations = relations(sharedReceipts, ({ one }) => ({
+  receipt: one(receipts, {
+    fields: [sharedReceipts.receiptId],
+    references: [receipts.id],
+  }),
+  owner: one(users, {
+    fields: [sharedReceipts.ownerId],
+    references: [users.id],
+    relationName: "owner",
+  }),
+  target: one(users, {
+    fields: [sharedReceipts.targetId],
+    references: [users.id],
+    relationName: "target",
+  }),
 }));
 
 export const spendingStatsRelations = relations(spendingStats, ({ one }) => ({

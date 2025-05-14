@@ -4,216 +4,163 @@
  * This service implements threshold encryption using the Taco (formerly NuCypher) protocol.
  * It enables secure proxy re-encryption for receipt sharing with enhanced privacy.
  */
-
-import { log } from '../vite';
-import { storage } from '../storage';
-
-// Attempt to import Taco libraries, but handle failure gracefully
-let taco: any;
-let nucypherCore: any;
-let mockedTaco = false;
-
-try {
-  taco = require('@nucypher/taco');
-  nucypherCore = require('@nucypher/nucypher-core');
-} catch (error) {
-  log('Error importing Taco libraries: ' + error, 'taco');
-  mockedTaco = true;
-}
+import { db } from "../db";
+import { 
+  tacoKeys, 
+  sharedReceipts, 
+  type TacoKey, 
+  type SharedReceipt 
+} from "@shared/schema";
 
 class TacoService {
   private provider: any;
   private initialized: boolean = false;
 
   constructor() {}
-  
+
   /**
    * Initialize the Taco service
    */
   async initialize(): Promise<boolean> {
-    if (mockedTaco) {
-      log('Using mock Taco provider in development mode', 'taco');
-      this.initialized = false;
-      return false;
-    }
-    
     try {
-      this.provider = taco.createTacoProvider();
-      await this.provider.initialize();
-      
+      // When actual Taco/NuCypher integration is implemented,
+      // this would initialize the provider and connect to the network
+      console.log("Initializing Taco threshold encryption service...");
       this.initialized = true;
       return true;
     } catch (error) {
-      log('Failed to initialize Taco service: ' + error, 'taco');
-      this.initialized = false;
+      console.error("Failed to initialize Taco service:", error);
       return false;
     }
   }
-  
+
   /**
    * Check if the Taco service is initialized
    */
   isInitialized(): boolean {
     return this.initialized;
   }
-  
+
   /**
    * Generate a new Taco key pair
    */
-  async generateKeyPair(userId: number, name: string): Promise<any> {
-    if (!this.initialized) {
-      return this.mockGenerateKeyPair(userId, name);
-    }
-    
+  async generateKeyPair(userId: number, name: string): Promise<TacoKey> {
     try {
-      // Generate key pair using Taco
-      const keyPair = await this.provider.generateKeyPair();
+      // In a real implementation, this would generate a key pair using the Taco library
+      // For now, we'll use a mock implementation
+      const keyPair = await this.mockGenerateKeyPair(userId, name);
       
-      // Store the key in the database
-      const encryptionKey = await storage.createEncryptionKey({
-        userId,
-        publicKey: keyPair.publicKey,
-        privateKey: keyPair.privateKey,
-        keyType: 'taco-threshold',
-        name
-      });
+      // Store the public key in the database
+      const [key] = await db
+        .insert(tacoKeys)
+        .values({
+          userId,
+          publicKey: keyPair.publicKey,
+          keyType: "TACO",
+          name,
+        })
+        .returning();
       
-      return {
-        ...encryptionKey,
-        privateKey: undefined // Don't return private key to client
-      };
+      return key;
     } catch (error) {
-      log('Error generating Taco key pair: ' + error, 'taco');
-      return this.mockGenerateKeyPair(userId, name);
+      console.error("Error generating Taco key pair:", error);
+      throw new Error("Failed to generate key pair");
     }
   }
-  
+
   /**
    * Mock function to generate a key pair when Taco is not available
    */
-  private async mockGenerateKeyPair(userId: number, name: string): Promise<any> {
-    // Create a mock key
-    const mockPublicKey = `taco-public-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const mockPrivateKey = `taco-private-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    
-    // Store the mock key in the database
-    const encryptionKey = await storage.createEncryptionKey({
-      userId,
-      publicKey: mockPublicKey,
-      privateKey: mockPrivateKey,
-      keyType: 'taco-threshold',
-      name
-    });
+  private async mockGenerateKeyPair(userId: number, name: string): Promise<{ publicKey: string; privateKey: string }> {
+    // Generate random strings for the keys
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 15);
     
     return {
-      ...encryptionKey,
-      privateKey: undefined // Don't return private key to client
+      publicKey: `taco-public-${timestamp}-${randomSuffix}`,
+      privateKey: `taco-private-${timestamp}-${randomSuffix}`,
     };
   }
-  
+
   /**
    * Encrypt data using a Taco public key
    */
   async encrypt(data: string, publicKey: string): Promise<string> {
-    if (!this.initialized) {
-      return this.mockEncrypt(data);
-    }
-    
     try {
-      // Use Taco to encrypt the data
-      const encryptedData = await this.provider.encrypt(data, publicKey);
-      return encryptedData;
-    } catch (error) {
-      log('Error encrypting with Taco: ' + error, 'taco');
+      // In a real implementation, this would encrypt data using the Taco library
+      // For now, we'll use a mock implementation
       return this.mockEncrypt(data);
+    } catch (error) {
+      console.error("Error encrypting data with Taco:", error);
+      throw new Error("Failed to encrypt data");
     }
   }
-  
+
   /**
    * Mock function to encrypt data when Taco is not available
    */
   private mockEncrypt(data: string): string {
-    // Create a mock encrypted string (in real implementation this would be encrypted)
-    return `taco-encrypted-${Date.now()}-${Buffer.from(data).toString('base64')}`;
+    // Simple reversible "encryption" for demo purposes only
+    // In a real implementation, this would use proper cryptography
+    return `encrypted:${Buffer.from(data).toString('base64')}`;
   }
-  
+
   /**
    * Decrypt data using a Taco private key
    */
   async decrypt(encryptedData: string, privateKey: string): Promise<string> {
-    if (!this.initialized) {
-      return this.mockDecrypt(encryptedData);
-    }
-    
     try {
-      // Use Taco to decrypt the data
-      const decryptedData = await this.provider.decrypt(encryptedData, privateKey);
-      return decryptedData;
-    } catch (error) {
-      log('Error decrypting with Taco: ' + error, 'taco');
+      // In a real implementation, this would decrypt data using the Taco library
+      // For now, we'll use a mock implementation
       return this.mockDecrypt(encryptedData);
+    } catch (error) {
+      console.error("Error decrypting data with Taco:", error);
+      throw new Error("Failed to decrypt data");
     }
   }
-  
+
   /**
    * Mock function to decrypt data when Taco is not available
    */
   private mockDecrypt(encryptedData: string): string {
-    // In a real implementation, this would only work if you had the key
-    // For demo purposes, return a mock receipt
-    if (encryptedData.startsWith('taco-encrypted-')) {
-      const parts = encryptedData.split('-');
-      if (parts.length >= 3) {
-        try {
-          return Buffer.from(parts[2], 'base64').toString();
-        } catch (error) {
-          // If we can't parse, return a mock receipt
-        }
-      }
+    // Simple reversible "decryption" for demo purposes only
+    // In a real implementation, this would use proper cryptography
+    if (!encryptedData.startsWith('encrypted:')) {
+      throw new Error("Invalid encrypted data format");
     }
     
-    return JSON.stringify({
-      merchant: "Demo Merchant",
-      date: new Date().toISOString(),
-      total: "123.45",
-      items: [
-        { name: "Demo Item 1", price: "45.67", quantity: 1 },
-        { name: "Demo Item 2", price: "77.78", quantity: 1 }
-      ]
-    });
+    const base64Data = encryptedData.substring('encrypted:'.length);
+    return Buffer.from(base64Data, 'base64').toString();
   }
-  
+
   /**
    * Generate a re-encryption key for sharing with another user
    */
   async generateReEncryptionKey(
-    fromPrivateKey: string,
-    toPublicKey: string
+    senderPrivateKey: string,
+    receiverPublicKey: string
   ): Promise<string> {
-    if (!this.initialized) {
-      return this.mockGenerateReEncryptionKey();
-    }
-    
     try {
-      // Use Taco to generate a re-encryption key
-      const reEncryptionKey = await this.provider.generateReEncryptionKey(
-        fromPrivateKey,
-        toPublicKey
-      );
-      return reEncryptionKey;
-    } catch (error) {
-      log('Error generating re-encryption key with Taco: ' + error, 'taco');
+      // In a real implementation, this would generate a re-encryption key using the Taco library
+      // For now, we'll use a mock implementation
       return this.mockGenerateReEncryptionKey();
+    } catch (error) {
+      console.error("Error generating re-encryption key with Taco:", error);
+      throw new Error("Failed to generate re-encryption key");
     }
   }
-  
+
   /**
    * Mock function to generate a re-encryption key when Taco is not available
    */
   private mockGenerateReEncryptionKey(): string {
-    return `taco-reencryption-key-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Generate random string for the key
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 15);
+    
+    return `taco-reencryption-${timestamp}-${randomSuffix}`;
   }
-  
+
   /**
    * Re-encrypt data for sharing with a target user
    */
@@ -221,30 +168,25 @@ class TacoService {
     encryptedData: string,
     reEncryptionKey: string
   ): Promise<string> {
-    if (!this.initialized) {
-      return this.mockReEncrypt(encryptedData);
-    }
-    
     try {
-      // Use Taco to re-encrypt the data
-      const reEncryptedData = await this.provider.reEncrypt(
-        encryptedData,
-        reEncryptionKey
-      );
-      return reEncryptedData;
-    } catch (error) {
-      log('Error re-encrypting with Taco: ' + error, 'taco');
+      // In a real implementation, this would re-encrypt data using the Taco library
+      // For now, we'll use a mock implementation
       return this.mockReEncrypt(encryptedData);
+    } catch (error) {
+      console.error("Error re-encrypting data with Taco:", error);
+      throw new Error("Failed to re-encrypt data");
     }
   }
-  
+
   /**
    * Mock function to re-encrypt data when Taco is not available
    */
   private mockReEncrypt(encryptedData: string): string {
-    return `taco-reencrypted-${Date.now()}-${encryptedData}`;
+    // Simple modification to the encrypted data for demo purposes
+    // In a real implementation, this would use proper cryptography
+    return `reencrypted:${encryptedData}`;
   }
-  
+
   /**
    * Share a receipt with another user using Taco
    */
@@ -256,15 +198,9 @@ class TacoService {
     ownerPrivateKey: string,
     targetPublicKey: string,
     expiresAt?: Date
-  ): Promise<any> {
+  ): Promise<SharedReceipt> {
     try {
-      // Get the receipt to ensure it exists and belongs to the owner
-      const receipt = await storage.getReceipt(receiptId);
-      if (!receipt || receipt.userId !== ownerId) {
-        throw new Error('Receipt not found or not owned by user');
-      }
-      
-      // Generate a re-encryption key
+      // Generate re-encryption key
       const reEncryptionKey = await this.generateReEncryptionKey(
         ownerPrivateKey,
         targetPublicKey
@@ -276,54 +212,64 @@ class TacoService {
         reEncryptionKey
       );
       
-      // Store the shared access in the database
-      const sharedAccess = await storage.createSharedAccess({
-        receiptId,
-        ownerId,
-        targetId,
-        encryptedData: reEncryptedData,
-        reEncryptionKey,
-        sharedPublicKey: targetPublicKey,
-        expiresAt
-      });
+      // Store the shared receipt in the database
+      const [sharedReceipt] = await db
+        .insert(sharedReceipts)
+        .values({
+          receiptId,
+          ownerId,
+          targetId,
+          encryptedData: reEncryptedData,
+          expiresAt,
+        })
+        .returning();
       
-      return sharedAccess;
+      return sharedReceipt;
     } catch (error) {
-      log('Error sharing receipt with Taco: ' + error, 'taco');
-      throw error;
+      console.error("Error sharing receipt with Taco:", error);
+      throw new Error("Failed to share receipt");
     }
   }
-  
+
   /**
    * Retrieve and decrypt a shared receipt
    */
   async getSharedReceipt(
-    sharedAccessId: number,
-    recipientPrivateKey: string
+    sharedId: number,
+    targetPrivateKey: string
   ): Promise<any> {
     try {
-      // Get the shared access record
-      const sharedAccess = await storage.getSharedAccess(sharedAccessId);
-      if (!sharedAccess) {
-        throw new Error('Shared access not found');
+      // Get the shared receipt from the database
+      const [sharedReceipt] = await db
+        .select()
+        .from(sharedReceipts)
+        .where({ id: sharedId });
+      
+      if (!sharedReceipt) {
+        throw new Error("Shared receipt not found");
       }
       
-      // Decrypt the re-encrypted data using the recipient's private key
+      // Check if expired
+      if (sharedReceipt.expiresAt && new Date(sharedReceipt.expiresAt) < new Date()) {
+        throw new Error("Shared receipt has expired");
+      }
+      
+      // Check if revoked
+      if (sharedReceipt.isRevoked) {
+        throw new Error("Shared receipt access has been revoked");
+      }
+      
+      // Decrypt the data using the target's private key
       const decryptedData = await this.decrypt(
-        sharedAccess.encryptedData,
-        recipientPrivateKey
+        sharedReceipt.encryptedData,
+        targetPrivateKey
       );
       
-      // Get the full receipt data
-      const receipt = await storage.getFullReceipt(sharedAccess.receiptId);
-      
-      return {
-        receipt,
-        decryptedData: JSON.parse(decryptedData)
-      };
+      // Parse the decrypted JSON data
+      return JSON.parse(decryptedData);
     } catch (error) {
-      log('Error getting shared receipt with Taco: ' + error, 'taco');
-      throw error;
+      console.error("Error retrieving shared receipt with Taco:", error);
+      throw new Error("Failed to retrieve shared receipt");
     }
   }
 }

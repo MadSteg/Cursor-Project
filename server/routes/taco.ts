@@ -1,315 +1,364 @@
-/**
- * Taco threshold encryption routes
- * These routes handle threshold encryption operations using the Taco (formerly NuCypher) protocol
- */
-
-import express from 'express';
-import { tacoService } from '../services/tacoService';
-import { storage } from '../storage';
-import { log } from '../vite';
+import express from "express";
+import { tacoService } from "../services/tacoService";
+import { db } from "../db";
+import { storage } from "../storage";
+import { 
+  tacoKeys, 
+  sharedReceipts, 
+  receipts, 
+  merchants, 
+  users 
+} from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 const router = express.Router();
 
-// Mock authentication middleware for demo purposes
-const mockAuthMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // In a real application, this would be a proper authentication middleware
-  // For now, we'll simulate authentication
-  req.isAuthenticated = () => true;
-  req.user = { id: 1, username: 'demo_user' };
-  next();
-};
+/**
+ * Initialize the Taco service
+ */
+router.get("/init", async (req, res) => {
+  try {
+    const initialized = await tacoService.initialize();
+    res.json({ success: initialized });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
- * Generate a new Taco encryption key
+ * Check if Taco service is initialized
  */
-router.post('/keys', mockAuthMiddleware, async (req, res) => {
+router.get("/status", async (req, res) => {
+  try {
+    const initialized = tacoService.isInitialized();
+    res.json({ initialized });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Generate a new Taco key pair
+ */
+router.post("/keys", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
     const { name } = req.body;
-    const userId = req.body.userId || req.user.id;
-    
-    const key = await tacoService.generateKeyPair(userId, name || 'Default Taco Key');
-    
-    res.status(201).json(key);
-  } catch (error) {
-    log('Error generating Taco key: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to generate Taco key' });
+    const userId = req.user.id;
+
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    const key = await tacoService.generateKeyPair(userId, name);
+    res.json(key);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Get all Taco encryption keys for a user
+ * Get all Taco keys for a user
  */
-router.get('/keys', mockAuthMiddleware, async (req, res) => {
+router.get("/keys", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
-    const userId = parseInt(req.query.userId as string) || req.user.id;
-    
-    // Get all encryption keys for the user
-    const keys = await storage.getEncryptionKeys(userId);
-    
-    // Filter to only include Taco keys
-    const tacoKeys = keys.filter(key => key.keyType === 'taco-threshold');
-    
-    // Remove private keys from the response
-    const safeKeys = tacoKeys.map(key => ({
-      ...key,
-      privateKey: undefined
-    }));
-    
-    res.json(safeKeys);
-  } catch (error) {
-    log('Error getting Taco keys: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to get Taco keys' });
+    const userId = req.user.id;
+    const keys = await db.select().from(tacoKeys).where(eq(tacoKeys.userId, userId));
+    res.json(keys);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Encrypt data using Taco
+ * Encrypt data using a public key
  */
-router.post('/encrypt', mockAuthMiddleware, async (req, res) => {
+router.post("/encrypt", async (req, res) => {
   try {
     const { data, publicKey } = req.body;
-    
+
     if (!data || !publicKey) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+      return res.status(400).json({ error: "Data and publicKey are required" });
     }
-    
+
     const encryptedData = await tacoService.encrypt(data, publicKey);
-    
     res.json({ encryptedData });
-  } catch (error) {
-    log('Error encrypting with Taco: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to encrypt data' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Decrypt data using Taco
+ * Decrypt data using a private key
  */
-router.post('/decrypt', mockAuthMiddleware, async (req, res) => {
+router.post("/decrypt", async (req, res) => {
   try {
     const { encryptedData, privateKey } = req.body;
-    
+
     if (!encryptedData || !privateKey) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+      return res.status(400).json({ error: "Encrypted data and privateKey are required" });
     }
-    
-    // Get encryption key to verify ownership
-    // In a real app, you would verify that the user owns this private key
-    
+
     const decryptedData = await tacoService.decrypt(encryptedData, privateKey);
-    
     res.json({ decryptedData });
-  } catch (error) {
-    log('Error decrypting with Taco: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to decrypt data' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
  * Generate a re-encryption key
  */
-router.post('/reencryption-key', mockAuthMiddleware, async (req, res) => {
+router.post("/re-encryption-key", async (req, res) => {
   try {
-    const { fromPrivateKey, toPublicKey } = req.body;
-    
-    if (!fromPrivateKey || !toPublicKey) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+    const { senderPrivateKey, receiverPublicKey } = req.body;
+
+    if (!senderPrivateKey || !receiverPublicKey) {
+      return res.status(400).json({ error: "Sender private key and receiver public key are required" });
     }
-    
+
     const reEncryptionKey = await tacoService.generateReEncryptionKey(
-      fromPrivateKey,
-      toPublicKey
+      senderPrivateKey,
+      receiverPublicKey
     );
-    
     res.json({ reEncryptionKey });
-  } catch (error) {
-    log('Error generating re-encryption key: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to generate re-encryption key' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
  * Re-encrypt data
  */
-router.post('/reencrypt', mockAuthMiddleware, async (req, res) => {
+router.post("/re-encrypt", async (req, res) => {
   try {
     const { encryptedData, reEncryptionKey } = req.body;
-    
+
     if (!encryptedData || !reEncryptionKey) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+      return res.status(400).json({ error: "Encrypted data and re-encryption key are required" });
     }
-    
-    const reEncryptedData = await tacoService.reEncrypt(
-      encryptedData,
-      reEncryptionKey
-    );
-    
+
+    const reEncryptedData = await tacoService.reEncrypt(encryptedData, reEncryptionKey);
     res.json({ reEncryptedData });
-  } catch (error) {
-    log('Error re-encrypting with Taco: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to re-encrypt data' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Share a receipt with another user using Taco PRE
+ * Share a receipt with another user
  */
-router.post('/share', mockAuthMiddleware, async (req, res) => {
-  try {
-    const {
-      receiptId,
-      ownerId,
-      targetId,
-      encryptedData,
-      ownerPrivateKey,
-      targetPublicKey,
-      expiresAt
-    } = req.body;
-    
-    if (!receiptId || !ownerId || !targetId || !encryptedData || !ownerPrivateKey || !targetPublicKey) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    // Verify that the user is the owner of the receipt
-    const userId = req.user.id;
-    if (userId !== ownerId) {
-      return res.status(403).json({ error: 'You do not have permission to share this receipt' });
-    }
-    
-    const sharedAccess = await tacoService.shareReceipt(
-      receiptId,
-      ownerId,
-      targetId,
-      encryptedData,
-      ownerPrivateKey,
-      targetPublicKey,
-      expiresAt ? new Date(expiresAt) : undefined
-    );
-    
-    res.status(201).json(sharedAccess);
-  } catch (error) {
-    log('Error sharing receipt with Taco: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to share receipt' });
+router.post("/share-receipt", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
-});
 
-/**
- * Get decrypted shared receipt
- */
-router.post('/shared/:id', mockAuthMiddleware, async (req, res) => {
   try {
-    const sharedAccessId = parseInt(req.params.id);
-    const { recipientPrivateKey } = req.body;
-    
-    if (!recipientPrivateKey) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+    const { receiptId, targetId, encryptedData, expiresAt } = req.body;
+    const ownerId = req.user.id;
+
+    if (!receiptId || !targetId || !encryptedData) {
+      return res.status(400).json({ 
+        error: "Receipt ID, target user ID, and encrypted data are required" 
+      });
     }
-    
-    // Verify that the user is the target of the shared access
-    const sharedAccess = await storage.getSharedAccess(sharedAccessId);
-    if (!sharedAccess) {
-      return res.status(404).json({ error: 'Shared access not found' });
+
+    // Ensure the receipt belongs to the user
+    const receipt = await db.select().from(receipts).where(eq(receipts.id, receiptId));
+    if (receipt.length === 0) {
+      return res.status(404).json({ error: "Receipt not found" });
     }
-    
-    const userId = req.user.id;
-    if (userId !== sharedAccess.targetId) {
-      return res.status(403).json({ error: 'You do not have permission to access this shared receipt' });
+
+    if (receipt[0].userId !== ownerId) {
+      return res.status(403).json({ error: "You can only share your own receipts" });
     }
-    
-    const sharedReceipt = await tacoService.getSharedReceipt(
-      sharedAccessId,
-      recipientPrivateKey
-    );
-    
+
+    // Check if target user exists
+    const targetUser = await db.select().from(users).where(eq(users.id, targetId));
+    if (targetUser.length === 0) {
+      return res.status(404).json({ error: "Target user not found" });
+    }
+
+    const [sharedReceipt] = await db
+      .insert(sharedReceipts)
+      .values({
+        receiptId,
+        ownerId,
+        targetId,
+        encryptedData,
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+      })
+      .returning();
+
     res.json(sharedReceipt);
-  } catch (error) {
-    log('Error getting shared receipt: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to get shared receipt' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Get all shared accesses for a receipt
+ * Get all receipts shared by me
  */
-router.get('/shared', mockAuthMiddleware, async (req, res) => {
+router.get("/shared-by-me", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
-    const receiptId = parseInt(req.query.receiptId as string);
-    
-    if (!receiptId) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    // Verify that the user is the owner of the receipt
-    const receipt = await storage.getReceipt(receiptId);
-    if (!receipt) {
-      return res.status(404).json({ error: 'Receipt not found' });
-    }
-    
     const userId = req.user.id;
-    if (userId !== receipt.userId) {
-      return res.status(403).json({ error: 'You do not have permission to view shared accesses for this receipt' });
+
+    const shared = await db
+      .select({
+        id: sharedReceipts.id,
+        receiptId: sharedReceipts.receiptId,
+        targetId: sharedReceipts.targetId,
+        createdAt: sharedReceipts.createdAt,
+        expiresAt: sharedReceipts.expiresAt,
+        isRevoked: sharedReceipts.isRevoked,
+        targetName: users.username,
+        receipt: {
+          id: receipts.id,
+          date: receipts.date,
+          total: receipts.total,
+          merchantName: merchants.name,
+        },
+      })
+      .from(sharedReceipts)
+      .innerJoin(receipts, eq(sharedReceipts.receiptId, receipts.id))
+      .innerJoin(merchants, eq(receipts.merchantId, merchants.id))
+      .innerJoin(users, eq(sharedReceipts.targetId, users.id))
+      .where(eq(sharedReceipts.ownerId, userId));
+
+    res.json(shared);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get all receipts shared with me
+ */
+router.get("/shared-with-me", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const userId = req.user.id;
+
+    const shared = await db
+      .select({
+        id: sharedReceipts.id,
+        receiptId: sharedReceipts.receiptId,
+        ownerId: sharedReceipts.ownerId,
+        encryptedData: sharedReceipts.encryptedData,
+        createdAt: sharedReceipts.createdAt,
+        expiresAt: sharedReceipts.expiresAt,
+        isRevoked: sharedReceipts.isRevoked,
+        ownerName: users.username,
+        receipt: {
+          id: receipts.id,
+          date: receipts.date,
+          total: receipts.total,
+          merchantName: merchants.name,
+        },
+      })
+      .from(sharedReceipts)
+      .innerJoin(receipts, eq(sharedReceipts.receiptId, receipts.id))
+      .innerJoin(merchants, eq(receipts.merchantId, merchants.id))
+      .innerJoin(users, eq(sharedReceipts.ownerId, users.id))
+      .where(
+        and(
+          eq(sharedReceipts.targetId, userId),
+          eq(sharedReceipts.isRevoked, false)
+        )
+      );
+
+    res.json(shared);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get a specific shared receipt by ID
+ */
+router.get("/shared/:id", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const sharedId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const [shared] = await db
+      .select()
+      .from(sharedReceipts)
+      .where(
+        and(
+          eq(sharedReceipts.id, sharedId),
+          eq(sharedReceipts.targetId, userId),
+          eq(sharedReceipts.isRevoked, false)
+        )
+      );
+
+    if (!shared) {
+      return res.status(404).json({ error: "Shared receipt not found" });
     }
-    
-    const sharedAccesses = await storage.getSharedAccesses(receiptId);
-    
-    res.json(sharedAccesses);
-  } catch (error) {
-    log('Error getting shared accesses: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to get shared accesses' });
+
+    // Check if expired
+    if (shared.expiresAt && new Date(shared.expiresAt) < new Date()) {
+      return res.status(403).json({ error: "Shared receipt has expired" });
+    }
+
+    res.json(shared);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * Get all receipts shared with the current user
+ * Revoke access to a shared receipt
  */
-router.get('/shared/with-me', mockAuthMiddleware, async (req, res) => {
-  try {
-    const userId = parseInt(req.query.userId as string) || req.user.id;
-    
-    const sharedAccesses = await storage.getSharedAccessesByTarget(userId);
-    
-    // For each shared access, get the receipt details
-    const sharedReceipts = await Promise.all(
-      sharedAccesses.map(async (access) => {
-        const receipt = await storage.getFullReceipt(access.receiptId);
-        return {
-          access,
-          receipt
-        };
-      })
-    );
-    
-    res.json(sharedReceipts);
-  } catch (error) {
-    log('Error getting receipts shared with me: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to get shared receipts' });
+router.post("/revoke/:id", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
-});
 
-/**
- * Get all receipts shared by the current user
- */
-router.get('/shared/by-me', mockAuthMiddleware, async (req, res) => {
   try {
-    const userId = parseInt(req.query.userId as string) || req.user.id;
-    
-    const sharedAccesses = await storage.getSharedAccessesByOwner(userId);
-    
-    // For each shared access, get the receipt details
-    const sharedReceipts = await Promise.all(
-      sharedAccesses.map(async (access) => {
-        const receipt = await storage.getFullReceipt(access.receiptId);
-        return {
-          access,
-          receipt
-        };
-      })
-    );
-    
-    res.json(sharedReceipts);
-  } catch (error) {
-    log('Error getting receipts shared by me: ' + error, 'taco');
-    res.status(500).json({ error: 'Failed to get shared receipts' });
+    const sharedId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const [shared] = await db
+      .select()
+      .from(sharedReceipts)
+      .where(
+        and(
+          eq(sharedReceipts.id, sharedId),
+          eq(sharedReceipts.ownerId, userId)
+        )
+      );
+
+    if (!shared) {
+      return res.status(404).json({ error: "Shared receipt not found or not owned by you" });
+    }
+
+    await db
+      .update(sharedReceipts)
+      .set({ isRevoked: true })
+      .where(eq(sharedReceipts.id, sharedId));
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 
