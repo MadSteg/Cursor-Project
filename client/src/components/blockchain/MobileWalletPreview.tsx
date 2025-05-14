@@ -36,7 +36,7 @@ export default function MobileWalletPreview({
     // For a real implementation, this would generate a valid Apple Wallet/Google Pay pass
     const receiptData = {
       merchant,
-      amount: amount.toFixed(2),
+      amount: typeof amount === 'number' ? amount.toFixed(2) : amount.toString(),
       date: date.toISOString(),
       id: nftTokenId || `rcpt_${Math.random().toString(36).slice(2, 10)}`,
       type: 'nft_receipt'

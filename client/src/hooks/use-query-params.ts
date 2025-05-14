@@ -1,21 +1,21 @@
-import { useLocation } from 'wouter';
-import { useMemo } from 'react';
-
 /**
  * Custom hook to parse and return URL query parameters
  * @returns Object containing query parameters as key-value pairs
  */
 export function useQueryParams(): Record<string, string> {
-  const [location] = useLocation();
+  // If we're on the client-side
+  if (typeof window !== 'undefined') {
+    const searchParams = new URLSearchParams(window.location.search);
+    const params: Record<string, string> = {};
+    
+    // Convert URLSearchParams to a plain object
+    for (const [key, value] of searchParams.entries()) {
+      params[key] = value;
+    }
+    
+    return params;
+  }
   
-  return useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    const result: Record<string, string> = {};
-    
-    params.forEach((value, key) => {
-      result[key] = value;
-    });
-    
-    return result;
-  }, [location]);
+  // Return empty object if not on client-side
+  return {};
 }
