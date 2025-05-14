@@ -390,7 +390,42 @@ const UserNFTWallet: React.FC = () => {
             {filteredReceipts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredReceipts.map((receipt) => (
-                  <EnhancedNFTReceiptCard key={receipt.id} {...receipt} />
+                  <EnhancedNFTReceiptCard 
+                    key={receipt.id} 
+                    receipt={{
+                      id: parseInt(receipt.id),
+                      tokenId: receipt.tokenId || '',
+                      merchantId: 1,
+                      merchant: {
+                        id: 1,
+                        name: receipt.merchantName,
+                        category: receipt.receiptType
+                      },
+                      date: receipt.date,
+                      subtotal: Math.round((receipt.total || 0) * 0.9 * 100), // Estimate subtotal as 90% of total
+                      tax: Math.round((receipt.total || 0) * 0.1 * 100), // Estimate tax as 10% of total
+                      total: Math.round((receipt.total || 0) * 100), // Convert to cents
+                      items: [],
+                      blockchainTxHash: receipt.txHash,
+                      blockchainVerified: receipt.status === 'confirmed',
+                      blockNumber: 12345678,
+                      nftArt: {
+                        id: receipt.id,
+                        name: `${receipt.receiptType} NFT`,
+                        description: `A ${receipt.receiptType} tier NFT receipt from ${receipt.merchantName}`,
+                        imageUrl: `/assets/nft-${receipt.receiptType.toLowerCase()}.png`,
+                        tier: receipt.receiptType.toUpperCase() as any
+                      }
+                    }}
+                    accessControl={{
+                      granted: receipt.hasGrantedAccess || !receipt.isEncrypted || false,
+                      isOwner: true,
+                      accessGrantedTo: receipt.grantedTo ? receipt.grantedTo.map((address: string) => ({
+                        address,
+                        date: new Date().toISOString()
+                      })) : []
+                    }}
+                  />
                 ))}
               </div>
             ) : (
