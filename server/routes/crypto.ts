@@ -74,4 +74,23 @@ router.get('/transaction/:txHash', async (req, res) => {
   }
 });
 
+/**
+ * Get payment status
+ */
+router.get('/payment-status/:paymentId', async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    
+    if (!paymentId) {
+      return res.status(400).json({ success: false, error: 'Payment ID is required' });
+    }
+    
+    const status = await cryptoPaymentService.getPaymentStatus(paymentId);
+    res.json(status);
+  } catch (error) {
+    logger.error('[crypto] Error getting payment status:', error);
+    res.status(500).json({ success: false, error: 'Failed to get payment status' });
+  }
+});
+
 export default router;

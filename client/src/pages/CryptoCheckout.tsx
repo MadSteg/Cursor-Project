@@ -114,18 +114,35 @@ export default function CryptoCheckout() {
   
   // Poll for payment status
   const startPaymentStatusPolling = (paymentId: string) => {
-    // In a real implementation, this would poll the server
-    // for payment status updates
+    // Create polling interval to check payment status
+    const pollInterval = setInterval(async () => {
+      try {
+        // Call the API to get payment status
+        const paymentStatus = await cryptoPaymentService.getPaymentStatus(paymentId);
+        
+        // Handle different payment statuses
+        if (paymentStatus.status === 'completed' && paymentStatus.txHash) {
+          clearInterval(pollInterval);
+          setCheckoutState("verifyingPayment");
+          completePayment(paymentStatus.txHash);
+        } else if (paymentStatus.status === 'expired') {
+          clearInterval(pollInterval);
+          setError("Payment window expired. Please try again.");
+          setCheckoutState("error");
+        } else if (paymentStatus.status === 'failed') {
+          clearInterval(pollInterval);
+          setError("Payment failed. Please try again.");
+          setCheckoutState("error");
+        }
+        // Continue polling if status is still 'pending'
+      } catch (err) {
+        console.error("Error polling payment status:", err);
+        // Don't stop polling on error, just continue trying
+      }
+    }, 5000); // Poll every 5 seconds
     
-    // Mock implementation for demo purposes
-    setTimeout(() => {
-      setCheckoutState("verifyingPayment");
-      
-      // Mock successful payment after 3 seconds
-      setTimeout(() => {
-        completePayment("0x123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
-      }, 3000);
-    }, 5000);
+    // Clean up interval on component unmount
+    return () => clearInterval(pollInterval);
   };
   
   // Handle payment completion

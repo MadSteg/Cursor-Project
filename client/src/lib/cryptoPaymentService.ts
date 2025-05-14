@@ -1,84 +1,168 @@
-import { apiRequest } from './queryClient';
-
 /**
  * Client-side service for interacting with crypto payments
  */
+import { apiRequest } from './queryClient';
+
+// Interfaces for cryptocurrency payment responses
+
+interface CryptoPaymentIntent {
+  success: boolean;
+  paymentId: string;
+  paymentAddress: string;
+  amount: number;
+  currency: string;
+  expiresAt: string;
+  error?: string;
+}
+
+interface CryptoPaymentVerification {
+  success: boolean;
+  receipt?: {
+    id: number;
+    txHash: string;
+    blockNumber: number;
+    tokenId?: number | null;
+  };
+  error?: string;
+}
+
+interface TransactionDetails {
+  txHash: string;
+  from: string;
+  to: string;
+  value: string;
+  blockNumber: number;
+  timestamp: number;
+  status: 'success' | 'pending' | 'failed';
+}
+
 export const cryptoPaymentService = {
   /**
    * Create a crypto payment intent
    */
-  async createPaymentIntent(amount: number, currency = 'MATIC') {
+  async createPaymentIntent(amount: number, currency = 'MATIC', metadata?: Record<string, string>): Promise<CryptoPaymentIntent> {
     try {
-      const response = await apiRequest('POST', '/api/crypto/create-payment-intent', {
+      const response = await apiRequest('POST', '/api/crypto/create-payment', {
         amount,
-        currency
+        currency,
+        metadata
       });
       
-      return await response.json();
-    } catch (error) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          paymentId: '',
+          paymentAddress: '',
+          amount: 0,
+          currency: '',
+          expiresAt: '',
+          error: errorData.message || 'Failed to create payment intent'
+        };
+      }
+      
+      const data = await response.json();
+      return {
+        success: true,
+        ...data
+      };
+    } catch (error: any) {
       console.error('Error creating crypto payment intent:', error);
       return {
         success: false,
-        error: 'Failed to create payment intent'
+        paymentId: '',
+        paymentAddress: '',
+        amount: 0,
+        currency: '',
+        expiresAt: '',
+        error: error.message || 'An unexpected error occurred'
       };
     }
   },
-
+  
   /**
    * Verify a crypto payment transaction
    */
-  async verifyPayment(paymentId: string, txHash: string) {
+  async verifyPayment(paymentId: string, txHash: string): Promise<CryptoPaymentVerification> {
     try {
       const response = await apiRequest('POST', '/api/crypto/verify-payment', {
         paymentId,
         txHash
       });
       
-      return await response.json();
-    } catch (error) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          error: errorData.message || 'Failed to verify payment'
+        };
+      }
+      
+      const data = await response.json();
+      return {
+        success: true,
+        ...data
+      };
+    } catch (error: any) {
       console.error('Error verifying crypto payment:', error);
       return {
         success: false,
-        error: 'Failed to verify payment'
+        error: error.message || 'An unexpected error occurred'
       };
     }
   },
-
+  
   /**
    * Get details of a crypto transaction
    */
-  async getTransactionDetails(txHash: string) {
+  async getTransactionDetails(txHash: string): Promise<TransactionDetails | null> {
     try {
       const response = await apiRequest('GET', `/api/crypto/transaction/${txHash}`);
-      return await response.json();
+      
+      if (!response.ok) {
+        return null;
+      }
+      
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error('Error getting transaction details:', error);
-      return {
-        success: false,
-        error: 'Failed to get transaction details'
-      };
+      return null;
+    }
+  },
+  
+  /**
+   * Get payment status
+   */
+  async getPaymentStatus(paymentId: string): Promise<{status: 'pending' | 'completed' | 'expired' | 'failed', txHash?: string}> {
+    try {
+      const response = await apiRequest('GET', `/api/crypto/payment-status/${paymentId}`);
+      
+      if (!response.ok) {
+        return { status: 'failed' };
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error getting payment status:', error);
+      return { status: 'failed' };
     }
   }
 };
 
-// Helper function to format crypto address (show first 6 and last 4 chars)
-export const formatCryptoAddress = (address: string) => {
+/**
+ * Format a cryptocurrency address for display (show first 6 and last 4 characters)
+ */
+export const formatCryptoAddress = (address: string): string => {
   if (!address || address.length < 12) return address;
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}; 
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+};
 
-// Helper function to format amount with appropriate units
-export const formatCryptoAmount = (amount: string | number, currency: string) => {
+/**
+ * Format a cryptocurrency amount for display
+ */
+export const formatCryptoAmount = (amount: string | number, currency: string): string => {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  
-  switch (currency.toUpperCase()) {
-    case 'ETH':
-    case 'MATIC':
-      return `${numAmount.toFixed(6)} ${currency.toUpperCase()}`;
-    case 'USDC':
-    case 'USDT':
-      return `${numAmount.toFixed(2)} ${currency.toUpperCase()}`;
-    default:
-      return `${numAmount} ${currency.toUpperCase()}`;
-  }
+  return `${numAmount.toFixed(6)} ${currency}`;
 };

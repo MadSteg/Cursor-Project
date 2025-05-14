@@ -650,11 +650,23 @@ export default function Checkout() {
           <Button variant="ghost" onClick={() => navigate('/')} disabled={isLoading}>Cancel</Button>
           <Button 
             onClick={() => {
-              const selectedTab = document.querySelector('[role="tablist"] [data-state="active"]')?.getAttribute('value');
-              if (selectedTab === 'mock') {
-                handleMockPayment();
+              if (paymentMethod === 'crypto') {
+                // Redirect to crypto checkout page with necessary parameters
+                const searchParams = new URLSearchParams();
+                searchParams.set('amount', calculateTotal().toString());
+                if (nftReceipt) {
+                  searchParams.set('mintNFT', 'true');
+                  searchParams.set('nftTheme', nftTheme);
+                }
+                navigate(`/crypto-checkout?${searchParams.toString()}`);
               } else {
-                handleRealPayment();
+                // Use regular Stripe checkout
+                const selectedTab = document.querySelector('[role="tablist"] [data-state="active"]')?.getAttribute('value');
+                if (selectedTab === 'mock') {
+                  handleMockPayment();
+                } else {
+                  handleRealPayment();
+                }
               }
             }}
             disabled={isLoading}
