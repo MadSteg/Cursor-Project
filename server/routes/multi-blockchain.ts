@@ -17,24 +17,24 @@ const router = express.Router();
  */
 router.get('/multi-status', async (req: Request, res: Response) => {
   try {
-    // Get status from Mumbai network
-    const mumbaiStatus = await mumbaiService.getNetworkStatus().catch(error => {
-      console.error('Error getting Mumbai status:', error);
-      return {
-        status: 'Error',
-        network: 'mumbai',
-        error: error.message,
-        mockMode: true
-      };
-    });
-    
-    // Get status from Amoy network
+    // Get status from Amoy network (Primary)
     const amoyStatus = await amoyService.getNetworkStatus().catch(error => {
       console.error('Error getting Amoy status:', error);
       return {
         status: 'Error',
         network: 'amoy',
         error: error.message,
+        mockMode: true
+      };
+    });
+    
+    // Get status from Mumbai network (Legacy/Deprecated)
+    const mumbaiStatus = await mumbaiService.getNetworkStatus().catch(error => {
+      console.error('Error getting Mumbai status:', error);
+      return {
+        status: 'Deprecated',
+        network: 'mumbai',
+        error: 'Mumbai network is deprecated, please use Amoy',
         mockMode: true
       };
     });

@@ -178,24 +178,24 @@ export const BlockchainStatus = () => {
         <div className="space-y-6">
           {/* Network Status Cards in a responsive grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Mumbai Status */}
-            {statusData?.networks?.mumbai && (
+            {/* Amoy Status (Primary Network) */}
+            {statusData?.networks?.amoy && (
               <NetworkStatusCard
-                title="Polygon Mumbai"
-                data={statusData.networks.mumbai}
-                isPreferred={preferredNetwork === 'mumbai'}
-                onSetPreferred={() => handleSetPreferredNetwork('mumbai')}
+                title="Polygon Amoy (Primary)"
+                data={statusData.networks.amoy}
+                isPreferred={preferredNetwork === 'amoy' || !preferredNetwork}
+                onSetPreferred={() => handleSetPreferredNetwork('amoy')}
                 expanded={expanded}
               />
             )}
 
-            {/* Amoy Status */}
-            {statusData?.networks?.amoy && (
+            {/* Mumbai Status (Deprecated) */}
+            {statusData?.networks?.mumbai && (
               <NetworkStatusCard
-                title="Polygon Amoy"
-                data={statusData.networks.amoy}
-                isPreferred={preferredNetwork === 'amoy'}
-                onSetPreferred={() => handleSetPreferredNetwork('amoy')}
+                title="Polygon Mumbai (Deprecated)"
+                data={statusData.networks.mumbai}
+                isPreferred={preferredNetwork === 'mumbai'}
+                onSetPreferred={() => handleSetPreferredNetwork('mumbai')}
                 expanded={expanded}
               />
             )}
