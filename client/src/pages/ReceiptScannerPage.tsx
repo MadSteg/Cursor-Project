@@ -369,15 +369,16 @@ export default function ReceiptScannerPage() {
           </CardContent>
           
           {receiptData && (
-            <CardFooter className="flex gap-4">
-              <Button variant="outline" className="w-1/2">
+            <CardFooter className="flex flex-col gap-2">
+              <Button variant="outline" className="w-full">
                 <Check className="mr-2 h-4 w-4" />
                 Save Receipt
               </Button>
               <Button 
-                className="w-1/2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                variant="default"
                 onClick={mintReceiptAsNFT}
                 disabled={isMinting}
+                className="w-full"
               >
                 {isMinting ? (
                   <>
