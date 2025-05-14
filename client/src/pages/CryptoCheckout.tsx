@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CryptoCurrency, cryptoPaymentService, formatCryptoAddress, formatCryptoAmount } from '@/lib/cryptoPaymentService';
-import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Wallet, Bitcoin, Copy, Coins, FileText, Search } from 'lucide-react';
+import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Wallet, Bitcoin, Copy, Coins, FileText, Search, BadgeIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -581,7 +581,7 @@ export default function CryptoCheckout() {
                 <div className="grid gap-3">
                   <div className="bg-white rounded-md p-3 border border-indigo-100 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge className="h-4 w-4 text-indigo-600" />
+                      <BadgeCheck className="h-4 w-4 text-indigo-600" />
                       <p className="text-sm font-medium text-indigo-800">Tier Details</p>
                     </div>
                     <div className="grid gap-2 pl-6">

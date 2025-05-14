@@ -479,7 +479,7 @@ export default function Checkout() {
                       <Wallet className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-medium bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Multi-Chain Crypto Payment</p>
-                        <p className="text-blue-700">Experience next-gen payments across multiple blockchains. Pay with BTC, ETH, MATIC, SOL, or USDC across Bitcoin, Ethereum, Polygon and Solana networks. Select your preferred currency on the next screen.</p>
+                        <p className="text-blue-700">Pay with your preferred crypto across multiple networks.</p>
                       </div>
                     </div>
                   )}
