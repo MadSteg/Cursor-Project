@@ -115,10 +115,41 @@ export default function EncryptionSettings() {
                   </ol>
                 </div>
                 
-                <h3>Advanced Encryption Technology</h3>
+                <h3>Advanced Threshold Encryption Technology</h3>
                 <p>
-                  BlockReceipt.ai's threshold encryption is a cutting-edge technology that enables secure and private sharing of your receipt data. 
-                  When you share a receipt, it remains encrypted and only the intended recipient can decrypt it.
+                  BlockReceipt.ai uses threshold proxy re-encryption (TPRE), a cryptographic protocol that allows a data owner to transform
+                  encrypted data so it can be decrypted by another party without ever exposing the plaintext or private keys. 
+                  Unlike standard encryption, threshold encryption mathematically distributes trust using a threshold-based secret sharing scheme 
+                  where decryption requires multiple parties or key fragments to collaborate.
+                </p>
+                
+                <div className="my-4 p-4 bg-slate-50 rounded-lg border text-sm">
+                  <h4 className="text-md font-medium mb-2">How Threshold Encryption Works:</h4>
+                  <ol className="space-y-2 list-decimal pl-5">
+                    <li>
+                      <strong>Key Generation:</strong> Each user generates a key pair (public and private keys) using elliptic curve cryptography
+                    </li>
+                    <li>
+                      <strong>Data Encryption:</strong> Your receipt data is encrypted with your public key; only your private key can decrypt it
+                    </li>
+                    <li>
+                      <strong>Cryptographic Transformation:</strong> When you share a receipt, a mathematical re-encryption key is created
+                      that transforms the ciphertext (encrypted data) without decrypting it
+                    </li>
+                    <li>
+                      <strong>Controlled Access:</strong> The recipient can only decrypt data with their private key, and the original data owner
+                      never needs to expose their own private key or the unencrypted data
+                    </li>
+                    <li>
+                      <strong>Multi-Party Distribution:</strong> For higher security tiers, the system can distribute decryption authority among
+                      multiple parties, requiring a threshold number of them to collaborate to decrypt data
+                    </li>
+                  </ol>
+                </div>
+                
+                <p>
+                  This technology provides cryptographic guarantees that even BlockReceipt.ai's system administrators cannot access your receipt data
+                  without explicit permission. Your data stays encrypted end-to-end, maintaining privacy even when shared.
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 not-prose mt-6">
