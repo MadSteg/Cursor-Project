@@ -24,12 +24,15 @@ import {
   CalendarDays,
   DollarSign,
   ListChecks,
-  Package
+  Package,
+  Wallet
 } from 'lucide-react';
+import ConnectWalletButton from '@/components/blockchain/ConnectWalletButton';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { ReceiptType } from '@/components/receipts/EnhancedNFTReceiptCard';
+import type { ReceiptData } from '@/lib/receiptOcr';
 
 type ScanMethod = 'upload' | 'camera' | 'manual';
 type ScanState = 'idle' | 'scanning' | 'processing' | 'completed' | 'error';
@@ -72,35 +75,8 @@ export const ScanReceipt: React.FC = () => {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   
-  // Receipt data type with expanded information
-  const [scannedReceipt, setScannedReceipt] = useState<{
-    merchant: string;
-    date: string;
-    total: number;
-    subtotal: number;
-    tax: number;
-    tip?: number;
-    items: ScannedItemProps[];
-    merchantDetails?: {
-      address?: string;
-      city?: string;
-      state?: string;
-      zip?: string;
-      phone?: string;
-    };
-    transactionDetails?: {
-      orderId?: string;
-      orderNumber?: string;
-      transactionId?: string;
-      type?: string;
-      cardType?: string;
-      lastFour?: string;
-      entryMode?: string;
-      approvalCode?: string;
-      merchantId?: string;
-      terminalId?: string;
-    };
-  } | null>(null);
+  // Use the imported ReceiptData type
+  const [scannedReceipt, setScannedReceipt] = useState<ReceiptData | null>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -111,137 +87,200 @@ export const ScanReceipt: React.FC = () => {
   
   const handleCapture = () => {
     // In a real app, this would capture from the camera and convert to a file/blob
-    // For this demo, we'll simulate it
+    // For this demo, we'll create a mock file to simulate camera capture
     setScanState('scanning');
     
-    // Simulate processing time
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 5;
-      setProgress(currentProgress);
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        setScanState('processing');
-        simulateReceiptData();
+    // Create a mock file from a blank canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    canvas.getContext('2d')?.fillRect(0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], 'camera-capture.png', { type: 'image/png' });
+        processReceipt(file);
+      } else {
+        setScanState('error');
+        toast({
+          title: "Camera Capture Failed",
+          description: "Failed to capture an image from the camera. Please try again or use the upload option.",
+          variant: "destructive",
+        });
       }
-    }, 100);
+    });
   };
   
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Would process manually entered receipt data
-    // For demo, simulate processing
-    setScanState('processing');
-    simulateReceiptData();
-  };
-  
-  const processReceipt = (file: File) => {
+    // Process manually entered receipt data
     setScanState('scanning');
     
-    // Simulate upload and processing progress
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 5;
-      setProgress(currentProgress);
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        setScanState('processing');
-        simulateReceiptData();
-      }
-    }, 100);
-  };
-  
-  const simulateReceiptData = () => {
-    // This function would use OCR to read the receipt in a real application
-    // For now, we'll detect if we're using the sample receipt from the screenshot
+    // Create a fake file to process - in a real app this would use form data directly
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
     
-    // Check if we should use demo data from the uploaded receipt screenshot
-    const useUploadedReceiptData = scanMethod === 'upload';
-    
-    setTimeout(() => {
-      if (useUploadedReceiptData) {
-        // This data matches the restaurant receipt from the screenshot
-        setScannedReceipt({
-          merchant: "Main Street Restaurant",
-          date: "2017-04-07", // From the receipt date
-          total: 14.16,
-          subtotal: 12.00,
-          tax: 0.00,
-          tip: 2.16,
-          items: [
-            { name: "Chocolate Chip Cookie", price: 5.00, quantity: 1, category: "Dessert" },
-            { name: "Apple Pie", price: 3.00, quantity: 1, category: "Dessert" },
-            { name: "Lava Cake", price: 4.00, quantity: 1, category: "Dessert" },
-          ],
-          merchantDetails: {
-            address: "2332 Business Drive, Suite 528",
-            city: "Palo Alto",
-            state: "California",
-            zip: "94301",
-            phone: "575-1628095"
-          },
-          transactionDetails: {
-            orderId: "#4a59c18f",
-            orderNumber: "1",
-            transactionId: "#1ca099eb",
-            type: "CREDIT",
-            cardType: "DISCOVER",
-            lastFour: "0041",
-            entryMode: "Swiped",
-            approvalCode: "826425",
-            merchantId: "9hqjxvufdr",
-            terminalId: "11111"
-          }
-        });
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], 'manual-entry.png', { type: 'image/png' });
+        processReceipt(file);
       } else {
-        // Fall back to demo data for other scan methods
-        setScannedReceipt({
-          merchant: "Whole Foods Market",
-          date: "2025-05-14",
-          total: 84.32,
-          subtotal: 78.45,
-          tax: 5.87,
-          items: [
-            { name: "Organic Banana", price: 0.89, quantity: 5, category: "Produce" },
-            { name: "Almond Milk", price: 4.99, quantity: 1, category: "Dairy Alternatives" },
-            { name: "Whole Grain Bread", price: 3.49, quantity: 2, category: "Bakery" },
-            { name: "Chicken Breast", price: 12.99, quantity: 1, category: "Meat" },
-            { name: "Spinach", price: 3.99, quantity: 2, category: "Produce" },
-            { name: "Avocado", price: 1.29, quantity: 3, category: "Produce" },
-            { name: "Greek Yogurt", price: 5.49, quantity: 2, category: "Dairy" },
-            { name: "Olive Oil", price: 15.99, quantity: 1, category: "Pantry" },
-            { name: "Mixed Nuts", price: 8.99, quantity: 1, category: "Snacks" },
-          ]
-        });
+        setScanState('error');
       }
-      setScanState('completed');
-    }, 2000);
+    });
   };
   
-  const mintNFTReceipt = () => {
+  // State for tracking receipt minting
+  const [mintingState, setMintingState] = useState<{
+    inProgress: boolean;
+    tokenId?: string;
+    txHash?: string;
+    error?: string;
+  }>({
+    inProgress: false
+  });
+  
+  // Process the receipt image using OCR
+  const processReceipt = async (file: File) => {
+    setScanState('scanning');
+    setProgress(0);
+    
+    try {
+      // Import the receipt OCR processing function
+      const { processReceiptImage } = await import('@/lib/receiptOcr');
+      
+      // Simulate processing progress updates
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 95) {
+            clearInterval(progressInterval);
+            return 95;
+          }
+          return prev + 5;
+        });
+      }, 100);
+      
+      // Process the image with OCR
+      const receiptData = await processReceiptImage(file);
+      
+      // Clear the progress interval and set progress to 100%
+      clearInterval(progressInterval);
+      setProgress(100);
+      
+      if (receiptData) {
+        // Set the receipt data
+        setScannedReceipt(receiptData);
+        setScanState('completed');
+      } else {
+        // Handle OCR failure
+        setScanState('error');
+        toast({
+          title: "Receipt Processing Failed",
+          description: "We couldn't extract the receipt data from your image. Please try again with a clearer image.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error processing receipt:', error);
+      setScanState('error');
+      toast({
+        title: "Receipt Processing Error",
+        description: "An error occurred while processing your receipt. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Mint the NFT receipt on the blockchain
+  const mintNFTReceipt = async () => {
+    if (!scannedReceipt) return;
+    
+    setMintingState({ inProgress: true });
     setScanState('processing');
     setProgress(0);
     
-    // Simulate minting process
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 4;
-      setProgress(currentProgress);
-      if (currentProgress >= 100) {
-        clearInterval(interval);
+    try {
+      // Import the necessary functions
+      const { isWalletConnected, connectWallet, mintReceiptNft } = await import('@/lib/blockchainService');
+      
+      // Check if wallet is connected
+      if (!isWalletConnected()) {
+        // Connect wallet if not already connected
+        const walletInfo = await connectWallet();
+        if (!walletInfo.isConnected) {
+          throw new Error('Failed to connect wallet');
+        }
+      }
+      
+      // Simulate progress during minting process
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 95) {
+            clearInterval(progressInterval);
+            return 95;
+          }
+          return prev + 2;
+        });
+      }, 100);
+      
+      // Mint the NFT receipt
+      const result = await mintReceiptNft(scannedReceipt, "user_wallet_address");
+      
+      // Clear the progress interval and set progress to 100%
+      clearInterval(progressInterval);
+      setProgress(100);
+      
+      if (result.success) {
+        // Update minting state with token ID and transaction hash
+        setMintingState({
+          inProgress: false,
+          tokenId: result.tokenId,
+          txHash: result.txHash
+        });
         
+        // Show success toast
         toast({
-          title: "Receipt Minted Successfully",
-          description: "Your receipt has been transformed into an NFT and added to your wallet",
+          title: "Receipt NFT Minted Successfully",
+          description: `Your receipt from ${scannedReceipt.merchant} has been transformed into an NFT with token ID #${result.tokenId}`,
           variant: "default",
         });
         
         // Navigate to wallet after successful minting
         setTimeout(() => {
           setLocation('/nft-wallet');
-        }, 1500);
+        }, 2000);
+      } else {
+        // Handle minting failure
+        setMintingState({
+          inProgress: false,
+          error: result.error || 'Unknown error occurred during minting'
+        });
+        
+        toast({
+          title: "Minting Failed",
+          description: result.error || "Failed to mint your receipt as an NFT. Please try again.",
+          variant: "destructive",
+        });
+        
+        setScanState('completed');
       }
-    }, 100);
+    } catch (error) {
+      console.error('Error minting NFT receipt:', error);
+      
+      setMintingState({
+        inProgress: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+      
+      toast({
+        title: "Minting Error",
+        description: "An error occurred while minting your receipt NFT. Please try again.",
+        variant: "destructive",
+      });
+      
+      setScanState('completed');
+    }
   };
   
   const resetScan = () => {
@@ -604,10 +643,73 @@ export const ScanReceipt: React.FC = () => {
                   <CardHeader>
                     <CardTitle>NFT Receipt Options</CardTitle>
                     <CardDescription>
-                      Customize your blockchain receipt before minting
+                      Your receipt will be minted as an NFT on the Polygon blockchain
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Assigned tier based on total amount */}
+                    <div className="space-y-2">
+                      <Label className="text-base">Receipt Tier</Label>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            {scannedReceipt?.receiptType === 'luxury' ? (
+                              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 mr-3">
+                                Luxury
+                              </Badge>
+                            ) : scannedReceipt?.receiptType === 'premium' ? (
+                              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 mr-3">
+                                Premium
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mr-3">
+                                Standard
+                              </Badge>
+                            )}
+                            <span className="text-sm font-medium">
+                              {scannedReceipt?.receiptType === 'luxury' 
+                                ? 'Luxury Tier ($100+ receipts)' 
+                                : scannedReceipt?.receiptType === 'premium'
+                                  ? 'Premium Tier ($50-99.99 receipts)'
+                                  : 'Standard Tier (Under $50 receipts)'}
+                            </span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            Based on total: ${scannedReceipt?.total.toFixed(2)}
+                          </span>
+                        </div>
+                        
+                        <div className="mt-4 space-y-2">
+                          <div className="space-y-1">
+                            <div className="text-xs text-muted-foreground">Tier Benefits</div>
+                            <ul className="text-sm pl-5 space-y-1 list-disc">
+                              {scannedReceipt?.receiptType === 'luxury' ? (
+                                <>
+                                  <li>Premium holographic NFT design with special effects</li>
+                                  <li>Extended warranty tracking (up to 5 years)</li>
+                                  <li>Priority blockchain verification</li>
+                                  <li>Unlimited access grants for third parties</li>
+                                </>
+                              ) : scannedReceipt?.receiptType === 'premium' ? (
+                                <>
+                                  <li>Enhanced NFT design with animated elements</li>
+                                  <li>Extended warranty tracking (up to 3 years)</li>
+                                  <li>Up to 10 access grants for third parties</li>
+                                </>
+                              ) : (
+                                <>
+                                  <li>Standard NFT design</li>
+                                  <li>Basic warranty tracking (up to 1 year)</li>
+                                  <li>Up to 3 access grants for third parties</li>
+                                </>
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* TACo Encryption Options */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
@@ -628,52 +730,20 @@ export const ScanReceipt: React.FC = () => {
                         <div className="ml-6 pl-2 border-l-2 border-blue-200">
                           <div className="bg-blue-50 p-3 rounded-md flex items-start">
                             <ShieldCheck className="h-5 w-5 text-blue-500 mt-0.5 mr-2 shrink-0" />
-                            <p className="text-sm text-blue-700">
-                              Your receipt data will be encrypted with Threshold Network TACo, giving you complete control over who can access your sensitive purchase information.
-                            </p>
+                            <div className="space-y-2">
+                              <p className="text-sm text-blue-700">
+                                Your receipt data will be encrypted with Threshold Network TACo, giving you complete control over who can access your sensitive purchase information.
+                              </p>
+                              <p className="text-sm text-blue-700">
+                                You'll be able to grant and revoke access to specific wallets or applications through your NFT Wallet.
+                              </p>
+                            </div>
                           </div>
                         </div>
                       )}
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="receipt-type">Receipt Tier</Label>
-                      <Select 
-                        value={receiptType} 
-                        onValueChange={(value) => setReceiptType(value as ReceiptType)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select receipt tier" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">
-                            <div className="flex items-center">
-                              <Badge variant="outline" className="mr-2 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800">
-                                Standard
-                              </Badge>
-                              <span className="text-sm">Basic receipt with verification</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="premium">
-                            <div className="flex items-center">
-                              <Badge variant="outline" className="mr-2 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800">
-                                Premium
-                              </Badge>
-                              <span className="text-sm">Enhanced design with warranty tracking</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="luxury">
-                            <div className="flex items-center">
-                              <Badge variant="outline" className="mr-2 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800">
-                                Luxury
-                              </Badge>
-                              <span className="text-sm">Special effect design with full features</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
+                    {/* Optional Additional Information */}
                     <div className="space-y-2">
                       <Label htmlFor="add-data">Additional Information</Label>
                       <Textarea 
@@ -682,14 +752,46 @@ export const ScanReceipt: React.FC = () => {
                         rows={3}
                       />
                     </div>
+                    
+                    {/* Wallet Connection Reminder */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <Wallet className="h-5 w-5 text-yellow-600 mt-0.5 mr-2 shrink-0" />
+                        <div className="space-y-2">
+                          <p className="text-sm text-yellow-700 font-medium">
+                            Wallet Connection Required
+                          </p>
+                          <p className="text-sm text-yellow-700">
+                            You'll need to connect your wallet before minting your NFT receipt. 
+                            The receipt will be minted to your connected wallet address.
+                          </p>
+                          <div className="pt-2">
+                            <ConnectWalletButton size="sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                   <CardFooter className="flex justify-between border-t pt-6">
                     <Button variant="outline" onClick={resetScan}>
                       Scan Another
                     </Button>
-                    <Button onClick={mintNFTReceipt}>
-                      <ShieldCheck className="h-4 w-4 mr-2" />
-                      Create NFT Receipt
+                    <Button 
+                      onClick={mintNFTReceipt} 
+                      disabled={mintingState.inProgress}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {mintingState.inProgress ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Minting...
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="h-4 w-4 mr-2" />
+                          Create NFT Receipt
+                        </>
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
