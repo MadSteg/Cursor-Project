@@ -88,18 +88,23 @@ export const receipts = pgTable("receipts", {
   receiptImageUrl: text("receipt_image_url"), // URL to receipt image if scanned
   rawReceiptText: text("raw_receipt_text"), // OCR text from receipt scan
   processingStatus: text("processing_status").default("completed"), // pending, processing, completed, failed
+  
+  // Payment-related fields
+  paymentId: text("payment_id"), // Stripe payment ID or other payment reference
+  paymentAmount: numeric("payment_amount"), // Amount paid (may differ from total)
+  paymentCurrency: text("payment_currency").default("usd"), // Currency code 
+  paymentDate: timestamp("payment_date"), // When payment was processed
+  paymentStatus: text("payment_status"), // Payment status (pending, completed, failed)
+  paymentMethod: text("payment_method"), // Credit card, cash, etc.
+  paymentComplete: boolean("payment_complete").default(false), // Whether payment has been processed
+  stripeReceiptUrl: text("stripe_receipt_url"), // URL to Stripe receipt
+  
+  // Source information
   source: text("source"), // 'email', 'scan', 'manual', 'import'
   sourceIdentifier: text("source_identifier"), // Email ID, scan batch ID, etc.
   storeLocation: text("store_location"), // Physical store location
   storeId: text("store_id"), // Store identifier within retailer chain
-  orderNumber: text("order_number"), // Order/transaction number from receipt
-  paymentMethod: text("payment_method"), // Credit card, cash, etc.
-  paymentId: text("payment_id"), // Stripe payment ID or other payment reference
-  paymentComplete: boolean("payment_complete").default(false), // Whether payment has been processed
-  paymentAmount: numeric("payment_amount"), // Amount paid (may differ from total)
-  paymentCurrency: text("payment_currency").default("usd"), // Currency code
-  paymentDate: timestamp("payment_date"), // When payment was processed
-  stripeReceiptUrl: text("stripe_receipt_url"), // URL to Stripe receipt
+  orderNumber: text("order_number") // Order/transaction number from receipt
 });
 
 export const insertReceiptSchema = createInsertSchema(receipts).pick({
@@ -114,6 +119,16 @@ export const insertReceiptSchema = createInsertSchema(receipts).pick({
   blockchainTxHash: true,
   blockchainVerified: true,
   blockNumber: true,
+  
+  // Payment-related fields
+  paymentId: true,
+  paymentAmount: true,
+  paymentCurrency: true,
+  paymentDate: true,
+  paymentStatus: true,
+  paymentMethod: true,
+  paymentComplete: true,
+  stripeReceiptUrl: true,
   nftTokenId: true,
   ipfsCid: true,
   ipfsUrl: true,

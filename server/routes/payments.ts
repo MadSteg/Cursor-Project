@@ -158,6 +158,57 @@ router.post("/mock-payment", async (req, res) => {
 });
 
 /**
+ * Get payment info for a receipt
+ */
+router.get("/receipt/:receiptId", async (req, res) => {
+  try {
+    const receiptId = parseInt(req.params.receiptId);
+    if (isNaN(receiptId)) {
+      return res.status(400).json({
+        isComplete: false,
+        error: "Invalid receipt ID"
+      });
+    }
+
+    // Get receipt to check payment status
+    const receipt = await storage.getReceipt(receiptId);
+    if (!receipt) {
+      return res.status(404).json({
+        isComplete: false,
+        error: "Receipt not found"
+      });
+    }
+
+    // Check if receipt has payment info
+    if (!receipt.paymentId) {
+      return res.json({
+        isComplete: false,
+        method: null,
+        id: null
+      });
+    }
+
+    // If receipt has payment info, return it
+    return res.json({
+      isComplete: receipt.paymentComplete || false,
+      method: receipt.paymentMethod || null,
+      id: receipt.paymentId || null,
+      amount: receipt.paymentAmount || null,
+      currency: receipt.paymentCurrency || "usd",
+      date: receipt.paymentDate || null,
+      receiptUrl: receipt.stripeReceiptUrl || null
+    });
+
+  } catch (error: any) {
+    log(`Error retrieving receipt payment info: ${error.message}`, "payments");
+    res.status(500).json({
+      isComplete: false,
+      error: error.message
+    });
+  }
+});
+
+/**
  * Get payment details by ID
  */
 router.get("/:paymentId", async (req, res) => {

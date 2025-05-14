@@ -151,6 +151,18 @@ const ReceiptDetail: React.FC = () => {
             </div>
           </div>
           
+          {!receipt.paymentComplete && (
+            <Button 
+              className="w-full mt-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+              onClick={() => navigate(`/checkout?receipt=${receipt.id}&amount=${receipt.total}`)}
+            >
+              <div className="flex items-center justify-center w-full">
+                <CreditCard className="mr-2 h-5 w-5" />
+                <span>Pay Now</span>
+              </div>
+            </Button>
+          )}
+          
           <Button 
             variant="outline" 
             className={`w-full mt-4 ${receipt.blockchain?.verified ? 'bg-blue-50 border-blue-100 text-primary hover:bg-blue-100' : ''}`}

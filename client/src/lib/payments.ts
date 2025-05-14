@@ -1,10 +1,11 @@
 /**
- * Payment utilities for the client
+ * Payment utilities for interacting with the payment API
  */
 import { apiRequest } from './queryClient';
 
 /**
- * Check the status of the payment system
+ * Check if payment service is available
+ * @returns Promise with payment service status
  */
 export async function checkPaymentStatus() {
   try {
@@ -12,21 +13,22 @@ export async function checkPaymentStatus() {
     return await response.json();
   } catch (error) {
     console.error('Error checking payment status:', error);
-    return {
-      available: false,
-      mockMode: true,
-      message: 'Error connecting to payment service'
-    };
+    return { available: false, mockMode: false, error: (error as Error).message };
   }
 }
 
 /**
  * Create a payment intent
- * @param amount Amount in dollars
+ * @param amount Amount to charge (in dollars)
  * @param receiptId Optional receipt ID to associate with payment
- * @param metadata Additional metadata for the payment
+ * @param metadata Optional metadata to include with payment
+ * @returns Promise with payment intent details
  */
-export async function createPaymentIntent(amount: number, receiptId?: number, metadata: Record<string, string> = {}) {
+export async function createPaymentIntent(
+  amount: number, 
+  receiptId?: number, 
+  metadata: Record<string, string> = {}
+) {
   try {
     const response = await apiRequest('POST', '/api/payments/create-intent', {
       amount,
@@ -36,59 +38,64 @@ export async function createPaymentIntent(amount: number, receiptId?: number, me
     return await response.json();
   } catch (error) {
     console.error('Error creating payment intent:', error);
-    throw error;
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
- * Create a mock payment for testing
- * @param amount Amount in dollars
+ * Create a mock payment (for testing without Stripe)
+ * @param amount Amount to charge (in dollars)
  * @param receiptId Optional receipt ID to associate with payment
+ * @param metadata Optional metadata to include with payment
+ * @returns Promise with mock payment details
  */
-export async function createMockPayment(amount: number, receiptId?: number) {
+export async function createMockPayment(
+  amount: number, 
+  receiptId?: number, 
+  metadata: Record<string, string> = {}
+) {
   try {
     const response = await apiRequest('POST', '/api/payments/mock-payment', {
       amount,
-      receiptId
+      receiptId,
+      metadata
     });
     return await response.json();
   } catch (error) {
     console.error('Error creating mock payment:', error);
-    throw error;
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+/**
+ * Get payment details
+ * @param paymentId Payment ID to retrieve
+ * @returns Promise with payment details
+ */
+export async function getPaymentDetails(paymentId: string) {
+  try {
+    const response = await apiRequest('GET', `/api/payments/${paymentId}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error retrieving payment details:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
 /**
  * Get payment information for a receipt
- * @param receiptId Receipt ID
+ * @param receiptId Receipt ID to check payment for
+ * @returns Promise with payment status information
  */
 export async function getReceiptPaymentInfo(receiptId: number) {
   try {
-    const response = await apiRequest('GET', `/api/receipts/${receiptId}`);
-    const receipt = await response.json();
-    
-    // Extract payment-related fields
-    const { 
-      paymentComplete, 
-      paymentMethod, 
-      paymentId, 
-      paymentAmount, 
-      paymentCurrency,
-      paymentDate,
-      stripeReceiptUrl
-    } = receipt;
-    
-    return {
-      isComplete: paymentComplete === true,
-      method: paymentMethod,
-      id: paymentId,
-      amount: paymentAmount,
-      currency: paymentCurrency,
-      date: paymentDate ? new Date(paymentDate) : null,
-      receiptUrl: stripeReceiptUrl
-    };
+    const response = await apiRequest('GET', `/api/payments/receipt/${receiptId}`);
+    return await response.json();
   } catch (error) {
-    console.error('Error fetching receipt payment info:', error);
-    throw error;
+    console.error('Error retrieving receipt payment info:', error);
+    return { 
+      isComplete: false, 
+      error: (error as Error).message 
+    };
   }
 }
