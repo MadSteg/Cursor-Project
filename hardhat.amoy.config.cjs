@@ -1,5 +1,5 @@
 require("dotenv").config();
-require("@nomicfoundation/hardhat-ethers");   // ethers v5
+require("@nomiclabs/hardhat-ethers");   // ethers v5
 
 module.exports = {
   solidity: "0.8.24",
