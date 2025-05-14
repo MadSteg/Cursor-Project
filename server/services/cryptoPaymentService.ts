@@ -30,6 +30,14 @@ export class CryptoPaymentService {
       provider: null as ethers.providers.JsonRpcProvider | null,
       enabled: false // Will be set to true if RPC URL is available
     },
+    BTC: {
+      name: 'Bitcoin',
+      network: 'bitcoin-testnet',
+      rpcEnvVar: 'BITCOIN_TESTNET_RPC_URL',
+      decimals: 8,
+      provider: null, // Will use a different provider for Bitcoin
+      enabled: false // Enabled in mock mode or if RPC URL is available
+    },
     USDC: {
       name: 'USD Coin',
       network: 'polygon-mumbai',
@@ -72,6 +80,19 @@ export class CryptoPaymentService {
           logger.info('[cryptoPayment] Ethereum provider initialized successfully');
         } catch (error) {
           logger.error('[cryptoPayment] Error initializing Ethereum provider:', error);
+        }
+      }
+      
+      // Check for Bitcoin RPC URL (in real implementation, would connect to a Bitcoin node)
+      const btcRpcUrl = process.env.BITCOIN_TESTNET_RPC_URL;
+      if (btcRpcUrl) {
+        try {
+          // In a real implementation, we'd connect to a Bitcoin node or service
+          // For now, just mark Bitcoin as enabled if the environment variable exists
+          this.supportedCurrencies.BTC.enabled = true;
+          logger.info('[cryptoPayment] Bitcoin support enabled');
+        } catch (error) {
+          logger.error('[cryptoPayment] Error initializing Bitcoin support:', error);
         }
       }
       
@@ -128,6 +149,7 @@ export class CryptoPaymentService {
       const rates: Record<string, number> = {
         'MATIC': 2.5,    // $1 = 2.5 MATIC
         'ETH': 0.0004,   // $1 = 0.0004 ETH
+        'BTC': 0.000018, // $1 = 0.000018 BTC
         'USDC': 1        // $1 = 1 USDC
       };
       
@@ -142,6 +164,7 @@ export class CryptoPaymentService {
     const mockRates: Record<string, number> = {
       'MATIC': 2.5,    // $1 = 2.5 MATIC
       'ETH': 0.0004,   // $1 = 0.0004 ETH
+      'BTC': 0.000018, // $1 = 0.000018 BTC
       'USDC': 1        // $1 = 1 USDC
     };
     

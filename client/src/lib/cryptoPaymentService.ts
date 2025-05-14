@@ -73,6 +73,7 @@ export const cryptoPaymentService = {
         const uiData: Record<string, { color: string }> = {
           'MATIC': { color: '#8247E5' }, // Polygon purple
           'ETH': { color: '#627EEA' },   // Ethereum blue
+          'BTC': { color: '#F7931A' },   // Bitcoin orange
           'USDC': { color: '#2775CA' }   // USDC blue
         };
         

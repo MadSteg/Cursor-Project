@@ -10,6 +10,7 @@ import CategoryBreakdown from "@/components/dashboard/CategoryBreakdown";
 import BlockchainVisualization from "@/components/dashboard/BlockchainVisualization";
 import EmailReceipts from "@/components/dashboard/EmailReceipts";
 import ScanReceipt from "@/components/receipts/ScanReceipt";
+import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 import { type FullReceipt } from "@shared/schema";
 
 const Dashboard: React.FC = () => {
@@ -59,13 +60,16 @@ const Dashboard: React.FC = () => {
             <h2 className="text-2xl font-bold text-dark">Dashboard</h2>
             <p className="text-sm text-gray-500 mt-1">Your blockchain receipts and spending analytics</p>
           </div>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 flex items-center gap-3">
             <div className="flex items-center space-x-2 bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200">
-              <i className="ri-calendar-line text-gray-500"></i>
               <span className="text-sm text-gray-600">
                 {format(now, "MMMM yyyy")}
               </span>
-              <i className="ri-arrow-down-s-line text-gray-500"></i>
+            </div>
+            
+            {/* Connect Web3 Wallet Button */}
+            <div className="flex-shrink-0">
+              <ConnectWalletButton />
             </div>
           </div>
         </div>
