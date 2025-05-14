@@ -99,7 +99,14 @@ class BlockchainService implements IBlockchainService {
       console.log('Initializing blockchain service for Polygon Amoy...');
       
       // Initialize provider with the Amoy testnet
-      console.log('Using Amoy RPC URL:', process.env.ALCHEMY_RPC);
+      // Check if ALCHEMY_RPC is a full URL or just an API key
+      let rpcUrl = process.env.ALCHEMY_RPC;
+      if (!rpcUrl.startsWith('http')) {
+        // It's likely just the API key, so construct the full URL
+        rpcUrl = `https://polygon-amoy.g.alchemy.com/v2/${rpcUrl}`;
+      }
+      
+      console.log('Using Amoy RPC URL:', rpcUrl);
       
       // Use JsonRpcProvider with Amoy network details
       const amoyNetwork = {
@@ -108,7 +115,7 @@ class BlockchainService implements IBlockchainService {
       };
       
       this.provider = new ethers.providers.JsonRpcProvider(
-        process.env.ALCHEMY_RPC,
+        rpcUrl,
         amoyNetwork
       );
       
