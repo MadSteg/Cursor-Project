@@ -268,25 +268,94 @@ export default function CryptoCheckout() {
                   }}
                   className="space-y-3"
                 >
-                  {availableCurrencies.map(currency => (
-                    <div key={currency.code} className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50">
-                      <RadioGroupItem value={currency.code} id={`currency-${currency.code}`} />
-                      <Label htmlFor={`currency-${currency.code}`} className="flex flex-1 items-center cursor-pointer">
-                        <div className="flex items-center space-x-2 flex-1">
-                          <div 
-                            className="h-8 w-8 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: currency.color || '#666' }}
-                          >
-                            <Coins className="h-4 w-4 text-white" />
+                  {availableCurrencies.map(currency => {
+                    const getCurrencyIcon = (code: string) => {
+                      switch (code) {
+                        case 'BTC':
+                          return <Bitcoin className="h-5 w-5 text-amber-500" />;
+                        case 'ETH':
+                          return (
+                            <svg className="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                              <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
+                            </svg>
+                          );
+                        case 'MATIC':
+                          return (
+                            <svg className="h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38.4 33.5">
+                              <path fill="currentColor" d="M29,10.2c-0.7-0.4-1.6-0.4-2.4,0L21,13.5l-3.8,2.1l-5.5,3.3c-0.7,0.4-1.6,0.4-2.4,0L5,16.3 c-0.7-0.4-1.2-1.2-1.2-2.1v-5c0-0.8,0.4-1.6,1.2-2.1l4.3-2.5c0.7-0.4,1.6-0.4,2.4,0L16,7.2c0.7,0.4,1.2,1.2,1.2,2.1v3.3l3.8-2.2V7 c0-0.8-0.4-1.6-1.2-2.1l-8-4.7c-0.7-0.4-1.6-0.4-2.4,0L1.2,5C0.4,5.4,0,6.2,0,7v9.4c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l5.5-3.2l3.8-2.2l5.5-3.2c0.7-0.4,1.6-0.4,2.4,0l4.3,2.5c0.7,0.4,1.2,1.2,1.2,2.1v5c0,0.8-0.4,1.6-1.2,2.1 L29,28.8c-0.7,0.4-1.6,0.4-2.4,0l-4.3-2.5c-0.7-0.4-1.2-1.2-1.2-2.1V21l-3.8,2.2v3.3c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l8.1-4.7c0.7-0.4,1.2-1.2,1.2-2.1V17c0-0.8-0.4-1.6-1.2-2.1L29,10.2z"/>
+                            </svg>
+                          );
+                        case 'SOL':
+                          return (
+                            <svg className="h-5 w-5 text-[#14F195]" viewBox="0 0 397 311" xmlns="http://www.w3.org/2000/svg">
+                              <path fill="currentColor" d="M64.6 237.9c2.1-2.1 5-3.3 7.9-3.3h324.2c4.7 0 7.1 5.7 3.7 9l-64.6 64c-2.1 2.1-4.9 3.3-7.9 3.3H3.7c-4.7 0-7.1-5.7-3.7-9l64.6-64zm0-164.8c2.1-2.1 5-3.3 7.9-3.3h324.2c4.7 0 7.1 5.7 3.7 9l-64.6 64c-2.1 2.1-4.9 3.3-7.9 3.3H3.7c-4.7 0-7.1-5.7-3.7-9l64.6-64zm328-64c-2.1-2.1-4.9-3.3-7.9-3.3H60.5c-4.7 0-7.1 5.7-3.7 9l64.6 64c2.1 2.1 5 3.3 7.9 3.3h324.2c4.7 0 7.1-5.7 3.7-9l-64.6-64z" />
+                            </svg>
+                          );
+                        case 'USDC':
+                          return (
+                            <svg className="h-5 w-5 text-blue-500" viewBox="0 0 2000 2000" xmlns="http://www.w3.org/2000/svg">
+                              <path fill="currentColor" d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z"/>
+                              <path fill="white" d="M1275 1158.33c0-145.83-87.5-195.83-262.5-216.66-125-16.67-150-50-150-108.34s41.67-95.83 125-95.83c75 0 116.67 25 137.5 87.5 4.17 12.5 16.67 20.83 29.17 20.83h66.66c16.67 0 29.17-12.5 29.17-29.16v-4.17c-16.67-91.67-91.67-162.5-187.5-170.83v-100c0-16.67-12.5-29.17-33.33-33.34h-62.5c-16.67 0-29.17 12.5-33.34 33.34v95.83c-125 16.67-204.16 100-204.16 204.17 0 137.5 83.33 191.66 258.33 212.5 116.67 20.83 154.17 45.83 154.17 112.5s-58.34 120.83-137.5 120.83c-108.34 0-145.84-45.83-158.34-108.33-4.16-16.67-16.66-25-29.16-25h-70.84c-16.66 0-29.16 12.5-29.16 29.17v4.16c16.66 104.17 83.33 179.17 220.83 200v100c0 16.67 12.5 29.17 33.34 33.34h62.5c16.66 0 29.16-12.5 33.33-33.34v-100c125-20.83 208.33-108.33 208.33-220.83z"/>
+                              <path fill="white" d="M787.5 1595.83c-325-116.66-491.67-479.16-370.83-800 62.5-175 200-308.33 370.83-370.83 16.67-8.33 25-20.83 25-41.67V325c0-16.67-8.33-29.17-25-33.33-4.17 0-12.5 0-16.67 4.16-395.83 125-612.5 545.84-487.5 941.67 75 233.33 254.17 412.5 487.5 487.5 16.67 8.33 33.34 0 37.5-16.67 4.17-4.16 4.17-8.33 4.17-16.66v-58.34c0-12.5-12.5-29.16-25-37.5zM1229.17 295.83c-16.67-8.33-33.34 0-37.5 16.67-4.17 4.17-4.17 8.33-4.17 16.67v58.33c0 16.67 12.5 33.33 25 41.67 325 116.66 491.67 479.16 370.83 800-62.5 175-200 308.33-370.83 370.83-16.67 8.33-25 20.83-25 41.67V1700c0 16.67 8.33 29.17 25 33.33 4.17 0 12.5 0 16.67-4.16 395.83-125 612.5-545.84 487.5-941.67-75-237.5-258.34-416.67-487.5-491.67z"/>
+                            </svg>
+                          );
+                        default:
+                          return <Coins className="h-5 w-5 text-white" />;
+                      }
+                    };
+                    
+                    const getNetworkBadgeColor = (network: string) => {
+                      switch (network.toLowerCase()) {
+                        case 'bitcoin': return 'bg-amber-100 text-amber-700 border-amber-200';
+                        case 'ethereum': return 'bg-blue-100 text-blue-700 border-blue-200';
+                        case 'polygon': 
+                        case 'mumbai': return 'bg-purple-100 text-purple-700 border-purple-200';
+                        case 'solana': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                        default: return 'bg-gray-100 text-gray-700 border-gray-200';
+                      }
+                    };
+                    
+                    return (
+                      <div 
+                        key={currency.code} 
+                        className={`flex items-center space-x-3 rounded-md border p-4 cursor-pointer transition-all
+                        ${selectedCurrency === currency.code 
+                          ? 'border-primary/50 bg-primary/5 shadow-sm' 
+                          : 'hover:bg-muted/50'}`}
+                      >
+                        <RadioGroupItem value={currency.code} id={`currency-${currency.code}`} />
+                        <Label htmlFor={`currency-${currency.code}`} className="flex flex-1 items-center cursor-pointer">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div 
+                              className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                                selectedCurrency === currency.code 
+                                  ? 'bg-gradient-to-br from-primary/80 to-primary shadow-inner' 
+                                  : 'bg-gradient-to-br from-gray-100 to-gray-200'
+                              }`}
+                            >
+                              {getCurrencyIcon(currency.code)}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-base flex items-center gap-2">
+                                {currency.name}
+                                <span className={`text-xs px-2 py-0.5 rounded border ${getNetworkBadgeColor(currency.network)}`}>
+                                  {currency.network}
+                                </span>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {currency.code === 'BTC' ? 'Native Bitcoin network' : 
+                                  currency.code === 'ETH' ? 'Ethereum Mainnet' : 
+                                  currency.code === 'MATIC' ? 'Polygon Network' :
+                                  currency.code === 'SOL' ? 'Solana Network' :
+                                  currency.code === 'USDC' ? 'Available on multiple networks' :
+                                  `${currency.network} network`}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-medium">{currency.name}</div>
-                            <div className="text-xs text-muted-foreground">Network: {currency.network}</div>
-                          </div>
-                        </div>
-                      </Label>
-                    </div>
-                  ))}
+                        </Label>
+                      </div>
+                    );
+                  })}
                 </RadioGroup>
               )}
               
@@ -451,12 +520,20 @@ export default function CryptoCheckout() {
   return (
     <div className="container mx-auto max-w-3xl py-8">
       <Card className="w-full">
-        <CardHeader className="border-b">
-          <div className="flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
+        <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-1">
+              <Bitcoin className="h-5 w-5 text-amber-500" />
+              <svg className="h-5 w-5 text-blue-500 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
+              </svg>
+              <svg className="h-5 w-5 text-purple-500 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path fill="currentColor" d="M256 0C114.6 0 0 114.6 0 256S114.6 512 256 512 512 397.4 512 256 397.4 0 256 0zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm88 240c0 30.9-25.1 56-56 56H168c-30.9 0-56-25.1-56-56v-16h56v28c0 6.6 5.4 12 12 12h64c6.6 0 12-5.4 12-12v-28h88v16z"/>
+              </svg>
+            </div>
             <div>
-              <CardTitle>Crypto Checkout</CardTitle>
-              <CardDescription>Pay with cryptocurrency</CardDescription>
+              <CardTitle className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Multi-Chain Crypto Checkout</CardTitle>
+              <CardDescription>Pay with any supported cryptocurrency across multiple blockchains</CardDescription>
             </div>
           </div>
         </CardHeader>
