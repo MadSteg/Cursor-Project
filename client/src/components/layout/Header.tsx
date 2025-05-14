@@ -68,12 +68,6 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            <Link href="/receipt-scanner">
-              <span className={`text-sm font-medium ${currentLocation === "/receipt-scanner" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Receipt className="h-4 w-4 mr-1.5" /> OCR Scanner
-              </span>
-            </Link>
-            
             <Link href="/verify-receipt">
               <span className={`text-sm font-medium ${currentLocation === "/verify-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <FileCheck className="h-4 w-4 mr-1.5" /> Verify Receipt
@@ -90,18 +84,6 @@ const Header: React.FC = () => {
             <Link href="/merchant-dashboard">
               <span className={`text-sm font-medium ${currentLocation === "/merchant-dashboard" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Store className="h-4 w-4 mr-1.5" /> Merchant
-              </span>
-            </Link>
-            
-            <Link href="/analytics">
-              <span className={`text-sm font-medium ${currentLocation === "/analytics" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <BarChart3 className="h-4 w-4 mr-1.5" /> Analytics
-              </span>
-            </Link>
-            
-            <Link href="/inventory">
-              <span className={`text-sm font-medium ${currentLocation.startsWith("/inventory") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Package className="h-4 w-4 mr-1.5" /> Inventory
               </span>
             </Link>
             
@@ -183,16 +165,6 @@ const Header: React.FC = () => {
                       <Link href="/merchant-dashboard">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                           <Store className="h-5 w-5" /> Merchant Dashboard
-                        </span>
-                      </Link>
-                      <Link href="/inventory">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Package className="h-5 w-5" /> Inventory
-                        </span>
-                      </Link>
-                      <Link href="/analytics">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <BarChart3 className="h-5 w-5" /> Analytics
                         </span>
                       </Link>
                     </div>
