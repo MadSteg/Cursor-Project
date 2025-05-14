@@ -189,13 +189,33 @@ export const BlockchainStatus = () => {
               />
             )}
 
-            {/* Mumbai Status (Deprecated) */}
-            {statusData?.networks?.mumbai && (
+            {/* Other supported networks */}
+            {statusData?.networks?.ethereum && (
               <NetworkStatusCard
-                title="Polygon Mumbai (Deprecated)"
-                data={statusData.networks.mumbai}
-                isPreferred={preferredNetwork === 'mumbai'}
-                onSetPreferred={() => handleSetPreferredNetwork('mumbai')}
+                title="Ethereum"
+                data={statusData.networks.ethereum}
+                isPreferred={preferredNetwork === 'ethereum'}
+                onSetPreferred={() => handleSetPreferredNetwork('ethereum')}
+                expanded={expanded}
+              />
+            )}
+            
+            {statusData?.networks?.bitcoin && (
+              <NetworkStatusCard
+                title="Bitcoin"
+                data={statusData.networks.bitcoin}
+                isPreferred={preferredNetwork === 'bitcoin'}
+                onSetPreferred={() => handleSetPreferredNetwork('bitcoin')}
+                expanded={expanded}
+              />
+            )}
+            
+            {statusData?.networks?.solana && (
+              <NetworkStatusCard
+                title="Solana"
+                data={statusData.networks.solana}
+                isPreferred={preferredNetwork === 'solana'}
+                onSetPreferred={() => handleSetPreferredNetwork('solana')}
                 expanded={expanded}
               />
             )}
