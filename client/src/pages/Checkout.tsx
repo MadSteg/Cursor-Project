@@ -95,7 +95,9 @@ export default function Checkout() {
       if (mintNFT) {
         metadata.mintNFT = 'true';
         metadata.nftTheme = nftTheme;
-        metadata.nftFee = NFT_RECEIPT_FEE.toString();
+        metadata.nftTier = nftTier;
+        metadata.nftFee = NFT_RECEIPT_TIERS[nftTier].price.toString();
+        metadata.appleWalletSupport = NFT_RECEIPT_TIERS[nftTier].appleWalletSupport.toString();
       }
       
       const paymentResult = await createMockPayment(
@@ -180,7 +182,9 @@ export default function Checkout() {
       if (mintNFT) {
         metadata.mintNFT = 'true';
         metadata.nftTheme = nftTheme;
-        metadata.nftFee = NFT_RECEIPT_FEE.toString();
+        metadata.nftTier = nftTier;
+        metadata.nftFee = NFT_RECEIPT_TIERS[nftTier].price.toString();
+        metadata.appleWalletSupport = NFT_RECEIPT_TIERS[nftTier].appleWalletSupport.toString();
       }
       
       // Create payment intent
