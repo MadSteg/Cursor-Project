@@ -14,11 +14,10 @@ import AboutPage from "@/pages/AboutPage";
 import UserNFTWallet from "@/pages/UserNFTWallet";
 import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
 import ScanReceipt from "@/pages/ScanReceiptPage";
-import ReceiptScanner from "@/pages/ReceiptScannerPage";
 import VerifyReceipt from "@/pages/VerifyReceipt";
 import MerchantDashboard from "@/pages/MerchantDashboard";
 
-// Analytics & Merchant Features
+// Analytics & Inventory (now integrated with NFT Wallet)
 import Analytics from "@/pages/Analytics";
 import Inventory from "@/pages/Inventory";
 import InventoryDetail from "@/pages/InventoryDetail";
@@ -58,16 +57,15 @@ function Router() {
         <Route path="/nft-wallet" component={UserNFTWallet} />
         <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
         <Route path="/scan-receipt" component={ScanReceipt} />
-        <Route path="/receipt-scanner" component={ReceiptScanner} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
         
-        {/* Analytics & Merchant Features */}
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/inventory" component={Inventory} />
-        <Route path="/inventory/:id" component={InventoryDetail} />
-        <Route path="/inventory/:id/edit" component={InventoryUpload} />
-        <Route path="/inventory-upload" component={InventoryUpload} />
+        {/* Routes now accessible via NFT Wallet tabs */}
+        <Route path="/nft-wallet/analytics" component={Analytics} />
+        <Route path="/nft-wallet/inventory" component={Inventory} />
+        <Route path="/nft-wallet/inventory/:id" component={InventoryDetail} />
+        <Route path="/nft-wallet/inventory/:id/edit" component={InventoryUpload} />
+        <Route path="/nft-wallet/inventory-upload" component={InventoryUpload} />
         
         {/* Traditional Receipts (Legacy) */}
         <Route path="/receipts" component={Receipts} />
