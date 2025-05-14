@@ -645,7 +645,7 @@ export default function Checkout() {
                           htmlFor="mock-nft-receipt"
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          Add Blockchain Receipt (+${NFT_RECEIPT_FEE.toFixed(2)})
+                          Add Blockchain Receipt (+${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)})
                         </Label>
                         <p className="text-sm text-muted-foreground">
                           Get a permanent, verified proof of purchase on the blockchain
