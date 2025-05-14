@@ -2,14 +2,18 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import blockchainRoutes from "./routes/blockchain-fixed";
+import blockchainAmoyRoutes from "./routes/blockchain-amoy";
 import emailRoutes from "./routes/email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   // All routes are prefixed with /api
   
-  // Register blockchain routes
+  // Register blockchain routes (legacy Mumbai - deprecated)
   app.use('/api/blockchain', blockchainRoutes);
+  
+  // Register Amoy blockchain routes (recommended)
+  app.use('/api/blockchain/amoy', blockchainAmoyRoutes);
   
   // Register email scanning routes
   app.use('/api/email', emailRoutes);
