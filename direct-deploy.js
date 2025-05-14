@@ -196,16 +196,42 @@ async function deployContract() {
   console.log('Contract compiled successfully.');
   
   try {
-    // Setup provider and wallet
-    const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_RPC);
+    // Setup provider and wallet with explicit network configuration
+    const amoyNetwork = {
+      name: 'amoy',
+      chainId: 80002
+    };
+    
+    // Load RPC URL from environment variable
+    const rpcUrl = process.env.ALCHEMY_RPC;
+    
+    console.log('DEBUG - Environment variables:');
+    console.log(`- ALCHEMY_RPC: ${rpcUrl}`);
+    
+    if (!rpcUrl || !rpcUrl.startsWith('https://')) {
+      throw new Error(`Invalid RPC URL: ${rpcUrl}. Make sure it starts with https://`);
+    }
+    
+    console.log(`Connecting to Polygon Amoy (ChainId: ${amoyNetwork.chainId}) at: ${rpcUrl}`);
+    
+    const provider = new ethers.providers.JsonRpcProvider(
+      rpcUrl,
+      amoyNetwork
+    );
+    
+    // Test network connection
+    try {
+      const blockNumber = await provider.getBlockNumber();
+      console.log(`Successfully connected to network. Current block: ${blockNumber}`);
+    } catch (netError) {
+      console.error('Network connection test failed:', netError.message);
+      throw new Error(`Cannot connect to Amoy network: ${netError.message}`);
+    }
+    
     const wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY, provider);
     const walletAddress = wallet.address;
     
     console.log(`Using wallet address: ${walletAddress}`);
-    
-    // Get network info
-    const network = await provider.getNetwork();
-    console.log(`Connected to network: ${network.name} (chainId: ${network.chainId})`);
     
     // Deploy the contract
     console.log('Deploying contract...');
