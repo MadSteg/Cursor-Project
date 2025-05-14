@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Receipt, BarChart3, Settings, User, Lock } from "lucide-react";
+import { Menu, Receipt, BarChart3, Settings, User, Lock, Package } from "lucide-react";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
 const Header: React.FC = () => {
@@ -39,6 +39,11 @@ const Header: React.FC = () => {
             <Link href="/analytics">
               <span className={`text-sm font-medium ${currentLocation === "/analytics" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
                 Analytics
+              </span>
+            </Link>
+            <Link href="/inventory">
+              <span className={`text-sm font-medium ${currentLocation.startsWith("/inventory") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                Inventory
               </span>
             </Link>
             <Link href="/encryption-settings">
@@ -83,6 +88,11 @@ const Header: React.FC = () => {
                   <Link href="/analytics">
                     <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                       <BarChart3 className="h-5 w-5" /> Analytics
+                    </span>
+                  </Link>
+                  <Link href="/inventory">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <Package className="h-5 w-5" /> Inventory
                     </span>
                   </Link>
                   <Link href="/encryption-settings">
