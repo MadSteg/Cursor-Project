@@ -291,13 +291,21 @@ export async function extractReceiptData(imageBase64: string): Promise<Extracted
       
       try {
         // Dynamically import Tesseract OCR service to avoid circular dependency
-        const { processTesseractOCR } = await import('./tesseractOcrService');
-        result = await processTesseractOCR(imageBase64);
+        const { extractWithTesseractJs, extractWithNodeTesseract } = await import('./tesseractOcrService');
+        
+        // Try Tesseract.js first
+        result = await extractWithTesseractJs(imageBase64);
+        
+        // If Tesseract.js fails, try node-tesseract-ocr as a second fallback
+        if (!result) {
+          console.log('Tesseract.js failed, trying node-tesseract-ocr as secondary fallback');
+          result = await extractWithNodeTesseract(imageBase64);
+        }
         
         if (result) {
           console.log('Successfully processed receipt with Tesseract OCR fallback');
         } else {
-          console.warn('Tesseract OCR fallback also failed');
+          console.warn('All OCR fallbacks failed');
           return null;
         }
       } catch (fallbackError) {
@@ -341,13 +349,27 @@ export async function extractReceiptData(imageBase64: string): Promise<Extracted
     // Cache to disk
     try {
       fs.writeFileSync(
-        path.join(CACHE_DIR, `${imageHash}.json`),
+        path.join(OCR_CACHE_DIR, `${imageHash}.json`),
         JSON.stringify(extractedData),
         'utf8'
       );
     } catch (cacheWriteError) {
       console.warn('Failed to write to disk cache:', cacheWriteError);
       // Continue even if cache write fails
+    }
+    
+    // Cache to database
+    if (db) {
+      try {
+        // Determine which OCR method was used
+        const processingMethod = result.confidence > 0.8 ? 'openai' : 'tesseract';
+        
+        // Save to database cache
+        await saveToDbCache(imageHash, extractedData, processingMethod);
+      } catch (dbCacheError) {
+        console.warn('Failed to write to database cache:', dbCacheError);
+        // Continue even if database cache write fails
+      }
     }
     
     console.log(`Successfully extracted receipt data for ${extractedData.merchantName} (${imageHash})`);
