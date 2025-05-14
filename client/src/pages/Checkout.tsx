@@ -33,8 +33,16 @@ export default function Checkout() {
   
   // NFT receipt options
   const [mintNFT, setMintNFT] = useState(true); // Default to selected
-  const [nftTier, setNftTier] = useState('standard'); // 'standard', 'premium', or 'luxury'
-  const NFT_RECEIPT_TIERS = {
+  
+  // Type definitions for NFT tiers
+  type NFTTierType = 'standard' | 'premium' | 'luxury';
+  const [nftTier, setNftTier] = useState<NFTTierType>('standard');
+  
+  const NFT_RECEIPT_TIERS: Record<NFTTierType, {
+    name: string;
+    price: number;
+    appleWalletSupport: boolean;
+  }> = {
     standard: { name: 'Standard', price: 0.99, appleWalletSupport: false },
     premium: { name: 'Premium', price: 2.99, appleWalletSupport: false },
     luxury: { name: 'Luxury', price: 5.00, appleWalletSupport: true },
