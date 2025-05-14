@@ -145,11 +145,12 @@ export const cryptoPaymentService = {
   /**
    * Verify a crypto payment transaction
    */
-  async verifyPayment(paymentId: string, txHash: string): Promise<CryptoPaymentVerification> {
+  async verifyPayment(paymentId: string, txHash: string, currency?: string): Promise<CryptoPaymentVerification> {
     try {
       const response = await apiRequest('POST', '/api/crypto/verify-payment', {
         paymentId,
-        txHash
+        txHash,
+        currency
       });
       
       if (!response.ok) {

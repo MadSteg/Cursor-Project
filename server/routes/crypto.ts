@@ -61,7 +61,8 @@ router.post('/verify-payment', async (req, res) => {
     
     const verification = await cryptoPaymentService.verifyPayment(
       validatedData.paymentId,
-      validatedData.txHash
+      validatedData.txHash,
+      validatedData.currency
     );
     
     res.json(verification);

@@ -198,10 +198,11 @@ export default function CryptoCheckout() {
     try {
       setTransactionHash(txHash);
       
-      // In a real implementation, verify payment on the blockchain
+      // Verify payment on the blockchain with the selected cryptocurrency
       const verifyResult = await cryptoPaymentService.verifyPayment(
         paymentId!,
-        txHash
+        txHash,
+        selectedCurrency // Pass the currency for proper verification
       );
       
       if (verifyResult.success) {

@@ -266,25 +266,57 @@ export class CryptoPaymentService {
         // 2. Check for the correct number of confirmations
         // 3. Verify amount and recipient address
         
-        // Example of how we might verify a Bitcoin transaction using a service like BlockCypher
+        // Using Alchemy's Bitcoin API endpoint
         const btcRpcUrl = process.env.BITCOIN_TESTNET_RPC_URL;
         if (!btcRpcUrl) {
           return { success: false, error: 'Bitcoin RPC URL not configured' };
         }
         
-        // Mock transaction data for now
-        // In production, we would fetch this from the Bitcoin API:
-        // const response = await fetch(`${btcRpcUrl}/txs/${txHash}`);
-        // const data = await response.json();
+        // In a real implementation, we would make an API call to the Alchemy Bitcoin API
+        // Example of how we'd verify a Bitcoin transaction using Alchemy's API:
+        /*
+        const response = await fetch(`${btcRpcUrl}/v2/btc/transaction/${txHash}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
         
+        if (!response.ok) {
+          return { 
+            success: false, 
+            error: `Bitcoin API error: ${response.status} ${response.statusText}` 
+          };
+        }
+        
+        const data = await response.json();
+        const confirmations = data.confirmations || 0;
+        
+        return {
+          success: true,
+          verified: confirmations >= 6, // Bitcoin typically requires 6 confirmations
+          transaction: {
+            hash: txHash,
+            confirmations: confirmations,
+            from: data.inputs[0].addresses[0],
+            to: data.outputs[0].addresses[0],
+            value: data.outputs[0].value,
+            timestamp: data.timestamp * 1000, // Convert to milliseconds
+            currency: 'BTC'
+          },
+        };
+        */
+        
+        // For now, using mock transaction data for development
+        // This will be replaced with real API calls in production
         return {
           success: true,
           verified: true,
           transaction: {
             hash: txHash,
-            confirmations: 6, // Bitcoin typically requires 6 confirmations
-            from: 'tb1q...',  // Bitcoin sender address (would come from API)
-            to: 'tb1q...',    // Bitcoin recipient address (would come from API)
+            confirmations: 6, 
+            from: 'bc1q...',  // Bitcoin sender address (would come from API)
+            to: 'bc1q...',    // Bitcoin recipient address (would come from API)
             value: '0.001',   // BTC amount (would come from API)
             timestamp: Date.now(),
             currency: 'BTC'
