@@ -607,14 +607,29 @@ export default function CryptoCheckout() {
       <Card className="w-full">
         <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center gap-3">
-            <div className="flex -space-x-1">
-              <Bitcoin className="h-5 w-5 text-amber-500" />
-              <svg className="h-5 w-5 text-blue-500 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-                <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
-              </svg>
-              <svg className="h-5 w-5 text-purple-500 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path fill="currentColor" d="M256 0C114.6 0 0 114.6 0 256S114.6 512 256 512 512 397.4 512 256 397.4 0 256 0zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm88 240c0 30.9-25.1 56-56 56H168c-30.9 0-56-25.1-56-56v-16h56v28c0 6.6 5.4 12 12 12h64c6.6 0 12-5.4 12-12v-28h88v16z"/>
-              </svg>
+            <div className="flex flex-row gap-1 px-2 py-1 bg-white/50 rounded-full border border-gray-100">
+              {availableCurrencies.length > 0 ? (
+                <>
+                  {availableCurrencies.some(c => c.code === 'BTC') && (
+                    <Bitcoin className="h-5 w-5 text-amber-500" />
+                  )}
+                  {availableCurrencies.some(c => c.code === 'ETH') && (
+                    <svg className="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                      <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
+                    </svg>
+                  )}
+                  {availableCurrencies.some(c => c.code === 'MATIC') && (
+                    <svg className="h-5 w-5 text-purple-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38.4 33.5">
+                      <path fill="currentColor" d="M29,10.2c-0.7-0.4-1.6-0.4-2.4,0L21,13.5l-3.8,2.1l-5.5,3.3c-0.7,0.4-1.6,0.4-2.4,0L5,16.3 c-0.7-0.4-1.2-1.2-1.2-2.1v-5c0-0.8,0.4-1.6,1.2-2.1l4.3-2.5c0.7-0.4,1.6-0.4,2.4,0L16,7.2c0.7,0.4,1.2,1.2,1.2,2.1v3.3l3.8-2.2V7 c0-0.8-0.4-1.6-1.2-2.1l-8-4.7c-0.7-0.4-1.6-0.4-2.4,0L1.2,5C0.4,5.4,0,6.2,0,7v9.4c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l5.5-3.2l3.8-2.2l5.5-3.2c0.7-0.4,1.6-0.4,2.4,0l4.3,2.5c0.7,0.4,1.2,1.2,1.2,2.1v5c0,0.8-0.4,1.6-1.2,2.1 L29,28.8c-0.7,0.4-1.6,0.4-2.4,0l-4.3-2.5c-0.7-0.4-1.2-1.2-1.2-2.1V21l-3.8,2.2v3.3c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l8.1-4.7c0.7-0.4,1.2-1.2,1.2-2.1V17c0-0.8-0.4-1.6-1.2-2.1L29,10.2z"/>
+                    </svg>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Bitcoin className="h-5 w-5 text-amber-500" />
+                  <Coins className="h-5 w-5 text-blue-500" />
+                </>
+              )}
             </div>
             <div>
               <CardTitle className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Multi-Chain Crypto Checkout</CardTitle>
@@ -631,7 +646,33 @@ export default function CryptoCheckout() {
                 <p className="text-xl font-semibold">${amount.toFixed(2)}</p>
               </div>
               <div className="flex items-center gap-1 bg-primary/10 text-primary rounded-full px-3 py-1 text-sm">
-                <Bitcoin className="h-3.5 w-3.5" />
+                {selectedCurrency === 'BTC' && <Bitcoin className="h-3.5 w-3.5 text-amber-500" />}
+                {selectedCurrency === 'ETH' && (
+                  <svg className="h-3.5 w-3.5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                    <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
+                  </svg>
+                )}
+                {selectedCurrency === 'MATIC' && (
+                  <svg className="h-3.5 w-3.5 text-purple-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38.4 33.5">
+                    <path fill="currentColor" d="M29,10.2c-0.7-0.4-1.6-0.4-2.4,0L21,13.5l-3.8,2.1l-5.5,3.3c-0.7,0.4-1.6,0.4-2.4,0L5,16.3 c-0.7-0.4-1.2-1.2-1.2-2.1v-5c0-0.8,0.4-1.6,1.2-2.1l4.3-2.5c0.7-0.4,1.6-0.4,2.4,0L16,7.2c0.7,0.4,1.2,1.2,1.2,2.1v3.3l3.8-2.2V7 c0-0.8-0.4-1.6-1.2-2.1l-8-4.7c-0.7-0.4-1.6-0.4-2.4,0L1.2,5C0.4,5.4,0,6.2,0,7v9.4c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l5.5-3.2l3.8-2.2l5.5-3.2c0.7-0.4,1.6-0.4,2.4,0l4.3,2.5c0.7,0.4,1.2,1.2,1.2,2.1v5c0,0.8-0.4,1.6-1.2,2.1 L29,28.8c-0.7,0.4-1.6,0.4-2.4,0l-4.3-2.5c-0.7-0.4-1.2-1.2-1.2-2.1V21l-3.8,2.2v3.3c0,0.8,0.4,1.6,1.2,2.1l8.1,4.7 c0.7,0.4,1.6,0.4,2.4,0l8.1-4.7c0.7-0.4,1.2-1.2,1.2-2.1V17c0-0.8-0.4-1.6-1.2-2.1L29,10.2z"/>
+                  </svg>
+                )}
+                {selectedCurrency === 'SOL' && (
+                  <svg className="h-3.5 w-3.5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 397.7 311.7">
+                    <path fill="currentColor" d="M64.6,237.9c2.4-2.4,5.7-3.8,9.2-3.8h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5 c-5.8,0-8.7-7-4.6-11.1L64.6,237.9z"/>
+                    <path fill="currentColor" d="M64.6,3.8C67.1,1.4,70.4,0,73.8,0h317.4c5.8,0,8.7,7,4.6,11.1l-62.7,62.7c-2.4,2.4-5.7,3.8-9.2,3.8H6.5 c-5.8,0-8.7-7-4.6-11.1L64.6,3.8z"/>
+                    <path fill="currentColor" d="M333.1,120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8,0-8.7,7-4.6,11.1l62.7,62.7c2.4,2.4,5.7,3.8,9.2,3.8h317.4 c5.8,0,8.7-7,4.6-11.1L333.1,120.1z"/>
+                  </svg>
+                )}
+                {selectedCurrency === 'USDC' && (
+                  <svg className="h-3.5 w-3.5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 2000">
+                    <path fill="currentColor" d="M1000,0c552.3,0,1000,447.7,1000,1000s-447.7,1000-1000,1000S0,1552.3,0,1000S447.7,0,1000,0z"/>
+                    <path fill="white" d="M1275,1158.3c0-145-87.5-241.7-262.5-266.7V750h-125v141.7c-31.3,0-64.5,0-125,0v-141.7h-125v141.7 c-108.3,0-125,0-125,0v125c0,0,62.5,0,116.7,0c31.3,0,41.7,18.8,41.7,31.3v250c0,0-20.8,125-125,125v125c108.3,0,125,0,125,0 v141.7h125v-141.7h125v141.7h125v-141.7c175-25,262.5-125,262.5-270.8v-145.8H1275z M1150,1304.2c0,83.3-87.5,125-175,125v-250 C1062.5,1179.2,1150,1220.8,1150,1304.2z M887.5,1179.2v-250c-87.5,0-175,41.7-175,125C712.5,1137.5,800,1179.2,887.5,1179.2z"/>
+                  </svg>
+                )}
+                {!['BTC', 'ETH', 'MATIC', 'SOL', 'USDC'].includes(selectedCurrency) && (
+                  <Coins className="h-3.5 w-3.5" />
+                )}
                 {selectedCurrency}
               </div>
             </div>
