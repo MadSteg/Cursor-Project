@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { cryptoPaymentService, formatCryptoAddress, formatCryptoAmount } from '@/lib/cryptoPaymentService';
-import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Wallet, Bitcoin, Copy } from 'lucide-react';
+import { CryptoCurrency, cryptoPaymentService, formatCryptoAddress, formatCryptoAmount } from '@/lib/cryptoPaymentService';
+import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Wallet, Bitcoin, Copy, Coins } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 // Available payment states in the crypto checkout flow
 type CheckoutState = 
@@ -43,6 +45,12 @@ export default function CryptoCheckout() {
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
+  // Cryptocurrency options
+  const [availableCurrencies, setAvailableCurrencies] = useState<CryptoCurrency[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState('MATIC');
+  const [selectedCurrencyDetails, setSelectedCurrencyDetails] = useState<CryptoCurrency | null>(null);
+  const [loadingCurrencies, setLoadingCurrencies] = useState(true);
+  
   // Parse URL parameters on component mount
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -66,7 +74,41 @@ export default function CryptoCheckout() {
     if (themeParam) {
       setNftTheme(themeParam);
     }
+    
+    // Load available cryptocurrencies
+    loadCurrencies();
   }, []);
+  
+  // Load available cryptocurrencies
+  const loadCurrencies = async () => {
+    try {
+      setLoadingCurrencies(true);
+      const currencies = await cryptoPaymentService.getAvailableCurrencies();
+      setAvailableCurrencies(currencies);
+      
+      // Set default currency (MATIC) or first available
+      if (currencies.length > 0) {
+        const defaultCurrency = currencies.find(c => c.code === 'MATIC') || currencies[0];
+        setSelectedCurrency(defaultCurrency.code);
+        setSelectedCurrencyDetails(defaultCurrency);
+      }
+      
+      setLoadingCurrencies(false);
+    } catch (error) {
+      console.error('Error loading currencies:', error);
+      setLoadingCurrencies(false);
+      
+      // If we fail to load currencies, don't block the flow, just use MATIC as fallback
+      const fallbackCurrency = {
+        code: 'MATIC',
+        name: 'Polygon MATIC',
+        network: 'polygon-mumbai',
+        enabled: true,
+        color: '#8247E5'
+      };
+      setSelectedCurrencyDetails(fallbackCurrency);
+    }
+  };
   
   // Create a crypto payment intent when component loads
   useEffect(() => {
@@ -87,10 +129,16 @@ export default function CryptoCheckout() {
         metadata.nftTheme = nftTheme;
       }
       
-      // Call API to create payment intent
+      // Add receipt ID to metadata if available
+      if (receiptId) {
+        metadata.receiptId = receiptId.toString();
+      }
+      
+      // Call API to create payment intent with selected currency
       const paymentIntent = await cryptoPaymentService.createPaymentIntent(
         amount,
-        'MATIC'
+        selectedCurrency,
+        metadata
       );
       
       if (paymentIntent.success) {
@@ -199,12 +247,65 @@ export default function CryptoCheckout() {
   const renderCheckoutContent = () => {
     switch (checkoutState) {
       case "initial":
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-col space-y-4">
+              <h3 className="text-lg font-medium">Select payment currency</h3>
+              
+              {loadingCurrencies ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary mr-2" />
+                  <p className="text-muted-foreground">Loading available currencies...</p>
+                </div>
+              ) : (
+                <RadioGroup 
+                  value={selectedCurrency} 
+                  onValueChange={(value) => {
+                    setSelectedCurrency(value);
+                    const currencyDetails = availableCurrencies.find(c => c.code === value);
+                    setSelectedCurrencyDetails(currencyDetails || null);
+                  }}
+                  className="space-y-3"
+                >
+                  {availableCurrencies.map(currency => (
+                    <div key={currency.code} className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50">
+                      <RadioGroupItem value={currency.code} id={`currency-${currency.code}`} />
+                      <Label htmlFor={`currency-${currency.code}`} className="flex flex-1 items-center cursor-pointer">
+                        <div className="flex items-center space-x-2 flex-1">
+                          <div 
+                            className="h-8 w-8 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: currency.color || '#666' }}
+                          >
+                            <Coins className="h-4 w-4 text-white" />
+                          </div>
+                          <div>
+                            <div className="font-medium">{currency.name}</div>
+                            <div className="text-xs text-muted-foreground">Network: {currency.network}</div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+              
+              <Button 
+                className="mt-4" 
+                disabled={loadingCurrencies || !selectedCurrency}
+                onClick={createCryptoPayment}
+              >
+                Continue with {selectedCurrency}
+              </Button>
+            </div>
+          </div>
+        );
+        
       case "processing":
         return (
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
             <p className="text-center text-muted-foreground">
-              {checkoutState === "initial" ? "Initializing payment..." : "Creating payment..."}
+              Creating payment...
             </p>
           </div>
         );
@@ -216,7 +317,7 @@ export default function CryptoCheckout() {
               <div className="flex flex-col items-center mb-4">
                 <Bitcoin className="h-12 w-12 text-primary mb-2" />
                 <p className="text-lg font-medium">Send exactly:</p>
-                <p className="text-2xl font-bold text-primary">{formatCryptoAmount(paymentAmount!, 'MATIC')}</p>
+                <p className="text-2xl font-bold text-primary">{formatCryptoAmount(paymentAmount!, selectedCurrency)}</p>
               </div>
               
               <div className="space-y-2">
@@ -241,7 +342,7 @@ export default function CryptoCheckout() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Important</AlertTitle>
                 <AlertDescription>
-                  Send only MATIC on the Polygon network. Sending other tokens may result in permanent loss.
+                  Send only {selectedCurrencyDetails?.name || selectedCurrency} on the {selectedCurrencyDetails?.network || 'correct'} network. Sending other tokens may result in permanent loss.
                 </AlertDescription>
               </Alert>
             </div>

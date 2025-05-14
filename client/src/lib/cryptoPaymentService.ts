@@ -3,6 +3,16 @@
  */
 import { apiRequest } from './queryClient';
 
+// Define currency types and icons
+export interface CryptoCurrency {
+  code: string;
+  name: string;
+  network: string;
+  enabled: boolean;
+  icon?: string;
+  color?: string;
+}
+
 // Interfaces for cryptocurrency payment responses
 
 interface CryptoPaymentIntent {
@@ -37,6 +47,57 @@ interface TransactionDetails {
 }
 
 export const cryptoPaymentService = {
+  /**
+   * Get available cryptocurrencies
+   */
+  async getAvailableCurrencies(): Promise<CryptoCurrency[]> {
+    try {
+      const response = await apiRequest('GET', '/api/crypto/available-currencies');
+      
+      if (!response.ok) {
+        return [
+          { 
+            code: 'MATIC', 
+            name: 'Polygon MATIC', 
+            network: 'polygon-mumbai',
+            enabled: true,
+            color: '#8247E5'
+          }
+        ];
+      }
+      
+      const data = await response.json();
+      
+      // Add UI metadata to currencies
+      const currencies = data.currencies.map((currency: CryptoCurrency) => {
+        const uiData: Record<string, { color: string }> = {
+          'MATIC': { color: '#8247E5' }, // Polygon purple
+          'ETH': { color: '#627EEA' },   // Ethereum blue
+          'USDC': { color: '#2775CA' }   // USDC blue
+        };
+        
+        return {
+          ...currency,
+          color: uiData[currency.code]?.color || '#666666'
+        };
+      });
+      
+      return currencies;
+    } catch (error) {
+      console.error('Error getting available currencies:', error);
+      // Fallback to MATIC
+      return [
+        { 
+          code: 'MATIC', 
+          name: 'Polygon MATIC', 
+          network: 'polygon-mumbai',
+          enabled: true,
+          color: '#8247E5'
+        }
+      ];
+    }
+  },
+  
   /**
    * Create a crypto payment intent
    */
