@@ -8,7 +8,7 @@ import { Shield, Lock, Share2, CreditCard, Receipt } from 'lucide-react';
 interface MobileWalletPreviewProps {
   merchant: string;
   amount: number;
-  date: Date;
+  date?: Date;
   nftTokenId?: string; 
   theme?: 'default' | 'luxury' | 'minimal';
   encrypted?: boolean;
@@ -19,7 +19,7 @@ interface MobileWalletPreviewProps {
 export default function MobileWalletPreview({
   merchant,
   amount,
-  date,
+  date = new Date(),
   nftTokenId,
   theme = 'default',
   encrypted = false,
@@ -37,7 +37,7 @@ export default function MobileWalletPreview({
     const receiptData = {
       merchant,
       amount: typeof amount === 'number' ? amount.toFixed(2) : amount.toString(),
-      date: date.toISOString(),
+      date: date instanceof Date ? date.toISOString() : new Date().toISOString(),
       id: nftTokenId || `rcpt_${Math.random().toString(36).slice(2, 10)}`,
       type: 'nft_receipt'
     };
@@ -52,8 +52,8 @@ export default function MobileWalletPreview({
         // Simulate decryption (in a real app this would use the actual key)
         const mockDecrypted = {
           merchant,
-          amount: amount.toFixed(2),
-          date: date.toISOString(),
+          amount: typeof amount === 'number' ? amount.toFixed(2) : amount.toString(),
+          date: date instanceof Date ? date.toISOString() : new Date().toISOString(),
           tokenId: nftTokenId,
           isEncrypted: true
         };
@@ -131,8 +131,8 @@ export default function MobileWalletPreview({
           </div>
           <div className={`mt-3 text-white text-center`}>
             <div className="text-xl font-semibold">{merchant}</div>
-            <div className="text-2xl font-bold mt-1">${amount.toFixed(2)}</div>
-            <div className="text-xs mt-1">{format(date, 'PPP')}</div>
+            <div className="text-2xl font-bold mt-1">${typeof amount === 'number' ? amount.toFixed(2) : amount.toString()}</div>
+            <div className="text-xs mt-1">{date instanceof Date ? format(date, 'PPP') : new Date().toLocaleDateString()}</div>
           </div>
         </div>
         

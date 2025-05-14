@@ -9,9 +9,9 @@ export function useQueryParams(): Record<string, string> {
     const params: Record<string, string> = {};
     
     // Convert URLSearchParams to a plain object
-    for (const [key, value] of searchParams.entries()) {
+    searchParams.forEach((value, key) => {
       params[key] = value;
-    }
+    });
     
     return params;
   }
