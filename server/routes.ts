@@ -46,6 +46,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register inventory management routes
   app.use('/api/inventory', inventoryRoutes);
   
+  // Blockchain network status endpoint with multi-provider details
+  app.get('/api/blockchain/status', async (req, res) => {
+    try {
+      const timestamp = new Date().toISOString();
+      
+      // Get the services from app.locals - handle possible structure/name differences
+      const blockchainService = req.app.locals.blockchainService || req.app.locals.blockchainProvider;
+      const amoyService = req.app.locals.blockchainAmoyService || req.app.locals.amoyProvider;
+      const cryptoPaymentService = req.app.locals.cryptoPaymentService;
+      
+      // Build the status response
+      const status = {
+        timestamp,
+        networks: {}
+      };
+      
+      // Add Mumbai status if available
+      if (blockchainService && typeof blockchainService.getNetworkStatus === 'function') {
+        try {
+          status.networks.mumbai = await blockchainService.getNetworkStatus();
+        } catch (err) {
+          status.networks.mumbai = { 
+            status: 'Error', 
+            error: 'Failed to get network status',
+            mockMode: true
+          };
+        }
+      } else {
+        status.networks.mumbai = { status: 'Service Unavailable' };
+      }
+      
+      // Add Amoy status if available
+      if (amoyService && typeof amoyService.getNetworkStatus === 'function') {
+        try {
+          status.networks.amoy = await amoyService.getNetworkStatus();
+        } catch (err) {
+          status.networks.amoy = { 
+            status: 'Error', 
+            error: 'Failed to get network status',
+            mockMode: true
+          };
+        }
+      } else {
+        status.networks.amoy = { status: 'Service Unavailable' };
+      }
+      
+      // Add crypto payment service status if available
+      if (cryptoPaymentService && typeof cryptoPaymentService.getStatus === 'function') {
+        try {
+          status.cryptoPayment = await cryptoPaymentService.getStatus();
+        } catch (err) {
+          status.cryptoPayment = { 
+            status: 'Error', 
+            error: 'Failed to get crypto payment status'
+          };
+        }
+      } else {
+        status.cryptoPayment = { status: 'Service Unavailable' };
+      }
+      
+      res.json(status);
+    } catch (error) {
+      console.error('Error getting blockchain status:', error);
+      res.status(500).json({ 
+        timestamp: new Date().toISOString(),
+        error: 'Failed to get blockchain status'
+      });
+    }
+  });
+  
 
   // Get categories
   app.get("/api/categories", async (req, res) => {

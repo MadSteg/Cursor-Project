@@ -70,6 +70,13 @@ class BlockchainService implements IBlockchainService {
   private wallet?: ethers.Wallet;
   private contract?: ethers.Contract;
   private mockMode: boolean = false;
+  private providers: ethers.providers.JsonRpcProvider[] = [];
+  private rpcEndpoints: string[] = [];
+  private currentProviderIndex: number = 0;
+  private isReconnecting: boolean = false;
+  private reconnectAttempts: number = 0;
+  private reconnectMaxAttempts: number = 3;
+  private healthCheckInterval?: NodeJS.Timeout;
 
   constructor() {
     // By default, use mock mode and try to initialize the blockchain
@@ -78,7 +85,7 @@ class BlockchainService implements IBlockchainService {
   }
 
   async initialize() {
-    // Check if environment variables are available
+    // Check if primary environment variables are available
     if (!process.env.POLYGON_MUMBAI_RPC_URL || 
         !process.env.BLOCKCHAIN_PRIVATE_KEY || 
         !process.env.RECEIPT_NFT_CONTRACT_ADDRESS) {
@@ -86,17 +93,58 @@ class BlockchainService implements IBlockchainService {
       return;
     }
 
+    // Collect all available RPC endpoints
+    if (process.env.POLYGON_MUMBAI_RPC_URL) {
+      console.log('Using Mumbai RPC URL:', process.env.POLYGON_MUMBAI_RPC_URL);
+      this.rpcEndpoints.push(process.env.POLYGON_MUMBAI_RPC_URL);
+    }
+    
+    if (process.env.POLYGON_MUMBAI_RPC_URL_BACKUP) {
+      this.rpcEndpoints.push(process.env.POLYGON_MUMBAI_RPC_URL_BACKUP);
+    }
+    
+    if (process.env.POLYGON_MUMBAI_RPC_URL_BACKUP2) {
+      this.rpcEndpoints.push(process.env.POLYGON_MUMBAI_RPC_URL_BACKUP2);
+    }
+
+    // Initialize providers for all endpoints
+    for (const endpoint of this.rpcEndpoints) {
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(endpoint);
+        this.providers.push(provider);
+      } catch (error) {
+        console.warn(`Failed to initialize provider for endpoint: ${endpoint}`);
+      }
+    }
+
+    if (this.providers.length === 0) {
+      console.warn('No valid RPC providers available, running in mock mode');
+      return;
+    }
+
+    // Try to connect using the first provider
+    await this.connectWithCurrentProvider();
+    
+    // Setup health check interval
+    this.healthCheckInterval = setInterval(() => this.checkProviderHealth(), 60000); // Check every minute
+  }
+
+  private async connectWithCurrentProvider() {
+    if (this.providers.length === 0) {
+      this.mockMode = true;
+      return false;
+    }
+
     try {
-      console.log('Initializing blockchain service...');
-      // Initialize provider with the Mumbai testnet
-      this.provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_MUMBAI_RPC_URL);
+      // Set current provider
+      this.provider = this.providers[this.currentProviderIndex];
       
       // Create wallet with the provided private key
-      this.wallet = new ethers.Wallet(process.env.BLOCKCHAIN_PRIVATE_KEY, this.provider);
+      this.wallet = new ethers.Wallet(process.env.BLOCKCHAIN_PRIVATE_KEY!, this.provider);
       
       // Initialize contract with the contract address and ABI
       this.contract = new ethers.Contract(
-        process.env.RECEIPT_NFT_CONTRACT_ADDRESS,
+        process.env.RECEIPT_NFT_CONTRACT_ADDRESS!,
         Receipt1155Artifact.abi,
         this.wallet
       );
@@ -107,10 +155,95 @@ class BlockchainService implements IBlockchainService {
       
       // If we make it here, we can use real blockchain mode
       this.mockMode = false;
+      this.reconnectAttempts = 0;
       console.log('Blockchain service initialized successfully with contract:', process.env.RECEIPT_NFT_CONTRACT_ADDRESS);
+      return true;
     } catch (error) {
-      console.error('Error initializing blockchain service:', error);
-      console.warn('Falling back to mock mode');
+      console.error('Error connecting with provider:', error);
+      return false;
+    }
+  }
+
+  private async checkProviderHealth() {
+    if (this.mockMode || this.isReconnecting) return;
+    
+    try {
+      // Simple health check - try to get block number
+      await this.provider!.getBlockNumber();
+    } catch (error) {
+      console.warn(`Current provider failed health check, attempting to use alternative provider`);
+      this.switchToNextProvider();
+    }
+  }
+  
+  private async switchToNextProvider() {
+    if (this.providers.length <= 1 || this.isReconnecting) {
+      return;
+    }
+    
+    this.isReconnecting = true;
+    
+    try {
+      // Try next provider in rotation
+      this.currentProviderIndex = (this.currentProviderIndex + 1) % this.providers.length;
+      
+      const connected = await this.connectWithCurrentProvider();
+      
+      if (!connected) {
+        this.reconnectAttempts++;
+        
+        if (this.reconnectAttempts >= this.reconnectMaxAttempts) {
+          console.warn(`Failed to reconnect after ${this.reconnectMaxAttempts} attempts, staying in mock mode`);
+          this.mockMode = true;
+        } else {
+          // Try next provider
+          console.log(`Trying next provider (attempt ${this.reconnectAttempts})`);
+          await this.switchToNextProvider();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to switch providers:', error);
+      this.mockMode = true;
+    } finally {
+      this.isReconnecting = false;
+    }
+  }
+  
+  async getNetworkStatus(): Promise<any> {
+    if (this.mockMode) {
+      return {
+        status: 'Mock Mode',
+        network: 'Mock Network',
+        mockMode: true,
+        availableProviders: this.rpcEndpoints.length,
+        activeProvider: this.currentProviderIndex,
+        contractAddress: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || 'Not configured'
+      };
+    }
+    
+    try {
+      const network = await this.provider!.getNetwork();
+      const blockNumber = await this.provider!.getBlockNumber();
+      
+      return {
+        status: 'Connected',
+        network: network.name,
+        chainId: network.chainId,
+        mockMode: false,
+        blockHeight: blockNumber,
+        availableProviders: this.providers.length,
+        activeProvider: this.currentProviderIndex,
+        contractAddress: process.env.RECEIPT_NFT_CONTRACT_ADDRESS
+      };
+    } catch (error) {
+      return {
+        status: 'Error',
+        error: 'Failed to get network status',
+        mockMode: true,
+        availableProviders: this.providers.length,
+        activeProvider: this.currentProviderIndex,
+        contractAddress: process.env.RECEIPT_NFT_CONTRACT_ADDRESS
+      };
     }
   }
 
