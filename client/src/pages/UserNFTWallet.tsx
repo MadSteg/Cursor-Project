@@ -33,7 +33,9 @@ import {
   Package,
   BarChart3,
   Receipt,
-  LayoutDashboard
+  LayoutDashboard,
+  Crown,
+  Shield
 } from 'lucide-react';
 import EnhancedNFTReceiptCard from '@/components/receipts/EnhancedNFTReceiptCard';
 import { NFTArtItem } from '@/data/nftArtManifest';
@@ -59,99 +61,94 @@ interface NFTReceiptProps {
   };
 }
 
-// Mock data for demonstration
+// Mock data
 const mockReceipts: NFTReceiptProps[] = [
   {
     id: '1',
-    merchantName: 'Whole Foods Market',
-    date: '2025-05-14',
-    total: 84.32,
-    items: 9,
-    txHash: '0x7d3e9e6bd34cf3c22376138b586d9a551349e0a34c3967d3cbc5c2d3f1bb8d32',
+    merchantName: 'Apple Store',
+    date: '2025-05-10',
+    total: 1299.99,
+    items: 1,
+    txHash: '0x1234567890abcdef',
     isEncrypted: true,
-    hasGrantedAccess: true,
-    grantedTo: ['0x1234...5678'],
-    tokenId: '123456',
+    hasGrantedAccess: false,
+    tokenId: '1001',
     receiptType: 'luxury',
-    status: 'confirmed',
+    status: 'completed',
     warranty: {
-      expiryDate: '2026-05-14',
-      duration: '1 year',
-      isActive: true
+      expiryDate: '2027-05-10',
+      duration: '2 years',
+      isActive: true,
     }
   },
   {
     id: '2',
-    merchantName: 'Best Buy',
-    date: '2025-05-12',
-    total: 1299.99,
-    items: 1,
-    txHash: '0x2a1b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
-    isEncrypted: true,
-    hasGrantedAccess: true,
-    tokenId: '123457',
-    receiptType: 'premium',
-    status: 'confirmed',
-    warranty: {
-      expiryDate: '2027-05-12',
-      duration: '2 years',
-      isActive: true
-    }
+    merchantName: 'Whole Foods',
+    date: '2025-05-09',
+    total: 86.42,
+    items: 12,
+    isEncrypted: false,
+    tokenId: '1002',
+    receiptType: 'standard',
+    status: 'completed'
   },
   {
     id: '3',
-    merchantName: 'Amazon',
-    date: '2025-05-10',
-    total: 67.45,
-    items: 3,
-    txHash: '0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d',
+    merchantName: 'Best Buy',
+    date: '2025-05-01',
+    total: 499.99,
+    items: 1,
     isEncrypted: true,
-    hasGrantedAccess: false,
-    tokenId: '123458',
-    receiptType: 'standard',
-    status: 'confirmed'
-  },
-  {
-    id: '4',
-    merchantName: 'Apple Store',
-    date: '2025-05-08',
-    total: 899.00,
-    items: 2,
-    txHash: '0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
-    isEncrypted: false,
-    tokenId: '123459',
+    hasGrantedAccess: true,
+    grantedTo: ['0x7890abcdef1234567890'],
+    tokenId: '1003',
     receiptType: 'premium',
-    status: 'confirmed',
+    status: 'completed',
     warranty: {
-      expiryDate: '2027-05-08',
-      duration: '2 years',
-      isActive: true
+      expiryDate: '2026-05-01',
+      duration: '1 year',
+      isActive: true,
     }
   },
   {
-    id: '5',
-    merchantName: 'Target',
-    date: '2025-05-05',
-    total: 142.76,
-    items: 12,
-    txHash: '0x5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f',
-    isEncrypted: true,
-    hasGrantedAccess: true,
-    tokenId: '123460',
+    id: '4',
+    merchantName: 'Amazon',
+    date: '2025-04-28',
+    total: 152.67,
+    items: 3,
+    isEncrypted: false,
+    tokenId: '1004',
     receiptType: 'standard',
-    status: 'confirmed'
+    status: 'completed'
+  },
+  {
+    id: '5',
+    merchantName: 'Starbucks',
+    date: '2025-05-14',
+    total: 7.85,
+    items: 2,
+    isEncrypted: false,
+    tokenId: '1005',
+    receiptType: 'standard',
+    status: 'completed'
   },
   {
     id: '6',
-    merchantName: 'REI',
-    date: '2025-05-01',
-    total: 321.88,
-    items: 4,
-    txHash: '0x6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a',
-    isEncrypted: false,
-    tokenId: '123461',
-    receiptType: 'standard',
-    status: 'confirmed'
+    merchantName: 'Tesla',
+    date: '2025-03-15',
+    total: 52999.99,
+    items: 1,
+    txHash: '0xabcdef1234567890',
+    isEncrypted: true,
+    hasGrantedAccess: false,
+    tokenId: '1006',
+    receiptType: 'luxury',
+    status: 'completed',
+    warranty: {
+      expiryDate: '2033-03-15',
+      duration: '8 years',
+      isActive: true,
+    }
   }
 ];
 
@@ -169,38 +166,28 @@ const UserNFTWallet: React.FC = () => {
   const getFilteredReceipts = () => {
     let filtered = [...mockReceipts];
     
-    // Apply date filter
-    if (activeTab === 'recent') {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      filtered = filtered.filter(receipt => new Date(receipt.date) >= oneMonthAgo);
-    } else if (activeTab === 'premium') {
-      filtered = filtered.filter(receipt => receipt.receiptType === 'premium' || receipt.receiptType === 'luxury');
-    } else if (activeTab === 'warranty') {
-      filtered = filtered.filter(receipt => receipt.warranty && receipt.warranty.isActive);
+    // Apply filter
+    if (filter !== 'all') {
+      if (filter === 'encrypted') {
+        filtered = filtered.filter(r => r.isEncrypted);
+      } else if (filter === 'unencrypted') {
+        filtered = filtered.filter(r => !r.isEncrypted);
+      } else if (filter === 'accessible') {
+        filtered = filtered.filter(r => r.hasGrantedAccess);
+      } else if (filter === 'premium' || filter === 'luxury') {
+        filtered = filtered.filter(r => r.receiptType === filter);
+      }
     }
     
-    // Apply text search
-    if (searchTerm) {
+    // Apply search
+    if (searchTerm.trim() !== '') {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(receipt => 
-        receipt.merchantName.toLowerCase().includes(term) ||
-        receipt.tokenId?.toLowerCase().includes(term) ||
-        receipt.total.toString().includes(term)
+      filtered = filtered.filter(
+        r => 
+          r.merchantName.toLowerCase().includes(term) || 
+          r.total.toString().includes(term) ||
+          r.id.toLowerCase().includes(term)
       );
-    }
-    
-    // Apply additional filter
-    if (filter === 'encrypted') {
-      filtered = filtered.filter(receipt => receipt.isEncrypted);
-    } else if (filter === 'unencrypted') {
-      filtered = filtered.filter(receipt => !receipt.isEncrypted);
-    } else if (filter === 'accessible') {
-      filtered = filtered.filter(receipt => !receipt.isEncrypted || receipt.hasGrantedAccess);
-    } else if (filter === 'premium') {
-      filtered = filtered.filter(receipt => receipt.receiptType === 'premium');
-    } else if (filter === 'luxury') {
-      filtered = filtered.filter(receipt => receipt.receiptType === 'luxury');
     }
     
     // Apply sort
@@ -270,237 +257,557 @@ const UserNFTWallet: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           
+          {/* RECEIPTS TAB */}
           <TabsContent value="receipts" className="mt-6">
             <div className="flex flex-col md:flex-row gap-4 items-start">
               <div className="w-full md:w-64 lg:w-72 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                placeholder="Search receipts..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="bg-white rounded-lg border shadow-sm divide-y">
-              <div className="p-3">
-                <h3 className="font-medium mb-2">Receipt Categories</h3>
-                <div className="space-y-1.5">
-                  <button
-                    onClick={() => setActiveTab('all')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Wallet className="mr-2 h-4 w-4" />
-                    All Receipts
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('recent')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'recent' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Clock className="mr-2 h-4 w-4" />
-                    Recent (30 days)
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('premium')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'premium' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    Premium & Luxury
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('warranty')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'warranty' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    Active Warranty
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-3">
-                <h3 className="font-medium mb-2">Privacy Filters</h3>
-                <div className="space-y-1.5">
-                  <button
-                    onClick={() => setFilter('all')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    All Encryption Types
-                  </button>
-                  <button
-                    onClick={() => setFilter('encrypted')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'encrypted' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Lock className="mr-2 h-4 w-4" />
-                    Encrypted Only
-                  </button>
-                  <button
-                    onClick={() => setFilter('unencrypted')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'unencrypted' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Unlock className="mr-2 h-4 w-4" />
-                    Unencrypted Only
-                  </button>
-                  <button
-                    onClick={() => setFilter('accessible')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'accessible' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Unlock className="mr-2 h-4 w-4" />
-                    Currently Accessible
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-3">
-                <h3 className="font-medium mb-2">Receipt Tiers</h3>
-                <div className="space-y-1.5">
-                  <button
-                    onClick={() => setFilter('all')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Filter className="mr-2 h-4 w-4" />
-                    All Tiers
-                  </button>
-                  <button
-                    onClick={() => setFilter('premium')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'premium' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Premium
-                  </button>
-                  <button
-                    onClick={() => setFilter('luxury')}
-                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'luxury' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Luxury
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">
-                {filteredReceipts.length} {filteredReceipts.length === 1 ? 'Receipt' : 'Receipts'} Found
-              </h2>
-              
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setActiveTab('all');
-                    setFilter('all');
-                    setSortBy('date-desc');
-                  }}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Reset
-                </Button>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Sort
-                      <ChevronDown className="h-4 w-4 ml-2" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSortBy('date-desc')}>
-                      <SortDesc className="h-4 w-4 mr-2" />
-                      Newest First
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('date-asc')}>
-                      <SortAsc className="h-4 w-4 mr-2" />
-                      Oldest First
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('amount-desc')}>
-                      <SortDesc className="h-4 w-4 mr-2" />
-                      Highest Amount
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('amount-asc')}>
-                      <SortAsc className="h-4 w-4 mr-2" />
-                      Lowest Amount
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {filteredReceipts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredReceipts.map((receipt) => (
-                  <EnhancedNFTReceiptCard 
-                    key={receipt.id} 
-                    receipt={{
-                      id: parseInt(receipt.id),
-                      tokenId: receipt.tokenId || '',
-                      merchantId: 1,
-                      merchant: {
-                        id: 1,
-                        name: receipt.merchantName,
-                        category: receipt.receiptType
-                      },
-                      date: receipt.date,
-                      subtotal: Math.round((receipt.total || 0) * 0.9 * 100), // Estimate subtotal as 90% of total
-                      tax: Math.round((receipt.total || 0) * 0.1 * 100), // Estimate tax as 10% of total
-                      total: Math.round((receipt.total || 0) * 100), // Convert to cents
-                      items: [],
-                      blockchainTxHash: receipt.txHash,
-                      blockchainVerified: receipt.status === 'confirmed',
-                      blockNumber: 12345678,
-                      nftArt: {
-                        id: receipt.id,
-                        name: `${receipt.receiptType} NFT`,
-                        description: `A ${receipt.receiptType} tier NFT receipt from ${receipt.merchantName}`,
-                        imageUrl: `/assets/nft-${receipt.receiptType.toLowerCase()}.png`,
-                        tier: receipt.receiptType.toUpperCase() as any,
-                        collection: 'BlockReceipt Collection',
-                        rarity: receipt.receiptType === 'luxury' ? 'epic' : 
-                               receipt.receiptType === 'premium' ? 'rare' : 'common',
-                        type: 'collectible',
-                        price: receipt.total * 100
-                      }
-                    }}
-                    accessControl={{
-                      granted: receipt.hasGrantedAccess || !receipt.isEncrypted || false,
-                      isOwner: true,
-                      accessGrantedTo: receipt.grantedTo ? receipt.grantedTo.map((address: string) => ({
-                        address,
-                        date: new Date().toISOString()
-                      })) : []
-                    }}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    placeholder="Search receipts..."
+                    className="pl-9"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-gray-50 border rounded-lg p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4">
-                  <Wallet className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">No receipts found</h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                  No receipts match your current filters. Try adjusting your search or filters to find what you're looking for.
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setActiveTab('all');
-                    setFilter('all');
-                  }}
-                >
-                  Clear Filters
-                </Button>
+                
+                <div className="bg-white rounded-lg border shadow-sm divide-y">
+                  <div className="p-3">
+                    <h3 className="font-medium mb-2">Receipt Categories</h3>
+                    <div className="space-y-1.5">
+                      <button
+                        onClick={() => setFilter('all')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <Wallet className="mr-2 h-4 w-4" />
+                        All Receipts
+                      </button>
+                      <button
+                        onClick={() => setFilter('premium')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'premium' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <Clock className="mr-2 h-4 w-4" />
+                        Premium Tier
+                      </button>
+                      <button
+                        onClick={() => setFilter('luxury')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'luxury' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        Luxury Tier
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3">
+                    <h3 className="font-medium mb-2">Privacy Filters</h3>
+                    <div className="space-y-1.5">
+                      <button
+                        onClick={() => setFilter('all')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <Filter className="mr-2 h-4 w-4" />
+                        All Encryption Types
+                      </button>
+                      <button
+                        onClick={() => setFilter('encrypted')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'encrypted' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <Lock className="mr-2 h-4 w-4" />
+                        Encrypted Only
+                      </button>
+                      <button
+                        onClick={() => setFilter('unencrypted')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'unencrypted' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <Unlock className="mr-2 h-4 w-4" />
+                        Unencrypted Only
+                      </button>
+                      <button
+                        onClick={() => setFilter('accessible')}
+                        className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'accessible' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Shared Access
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3">
+                    <h3 className="font-medium mb-2">Sort By</h3>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between">
+                          <div className="flex items-center">
+                            {sortBy === 'date-desc' && (
+                              <>
+                                <CalendarDays className="mr-2 h-4 w-4" />
+                                Newest First
+                              </>
+                            )}
+                            {sortBy === 'date-asc' && (
+                              <>
+                                <CalendarDays className="mr-2 h-4 w-4" />
+                                Oldest First
+                              </>
+                            )}
+                            {sortBy === 'amount-desc' && (
+                              <>
+                                <SortDesc className="mr-2 h-4 w-4" />
+                                Highest Amount
+                              </>
+                            )}
+                            {sortBy === 'amount-asc' && (
+                              <>
+                                <SortAsc className="mr-2 h-4 w-4" />
+                                Lowest Amount
+                              </>
+                            )}
+                          </div>
+                          <ChevronDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[200px]">
+                        <DropdownMenuItem onClick={() => setSortBy('date-desc')}>
+                          <CalendarDays className="mr-2 h-4 w-4" />
+                          <span>Newest First</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortBy('date-asc')}>
+                          <CalendarDays className="mr-2 h-4 w-4" />
+                          <span>Oldest First</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortBy('amount-desc')}>
+                          <SortDesc className="mr-2 h-4 w-4" />
+                          <span>Highest Amount</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortBy('amount-asc')}>
+                          <SortAsc className="mr-2 h-4 w-4" />
+                          <span>Lowest Amount</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  
+                  <div className="p-3">
+                    <Button variant="outline" className="w-full" onClick={() => {
+                      setSearchTerm('');
+                      setFilter('all');
+                      setSortBy('date-desc');
+                    }}>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Reset Filters
+                    </Button>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+              
+              <div className="flex-1 space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">
+                    {filteredReceipts.length} {filteredReceipts.length === 1 ? 'Receipt' : 'Receipts'} Found
+                  </h2>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                        <rect x="0.5" y="0.5" width="4" height="4" rx="0.5" stroke="currentColor" />
+                        <rect x="0.5" y="7.5" width="4" height="4" rx="0.5" stroke="currentColor" />
+                        <rect x="7.5" y="0.5" width="4" height="4" rx="0.5" stroke="currentColor" />
+                        <rect x="7.5" y="7.5" width="4" height="4" rx="0.5" stroke="currentColor" />
+                      </svg>
+                      Grid
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                        <rect x="0.5" y="1.5" width="11" height="2" rx="0.5" stroke="currentColor" />
+                        <rect x="0.5" y="5.5" width="11" height="2" rx="0.5" stroke="currentColor" />
+                        <rect x="0.5" y="9.5" width="11" height="2" rx="0.5" stroke="currentColor" />
+                      </svg>
+                      List
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredReceipts.map((receipt) => (
+                    <EnhancedNFTReceiptCard
+                      key={receipt.id}
+                      receipt={receipt}
+                    />
+                  ))}
+                </div>
+                
+                {filteredReceipts.length === 0 && (
+                  <div className="text-center py-12 border rounded-lg bg-gray-50">
+                    <div className="flex justify-center mb-4">
+                      <div className="p-3 bg-white rounded-full border">
+                        <Search className="h-6 w-6 text-gray-400" />
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">No receipts found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Try adjusting your search or filter criteria
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setFilter('all');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* LOYALTY TIERS TAB */}
+          <TabsContent value="loyalty" className="mt-6">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 border rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center mb-4">
+                    <div className="rounded-full bg-zinc-200 p-2 mr-3">
+                      <Receipt className="h-5 w-5 text-zinc-700" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Standard Tier</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">Basic receipt NFTs for everyday purchases under $100.</p>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Digital receipt storage</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Transaction verification</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Basic metadata</span>
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <div className="text-sm text-muted-foreground">
+                      Purchases under $100
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center mb-4">
+                    <div className="rounded-full bg-blue-200 p-2 mr-3">
+                      <Package className="h-5 w-5 text-blue-700" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Premium Tier</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">Enhanced NFTs for mid-range purchases between $100-1000.</p>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>All Standard Tier features</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Warranty tracking</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Advanced TPRE encryption</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Selected partner benefits</span>
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <div className="text-sm text-muted-foreground">
+                      Purchases $100-$1000
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-100 rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center mb-4">
+                    <div className="rounded-full bg-amber-200 p-2 mr-3">
+                      <Crown className="h-5 w-5 text-amber-700" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Luxury Tier</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">Exclusive NFTs for high-value purchases above $1000.</p>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>All Premium Tier features</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Exclusive animated NFT designs</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Extended warranty protection</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>VIP merchant benefits</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <span className="mr-2">✓</span>
+                      <span>Special event access</span>
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <div className="text-sm text-muted-foreground">
+                      Purchases over $1000
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg border p-6 space-y-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Threshold Privacy Technology</h3>
+                    <p className="text-muted-foreground">
+                      BlockReceipt leverages advanced Threshold Proxy Re-Encryption (TPRE) to provide
+                      unparalleled privacy and selective data sharing capabilities.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <Shield className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-medium mb-2">Complete Ownership</h4>
+                    <p className="text-sm text-muted-foreground">
+                      You own your receipt data. Your sensitive information remains encrypted and only you control who can access it.
+                    </p>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-medium mb-2">Selective Sharing</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Grant temporary or permanent access to specific third parties like tax preparers without revealing your encryption keys.
+                    </p>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-medium mb-2">Automatic Revocation</h4>
+                    <p className="text-sm text-muted-foreground">
+                      When you transfer an NFT receipt, all previous access grants are automatically revoked, ensuring privacy across ownership changes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* ANALYTICS TAB */}
+          <TabsContent value="analytics" className="mt-6">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-card rounded-lg shadow-md p-6 border border-border flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Total Spending</h3>
+                      <p className="text-3xl font-bold mt-2">
+                        ${mockReceipts.reduce((sum, receipt) => sum + receipt.total, 0).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-primary/10 rounded-full">
+                      <BarChart3 className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground text-sm mt-auto">
+                    Based on {mockReceipts.length} verified receipts
+                  </p>
+                </div>
+                
+                <div className="bg-card rounded-lg shadow-md p-6 border border-border flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Premium Receipts</h3>
+                      <p className="text-3xl font-bold mt-2">
+                        {mockReceipts.filter(r => r.receiptType === 'premium').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-blue-100 rounded-full">
+                      <Package className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground text-sm mt-auto">
+                    Mid-tier purchases with enhanced benefits
+                  </p>
+                </div>
+                
+                <div className="bg-card rounded-lg shadow-md p-6 border border-border flex flex-col">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Luxury Receipts</h3>
+                      <p className="text-3xl font-bold mt-2">
+                        {mockReceipts.filter(r => r.receiptType === 'luxury').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-amber-100 rounded-full">
+                      <Crown className="h-6 w-6 text-amber-600" />
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground text-sm mt-auto">
+                    High-value purchases with exclusive benefits
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg border p-6">
+                <h3 className="text-xl font-semibold mb-6">Spending by Merchant</h3>
+                <div className="space-y-4">
+                  {Array.from(new Set(mockReceipts.map(r => r.merchantName))).map(merchant => {
+                    const merchantReceipts = mockReceipts.filter(r => r.merchantName === merchant);
+                    const totalSpent = merchantReceipts.reduce((sum, r) => sum + r.total, 0);
+                    const percentage = (totalSpent / mockReceipts.reduce((sum, r) => sum + r.total, 0)) * 100;
+                    
+                    return (
+                      <div key={merchant} className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div className="font-medium">{merchant}</div>
+                          <div className="text-sm text-muted-foreground">${totalSpent.toFixed(2)}</div>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2.5">
+                          <div 
+                            className="bg-primary h-2.5 rounded-full" 
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg border p-6">
+                  <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
+                  <div className="space-y-4">
+                    {[...mockReceipts]
+                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                      .slice(0, 5)
+                      .map(receipt => (
+                        <div key={receipt.id} className="flex justify-between items-center border-b pb-3 last:border-0 last:pb-0">
+                          <div className="flex items-center">
+                            <div className="mr-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                {receipt.receiptType === 'luxury' ? (
+                                  <Crown className="h-5 w-5 text-amber-500" />
+                                ) : receipt.receiptType === 'premium' ? (
+                                  <Package className="h-5 w-5 text-blue-500" />
+                                ) : (
+                                  <Receipt className="h-5 w-5 text-gray-500" />
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="font-medium">{receipt.merchantName}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(receipt.date).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="font-medium">${receipt.total.toFixed(2)}</div>
+                        </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border p-6">
+                  <h3 className="text-xl font-semibold mb-4">Spending by Category</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">Electronics</div>
+                        <div className="text-sm text-muted-foreground">$1,799.98</div>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div 
+                          className="bg-blue-500 h-2.5 rounded-full" 
+                          style={{ width: '32%' }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">Automotive</div>
+                        <div className="text-sm text-muted-foreground">$52,999.99</div>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div 
+                          className="bg-amber-500 h-2.5 rounded-full" 
+                          style={{ width: '52%' }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">Groceries</div>
+                        <div className="text-sm text-muted-foreground">$86.42</div>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div 
+                          className="bg-green-500 h-2.5 rounded-full" 
+                          style={{ width: '8%' }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">Online Shopping</div>
+                        <div className="text-sm text-muted-foreground">$152.67</div>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div 
+                          className="bg-purple-500 h-2.5 rounded-full" 
+                          style={{ width: '5%' }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">Food & Drink</div>
+                        <div className="text-sm text-muted-foreground">$7.85</div>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div 
+                          className="bg-red-500 h-2.5 rounded-full" 
+                          style={{ width: '1%' }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
