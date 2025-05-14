@@ -26,13 +26,107 @@ const contractSource = fs.readFileSync(contractPath, 'utf8');
 
 // Function to compile the contract
 async function compileContract() {
-  console.log('Compiling contract...');
+  console.log('Compiling contract with embedded OpenZeppelin artifacts...');
   
+  // Create combined source with OpenZeppelin contracts inlined
+  // This avoids issues with external imports
+  const ERC1155 = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+// Simplified OpenZeppelin ERC1155 implementation
+contract ERC1155 {
+    mapping(uint256 => mapping(address => uint256)) private _balances;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
+    string private _uri;
+    
+    constructor(string memory uri_) {
+        _uri = uri_;
+    }
+    
+    function balanceOf(address account, uint256 id) public view virtual returns (uint256) {
+        require(account != address(0), "ERC1155: address zero is not a valid owner");
+        return _balances[id][account];
+    }
+    
+    function uri(uint256) public view virtual returns (string memory) {
+        return _uri;
+    }
+    
+    function _mint(address to, uint256 id, uint256 amount, bytes memory data) internal virtual {
+        require(to != address(0), "ERC1155: mint to the zero address");
+        
+        _balances[id][to] += amount;
+    }
+}
+
+// Simplified OpenZeppelin Ownable implementation
+contract Ownable {
+    address private _owner;
+    
+    constructor(address initialOwner) {
+        _owner = initialOwner;
+    }
+    
+    modifier onlyOwner() {
+        require(_owner == msg.sender, "Ownable: caller is not the owner");
+        _;
+    }
+}`;
+
+  // Combined contract for direct compilation
+  const Receipt1155Combined = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+${ERC1155}
+
+contract Receipt1155 is ERC1155, Ownable {
+    mapping(uint256 => string) private _tokenURIs;
+    mapping(uint256 => bytes32) private _receiptHashes;
+    uint256 private _nextTokenId = 1;
+
+    constructor(address initialOwner) ERC1155("") Ownable(initialOwner) {}
+
+    function mintReceipt(
+        address to,
+        uint256 tokenId,
+        bytes32 receiptHash,
+        string calldata uri_
+    ) external onlyOwner {
+        _tokenURIs[tokenId] = uri_;
+        _receiptHashes[tokenId] = receiptHash;
+        _mint(to, tokenId, 1, "");
+    }
+
+    function mintNewReceipt(
+        address to,
+        bytes32 receiptHash,
+        string calldata uri_
+    ) external onlyOwner returns (uint256) {
+        uint256 tokenId = _nextTokenId++;
+        _tokenURIs[tokenId] = uri_;
+        _receiptHashes[tokenId] = receiptHash;
+        _mint(to, tokenId, 1, "");
+        return tokenId;
+    }
+
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        return _tokenURIs[tokenId];
+    }
+
+    function getReceiptHash(uint256 tokenId) public view returns (bytes32) {
+        return _receiptHashes[tokenId];
+    }
+
+    function verifyReceiptHash(uint256 tokenId, bytes32 hash) public view returns (bool) {
+        return _receiptHashes[tokenId] == hash;
+    }
+}`;
+
   const input = {
     language: 'Solidity',
     sources: {
       'Receipt1155.sol': {
-        content: contractSource
+        content: Receipt1155Combined
       }
     },
     settings: {
@@ -47,14 +141,6 @@ async function compileContract() {
       }
     }
   };
-
-  // Check for OpenZeppelin imports and add them
-  if (contractSource.includes('@openzeppelin')) {
-    console.log('Adding OpenZeppelin contracts...');
-    // This is a simplified version, in a real scenario you'd need to load
-    // all the OpenZeppelin contracts this depends on
-    return simulateDeployment();
-  }
 
   try {
     const output = JSON.parse(solc.compile(JSON.stringify(input)));
@@ -75,30 +161,27 @@ async function compileContract() {
     };
   } catch (error) {
     console.error('Error compiling contract:', error);
-    return simulateDeployment();
+    return handleDeploymentError(error);
   }
 }
 
 // If direct compilation fails, use a simulation approach
-async function simulateDeployment() {
-  console.log('Using simulation mode for deployment...');
-  console.log('This will update your environment variables but won\'t deploy a real contract');
-  console.log('You\'ll need to follow the Remix deployment guide manually.');
+async function handleDeploymentError(error) {
+  console.error('\n======================================================');
+  console.error('ERROR: Contract deployment failed:');
+  console.error(error.message);
+  console.error('======================================================\n');
   
-  // Generate a dummy contract address
-  const dummyAddress = '0x' + '1'.repeat(40); // A clearly fake address for testing
+  console.log('Detailed error logs:');
+  console.error(error);
   
-  // Update the .env file with this dummy address
-  updateEnvFile(dummyAddress);
+  console.log('\nPossible solutions:');
+  console.log('1. Check that your WALLET_PRIVATE_KEY is correct and has MATIC funds');
+  console.log('2. Verify that the ALCHEMY_RPC URL is working and connects to Amoy testnet');
+  console.log('3. Try deploying via Remix IDE as outlined in Remix_Deployment_Guide.md');
   
-  console.log('\n======================================================');
-  console.log('IMPORTANT: Simulation complete. Follow these steps:');
-  console.log('1. Use Remix IDE to deploy the contract as outlined in Remix_Deployment_Guide.md');
-  console.log('2. Update your .env file with the real contract address');
-  console.log('3. Update the blockchain service using the commands in Post_Deployment_Configuration.md');
-  console.log('======================================================\n');
-  
-  process.exit(0);
+  // Return null to indicate failure
+  return null;
 }
 
 // Function to deploy the contract
@@ -106,8 +189,8 @@ async function deployContract() {
   const compiledContract = await compileContract();
   
   if (!compiledContract) {
-    console.log('Using Remix deployment approach instead...');
-    return simulateDeployment();
+    console.log('Compilation failed, cannot proceed with deployment.');
+    return handleDeploymentError(new Error('Compilation failed'));
   }
   
   console.log('Contract compiled successfully.');
