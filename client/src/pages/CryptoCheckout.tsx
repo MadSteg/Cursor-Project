@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CryptoCurrency, cryptoPaymentService, formatCryptoAddress, formatCryptoAmount } from '@/lib/cryptoPaymentService';
-import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Wallet, Bitcoin, Copy, Coins } from 'lucide-react';
+import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Wallet, Bitcoin, Copy, Coins, FileText, Search } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -488,7 +488,7 @@ export default function CryptoCheckout() {
             {transactionHash && (
               <div className="space-y-2 border rounded-lg p-4 bg-gray-50">
                 <div className="flex items-center gap-2">
-                  <FileSearch className="h-4 w-4 text-muted-foreground" />
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                   <p className="text-sm font-medium">Transaction Hash</p>
                 </div>
                 <div className="p-3 bg-white rounded-md font-mono text-xs break-all border border-muted">
@@ -542,10 +542,17 @@ export default function CryptoCheckout() {
             )}
             
             {transactionHash && (
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Transaction Hash:</p>
-                <div className="p-2 bg-muted rounded-md font-mono text-xs break-all">
+              <div className="space-y-2 border rounded-lg p-4 bg-white">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-green-600" />
+                  <p className="text-sm font-medium text-green-700">Blockchain Transaction Record</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-md font-mono text-xs break-all border border-green-100">
                   {transactionHash}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-green-600">
+                  <Search className="h-3 w-3" />
+                  <span>This transaction hash is your proof of payment on the blockchain</span>
                 </div>
               </div>
             )}
@@ -554,26 +561,42 @@ export default function CryptoCheckout() {
         
       case "error":
         return (
-          <div className="space-y-4">
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Payment Error</AlertTitle>
-              <AlertDescription>
-                {error || "An unexpected error occurred during the payment process."}
-              </AlertDescription>
-            </Alert>
+          <div className="space-y-5">
+            <div className="rounded-lg border-2 border-red-200 p-6 bg-gradient-to-br from-red-50 to-red-100/50">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-red-500 to-red-600 p-3 rounded-full shadow-sm">
+                  <AlertCircle className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+                    Payment Error
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    {error || "An unexpected error occurred while processing your cryptocurrency payment."}
+                  </p>
+                  <p className="text-xs text-red-600 mt-3">
+                    This could be due to network issues or insufficient funds in your wallet.
+                  </p>
+                </div>
+              </div>
+            </div>
             
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => {
-                setCheckoutState("initial");
-                setError(null);
-                createCryptoPayment();
-              }}
-            >
-              Try Again
-            </Button>
+            <div className="flex justify-center">
+              <Button 
+                variant="outline" 
+                className="px-8 py-6 rounded-lg border-2 border-primary/30 hover:bg-primary/5 transition-all"
+                onClick={() => {
+                  setCheckoutState("initial");
+                  setError(null);
+                  createCryptoPayment();
+                }}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-base font-medium">Try Again</span>
+                  <span className="text-xs text-muted-foreground mt-1">Return to payment selection</span>
+                </div>
+              </Button>
+            </div>
           </div>
         );
     }
