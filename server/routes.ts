@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import blockchainRoutes from "./routes/blockchain";
+// Removed legacy Mumbai blockchain routes
 import blockchainAmoyRoutes from "./routes/blockchain-amoy";
 import multiBlockchainRoutes from "./routes/multi-blockchain";
 import emailRoutes from "./routes/email";
@@ -18,8 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   // All routes are prefixed with /api
   
-  // Register blockchain routes (legacy Mumbai - deprecated)
-  app.use('/api/blockchain', blockchainRoutes);
+  // Mumbai blockchain routes have been removed completely
   
   // Register Amoy blockchain routes (recommended)
   app.use('/api/blockchain/amoy', blockchainAmoyRoutes);
