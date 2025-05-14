@@ -564,7 +564,7 @@ export default function ProductDetail() {
             <div>
               <h3 className="text-lg font-medium mb-4">More from {merchant?.name}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {relatedProducts.sameMerchant.map((relatedProduct) => (
+                {relatedProducts.sameMerchant.map((relatedProduct: Product) => (
                   <Card 
                     key={relatedProduct.id} 
                     className="cursor-pointer hover:shadow-md transition-shadow"
