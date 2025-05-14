@@ -6,7 +6,7 @@
 
 import express, { Request, Response } from 'express';
 import { storage } from '../storage';
-import { blockchainService } from '../services/blockchainService';
+import { blockchainService } from '../services/blockchainService-fixed';
 
 const router = express.Router();
 

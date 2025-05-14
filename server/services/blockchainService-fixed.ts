@@ -90,7 +90,12 @@ class BlockchainService implements IBlockchainService {
     try {
       console.log('Initializing blockchain service...');
       
-      // Initialize provider with the Mumbai testnet
+      // Initialize provider with the Mumbai testnet using Alchemy
+      if (!process.env.POLYGON_MUMBAI_RPC_URL) {
+        throw new Error('POLYGON_MUMBAI_RPC_URL not set in environment');
+      }
+      
+      // Use JsonRpcProvider with Alchemy endpoint
       this.provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_MUMBAI_RPC_URL);
       
       // Test connection by trying to get the network
