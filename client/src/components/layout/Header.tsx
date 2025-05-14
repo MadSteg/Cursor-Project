@@ -99,8 +99,8 @@ const Header: React.FC = () => {
             </Link>
             
             {/* Settings */}
-            <Link href="/settings">
-              <span className={`text-sm font-medium ${currentLocation === "/settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+            <Link href="/encryption-settings">
+              <span className={`text-sm font-medium ${currentLocation === "/encryption-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Settings className="h-4 w-4 mr-1.5" /> Settings
               </span>
             </Link>
@@ -195,9 +195,9 @@ const Header: React.FC = () => {
                   <div className="pt-2 border-t border-gray-100">
                     <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Settings</p>
                     <div className="space-y-4">
-                      <Link href="/settings">
+                      <Link href="/encryption-settings">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Settings className="h-5 w-5" /> Account Settings
+                          <Settings className="h-5 w-5" /> Encryption Settings
                         </span>
                       </Link>
                       <Link href="/admin">

@@ -30,7 +30,29 @@ import {
   Upload,
   Scan
 } from 'lucide-react';
-import EnhancedNFTReceiptCard, { NFTReceiptProps } from '@/components/receipts/EnhancedNFTReceiptCard';
+import EnhancedNFTReceiptCard from '@/components/receipts/EnhancedNFTReceiptCard';
+import { NFTArtItem } from '@/data/nftArtManifest';
+
+// Define the mock receipt type
+interface NFTReceiptProps {
+  id: string;
+  merchantName: string;
+  date: string;
+  total: number;
+  items: number;
+  txHash?: string;
+  isEncrypted?: boolean;
+  hasGrantedAccess?: boolean;
+  grantedTo?: string[];
+  tokenId?: string;
+  receiptType: string;
+  status: string;
+  warranty?: {
+    expiryDate: string;
+    duration: string;
+    isActive: boolean;
+  };
+}
 
 // Mock data for demonstration
 const mockReceipts: NFTReceiptProps[] = [
@@ -414,7 +436,12 @@ const UserNFTWallet: React.FC = () => {
                         name: `${receipt.receiptType} NFT`,
                         description: `A ${receipt.receiptType} tier NFT receipt from ${receipt.merchantName}`,
                         imageUrl: `/assets/nft-${receipt.receiptType.toLowerCase()}.png`,
-                        tier: receipt.receiptType.toUpperCase() as any
+                        tier: receipt.receiptType.toUpperCase() as any,
+                        collection: 'BlockReceipt Collection',
+                        rarity: receipt.receiptType === 'luxury' ? 'epic' : 
+                               receipt.receiptType === 'premium' ? 'rare' : 'common',
+                        type: 'collectible',
+                        price: receipt.total * 100
                       }
                     }}
                     accessControl={{
