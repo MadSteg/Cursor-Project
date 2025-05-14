@@ -418,18 +418,26 @@ export default function Checkout() {
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="crypto" id="crypto" />
                       <Label htmlFor="crypto" className="flex items-center gap-2 cursor-pointer">
-                        <Bitcoin className="h-4 w-4 text-muted-foreground" />
-                        Cryptocurrency
+                        <span className="flex gap-1">
+                          <Bitcoin className="h-4 w-4 text-amber-500" />
+                          <svg className="h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                            <path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/>
+                          </svg>
+                          <svg className="h-4 w-4 text-purple-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path fill="currentColor" d="M256 0C114.6 0 0 114.6 0 256S114.6 512 256 512 512 397.4 512 256 397.4 0 256 0zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm88 240c0 30.9-25.1 56-56 56H168c-30.9 0-56-25.1-56-56v-16h56v28c0 6.6 5.4 12 12 12h64c6.6 0 12-5.4 12-12v-28h88v16z"/>
+                          </svg>
+                        </span>
+                        <span className="bg-gradient-to-r from-amber-500 via-blue-500 to-purple-500 bg-clip-text text-transparent font-medium">Multi-Chain Crypto</span>
                       </Label>
                     </div>
                   </RadioGroup>
                   
                   {paymentMethod === 'crypto' && (
-                    <div className="mt-2 p-3 bg-blue-50 rounded-md text-sm text-blue-800 flex items-start gap-2">
+                    <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-md text-sm text-blue-800 flex items-start gap-2 border border-blue-100 shadow-sm">
                       <Wallet className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium">Web3 Payment</p>
-                        <p className="text-blue-700">Pay with MATIC, USDC, or other cryptocurrencies on the Polygon network. You'll be redirected to select your preferred currency.</p>
+                        <p className="font-medium bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Multi-Chain Crypto Payment</p>
+                        <p className="text-blue-700">Experience next-gen payments across multiple blockchains. Pay with BTC, ETH, MATIC, SOL, or USDC across Bitcoin, Ethereum, Polygon and Solana networks. Select your preferred currency on the next screen.</p>
                       </div>
                     </div>
                   )}
