@@ -1,14 +1,19 @@
 /**
  * OCR Service for Receipt Scanning
  * 
- * This service handles the extraction of data from receipt images using OpenAI's
- * GPT-4o Vision API for advanced image recognition and data extraction.
+ * This service handles the extraction of data from receipt images using multiple methods:
+ * 1. OpenAI's GPT-4o Vision API for high-quality extraction
+ * 2. Tesseract OCR for offline/local processing when OpenAI is unavailable 
+ * 3. Multi-level caching (memory, disk, and database) for performance
  */
 
 import OpenAI from 'openai';
 import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { db } from '../db';
+import { eq } from 'drizzle-orm';
+import { ocrResultCache, ExtractedReceiptData as SchemaExtractedReceiptData } from '../../shared/schema';
 
 // Initialize OpenAI client
 if (!process.env.OPENAI_API_KEY) {
@@ -19,16 +24,64 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'dummy-key',
 });
 
-// Create a cache directory if it doesn't exist
+// Create cache directories if they don't exist
 const CACHE_DIR = path.join(process.cwd(), 'cache');
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
+const OCR_CACHE_DIR = path.join(CACHE_DIR, 'ocr');
+
+if (!fs.existsSync(OCR_CACHE_DIR)) {
+  fs.mkdirSync(OCR_CACHE_DIR, { recursive: true });
 }
 
 // LRU Cache for OCR results
 interface CacheEntry {
   timestamp: number;
   data: ExtractedReceiptData;
+}
+
+// Database cache functions
+async function getFromDbCache(imageHash: string): Promise<ExtractedReceiptData | null> {
+  if (!db) return null;
+  
+  try {
+    const result = await db.select().from(ocrResultCache)
+      .where(eq(ocrResultCache.imageHash, imageHash))
+      .limit(1);
+      
+    if (result.length > 0) {
+      console.log(`Using database cached OCR result for image ${imageHash}`);
+      return result[0].result as unknown as ExtractedReceiptData;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error reading from database cache:', error);
+    return null;
+  }
+}
+
+async function saveToDbCache(imageHash: string, data: ExtractedReceiptData, method: string) {
+  if (!db) return;
+  
+  try {
+    // Convert confidence from 0-1 to 0-100 for storage
+    const confidenceScore = Math.round(data.confidence * 100);
+    
+    // Set expiry date (30 days from now)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    
+    await db.insert(ocrResultCache).values({
+      imageHash,
+      result: data as any,
+      confidence: confidenceScore,
+      processingMethod: method,
+      expiresAt
+    });
+    
+    console.log(`Saved OCR result to database cache for image ${imageHash}`);
+  } catch (error) {
+    console.error('Error saving to database cache:', error);
+  }
 }
 
 const OCR_CACHE: Record<string, CacheEntry> = {}; 
@@ -96,14 +149,28 @@ export async function extractReceiptData(imageBase64: string): Promise<Extracted
     // Clean up cache periodically
     cleanupCache();
     
-    // Check if we have this image in the cache
+    // Level 1: Check memory cache first (fastest)
     if (OCR_CACHE[imageHash]) {
-      console.log(`Using cached OCR result for image ${imageHash}`);
+      console.log(`Using in-memory cached OCR result for image ${imageHash}`);
       return OCR_CACHE[imageHash].data;
     }
     
-    // Check if we have saved this to disk cache
-    const cachePath = path.join(CACHE_DIR, `${imageHash}.json`);
+    // Level 2: Check database cache
+    if (db) {
+      const dbCachedData = await getFromDbCache(imageHash);
+      if (dbCachedData) {
+        // Found in database, update memory cache
+        OCR_CACHE[imageHash] = {
+          timestamp: Date.now(),
+          data: dbCachedData
+        };
+        
+        return dbCachedData;
+      }
+    }
+    
+    // Level 3: Check disk cache
+    const cachePath = path.join(OCR_CACHE_DIR, `${imageHash}.json`);
     if (fs.existsSync(cachePath)) {
       try {
         const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
@@ -114,6 +181,11 @@ export async function extractReceiptData(imageBase64: string): Promise<Extracted
           timestamp: Date.now(),
           data: cachedData
         };
+        
+        // Also update the database cache for future requests
+        if (db) {
+          saveToDbCache(imageHash, cachedData, 'disk-cache');
+        }
         
         return cachedData;
       } catch (cacheError) {
@@ -303,7 +375,12 @@ export async function inferReceiptCategory(
 ): Promise<string> {
   try {
     // Prepare the input text from merchant and items
-    const itemDescriptions = items.map(item => item.name).join(', ');
+    let itemDescriptions: string;
+    if (typeof items === 'string') {
+      itemDescriptions = items;
+    } else {
+      itemDescriptions = items.map(item => item.name).join(', ');
+    }
     
     // Create a cache key from the merchant and items
     const cacheKey = createHash('md5')

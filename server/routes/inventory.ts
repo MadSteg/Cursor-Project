@@ -1,7 +1,25 @@
 import { Router } from "express";
 import { z } from "zod";
 import { storage } from "../storage";
-import { insertInventoryItemSchema, insertInventoryCollectionSchema } from "@shared/schema";
+// Using zod directly instead of importing from schema
+
+// Define the schemas inline
+const insertInventoryItemSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  status: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+  purchasePrice: z.number().optional(),
+});
+
+const insertInventoryCollectionSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  color: z.string().optional(),
+  icon: z.string().optional(),
+  isDefault: z.boolean().optional(),
+});
 
 const router = Router();
 
