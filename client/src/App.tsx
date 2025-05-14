@@ -3,27 +3,41 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
+// Core pages
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
-import Receipts from "@/pages/Receipts";
-import ReceiptDetail from "@/pages/ReceiptDetail";
+
+// NFT Receipt Features (New Focus)
+import UserNFTWallet from "@/pages/UserNFTWallet";
+import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
+import ScanReceipt from "@/pages/ScanReceipt";
+import VerifyReceipt from "@/pages/VerifyReceipt";
+import MerchantDashboard from "@/pages/MerchantDashboard";
+
+// Analytics & Merchant Features
 import Analytics from "@/pages/Analytics";
-import Checkout from "@/pages/Checkout";
-import CryptoCheckout from "@/pages/CryptoCheckout";
-import EncryptedCheckout from "@/pages/EncryptedCheckout";
-import EncryptionSettings from "@/pages/EncryptionSettings";
-import ThemePreview from "@/pages/ThemePreview";
 import Inventory from "@/pages/Inventory";
 import InventoryDetail from "@/pages/InventoryDetail";
 import InventoryUpload from "@/pages/InventoryUpload";
-import Admin from "@/pages/Admin";
-// New product catalog and NFT receipt routes
+
+// Traditional Receipts Features
+import Receipts from "@/pages/Receipts";
+import ReceiptDetail from "@/pages/ReceiptDetail";
+
+// E-commerce related
 import ProductCatalog from "@/pages/ProductCatalog";
 import ProductDetail from "@/pages/ProductDetail";
-import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
-import VerifyReceipt from "@/pages/VerifyReceipt";
-import MerchantDashboard from "@/pages/MerchantDashboard";
-import UserNFTWallet from "@/pages/UserNFTWallet";
+import Checkout from "@/pages/Checkout";
+import CryptoCheckout from "@/pages/CryptoCheckout";
+import EncryptedCheckout from "@/pages/EncryptedCheckout";
+
+// Settings & Admin
+import EncryptionSettings from "@/pages/EncryptionSettings";
+import Admin from "@/pages/Admin";
+import ThemePreview from "@/pages/ThemePreview";
+
+// Layout components
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -32,27 +46,40 @@ function Router() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <Switch>
+        {/* Core pages */}
         <Route path="/" component={Dashboard} />
-        <Route path="/receipts" component={Receipts} />
-        <Route path="/receipts/:id" component={ReceiptDetail} />
+        
+        {/* NFT Receipt Features */}
+        <Route path="/nft-wallet" component={UserNFTWallet} />
+        <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
+        <Route path="/scan-receipt" component={ScanReceipt} />
+        <Route path="/verify-receipt" component={VerifyReceipt} />
+        <Route path="/merchant-dashboard" component={MerchantDashboard} />
+        
+        {/* Analytics & Merchant Features */}
         <Route path="/analytics" component={Analytics} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/crypto-checkout" component={CryptoCheckout} />
-        <Route path="/encrypted-checkout" component={EncryptedCheckout} />
-        <Route path="/encryption-settings" component={EncryptionSettings} />
-        <Route path="/theme-preview" component={ThemePreview} />
         <Route path="/inventory" component={Inventory} />
         <Route path="/inventory/:id" component={InventoryDetail} />
         <Route path="/inventory/:id/edit" component={InventoryUpload} />
         <Route path="/inventory-upload" component={InventoryUpload} />
-        <Route path="/admin" component={Admin} />
-        {/* New product catalog routes */}
+        
+        {/* Traditional Receipts (Legacy) */}
+        <Route path="/receipts" component={Receipts} />
+        <Route path="/receipts/:id" component={ReceiptDetail} />
+        
+        {/* E-commerce */}
         <Route path="/products" component={ProductCatalog} />
         <Route path="/product/:id" component={ProductDetail} />
-        <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
-        <Route path="/verify-receipt" component={VerifyReceipt} />
-        <Route path="/merchant-dashboard" component={MerchantDashboard} />
-        <Route path="/nft-wallet" component={UserNFTWallet} />
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/crypto-checkout" component={CryptoCheckout} />
+        <Route path="/encrypted-checkout" component={EncryptedCheckout} />
+        
+        {/* Settings & Admin */}
+        <Route path="/encryption-settings" component={EncryptionSettings} />
+        <Route path="/admin" component={Admin} />
+        <Route path="/theme-preview" component={ThemePreview} />
+        
+        {/* 404 Page */}
         <Route component={NotFound} />
       </Switch>
       <Footer />
