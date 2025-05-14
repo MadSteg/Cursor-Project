@@ -1,184 +1,170 @@
 /**
  * Stripe Payment Service
- * Handles integration with Stripe payment processing
+ * Handles payment processing with Stripe
  */
-import Stripe from 'stripe';
+import { log } from "../vite";
+import crypto from "crypto";
 
-class StripeService {
-  private stripe: Stripe | null = null;
-  private mockMode = false;
-  private initialized = false;
+// Mock mode is enabled when STRIPE_SECRET_KEY is not available
+const MOCK_MODE = !process.env.STRIPE_SECRET_KEY;
+let stripe: any;
 
-  constructor() {
-    this.initialize();
-  }
+// Only import Stripe if in real mode
+if (!MOCK_MODE) {
+  // Dynamic import to avoid errors when Stripe is not available
+  import('stripe').then((Stripe) => {
+    stripe = new Stripe.default(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2023-10-16',
+    });
+  });
+}
 
-  /**
-   * Initialize the Stripe service
-   */
-  private initialize() {
-    try {
-      console.log('Initializing Stripe payment service...');
-      const secretKey = process.env.STRIPE_SECRET_KEY;
-
-      if (!secretKey) {
-        console.warn('Missing Stripe secret key, using mock mode');
-        this.mockMode = true;
-        this.initialized = true;
-        return;
-      }
-
-      this.stripe = new Stripe(secretKey, {
-        apiVersion: '2023-10-16',
-      });
-      this.initialized = true;
-      this.mockMode = false;
-      console.log('Stripe payment service initialized successfully');
-    } catch (error) {
-      console.error('Error initializing Stripe service:', error);
-      this.mockMode = true;
-      this.initialized = true;
-    }
-  }
-
-  /**
-   * Check if the Stripe service is available
-   */
-  async isAvailable() {
-    if (!this.initialized) {
-      await this.initialize();
-    }
-
-    if (this.mockMode) {
-      return {
-        available: true,
-        mockMode: true,
-        message: 'Running in mock mode. Stripe operations will be simulated.'
-      };
-    }
-
-    try {
-      // Attempt to make a simple API call to verify connectivity
-      if (this.stripe) {
-        const products = await this.stripe.products.list({ limit: 1 });
-        return {
-          available: true,
-          mockMode: false,
-          message: 'Connected to Stripe API'
-        };
-      }
-      return {
-        available: false,
-        mockMode: true,
-        message: 'Stripe API client not initialized'
-      };
-    } catch (error) {
-      console.error('Error checking Stripe availability:', error);
-      return {
-        available: false,
-        mockMode: true,
-        message: 'Failed to connect to Stripe API'
-      };
-    }
-  }
-
-  /**
-   * Create a payment intent
-   * @param amount - Amount in dollars (will be converted to cents)
-   * @param currency - Currency code (default: 'usd')
-   * @param metadata - Optional metadata to attach to the payment
-   */
-  async createPaymentIntent(amount: number, currency = 'usd', metadata: Record<string, string> = {}) {
-    if (!this.initialized) {
-      await this.initialize();
-    }
-
-    if (this.mockMode) {
-      // Generate a mock client secret
-      const mockClientSecret = `pi_mock_${Math.random().toString(36).substring(2, 15)}_secret_${Math.random().toString(36).substring(2, 15)}`;
-      
-      return {
-        success: true,
-        clientSecret: mockClientSecret,
-        mockMode: true,
-        amount: Math.round(amount * 100),
-        currency
-      };
-    }
-
-    try {
-      if (!this.stripe) {
-        throw new Error('Stripe client not initialized');
-      }
-
-      const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency,
-        metadata,
-      });
-
-      return {
-        success: true,
-        clientSecret: paymentIntent.client_secret,
-        mockMode: false,
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency
-      };
-    } catch (error: any) {
-      console.error('Error creating payment intent:', error);
-      return {
-        success: false,
-        error: error.message,
-        mockMode: false
-      };
-    }
-  }
-
-  /**
-   * Capture a payment (for testing receipt generation)
-   * @param paymentIntentId - Stripe payment intent ID
-   */
-  async capturePayment(paymentIntentId: string) {
-    if (!this.initialized) {
-      await this.initialize();
-    }
-
-    if (this.mockMode) {
-      return {
-        success: true,
-        mockMode: true,
-        paymentId: `py_mock_${Math.random().toString(36).substring(2, 10)}`,
-        amount: 2999,
-        status: 'succeeded',
-        receiptUrl: `https://receipt.stripe.com/mock/${Math.random().toString(36).substring(2, 10)}`
-      };
-    }
-
-    try {
-      if (!this.stripe) {
-        throw new Error('Stripe client not initialized');
-      }
-
-      // Confirm and capture a payment intent
-      const paymentIntent = await this.stripe.paymentIntents.capture(paymentIntentId);
-
-      return {
-        success: true,
-        mockMode: false,
-        paymentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        status: paymentIntent.status,
-        receiptUrl: paymentIntent.charges.data[0]?.receipt_url
-      };
-    } catch (error: any) {
-      console.error('Error capturing payment:', error);
-      return {
-        success: false,
-        error: error.message,
-        mockMode: false
-      };
-    }
+/**
+ * Initialize Stripe service
+ */
+export function initializeStripeService() {
+  if (MOCK_MODE) {
+    log("Missing Stripe secret key, using mock mode", "stripe");
+  } else {
+    log("Initializing Stripe payment service", "stripe");
   }
 }
 
-export const stripeService = new StripeService();
+/**
+ * Check if Stripe service is available
+ */
+export function isAvailable() {
+  return {
+    available: true,
+    mockMode: MOCK_MODE,
+    message: MOCK_MODE ? "Stripe is in mock mode (no secret key provided)" : "Stripe is available"
+  };
+}
+
+/**
+ * Create a payment intent with Stripe
+ * In mock mode, creates a fake payment intent
+ */
+export async function createPaymentIntent(
+  amount: number,
+  currency: string = "usd",
+  metadata: Record<string, string> = {}
+) {
+  try {
+    if (MOCK_MODE) {
+      // Mock implementation for testing without Stripe
+      const mockId = `mock_pi_${crypto.randomBytes(8).toString("hex")}`;
+      const mockSecret = `mock_seti_${crypto.randomBytes(16).toString("hex")}`;
+      
+      log(`Created mock payment intent ${mockId} for $${amount}`, "stripe");
+      
+      return {
+        success: true,
+        mockMode: true,
+        paymentIntentId: mockId,
+        clientSecret: mockSecret,
+        amount: amount,
+        currency: currency,
+        metadata
+      };
+    }
+    
+    // Real Stripe implementation
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Convert to cents
+      currency: currency,
+      metadata
+    });
+    
+    return {
+      success: true,
+      mockMode: false,
+      paymentIntentId: paymentIntent.id,
+      clientSecret: paymentIntent.client_secret,
+      amount: amount,
+      currency: currency,
+      metadata
+    };
+  } catch (error: any) {
+    log(`Error creating payment intent: ${error.message}`, "stripe");
+    return {
+      success: false,
+      error: error.message,
+      mockMode: MOCK_MODE
+    };
+  }
+}
+
+/**
+ * Create a mock payment for testing
+ */
+export async function createMockPayment(
+  amount: number,
+  paymentMethod: string = "card",
+  metadata: Record<string, string> = {}
+) {
+  try {
+    // Generate mock payment data
+    const paymentId = `mock_payment_${crypto.randomBytes(8).toString("hex")}`;
+    const receiptUrl = `https://receipt.url/${paymentId}`;
+    
+    log(`Created mock payment ${paymentId} for $${amount}`, "stripe");
+    
+    return {
+      success: true,
+      mockMode: true,
+      paymentId,
+      amount,
+      paymentMethod,
+      receiptUrl,
+      metadata
+    };
+  } catch (error: any) {
+    log(`Error creating mock payment: ${error.message}`, "stripe");
+    return {
+      success: false,
+      error: error.message,
+      mockMode: true
+    };
+  }
+}
+
+/**
+ * Retrieve a payment by ID
+ */
+export async function retrievePayment(paymentId: string) {
+  try {
+    if (MOCK_MODE || paymentId.startsWith('mock_')) {
+      // Return mock data
+      return {
+        success: true,
+        mockMode: true,
+        paymentId,
+        status: 'succeeded',
+        amount: 0,
+        currency: 'usd',
+        receiptUrl: `https://receipt.url/${paymentId}`
+      };
+    }
+    
+    // Real implementation
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentId);
+    
+    return {
+      success: true,
+      mockMode: false,
+      paymentId: paymentIntent.id,
+      status: paymentIntent.status,
+      amount: paymentIntent.amount / 100, // Convert from cents
+      currency: paymentIntent.currency,
+      receiptUrl: paymentIntent.charges?.data[0]?.receipt_url
+    };
+  } catch (error: any) {
+    log(`Error retrieving payment ${paymentId}: ${error.message}`, "stripe");
+    return {
+      success: false,
+      error: error.message,
+      mockMode: MOCK_MODE
+    };
+  }
+}

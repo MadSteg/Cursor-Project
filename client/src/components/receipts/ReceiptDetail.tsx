@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Card, 
@@ -16,19 +16,52 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt, Database } from "lucide-react";
+import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt, Database, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { type FullReceipt } from "@shared/schema";
 import { BlockchainActions } from "@/components/blockchain/BlockchainActions";
+import { getReceiptPaymentInfo } from "@/lib/payments";
 
 const ReceiptDetail: React.FC = () => {
   const { id } = useParams();
+  const [_, navigate] = useLocation();
   const [showBlockchainInfo, setShowBlockchainInfo] = React.useState(false);
   const queryClient = useQueryClient();
+  const [paymentStatus, setPaymentStatus] = React.useState<{
+    isComplete: boolean;
+    method?: string;
+    id?: string;
+  }>({ isComplete: false });
   
   const { data: receipt, isLoading } = useQuery<FullReceipt>({
     queryKey: [`/api/receipts/${id}`],
   });
+  
+  // Check payment status when receipt data is loaded
+  React.useEffect(() => {
+    if (receipt && id) {
+      const checkPayment = async () => {
+        try {
+          const paymentInfo = await getReceiptPaymentInfo(parseInt(id));
+          setPaymentStatus(paymentInfo);
+        } catch (error) {
+          console.error("Error fetching payment info:", error);
+          // If there's an error, assume payment is not complete
+          setPaymentStatus({ isComplete: false });
+        }
+      };
+      
+      checkPayment();
+    }
+  }, [receipt, id]);
+  
+  // Navigate to checkout page
+  const handlePayNow = () => {
+    if (!receipt) return;
+    
+    // Navigate to checkout with receipt ID and amount
+    navigate(`/checkout?receipt=${id}&amount=${receipt.total}`);
+  };
   
   // Handle blockchain mint success
   const handleMintSuccess = () => {
@@ -144,13 +177,31 @@ const ReceiptDetail: React.FC = () => {
           </Button>
         </CardContent>
         
-        <CardFooter className="flex justify-between p-4 border-t">
-          <Button variant="outline" size="sm">
-            <Share className="mr-2 h-4 w-4" /> Share
-          </Button>
-          <Button size="sm">
-            <Download className="mr-2 h-4 w-4" /> Download PDF
-          </Button>
+        <CardFooter className="flex flex-wrap justify-between gap-2 p-4 border-t">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Share className="mr-2 h-4 w-4" /> Share
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="mr-2 h-4 w-4" /> Download PDF
+            </Button>
+          </div>
+          
+          <div>
+            {paymentStatus.isComplete ? (
+              <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 hover:text-green-800">
+                <CheckCircle className="mr-2 h-4 w-4 text-green-600" /> Payment Complete
+              </Button>
+            ) : (
+              <Button 
+                size="sm" 
+                className="bg-primary hover:bg-primary/90"
+                onClick={handlePayNow}
+              >
+                <CreditCard className="mr-2 h-4 w-4" /> Pay Now
+              </Button>
+            )}
+          </div>
         </CardFooter>
       </Card>
 

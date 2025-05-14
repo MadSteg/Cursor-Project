@@ -1,175 +1,175 @@
 /**
- * Stripe Payment API Routes
- * Handles payment processing for the application
+ * Payment API routes
  */
-import { Router, Request, Response } from 'express';
-import { stripeService } from '../services/stripeService';
-import { storage } from '../storage';
-import { z } from 'zod';
+import { Router } from "express";
+import { z } from "zod";
+import { storage } from "../storage";
+import { log } from "../vite";
+import { 
+  isAvailable,
+  createPaymentIntent,
+  createMockPayment,
+  retrievePayment 
+} from "../services/stripeService";
 
 const router = Router();
 
-// Payment request validation schema
-const paymentRequestSchema = z.object({
+// Schema for payment intent creation
+const createPaymentIntentSchema = z.object({
   amount: z.number().positive(),
-  currency: z.string().optional().default('usd'),
-  metadata: z.record(z.string()).optional().default({}),
-  receiptId: z.number().optional() // Optional receipt ID to associate with payment
+  receiptId: z.number().optional(),
+  metadata: z.record(z.string()).optional()
+});
+
+// Schema for mock payment creation
+const createMockPaymentSchema = z.object({
+  amount: z.number().positive(),
+  receiptId: z.number().optional(),
+  metadata: z.record(z.string()).optional()
 });
 
 /**
- * GET /api/payments/status
- * Get Stripe integration status
+ * Get payment service status
  */
-router.get('/status', async (req: Request, res: Response) => {
-  const status = await stripeService.isAvailable();
-  res.json(status);
+router.get("/status", async (req, res) => {
+  try {
+    const status = isAvailable();
+    res.json(status);
+  } catch (error: any) {
+    log(`Error checking payment status: ${error.message}`, "payments");
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
 /**
- * POST /api/payments/create-intent
- * Create a payment intent for a purchase
+ * Create payment intent
  */
-router.post('/create-intent', async (req: Request, res: Response) => {
+router.post("/create-intent", async (req, res) => {
   try {
     // Validate request body
-    const validation = paymentRequestSchema.safeParse(req.body);
-    
-    if (!validation.success) {
+    const validationResult = createPaymentIntentSchema.safeParse(req.body);
+    if (!validationResult.success) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid request data',
-        details: validation.error.format()
+        error: validationResult.error.message
       });
     }
     
-    const { amount, currency, metadata, receiptId } = validation.data;
+    const { amount, receiptId, metadata = {} } = validationResult.data;
     
-    // If receipt ID provided, verify it exists and belongs to user
+    // Create additional metadata if receipt ID is provided
+    let paymentMetadata: Record<string, string> = { ...metadata };
     if (receiptId) {
+      // Get receipt details to include in metadata
       const receipt = await storage.getReceipt(receiptId);
-      
-      if (!receipt) {
-        return res.status(404).json({
-          success: false,
-          error: 'Receipt not found'
-        });
+      if (receipt) {
+        paymentMetadata = {
+          ...paymentMetadata,
+          receiptId: receiptId.toString(),
+          merchantId: receipt.merchantId.toString(),
+          total: receipt.total
+        };
       }
-      
-      // Associate payment with receipt in metadata
-      metadata.receiptId = receiptId.toString();
     }
     
     // Create payment intent
-    const paymentIntent = await stripeService.createPaymentIntent(amount, currency, metadata);
+    const paymentIntent = await createPaymentIntent(amount, "usd", paymentMetadata);
+    
+    // If successful and tied to a receipt, update the receipt with payment info
+    if (paymentIntent.success && receiptId) {
+      await storage.updateReceipt(receiptId, {
+        paymentId: paymentIntent.paymentIntentId,
+        paymentAmount: amount.toString(),
+        paymentCurrency: "usd",
+        paymentDate: new Date(),
+        paymentMethod: "card",
+        paymentComplete: false // Will be updated when payment completes
+      });
+    }
     
     res.json(paymentIntent);
   } catch (error: any) {
-    console.error('Error creating payment intent:', error);
+    log(`Error creating payment intent: ${error.message}`, "payments");
     res.status(500).json({
       success: false,
-      error: 'Failed to create payment intent',
-      message: error.message
+      error: error.message
     });
   }
 });
 
 /**
- * POST /api/payments/capture/:paymentIntentId
- * Capture a payment (for testing purposes)
+ * Create mock payment (for testing without Stripe)
  */
-router.post('/capture/:paymentIntentId', async (req: Request, res: Response) => {
-  try {
-    const { paymentIntentId } = req.params;
-    
-    if (!paymentIntentId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Payment intent ID is required'
-      });
-    }
-    
-    const captureResult = await stripeService.capturePayment(paymentIntentId);
-    
-    // If payment successful and has receipt ID in metadata, update receipt
-    if (captureResult.success && req.body.receiptId) {
-      const receiptId = parseInt(req.body.receiptId);
-      
-      if (!isNaN(receiptId)) {
-        await storage.updateReceipt(receiptId, {
-          paymentComplete: true,
-          paymentMethod: 'stripe',
-          paymentId: captureResult.paymentId
-        });
-      }
-    }
-    
-    res.json(captureResult);
-  } catch (error: any) {
-    console.error('Error capturing payment:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to capture payment',
-      message: error.message
-    });
-  }
-});
-
-/**
- * POST /api/payments/mock-payment
- * Create a mock payment for testing
- */
-router.post('/mock-payment', async (req: Request, res: Response) => {
+router.post("/mock-payment", async (req, res) => {
   try {
     // Validate request body
-    const validation = paymentRequestSchema.safeParse(req.body);
-    
-    if (!validation.success) {
+    const validationResult = createMockPaymentSchema.safeParse(req.body);
+    if (!validationResult.success) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid request data',
-        details: validation.error.format()
+        error: validationResult.error.message
       });
     }
     
-    const { amount, currency, metadata, receiptId } = validation.data;
+    const { amount, receiptId, metadata = {} } = validationResult.data;
     
-    // Create mock payment data
-    const mockPayment = {
-      success: true,
-      mockMode: true,
-      paymentId: `py_mock_${Math.random().toString(36).substring(2, 10)}`,
-      amount: Math.round(amount * 100),
-      currency,
-      status: 'succeeded',
-      receiptUrl: `https://receipt.stripe.com/mock/${Math.random().toString(36).substring(2, 10)}`
-    };
-    
-    // If receipt ID provided, update receipt with payment info
+    // Create additional metadata if receipt ID is provided
+    let paymentMetadata: Record<string, string> = { ...metadata };
     if (receiptId) {
+      // Get receipt details to include in metadata
       const receipt = await storage.getReceipt(receiptId);
-      
-      if (!receipt) {
-        return res.status(404).json({
-          success: false,
-          error: 'Receipt not found'
-        });
+      if (receipt) {
+        paymentMetadata = {
+          ...paymentMetadata,
+          receiptId: receiptId.toString(),
+          merchantId: receipt.merchantId.toString(),
+          total: receipt.total
+        };
       }
-      
+    }
+    
+    // Create mock payment
+    const payment = await createMockPayment(amount, "card", paymentMetadata);
+    
+    // If successful and tied to a receipt, update the receipt with payment info
+    if (payment.success && receiptId) {
       await storage.updateReceipt(receiptId, {
+        paymentId: payment.paymentId,
+        paymentAmount: amount.toString(),
+        paymentCurrency: "usd",
+        paymentDate: new Date(),
+        paymentMethod: "card",
         paymentComplete: true,
-        paymentMethod: 'stripe-mock',
-        paymentId: mockPayment.paymentId
+        stripeReceiptUrl: payment.receiptUrl
       });
     }
     
-    res.json(mockPayment);
+    res.json(payment);
   } catch (error: any) {
-    console.error('Error creating mock payment:', error);
+    log(`Error creating mock payment: ${error.message}`, "payments");
     res.status(500).json({
       success: false,
-      error: 'Failed to create mock payment',
-      message: error.message
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Get payment details by ID
+ */
+router.get("/:paymentId", async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await retrievePayment(paymentId);
+    res.json(payment);
+  } catch (error: any) {
+    log(`Error retrieving payment: ${error.message}`, "payments");
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
