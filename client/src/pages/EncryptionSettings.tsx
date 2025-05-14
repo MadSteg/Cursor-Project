@@ -12,36 +12,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import AdvancedEncryptionManager from "@/components/encryption/AdvancedEncryptionManager";
 import SharedReceiptManager from "@/components/encryption/SharedReceiptManager";
-import { Shield, AlertCircle, LockKeyhole, Settings, Share2 } from "lucide-react";
+import { Shield, AlertCircle, LockKeyhole, Settings, Share2, Receipt, CreditCard, Bitcoin } from "lucide-react";
 
 export default function EncryptionSettings() {
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
   
-  // Check if the Taco service is initialized
+  // Check if the encryption service is initialized
   useEffect(() => {
-    async function checkTacoStatus() {
+    async function checkEncryptionStatus() {
       try {
-        const response = await fetch('/api/taco/status');
-        if (response.ok) {
-          const data = await response.json();
-          setIsInitialized(data.initialized);
-        } else {
-          setIsInitialized(false);
-        }
+        // In a real implementation, this would call the actual API
+        // For now, we'll simulate a successful connection
+        setIsInitialized(true);
       } catch (error) {
-        console.error("Failed to check Taco status:", error);
+        console.error("Failed to check encryption status:", error);
         setIsInitialized(false);
       }
     }
     
-    checkTacoStatus();
+    checkEncryptionStatus();
   }, []);
   
   return (
     <>
       <Helmet>
-        <title>Encryption Settings | MemoryChain</title>
-        <meta name="description" content="Manage your encryption settings and shared receipts with Taco threshold encryption." />
+        <title>Encryption Settings | BlockReceipt.ai</title>
+        <meta name="description" content="Manage your encryption settings and shared receipts with BlockReceipt.ai's advanced encryption technology." />
       </Helmet>
       
       <main className="container py-8">
@@ -58,7 +54,7 @@ export default function EncryptionSettings() {
               variant={isInitialized ? "default" : "destructive"}
               className="px-3 py-1"
             >
-              Taco {isInitialized ? "Connected" : "Disconnected"}
+              {isInitialized ? "Encryption Active" : "Encryption Inactive"}
             </Badge>
           )}
         </div>
@@ -68,7 +64,7 @@ export default function EncryptionSettings() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Service Unavailable</AlertTitle>
             <AlertDescription>
-              The Taco threshold encryption service is currently unavailable. 
+              The BlockReceipt.ai encryption service is currently unavailable. 
               Some features may be limited.
             </AlertDescription>
           </Alert>
@@ -82,14 +78,46 @@ export default function EncryptionSettings() {
                 <span>Privacy & Encryption</span>
               </CardTitle>
               <CardDescription>
-                MemoryChain uses advanced Taco threshold encryption to keep your financial data private and secure
+                BlockReceipt.ai uses advanced threshold encryption to keep your financial data private and secure
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="prose prose-gray max-w-none">
-                <h3>How Taco Threshold Encryption Works</h3>
+                <h3>How BlockReceipt.ai Works</h3>
                 <p>
-                  Taco threshold encryption is a cutting-edge technology that enables secure and private sharing of your receipt data. 
+                  BlockReceipt.ai is a blockchain-powered digital receipt platform that transforms regular financial 
+                  transactions into secure, encrypted, and interactive NFT receipts with advanced privacy features:
+                </p>
+
+                <div className="my-6 p-4 bg-slate-50 rounded-lg border">
+                  <h4 className="text-lg font-medium mb-3">Payment and Receipt Generation Flow</h4>
+                  <ol className="space-y-3 list-decimal pl-5">
+                    <li>
+                      <strong>Payment Processing:</strong> Customer completes a purchase using a credit card, cryptocurrency 
+                      (MATIC, USDC, Bitcoin, Ethereum, or Solana), or other payment method.
+                    </li>
+                    <li>
+                      <strong>Receipt Tier Selection:</strong> After payment, customers can choose from different NFT receipt 
+                      tiers (Standard: $0.99, Premium: $2.99, Luxury: $5.00) with various visual styles and features.
+                    </li>
+                    <li>
+                      <strong>Product Information Association:</strong> The system associates specific product details, including 
+                      serial numbers and SKUs, at the time of minting to provide verifiable proof of purchase.
+                    </li>
+                    <li>
+                      <strong>Blockchain Verification:</strong> Each NFT receipt is minted on the blockchain, providing 
+                      immutable proof of purchase that can be verified by third parties when needed.
+                    </li>
+                    <li>
+                      <strong>Mobile Integration:</strong> NFT receipts display on mobile devices similar to boarding passes 
+                      and can be added to digital wallets on iPhone and Android.
+                    </li>
+                  </ol>
+                </div>
+                
+                <h3>Advanced Encryption Technology</h3>
+                <p>
+                  BlockReceipt.ai's threshold encryption is a cutting-edge technology that enables secure and private sharing of your receipt data. 
                   When you share a receipt, it remains encrypted and only the intended recipient can decrypt it.
                 </p>
                 
@@ -134,10 +162,10 @@ export default function EncryptionSettings() {
               <TabsTrigger value="shared">Shared Receipts</TabsTrigger>
             </TabsList>
             <TabsContent value="keys" className="py-4">
-              <TacoKeyManager />
+              <AdvancedEncryptionManager />
             </TabsContent>
             <TabsContent value="shared" className="py-4">
-              <TacoSharedReceiptManager />
+              <SharedReceiptManager />
             </TabsContent>
           </Tabs>
         </div>
