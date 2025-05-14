@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { checkPaymentStatus, createPaymentIntent, createMockPayment } from '@/lib/payments';
-import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck } from 'lucide-react';
+import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone } from 'lucide-react';
+import { MobileWalletPreview, MobileWalletInfo } from '@/components/blockchain/MobileWalletPreview';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function Checkout() {
