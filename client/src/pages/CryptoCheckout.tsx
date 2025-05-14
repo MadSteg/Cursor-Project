@@ -570,21 +570,69 @@ export default function CryptoCheckout() {
             )}
             
             {mintNFT && checkoutState === "paymentConfirmed" && (
-              <div className="space-y-2 border rounded-lg p-4 bg-white">
+              <div className="space-y-3 border rounded-lg p-4 bg-gradient-to-br from-indigo-50 to-white">
                 <div className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-indigo-600" />
-                  <p className="text-sm font-medium text-indigo-700">NFT Receipt Details</p>
+                  <Receipt className="h-5 w-5 text-indigo-600" />
+                  <p className="font-medium text-indigo-800">{NFT_RECEIPT_TIERS[nftTier].name} NFT Receipt Created</p>
                 </div>
-                <div className="p-3 bg-indigo-50 rounded-md text-xs border border-indigo-100">
-                  <div className="font-medium text-indigo-700">NFT Receipt Tier: <span className="text-indigo-800">{NFT_RECEIPT_TIERS[nftTier].name}</span></div>
-                  <div className="mt-1 text-indigo-700">Fee: <span className="font-medium">${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)}</span></div>
-                  <div className="mt-1 text-indigo-700">Style: <span className="font-medium capitalize">{nftTheme}</span></div>
-                  {NFT_RECEIPT_TIERS[nftTier].appleWalletSupport && (
-                    <div className="mt-2 text-green-600 flex items-center">
-                      <Smartphone className="h-3 w-3 mr-1" />
-                      <span className="font-medium">Apple Watch/iPhone wallet integration included</span>
+                
+                <Separator className="bg-indigo-100" />
+                
+                <div className="grid gap-3">
+                  <div className="bg-white rounded-md p-3 border border-indigo-100 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className="h-4 w-4 text-indigo-600" />
+                      <p className="text-sm font-medium text-indigo-800">Tier Details</p>
                     </div>
-                  )}
+                    <div className="grid gap-2 pl-6">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-indigo-700">Type:</span>
+                        <span className="font-medium text-indigo-900">{NFT_RECEIPT_TIERS[nftTier].name}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-indigo-700">Price:</span>
+                        <span className="font-medium text-indigo-900">${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-indigo-700">Style:</span>
+                        <span className="font-medium text-indigo-900 capitalize">{nftTheme}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-md p-3 border border-indigo-100 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-4 w-4 text-indigo-600" />
+                      <p className="text-sm font-medium text-indigo-800">Features</p>
+                    </div>
+                    <div className="space-y-1.5 pl-6">
+                      <div className="flex items-center gap-1.5 text-xs text-indigo-700">
+                        <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        <span>Blockchain verification</span>
+                      </div>
+                      
+                      {(nftTier === 'premium' || nftTier === 'luxury') && (
+                        <div className="flex items-center gap-1.5 text-xs text-indigo-700">
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                          <span>Animated "shiny" holographic effect</span>
+                        </div>
+                      )}
+                      
+                      {(nftTier === 'premium' || nftTier === 'luxury') && (
+                        <div className="flex items-center gap-1.5 text-xs text-indigo-700">
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                          <span>Product SKU integration</span>
+                        </div>
+                      )}
+                      
+                      {nftTier === 'luxury' && (
+                        <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                          <Smartphone className="h-3 w-3" />
+                          <span>Apple Watch/iPhone wallet integration</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

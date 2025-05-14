@@ -271,7 +271,11 @@ export default function Checkout() {
                   <Label className="text-sm text-muted-foreground">Amount</Label>
                   <p className="text-lg font-semibold">
                     ${calculateTotal().toFixed(2)}
-                    {paymentInfo?.mintNFT && <span className="text-xs text-muted-foreground ml-1">(includes NFT fee)</span>}
+                    {paymentInfo?.mintNFT && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (includes ${NFT_RECEIPT_TIERS[nftTier].name} NFT fee: ${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)})
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div>
@@ -294,19 +298,39 @@ export default function Checkout() {
                     <div className="flex items-start gap-3">
                       <BadgeCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-1" />
                       <div>
-                        <p className="font-medium text-blue-800">Blockchain Receipt</p>
+                        <p className="font-medium text-blue-800">
+                          {NFT_RECEIPT_TIERS[nftTier].name} Blockchain Receipt
+                        </p>
                         <p className="text-sm text-blue-700">
-                          Your verified receipt is being minted on the blockchain. This process may take a few minutes to complete.
+                          Your verified receipt is being minted on the blockchain as a {NFT_RECEIPT_TIERS[nftTier].name.toLowerCase()} NFT. This process may take a few minutes to complete.
                         </p>
                         
-                        <div className="mt-3 pt-3 border-t border-blue-100">
+                        <div className="grid grid-cols-1 gap-2 mt-3 pt-3 border-t border-blue-100">
                           <div className="flex items-center gap-2">
-                            <Smartphone className="h-4 w-4 text-blue-600" />
-                            <p className="text-sm font-medium text-blue-800">Mobile Wallet Ready</p>
+                            <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                            <p className="text-sm text-blue-700">Blockchain verification included</p>
                           </div>
-                          <p className="text-xs text-blue-600 mt-1">
-                            Your receipt will be available to add to Apple Wallet or Google Pay from your receipt details page.
-                          </p>
+                          
+                          {nftTier === 'premium' || nftTier === 'luxury' ? (
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                              <p className="text-sm text-blue-700">"Shiny" holographic effect added</p>
+                            </div>
+                          ) : null}
+                          
+                          {nftTier === 'luxury' && (
+                            <div className="flex items-center gap-2">
+                              <Smartphone className="h-4 w-4 text-blue-600" />
+                              <p className="text-sm text-blue-700">Apple Watch/iPhone wallet integration</p>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2 mt-2">
+                            <CircleDollarSign className="h-4 w-4 text-blue-600" />
+                            <p className="text-sm font-medium text-blue-800">
+                              Price: ${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -687,39 +711,73 @@ export default function Checkout() {
                               onValueChange={(value) => setNftTier(value)}
                               className="flex flex-col space-y-1 mb-4"
                             >
-                              <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                              <div className={`flex items-center space-x-2 border p-3 rounded-md ${nftTier === 'standard' ? 'border-primary/70 bg-primary/5' : 'bg-white'}`}>
                                 <RadioGroupItem value="standard" id="standard-tier" />
                                 <Label htmlFor="standard-tier" className="flex-1">
                                   <div className="flex justify-between">
-                                    <span>Standard</span>
-                                    <span className="font-medium">${NFT_RECEIPT_TIERS.standard.price.toFixed(2)}</span>
+                                    <span className="font-medium">Standard</span>
+                                    <span className="font-medium text-primary">${NFT_RECEIPT_TIERS.standard.price.toFixed(2)}</span>
                                   </div>
                                   <p className="text-sm text-muted-foreground">Basic blockchain verification</p>
+                                  <div className="mt-1.5 space-y-1">
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Blockchain-verified receipt</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Basic Pokemon card style</span>
+                                    </div>
+                                  </div>
                                 </Label>
                               </div>
                               
-                              <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                              <div className={`flex items-center space-x-2 border p-3 rounded-md ${nftTier === 'premium' ? 'border-primary/70 bg-primary/5' : 'bg-white'}`}>
                                 <RadioGroupItem value="premium" id="premium-tier" />
                                 <Label htmlFor="premium-tier" className="flex-1">
                                   <div className="flex justify-between">
-                                    <span>Premium</span>
-                                    <span className="font-medium">${NFT_RECEIPT_TIERS.premium.price.toFixed(2)}</span>
+                                    <span className="font-medium">Premium</span>
+                                    <span className="font-medium text-primary">${NFT_RECEIPT_TIERS.premium.price.toFixed(2)}</span>
                                   </div>
-                                  <p className="text-sm text-muted-foreground">Enhanced visual styles and Pokemon card themes</p>
+                                  <p className="text-sm text-muted-foreground">Enhanced visual styles and features</p>
+                                  <div className="mt-1.5 space-y-1">
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Everything in Standard tier</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Animated "shiny" holographic effect</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Product SKU integration</span>
+                                    </div>
+                                  </div>
                                 </Label>
                               </div>
                               
-                              <div className="flex items-center space-x-2 border p-2 rounded-md bg-white">
+                              <div className={`flex items-center space-x-2 border p-3 rounded-md ${nftTier === 'luxury' ? 'border-primary/70 bg-primary/5' : 'bg-white'}`}>
                                 <RadioGroupItem value="luxury" id="luxury-tier" />
                                 <Label htmlFor="luxury-tier" className="flex-1">
                                   <div className="flex justify-between">
-                                    <span>Luxury</span>
-                                    <span className="font-medium">${NFT_RECEIPT_TIERS.luxury.price.toFixed(2)}</span>
+                                    <span className="font-medium">Luxury</span>
+                                    <span className="font-medium text-primary">${NFT_RECEIPT_TIERS.luxury.price.toFixed(2)}</span>
                                   </div>
-                                  <p className="text-sm text-muted-foreground">Premium styles with "shiny" effects and Apple Wallet integration</p>
-                                  <div className="flex items-center mt-1 text-xs text-green-600">
-                                    <Smartphone className="h-3 w-3 mr-1" />
-                                    Apple Watch/iPhone compatible
+                                  <p className="text-sm text-muted-foreground">Premium experience with exclusive features</p>
+                                  <div className="mt-1.5 space-y-1">
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Everything in Premium tier</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                      <span>Ultra-rare "legendary" styling</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                                      <Smartphone className="h-3 w-3" />
+                                      <span>Apple Watch/iPhone wallet integration</span>
+                                    </div>
                                   </div>
                                 </Label>
                               </div>
