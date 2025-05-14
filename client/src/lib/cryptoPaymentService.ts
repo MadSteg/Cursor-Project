@@ -74,6 +74,7 @@ export const cryptoPaymentService = {
           'MATIC': { color: '#8247E5' }, // Polygon purple
           'ETH': { color: '#627EEA' },   // Ethereum blue
           'BTC': { color: '#F7931A' },   // Bitcoin orange
+          'SOL': { color: '#14F195' },   // Solana green
           'USDC': { color: '#2775CA' }   // USDC blue
         };
         
@@ -91,9 +92,30 @@ export const cryptoPaymentService = {
         { 
           code: 'MATIC', 
           name: 'Polygon MATIC', 
-          network: 'polygon-mumbai',
+          network: 'polygon-mainnet',
           enabled: true,
           color: '#8247E5'
+        },
+        { 
+          code: 'ETH', 
+          name: 'Ethereum', 
+          network: 'ethereum-mainnet',
+          enabled: true,
+          color: '#627EEA'
+        },
+        { 
+          code: 'BTC', 
+          name: 'Bitcoin', 
+          network: 'bitcoin-mainnet',
+          enabled: true,
+          color: '#F7931A'
+        },
+        { 
+          code: 'SOL', 
+          name: 'Solana', 
+          network: 'solana-mainnet',
+          enabled: true,
+          color: '#14F195'
         }
       ];
     }
