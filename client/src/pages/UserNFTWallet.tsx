@@ -254,8 +254,25 @@ const UserNFTWallet: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4 items-start">
-          <div className="w-full md:w-64 lg:w-72 space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="receipts" className="flex items-center justify-center gap-2">
+              <Receipt className="h-4 w-4" />
+              <span>Receipts</span>
+            </TabsTrigger>
+            <TabsTrigger value="loyalty" className="flex items-center justify-center gap-2">
+              <Crown className="h-4 w-4" />
+              <span>Loyalty Tiers</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center justify-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Analytics</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="receipts" className="mt-6">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              <div className="w-full md:w-64 lg:w-72 space-y-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input

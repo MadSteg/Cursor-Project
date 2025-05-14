@@ -119,11 +119,6 @@ const Header: React.FC = () => {
                         <Menu className="h-5 w-5" /> Dashboard
                       </span>
                     </Link>
-                    <Link href="/about">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <FileCheck className="h-5 w-5" /> About
-                      </span>
-                    </Link>
                   </div>
                   
                   {/* NFT Receipt Features */}
@@ -145,11 +140,7 @@ const Header: React.FC = () => {
                           <FileCheck className="h-5 w-5" /> Verify Receipt
                         </span>
                       </Link>
-                      <Link href="/encryption-settings">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Lock className="h-5 w-5" /> Encryption Settings
-                        </span>
-                      </Link>
+  
                     </div>
                   </div>
                   
@@ -157,11 +148,6 @@ const Header: React.FC = () => {
                   <div className="pt-2 border-t border-gray-100">
                     <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Merchant Tools</p>
                     <div className="space-y-4">
-                      <Link href="/products">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <ShoppingCart className="h-5 w-5" /> Products
-                        </span>
-                      </Link>
                       <Link href="/merchant-dashboard">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                           <Store className="h-5 w-5" /> Merchant Dashboard
