@@ -11,9 +11,11 @@ export default function AboutPage() {
         <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
           Reinventing Receipts for the Digital Age
         </h1>
-        <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-          BlockReceipt is a privacy-first Web3 platform that transforms financial transactions into secure,
-          interactive, and verifiable NFT experiences.
+        <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-4">
+          BlockReceipt.ai is a drop-in replacement for paper and email receipts. Instead of printing, vendors mint a blockchain-based receipt that's cheaper to issue, more verifiable, and gives the customer full control.
+        </p>
+        <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+          We make it easy to implement, cost less than thermal printing, and even allow vendors to create digital collectibles or loyalty tie-ins.
         </p>
       </div>
 
@@ -129,6 +131,53 @@ export default function AboutPage() {
             <CardContent className="flex-grow">
               <p className="text-slate-600">
                 Each receipt becomes a unique NFT with artwork determined by transaction value. Higher-value purchases unlock premium and luxury tier NFTs with enhanced features.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 mb-16">
+        <h2 className="text-3xl font-bold mb-6 text-center">For Vendors & Businesses</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="border-0 shadow-md bg-white">
+            <CardHeader>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <DollarSign className="h-6 w-6 text-green-600" />
+              </div>
+              <CardTitle>Cost-Effective</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600">
+                Cheaper than thermal paper printing, with no maintenance costs for receipt printers or supplies.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-md bg-white">
+            <CardHeader>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <Shield className="h-6 w-6 text-blue-600" />
+              </div>
+              <CardTitle>Easy Integration</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600">
+                Drop-in replacement for existing receipt systems with simple API integration for point-of-sale systems.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-md bg-white">
+            <CardHeader>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <GitFork className="h-6 w-6 text-purple-600" />
+              </div>
+              <CardTitle>Customer Loyalty</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600">
+                Create digital collectibles and loyalty tie-ins with your NFT receipts to increase customer engagement.
               </p>
             </CardContent>
           </Card>
