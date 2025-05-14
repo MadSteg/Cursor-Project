@@ -16,6 +16,7 @@ import ThemePreview from "@/pages/ThemePreview";
 import Inventory from "@/pages/Inventory";
 import InventoryDetail from "@/pages/InventoryDetail";
 import InventoryUpload from "@/pages/InventoryUpload";
+import Admin from "@/pages/Admin";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -37,6 +38,7 @@ function Router() {
         <Route path="/inventory/:id" component={InventoryDetail} />
         <Route path="/inventory/:id/edit" component={InventoryUpload} />
         <Route path="/inventory-upload" component={InventoryUpload} />
+        <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

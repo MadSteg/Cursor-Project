@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Receipt, BarChart3, Settings, User, Lock, Package } from "lucide-react";
+import { Menu, Receipt, BarChart3, Settings, User, Lock, Package, Activity } from "lucide-react";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
 const Header: React.FC = () => {
@@ -56,6 +56,11 @@ const Header: React.FC = () => {
                 Settings
               </span>
             </Link>
+            <Link href="/admin">
+              <span className={`text-sm font-medium ${currentLocation === "/admin" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                Admin
+              </span>
+            </Link>
           </div>
           
           <div className="flex items-center space-x-3">
@@ -103,6 +108,11 @@ const Header: React.FC = () => {
                   <Link href="/settings">
                     <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                       <Settings className="h-5 w-5" /> Settings
+                    </span>
+                  </Link>
+                  <Link href="/admin">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <Activity className="h-5 w-5" /> Admin
                     </span>
                   </Link>
                   <div className="mt-4">
