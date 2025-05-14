@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { NFTReceiptTier, calculateNFTReceiptPrice, calculateTotalPrice, type Product } from "@shared/products";
 import CryptoCheckoutModal from "@/components/checkout/CryptoCheckoutModal";
+import { sendReceiptEmail } from "@/lib/emailService";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -182,8 +183,35 @@ export default function ProductDetail() {
           
           // Send email if needed
           if (data.deliveryEmail && (data.deliveryPreference === 'email' || data.deliveryPreference === 'both')) {
-            // Call email delivery endpoint here if needed
-            console.log(`Sending email summary to ${data.deliveryEmail}`);
+            // Generate a transaction hash and NFT ID (will be replaced with real values in production)
+            const mockTxHash = `0x${Math.random().toString(16).substring(2, 42)}`;
+            const mockNftId = `nft-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+            
+            sendReceiptEmail({
+              to: data.deliveryEmail,
+              productName: product.name,
+              merchantName: merchant?.name || 'Unknown Merchant',
+              receiptId: data.receiptId,
+              receiptNftId: mockNftId,
+              transactionHash: mockTxHash,
+              walletAddress: data.deliveryWallet,
+              tier: selectedTier,
+              amount: calculateTotalPrice(product, selectedTier as any),
+              ipfsHash: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`
+            }).then(success => {
+              if (success) {
+                toast({
+                  title: "Receipt Email Sent",
+                  description: `A receipt summary has been sent to ${data.deliveryEmail}`,
+                });
+              } else {
+                toast({
+                  title: "Email Delivery Failed",
+                  description: "We couldn't send your receipt email. You can still view it in your wallet.",
+                  variant: "destructive"
+                });
+              }
+            });
           }
         }
       });
