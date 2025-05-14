@@ -6,6 +6,7 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -14,6 +15,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 import { Link } from 'wouter';
 import {
   Wallet,
@@ -871,5 +880,153 @@ const UserNFTWallet: React.FC = () => {
     </div>
   );
 };
+
+export default UserNFTWallet;
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {warrantyDialog.completed 
+                ? "Warranty Claim Submitted" 
+                : "Process Warranty Claim"}
+            </DialogTitle>
+            <DialogDescription>
+              {warrantyDialog.completed 
+                ? "Your warranty claim has been successfully processed." 
+                : "Grant access to vendor support to process your warranty claim."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {warrantyDialog.completed ? (
+            <div className="space-y-4">
+              <div className="rounded-md bg-green-50 p-4 border border-green-200">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-green-800">Claim Processed Successfully</h3>
+                    <div className="mt-2 text-sm text-green-700">
+                      <p>Your warranty claim has been validated and approved. Please use the return label below to ship your item for replacement.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {warrantyDialog.returnLabel && (
+                <div className="border rounded-md p-4">
+                  <p className="text-sm font-medium mb-2">Return Label</p>
+                  <div className="bg-gray-100 p-4 rounded text-sm font-mono overflow-x-auto">
+                    {warrantyDialog.returnLabel}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(warrantyDialog.returnLabel || '');
+                      toast({
+                        title: "Copied!",
+                        description: "Return label copied to clipboard",
+                      });
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {warrantyDialog.receipt && (
+                <div className="flex items-center space-x-4 border rounded-md p-3">
+                  <div className="flex-shrink-0 h-12 w-12 rounded-md bg-gray-100 flex items-center justify-center">
+                    <span className="text-gray-500">{warrantyDialog.receipt.merchantName.substring(0, 2).toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{warrantyDialog.receipt.merchantName}</p>
+                    <p className="text-xs text-gray-500">
+                      {warrantyDialog.receipt.warranty?.expiryDate 
+                        ? `Warranty expires: ${warrantyDialog.receipt.warranty.expiryDate}` 
+                        : 'Warranty details not available'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-b py-4">
+                <p className="text-sm mb-2">Grant access to vendor support to process your claim:</p>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span className="text-blue-600 text-xs font-medium">VS</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Vendor Support</p>
+                    <p className="text-xs text-gray-500">Official support representative</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Access will be granted using Threshold's TACo re-encryption technology, keeping your data private while allowing limited access for claim verification.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="sm:justify-between">
+            {warrantyDialog.completed ? (
+              <Button 
+                type="button" 
+                onClick={() => setWarrantyDialog({ isOpen: false })}
+              >
+                Close
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setWarrantyDialog({ isOpen: false })}
+                  disabled={warrantyDialog.processing}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setWarrantyDialog(prev => ({ 
+                      ...prev, 
+                      processing: true 
+                    }));
+                    
+                    // Simulate TACo re-encryption process
+                    setTimeout(() => {
+                      setWarrantyDialog(prev => ({ 
+                        ...prev, 
+                        processing: false,
+                        completed: true,
+                        returnLabel: `RMA #W${Math.floor(100000 + Math.random() * 900000)}
+Ship To: ${prev.receipt?.merchantName} Returns Dept.
+123 Merchant Street, Suite 100
+Anytown, CA 90210
+Reference: ${prev.receipt?.tokenId}
+`
+                      }));
+                      
+                      toast({
+                        title: "Warranty Claim Approved",
+                        description: "Your claim has been processed successfully.",
+                      });
+                    }, 2000);
+                  }}
+                  disabled={warrantyDialog.processing}
+                >
+                  {warrantyDialog.processing ? "Processing..." : "Grant Access & Process Claim"}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 export default UserNFTWallet;
