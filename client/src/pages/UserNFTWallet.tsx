@@ -29,7 +29,11 @@ import {
   SortAsc,
   SortDesc,
   Upload,
-  Scan
+  Scan,
+  Package,
+  BarChart3,
+  Receipt,
+  LayoutDashboard
 } from 'lucide-react';
 import EnhancedNFTReceiptCard from '@/components/receipts/EnhancedNFTReceiptCard';
 import { NFTArtItem } from '@/data/nftArtManifest';
@@ -155,10 +159,11 @@ type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 type ReceiptFilter = 'all' | 'encrypted' | 'unencrypted' | 'accessible' | 'premium' | 'luxury';
 
 const UserNFTWallet: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>('receipts');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-desc');
   const [filter, setFilter] = useState<ReceiptFilter>('all');
+  const [, setLocation] = useLocation();
   
   // Filter and sort receipts
   const getFilteredReceipts = () => {
@@ -226,10 +231,10 @@ const UserNFTWallet: React.FC = () => {
           <div>
             <h1 className="text-4xl font-bold flex items-center">
               <Wallet className="mr-3 h-8 w-8 text-primary" />
-              NFT Receipt Wallet
+              Digital Wallet Hub
             </h1>
             <p className="text-xl text-muted-foreground mt-1">
-              Your blockchain-verified purchase history
+              Your blockchain-verified finance center
             </p>
           </div>
           
