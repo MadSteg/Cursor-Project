@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useLocation } from 'wouter';
 import { 
   Card, 
   CardContent,
@@ -10,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, FileText, Check, X } from "lucide-react";
+import { Loader2, Upload, FileText, Check, X, Coins } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 /**
