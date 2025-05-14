@@ -1,336 +1,151 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ReceiptTier } from '@/lib/receiptOcr';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from 'wouter';
-import {
-  Receipt,
-  Trash2,
-  FileText,
-  Lock,
-  Globe,
-  Share2,
-  ShieldCheck,
-  Coins,
-  ListFilter,
-  BarChart3,
-  Sparkles,
-  Crown,
-  Diamond,
-  Star
-} from 'lucide-react';
+import { GitFork, Fingerprint, Lock, Wallet, Shield, Receipt, FileCheck, DollarSign, Scale } from 'lucide-react';
 
-const AboutPage = () => {
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
-
-  const fadeInVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { duration: 0.8 }
-    }
-  };
-
-  // Tier styling
-  const getTierStyles = (tier: ReceiptTier) => {
-    switch (tier) {
-      case ReceiptTier.STANDARD:
-        return {
-          background: 'bg-gradient-to-br from-slate-50 to-slate-200',
-          text: 'text-slate-800',
-          border: 'border-slate-300',
-          shadow: 'shadow-md',
-          badge: 'bg-slate-100 text-slate-800',
-          icon: <Receipt className="h-10 w-10 text-slate-700" />
-        };
-      case ReceiptTier.PREMIUM:
-        return {
-          background: 'bg-gradient-to-br from-blue-50 to-indigo-100',
-          text: 'text-indigo-800',
-          border: 'border-indigo-300',
-          shadow: 'shadow-md shadow-indigo-100',
-          badge: 'bg-indigo-100 text-indigo-800',
-          icon: <Star className="h-10 w-10 text-indigo-600" />
-        };
-      case ReceiptTier.LUXURY:
-        return {
-          background: 'bg-gradient-to-br from-purple-50 to-purple-200',
-          text: 'text-purple-800',
-          border: 'border-purple-300',
-          shadow: 'shadow-lg shadow-purple-100',
-          badge: 'bg-purple-100 text-purple-800',
-          icon: <Crown className="h-10 w-10 text-purple-600" />
-        };
-      case ReceiptTier.ULTRA:
-        return {
-          background: 'bg-gradient-to-br from-amber-50 to-amber-200',
-          text: 'text-amber-900',
-          border: 'border-amber-400',
-          shadow: 'shadow-xl shadow-amber-100',
-          badge: 'bg-amber-100 text-amber-800',
-          icon: <Diamond className="h-10 w-10 text-amber-600" />
-        };
-      default:
-        return {
-          background: 'bg-gradient-to-br from-slate-50 to-slate-200',
-          text: 'text-slate-800',
-          border: 'border-slate-300',
-          shadow: 'shadow-md',
-          badge: 'bg-slate-100 text-slate-800',
-          icon: <Receipt className="h-10 w-10 text-slate-700" />
-        };
-    }
-  };
-
+export default function AboutPage() {
   return (
-    <div className="container mx-auto py-12 px-4 max-w-6xl">
-      {/* Hero Section */}
-      <motion.div 
-        className="text-center mb-16"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.h1 
-          className="text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600"
-          variants={itemVariants}
-        >
-          Revolutionizing Receipts
-        </motion.h1>
-        <motion.p 
-          className="text-xl text-gray-600 max-w-3xl mx-auto"
-          variants={itemVariants}
-        >
-          From wasteful paper trails to secure, blockchain-powered financial records 
-          that transform everyday purchases into digital assets.
-        </motion.p>
-      </motion.div>
+    <div className="container mx-auto py-12 px-4 max-w-7xl">
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
+          Reinventing Receipts for the Digital Age
+        </h1>
+        <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          BlockReceipt is a privacy-first Web3 platform that transforms financial transactions into secure,
+          interactive, and verifiable NFT experiences.
+        </p>
+      </div>
 
-      {/* Old vs New Comparison */}
-      <Tabs defaultValue="traditional" className="mb-20">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="traditional">Traditional Receipts</TabsTrigger>
-          <TabsTrigger value="blockchain">BlockReceipt Solution</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="traditional">
-          <motion.div 
-            className="grid md:grid-cols-2 gap-8"
-            initial="hidden"
-            animate="visible"
-            variants={fadeInVariants}
-          >
-            <div className="relative overflow-hidden rounded-xl border border-red-200 aspect-video bg-gradient-to-br from-red-50 to-red-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <Trash2 className="h-16 w-16 text-red-500 mb-4" />
-                <h3 className="text-2xl font-bold text-red-700 mb-2">Environmental Waste</h3>
-                <p className="text-red-600">10 billion receipts printed annually in the US alone, contributing to deforestation and pollution</p>
+      <div className="grid md:grid-cols-2 gap-12 mb-20">
+        <div>
+          <h2 className="text-3xl font-bold mb-4 text-slate-800">The Problem with Traditional Receipts</h2>
+          <div className="space-y-6">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 bg-red-100 p-2 rounded-full">
+                <Receipt className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-lg">Paper Waste & Environmental Impact</h3>
+                <p className="text-slate-600">Billions of paper receipts are printed annually, creating massive environmental waste with thermal paper that cannot be recycled.</p>
               </div>
             </div>
-            
-            <div className="relative overflow-hidden rounded-xl border border-orange-200 aspect-video bg-gradient-to-br from-orange-50 to-orange-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <FileText className="h-16 w-16 text-orange-500 mb-4" />
-                <h3 className="text-2xl font-bold text-orange-700 mb-2">Easily Lost or Damaged</h3>
-                <p className="text-orange-600">Thermal paper fades over time, making warranties and returns difficult to manage</p>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 bg-red-100 p-2 rounded-full">
+                <Lock className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-lg">Limited Privacy Controls</h3>
+                <p className="text-slate-600">Traditional digital receipts provide no granular privacy controls, forcing users to share all or nothing when proving purchases.</p>
               </div>
             </div>
-            
-            <div className="relative overflow-hidden rounded-xl border border-yellow-200 aspect-video bg-gradient-to-br from-yellow-50 to-yellow-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <Lock className="h-16 w-16 text-yellow-500 mb-4" />
-                <h3 className="text-2xl font-bold text-yellow-700 mb-2">No Privacy Controls</h3>
-                <p className="text-yellow-600">Anyone who has your receipt can see all your purchase details without restrictions</p>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 bg-red-100 p-2 rounded-full">
+                <FileCheck className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-lg">Verification Challenges</h3>
+                <p className="text-slate-600">Verifying receipt authenticity is difficult with physical receipts that fade over time or can be easily forged.</p>
               </div>
             </div>
-            
-            <div className="relative overflow-hidden rounded-xl border border-lime-200 aspect-video bg-gradient-to-br from-lime-50 to-lime-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <ListFilter className="h-16 w-16 text-lime-500 mb-4" />
-                <h3 className="text-2xl font-bold text-lime-700 mb-2">No Analytics</h3>
-                <p className="text-lime-600">Manual tracking in spreadsheets or expense management systems required</p>
-              </div>
-            </div>
-          </motion.div>
-        </TabsContent>
-        
-        <TabsContent value="blockchain">
-          <motion.div 
-            className="grid md:grid-cols-2 gap-8"
-            initial="hidden"
-            animate="visible" 
-            variants={fadeInVariants}
-          >
-            <div className="relative overflow-hidden rounded-xl border border-green-200 aspect-video bg-gradient-to-br from-green-50 to-green-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <Globe className="h-16 w-16 text-green-500 mb-4" />
-                <h3 className="text-2xl font-bold text-green-700 mb-2">Eco-Friendly Solution</h3>
-                <p className="text-green-600">Zero paper waste with digital receipts stored permanently on the blockchain</p>
-              </div>
-            </div>
-            
-            <div className="relative overflow-hidden rounded-xl border border-teal-200 aspect-video bg-gradient-to-br from-teal-50 to-teal-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <ShieldCheck className="h-16 w-16 text-teal-500 mb-4" />
-                <h3 className="text-2xl font-bold text-teal-700 mb-2">Immutable Records</h3>
-                <p className="text-teal-600">Permanent and tamper-proof receipt records to verify purchases indefinitely</p>
-              </div>
-            </div>
-            
-            <div className="relative overflow-hidden rounded-xl border border-blue-200 aspect-video bg-gradient-to-br from-blue-50 to-blue-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <Share2 className="h-16 w-16 text-blue-500 mb-4" />
-                <h3 className="text-2xl font-bold text-blue-700 mb-2">Privacy-Preserving Access</h3>
-                <p className="text-blue-600">Threshold encryption with selective granting/revoking of access to your receipt data</p>
-              </div>
-            </div>
-            
-            <div className="relative overflow-hidden rounded-xl border border-indigo-200 aspect-video bg-gradient-to-br from-indigo-50 to-indigo-100">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <BarChart3 className="h-16 w-16 text-indigo-500 mb-4" />
-                <h3 className="text-2xl font-bold text-indigo-700 mb-2">Smart Analytics</h3>
-                <p className="text-indigo-600">AI-powered insights from your spending patterns while preserving privacy</p>
-              </div>
-            </div>
-          </motion.div>
-        </TabsContent>
-      </Tabs>
-
-      {/* Receipt Tiers */}
-      <motion.div 
-        className="mb-20"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.h2 
-          className="text-3xl font-bold mb-10 text-center"
-          variants={itemVariants}
-        >
-          Gamified NFT Receipt Tiers
-        </motion.h2>
-        
-        <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
-          variants={itemVariants}
-        >
-          {Object.values(ReceiptTier).map(tier => {
-            const styles = getTierStyles(tier);
-            
-            return (
-              <Card key={tier} className={`overflow-hidden transition-all transform hover:scale-105 ${styles.background} ${styles.border} ${styles.shadow}`}>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-center">
-                    <div className={`p-3 rounded-full ${styles.background} border ${styles.border}`}>
-                      {styles.icon}
-                    </div>
-                    <Badge className={styles.badge}>
-                      {tier} Tier
-                    </Badge>
-                  </div>
-                  <CardTitle className={`text-xl mt-4 ${styles.text}`}>
-                    {tier} Collection
-                  </CardTitle>
-                  <CardDescription>
-                    {tier === ReceiptTier.STANDARD && 'For everyday purchases up to $50'}
-                    {tier === ReceiptTier.PREMIUM && 'For significant purchases $50-$200'}
-                    {tier === ReceiptTier.LUXURY && 'For premium purchases $200-$1000'}
-                    {tier === ReceiptTier.ULTRA && 'For exceptional purchases over $1000'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" />
-                      <span>Blockchain verified</span>
-                    </li>
-                    {(tier === ReceiptTier.PREMIUM || tier === ReceiptTier.LUXURY || tier === ReceiptTier.ULTRA) && (
-                      <li className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
-                        <span>{tier === ReceiptTier.PREMIUM ? 'Enhanced' : 'Exclusive'} NFT art options</span>
-                      </li>
-                    )}
-                    {(tier === ReceiptTier.LUXURY || tier === ReceiptTier.ULTRA) && (
-                      <li className="flex items-center gap-2">
-                        <Coins className="h-4 w-4" />
-                        <span>Rewards multiplier</span>
-                      </li>
-                    )}
-                    {tier === ReceiptTier.ULTRA && (
-                      <li className="flex items-center gap-2">
-                        <Crown className="h-4 w-4" />
-                        <span>Exclusive premium NFT utility</span>
-                      </li>
-                    )}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full">Explore {tier} NFTs</Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </motion.div>
-      </motion.div>
-
-      {/* CTA Section */}
-      <motion.div 
-        className="text-center mt-12"
-        initial="hidden"
-        animate="visible"
-        variants={fadeInVariants}
-      >
-        <div className="p-10 rounded-2xl bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 border border-indigo-100 shadow-xl">
-          <h2 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-purple-700">Ready to Transform Your Receipts?</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join the blockchain receipt revolution today. Scan your receipt, choose your NFT art, and own a permanent, privacy-first proof of purchase.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link href="/scan-receipt">
-              <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                Scan Your First Receipt
-              </Button>
-            </Link>
-            <Link href="/learn-more">
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
-            </Link>
           </div>
         </div>
-      </motion.div>
+        
+        <div>
+          <h2 className="text-3xl font-bold mb-4 text-slate-800">The BlockReceipt Solution</h2>
+          <div className="space-y-6">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 bg-green-100 p-2 rounded-full">
+                <Fingerprint className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-lg">Privacy-Preserving NFTs</h3>
+                <p className="text-slate-600">Threshold encryption technology allows users to selectively disclose receipt data while keeping sensitive information private.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 bg-green-100 p-2 rounded-full">
+                <GitFork className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-lg">Blockchain Verification</h3>
+                <p className="text-slate-600">Every receipt is cryptographically secured and verifiable on the Polygon blockchain, ensuring authenticity and preventing fraud.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 bg-green-100 p-2 rounded-full">
+                <DollarSign className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-medium text-lg">NFT Utility & Value</h3>
+                <p className="text-slate-600">Receipts become functional NFTs with real-world utility, turning mundane transactions into valuable assets.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-8 mb-20">
+        <h2 className="text-3xl font-bold mb-8 text-center">How BlockReceipt Works</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="border-0 shadow-md bg-white h-full flex flex-col">
+            <CardHeader>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <Receipt className="h-6 w-6 text-blue-600" />
+              </div>
+              <CardTitle>Digitize Any Receipt</CardTitle>
+              <CardDescription>Upload paper receipts, connect email inboxes, or capture purchase data directly.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <p className="text-slate-600">
+                Our advanced OCR technology accurately extracts all receipt data including line items, taxes, and merchant details with exceptional accuracy.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-md bg-white h-full flex flex-col">
+            <CardHeader>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <Shield className="h-6 w-6 text-purple-600" />
+              </div>
+              <CardTitle>Privacy Controls</CardTitle>
+              <CardDescription>Selectively encrypt and control access to sensitive metadata.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <p className="text-slate-600">
+                Using Threshold's Proxy Re-Encryption, you can grant and revoke access to specific parts of your receipt data while keeping other information private.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-0 shadow-md bg-white h-full flex flex-col">
+            <CardHeader>
+              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
+                <Wallet className="h-6 w-6 text-amber-600" />
+              </div>
+              <CardTitle>NFT Minting</CardTitle>
+              <CardDescription>Transform receipts into tiered NFTs with real utility.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <p className="text-slate-600">
+                Each receipt becomes a unique NFT with artwork determined by transaction value. Higher-value purchases unlock premium and luxury tier NFTs with enhanced features.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="text-center mb-16">
+        <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Receipts?</h2>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Button asChild size="lg" className="rounded-full">
+            <Link href="/scan-receipt">Start Scanning Now</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="rounded-full">
+            <Link href="/nft-wallet">View NFT Wallet</Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default AboutPage;
+}

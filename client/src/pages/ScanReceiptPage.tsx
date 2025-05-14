@@ -12,8 +12,10 @@ import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   uploadReceiptImage,
+  processReceiptImage,
+  processReceiptBase64,
   ReceiptData, 
-  determineReceiptTier as getReceiptTier, 
+  determineReceiptTier, 
   ReceiptTier 
 } from '@/lib/receiptOcr';
 
@@ -107,7 +109,7 @@ const ScanReceiptPage = () => {
       setReceiptData(data);
       
       // Determine the receipt tier based on total
-      const tier = getReceiptTier(data.total);
+      const tier = determineReceiptTier(data.total);
       setReceiptTier(tier);
       
       setProgress(100);
@@ -192,7 +194,7 @@ const ScanReceiptPage = () => {
       setReceiptData(data);
       
       // Determine the receipt tier based on total
-      const tier = getReceiptTier(data.total);
+      const tier = determineReceiptTier(data.total);
       setReceiptTier(tier);
       
       setProgress(100);
