@@ -36,7 +36,13 @@ export default function CryptoCheckout() {
   const [nftTier, setNftTier] = useState('standard'); // 'standard', 'premium', or 'luxury'
   
   // NFT tiered pricing structure
-  const NFT_RECEIPT_TIERS = {
+  type NFTTierType = 'standard' | 'premium' | 'luxury';
+  
+  const NFT_RECEIPT_TIERS: Record<NFTTierType, {
+    name: string;
+    price: number;
+    appleWalletSupport: boolean;
+  }> = {
     standard: { name: 'Standard', price: 0.99, appleWalletSupport: false },
     premium: { name: 'Premium', price: 2.99, appleWalletSupport: false },
     luxury: { name: 'Luxury', price: 5.00, appleWalletSupport: true },
@@ -559,6 +565,26 @@ export default function CryptoCheckout() {
                       This process typically takes 1-3 minutes to complete
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+            
+            {mintNFT && checkoutState === "paymentConfirmed" && (
+              <div className="space-y-2 border rounded-lg p-4 bg-white">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-indigo-600" />
+                  <p className="text-sm font-medium text-indigo-700">NFT Receipt Details</p>
+                </div>
+                <div className="p-3 bg-indigo-50 rounded-md text-xs border border-indigo-100">
+                  <div className="font-medium text-indigo-700">NFT Receipt Tier: <span className="text-indigo-800">{NFT_RECEIPT_TIERS[nftTier].name}</span></div>
+                  <div className="mt-1 text-indigo-700">Fee: <span className="font-medium">${NFT_RECEIPT_TIERS[nftTier].price.toFixed(2)}</span></div>
+                  <div className="mt-1 text-indigo-700">Style: <span className="font-medium capitalize">{nftTheme}</span></div>
+                  {NFT_RECEIPT_TIERS[nftTier].appleWalletSupport && (
+                    <div className="mt-2 text-green-600 flex items-center">
+                      <Smartphone className="h-3 w-3 mr-1" />
+                      <span className="font-medium">Apple Watch/iPhone wallet integration included</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
