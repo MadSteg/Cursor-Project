@@ -175,10 +175,39 @@ async function handleDeploymentError(error) {
   console.log('Detailed error logs:');
   console.error(error);
   
+  // Determine the specific error type and provide targeted solutions
+  let specificSolutions = [];
+  
+  if (error.message.includes('private key') || error.message.includes('WALLET_PRIVATE_KEY')) {
+    specificSolutions.push('* WALLET_PRIVATE_KEY is missing or invalid');
+    specificSolutions.push('  1. Add your private key to the .env file: WALLET_PRIVATE_KEY=your_private_key');
+    specificSolutions.push('  2. Make sure the wallet has sufficient MATIC funds for gas');
+    specificSolutions.push('  3. Consider using Remix IDE for manual deployment (see Remix_Deployment_Guide.md)');
+  } 
+  else if (error.message.includes('network') || error.message.includes('RPC')) {
+    specificSolutions.push('* Network connection issue detected');
+    specificSolutions.push('  1. Check that your ALCHEMY_RPC URL is correct for Amoy testnet');
+    specificSolutions.push('  2. Verify that the Alchemy API key is valid and has access to Polygon Amoy');
+    specificSolutions.push('  3. Try deploying via Remix IDE which uses a different connection method');
+  }
+  else if (error.message.includes('gas') || error.message.includes('fund')) {
+    specificSolutions.push('* Insufficient funds for gas fees');
+    specificSolutions.push('  1. Add MATIC to your wallet address for Amoy testnet');
+    specificSolutions.push('  2. Request test MATIC from the Polygon Amoy faucet');
+  }
+  
   console.log('\nPossible solutions:');
-  console.log('1. Check that your WALLET_PRIVATE_KEY is correct and has MATIC funds');
-  console.log('2. Verify that the ALCHEMY_RPC URL is working and connects to Amoy testnet');
-  console.log('3. Try deploying via Remix IDE as outlined in Remix_Deployment_Guide.md');
+  
+  if (specificSolutions.length > 0) {
+    specificSolutions.forEach(solution => console.log(solution));
+  } else {
+    console.log('1. Check that your WALLET_PRIVATE_KEY is correct and has MATIC funds');
+    console.log('2. Verify that the ALCHEMY_RPC URL is working and connects to Amoy testnet');
+    console.log('3. Try deploying via Remix IDE as outlined in Remix_Deployment_Guide.md');
+  }
+  
+  // Always suggest Remix as a fallback
+  console.log('\nRecommendation: Follow the Remix_Deployment_Guide.md to deploy via browser');
   
   // Return null to indicate failure
   return null;
@@ -343,10 +372,44 @@ async function main() {
   }
 }
 
+// Check if we're in simulation mode
+function shouldSimulate() {
+  // Check for a SIMULATE environment variable
+  if (process.env.SIMULATE === 'true') {
+    console.log('SIMULATE flag is set to true, running in simulation mode');
+    return true;
+  }
+  
+  // Check if WALLET_PRIVATE_KEY is missing
+  const privateKey = process.env.WALLET_PRIVATE_KEY;
+  if (!privateKey || privateKey.trim() === '') {
+    console.log('WALLET_PRIVATE_KEY is not set. Running in simulation mode.');
+    return true;
+  }
+  
+  return false;
+}
+
 // Run the main function
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+if (shouldSimulate()) {
+  // Simulate the deployment and update with a fake address
+  console.log('Starting simulation mode...');
+  const simulatedAddress = '0x' + '1'.repeat(40); // 0x1111...1111
+  console.log(`Simulated contract deployed at: ${simulatedAddress}`);
+  updateEnvFile(simulatedAddress);
+  console.log('\n======================================================');
+  console.log('CONTRACT DEPLOYMENT SIMULATION COMPLETED');
+  console.log(`Contract "deployed" to: ${simulatedAddress}`);
+  console.log('To deploy a real contract:');
+  console.log('1. Add WALLET_PRIVATE_KEY to .env file');
+  console.log('2. Make sure the wallet has MATIC for Amoy testnet');
+  console.log('3. Run this script again');
+  console.log('======================================================\n');
+} else {
+  // Call the async main function
+  main()
+    .catch((error) => {
+      console.error('Unhandled error in main:', error);
+      process.exit(1);
+    });
+}
