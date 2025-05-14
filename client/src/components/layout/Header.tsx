@@ -67,6 +67,12 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
+            <Link href="/receipt-scanner">
+              <span className={`text-sm font-medium ${currentLocation === "/receipt-scanner" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <FileImage className="h-4 w-4 mr-1.5" /> OCR Scanner
+              </span>
+            </Link>
+            
             <Link href="/verify-receipt">
               <span className={`text-sm font-medium ${currentLocation === "/verify-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <FileCheck className="h-4 w-4 mr-1.5" /> Verify Receipt

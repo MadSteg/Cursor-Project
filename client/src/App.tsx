@@ -14,6 +14,7 @@ import AboutPage from "@/pages/AboutPage";
 import UserNFTWallet from "@/pages/UserNFTWallet";
 import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
 import ScanReceipt from "@/pages/ScanReceiptPage";
+import ReceiptScanner from "@/pages/ReceiptScannerPage";
 import VerifyReceipt from "@/pages/VerifyReceipt";
 import MerchantDashboard from "@/pages/MerchantDashboard";
 
@@ -57,6 +58,7 @@ function Router() {
         <Route path="/nft-wallet" component={UserNFTWallet} />
         <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
         <Route path="/scan-receipt" component={ScanReceipt} />
+        <Route path="/receipt-scanner" component={ReceiptScanner} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
         
