@@ -113,10 +113,10 @@ export async function mintReceiptNft(
         });
       }, 2500); // Simulate blockchain transaction time
     });
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 }
@@ -157,10 +157,10 @@ export async function grantDataAccess(
         });
       }, 1500); // Simulate blockchain transaction time
     });
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 }
@@ -201,10 +201,10 @@ export async function revokeDataAccess(
         });
       }, 1500); // Simulate blockchain transaction time
     });
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 }
