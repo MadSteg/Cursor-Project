@@ -662,9 +662,561 @@ export const products: Product[] = [
     createdAt: "2025-05-03T11:20:00Z",
     updatedAt: "2025-05-14T10:15:00Z"
   },
-  // Add more products for each merchant...
-
-  // Totaling 40 products
+  
+  // Gourmet Eats Products
+  {
+    id: "product-ge-1",
+    name: "Artisanal Olive Oil Collection",
+    description: "Premium collection of single-estate olive oils from Mediterranean regions",
+    price: 149.99,
+    images: ["/products/gourmet-eats/olive-oil-collection.jpg"],
+    merchantId: "merchant-gourmet-eats",
+    category: ProductCategory.FOOD,
+    sku: "GE-OIL-COLL-1",
+    serialNumber: "GE2025051401",
+    available: true,
+    tags: ["Gourmet", "Olive Oil", "Artisanal", "Gift Set"],
+    metadata: {
+      origin: "Italy, Spain, Greece",
+      varieties: "5 bottles, 250ml each",
+      includes: "Tasting notes, pairing guide",
+      organic: true,
+      harvestDate: "Fall 2024"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-04T09:00:00Z",
+    updatedAt: "2025-05-14T11:00:00Z"
+  },
+  {
+    id: "product-ge-2",
+    name: "Single Origin Coffee Subscription",
+    description: "Monthly delivery of rare single-origin coffees with tasting notes",
+    price: 35.99,
+    images: ["/products/gourmet-eats/coffee-subscription.jpg"],
+    merchantId: "merchant-gourmet-eats",
+    category: ProductCategory.FOOD,
+    sku: "GE-COFFEE-SUB-1",
+    serialNumber: "GE2025051402",
+    available: true,
+    tags: ["Coffee", "Subscription", "Single Origin", "Artisanal"],
+    metadata: {
+      frequency: "Monthly",
+      quantity: "12oz per delivery",
+      roast: "Customer preference",
+      sourcing: "Direct trade",
+      includes: "Tasting notes, brewing guide"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.STANDARD,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-04T09:30:00Z",
+    updatedAt: "2025-05-14T11:15:00Z"
+  },
+  {
+    id: "product-ge-3",
+    name: "Japanese Wagyu A5 Beef",
+    description: "Premium A5 grade Japanese Wagyu beef with exceptional marbling",
+    price: 299.99,
+    images: ["/products/gourmet-eats/wagyu-beef.jpg"],
+    merchantId: "merchant-gourmet-eats",
+    category: ProductCategory.FOOD,
+    sku: "GE-MEAT-WAGYU-1",
+    serialNumber: "GE2025051403",
+    available: true,
+    tags: ["Wagyu", "Beef", "Luxury", "Japanese", "A5"],
+    metadata: {
+      origin: "Miyazaki, Japan",
+      grade: "A5",
+      quantity: "2 ribeye steaks (12oz each)",
+      marbling: "BMS 10-12",
+      shipping: "Flash-frozen, overnight delivery"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-04T10:00:00Z",
+    updatedAt: "2025-05-14T11:30:00Z"
+  },
+  {
+    id: "product-ge-4",
+    name: "Rare Vintage Wine Collection",
+    description: "Curated collection of rare vintage wines from premier estates",
+    price: 4999.99,
+    images: ["/products/gourmet-eats/vintage-wine.jpg"],
+    merchantId: "merchant-gourmet-eats",
+    category: ProductCategory.FOOD,
+    sku: "GE-WINE-VINTAGE-1",
+    serialNumber: "GE2025051404",
+    available: true,
+    tags: ["Wine", "Vintage", "Luxury", "Collection", "Rare"],
+    metadata: {
+      bottles: "6 bottles",
+      regions: "Bordeaux, Burgundy, Tuscany",
+      vintages: "1990-2010",
+      storage: "Temperature-controlled",
+      includes: "Provenance certificates, tasting notes"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-04T10:30:00Z",
+    updatedAt: "2025-05-14T11:45:00Z"
+  },
+  {
+    id: "product-ge-5",
+    name: "Truffle Tasting Experience",
+    description: "Premium black and white truffle products with virtual tasting session",
+    price: 245.00,
+    images: ["/products/gourmet-eats/truffle-tasting.jpg"],
+    merchantId: "merchant-gourmet-eats",
+    category: ProductCategory.FOOD,
+    sku: "GE-TRUFFLE-EXP-1",
+    serialNumber: "GE2025051405",
+    available: true,
+    tags: ["Truffle", "Gourmet", "Tasting", "Experience"],
+    metadata: {
+      contents: "Truffle oil, salt, honey, and fresh seasonal truffle",
+      origin: "Italy and France",
+      includes: "Virtual tasting with chef, recipe booklet",
+      session: "45-minute private session",
+      shipping: "Express, temperature-controlled"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-04T11:00:00Z",
+    updatedAt: "2025-05-14T12:00:00Z"
+  },
+  
+  // Beauty Bliss Products
+  {
+    id: "product-bb-1",
+    name: "Luxury Skincare Collection",
+    description: "Complete luxury skincare regimen with rare botanical extracts",
+    price: 499.99,
+    images: ["/products/beauty-bliss/skincare-collection.jpg"],
+    merchantId: "merchant-beauty-bliss",
+    category: ProductCategory.BEAUTY,
+    sku: "BB-SKIN-COLL-1",
+    serialNumber: "BB2025051401",
+    available: true,
+    tags: ["Skincare", "Luxury", "Anti-aging", "Botanicals"],
+    metadata: {
+      products: "7-piece collection",
+      ingredients: "Rare plant extracts, peptides, antioxidants",
+      suitable: "All skin types",
+      packaging: "Sustainable glass and bamboo",
+      madeIn: "Switzerland"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-05T09:00:00Z",
+    updatedAt: "2025-05-14T12:15:00Z"
+  },
+  {
+    id: "product-bb-2",
+    name: "Custom Fragrance Experience",
+    description: "Personalized luxury fragrance crafted to your preferences",
+    price: 750.00,
+    images: ["/products/beauty-bliss/custom-fragrance.jpg"],
+    merchantId: "merchant-beauty-bliss",
+    category: ProductCategory.BEAUTY,
+    sku: "BB-FRAG-CUSTOM-1",
+    serialNumber: "BB2025051402",
+    available: true,
+    tags: ["Fragrance", "Custom", "Luxury", "Personalized"],
+    metadata: {
+      process: "Consultation, custom blending, aging",
+      volume: "100ml Eau de Parfum",
+      packaging: "Crystal bottle with personalized engraving",
+      includes: "Formula record for future orders",
+      timeline: "4-6 weeks for creation"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-05T09:30:00Z",
+    updatedAt: "2025-05-14T12:30:00Z"
+  },
+  {
+    id: "product-bb-3",
+    name: "Professional Makeup Collection",
+    description: "Comprehensive luxury makeup collection used by professional artists",
+    price: 399.99,
+    images: ["/products/beauty-bliss/makeup-collection.jpg"],
+    merchantId: "merchant-beauty-bliss",
+    category: ProductCategory.BEAUTY,
+    sku: "BB-MAKEUP-PRO-1",
+    serialNumber: "BB2025051403",
+    available: true,
+    tags: ["Makeup", "Professional", "Collection", "Luxury"],
+    metadata: {
+      products: "40-piece collection",
+      shades: "Universal range for all skin tones",
+      formulation: "Long-wearing, cruelty-free",
+      includes: "Professional brushes, trainings",
+      packaging: "Professional carrying case"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-05T10:00:00Z",
+    updatedAt: "2025-05-14T12:45:00Z"
+  },
+  {
+    id: "product-bb-4",
+    name: "Rare Botanical Hair Treatment",
+    description: "Intensive hair restoration treatment with rare plant extracts",
+    price: 189.99,
+    images: ["/products/beauty-bliss/hair-treatment.jpg"],
+    merchantId: "merchant-beauty-bliss",
+    category: ProductCategory.BEAUTY,
+    sku: "BB-HAIR-TREAT-1",
+    serialNumber: "BB2025051404",
+    available: true,
+    tags: ["Hair", "Treatment", "Botanical", "Luxury"],
+    metadata: {
+      ingredients: "Rare Amazonian botanicals, peptides",
+      treatment: "8-week progressive system",
+      benefits: "Repair, growth, strength, shine",
+      suitable: "All hair types",
+      usage: "In-salon and at-home components"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true
+      }
+    },
+    createdAt: "2025-05-05T10:30:00Z",
+    updatedAt: "2025-05-14T13:00:00Z"
+  },
+  {
+    id: "product-bb-5",
+    name: "Wellness Spa Experience Package",
+    description: "Comprehensive luxury spa day with treatments and take-home products",
+    price: 650.00,
+    images: ["/products/beauty-bliss/spa-package.jpg"],
+    merchantId: "merchant-beauty-bliss",
+    category: ProductCategory.BEAUTY,
+    sku: "BB-SPA-PKG-1",
+    serialNumber: "BB2025051405",
+    available: true,
+    tags: ["Spa", "Wellness", "Experience", "Luxury"],
+    metadata: {
+      duration: "Full day (6 hours)",
+      includes: "Massage, facial, body treatment, lunch",
+      products: "Personalized take-home collection",
+      location: "Available at partner luxury spas",
+      validity: "12 months from purchase"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        serialNumberTracking: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-05T11:00:00Z",
+    updatedAt: "2025-05-14T13:15:00Z"
+  },
+  
+  // Digital Dreams Products
+  {
+    id: "product-dd-1",
+    name: "Premium NFT Artwork",
+    description: "Limited edition digital artwork from renowned digital artist",
+    price: 3500.00,
+    images: ["/products/digital-dreams/nft-artwork.jpg"],
+    merchantId: "merchant-digital-dreams",
+    category: ProductCategory.DIGITAL,
+    sku: "DD-NFT-ART-1",
+    serialNumber: "DD2025051401",
+    available: true,
+    tags: ["NFT", "Digital Art", "Collectible", "Limited Edition"],
+    metadata: {
+      artist: "Alexandra Chen",
+      edition: "5 of 25",
+      dimensions: "8000 x 8000 px",
+      format: "Digital + physical display frame",
+      rights: "Personal display, resale rights"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-06T09:00:00Z",
+    updatedAt: "2025-05-14T13:30:00Z"
+  },
+  {
+    id: "product-dd-2",
+    name: "Virtual Reality Experience Package",
+    description: "Premium VR headset with exclusive immersive experiences",
+    price: 1299.99,
+    images: ["/products/digital-dreams/vr-package.jpg"],
+    merchantId: "merchant-digital-dreams",
+    category: ProductCategory.DIGITAL,
+    sku: "DD-VR-PKG-1",
+    serialNumber: "DD2025051402",
+    available: true,
+    tags: ["VR", "Virtual Reality", "Technology", "Experience"],
+    metadata: {
+      hardware: "Next-gen VR headset with haptic feedback",
+      content: "12-month subscription to premium experiences",
+      exclusives: "3 collector's edition experiences",
+      compatibility: "PC, standalone",
+      warranty: "2 years extended coverage"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        warrantyInfo: true
+      }
+    },
+    createdAt: "2025-05-06T09:30:00Z",
+    updatedAt: "2025-05-14T13:45:00Z"
+  },
+  {
+    id: "product-dd-3",
+    name: "Premium Software Suite Lifetime License",
+    description: "Comprehensive creative software suite with lifetime updates",
+    price: 2499.99,
+    images: ["/products/digital-dreams/software-suite.jpg"],
+    merchantId: "merchant-digital-dreams",
+    category: ProductCategory.DIGITAL,
+    sku: "DD-SOFT-SUITE-1",
+    serialNumber: "DD2025051403",
+    available: true,
+    tags: ["Software", "Creative", "Professional", "Lifetime"],
+    metadata: {
+      applications: "12 professional applications",
+      platforms: "Windows, macOS, Linux, iOS, Android",
+      updates: "Lifetime major version updates",
+      support: "Premium 24/7 support for 5 years",
+      users: "License for 2 users"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        warrantyInfo: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-06T10:00:00Z",
+    updatedAt: "2025-05-14T14:00:00Z"
+  },
+  {
+    id: "product-dd-4",
+    name: "Exclusive Digital Music Collection",
+    description: "Limited edition digital music collection with lossless audio",
+    price: 149.99,
+    images: ["/products/digital-dreams/music-collection.jpg"],
+    merchantId: "merchant-digital-dreams",
+    category: ProductCategory.DIGITAL,
+    sku: "DD-MUSIC-COLL-1",
+    serialNumber: "DD2025051404",
+    available: true,
+    tags: ["Music", "Digital", "Collection", "Audiophile"],
+    metadata: {
+      artists: "5 renowned electronic artists",
+      tracks: "40 exclusive tracks",
+      format: "24-bit/96kHz lossless audio",
+      extras: "Behind-the-scenes content, stems",
+      exclusivity: "Not available on streaming platforms"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.PREMIUM,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-06T10:30:00Z",
+    updatedAt: "2025-05-14T14:15:00Z"
+  },
+  {
+    id: "product-dd-5",
+    name: "Digital Collectible Game Assets",
+    description: "Rare in-game assets with real-world value and cross-game compatibility",
+    price: 299.99,
+    images: ["/products/digital-dreams/game-assets.jpg"],
+    merchantId: "merchant-digital-dreams",
+    category: ProductCategory.DIGITAL,
+    sku: "DD-GAME-ASSETS-1",
+    serialNumber: "DD2025051405",
+    available: true,
+    tags: ["Gaming", "Collectible", "Assets", "Blockchain"],
+    metadata: {
+      items: "10 legendary-tier items",
+      games: "Compatible with 5 major game platforms",
+      rarity: "Limited edition (500 sets)",
+      utility: "In-game advantages, cosmetic uniqueness",
+      transferability: "Cross-platform portability"
+    },
+    nftReceipt: {
+      availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
+      defaultTier: NFTReceiptTier.LUXURY,
+      pricing: {
+        [NFTReceiptTier.STANDARD]: 0.99,
+        [NFTReceiptTier.PREMIUM]: 2.99,
+        [NFTReceiptTier.LUXURY]: 5.00
+      },
+      encryptionScheme: 'taco-tpre',
+      additionalMetadata: {
+        authenticityVerification: true,
+        serialNumberTracking: true,
+        resellRights: true
+      }
+    },
+    createdAt: "2025-05-06T11:00:00Z",
+    updatedAt: "2025-05-14T14:30:00Z"
+  }
+  
+  // Totaling 40 products (5 products from each of the 8 merchants)
 ];
 
 /**
