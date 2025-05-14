@@ -1,0 +1,72 @@
+{
+  "name": "BlockReceipt #1 - Whole Foods Premium Receipt",
+  "description": "Digital receipt for a purchase at Whole Foods Market on May 14, 2025. This receipt includes detailed purchase information and provides proof of purchase for warranty and return purposes.",
+  "image": "ipfs://QmYourReceiptImageHash/image.png",
+  "external_url": "https://blockreceipt.ai/receipt/1",
+  "background_color": "FFFFFF",
+  "animation_url": "ipfs://QmAnimationHash/receipt-animation.mp4",
+  "attributes": [
+    {
+      "trait_type": "Merchant",
+      "value": "Whole Foods Market"
+    },
+    {
+      "trait_type": "Receipt Type",
+      "value": "Premium"
+    },
+    {
+      "trait_type": "Purchase Date",
+      "display_type": "date",
+      "value": 1747267200
+    },
+    {
+      "trait_type": "Total Amount",
+      "display_type": "number", 
+      "value": 145.67
+    },
+    {
+      "trait_type": "Currency",
+      "value": "USD"
+    },
+    {
+      "trait_type": "Items",
+      "value": 12
+    },
+    {
+      "trait_type": "Payment Method",
+      "value": "Credit Card"
+    },
+    {
+      "trait_type": "Tax Amount",
+      "display_type": "number",
+      "value": 9.87
+    },
+    {
+      "trait_type": "Discount",
+      "display_type": "number",
+      "value": 5.00
+    },
+    {
+      "trait_type": "Store ID",
+      "value": "WF-42069"
+    },
+    {
+      "trait_type": "Status",
+      "value": "Valid"
+    }
+  ],
+  "encrypted_data": {
+    "ciphertext": "0x...", 
+    "taco_urls": ["https://taco1.example.com", "https://taco2.example.com"],
+    "policy_id": "1747267001"
+  },
+  "receipt_details": {
+    "transaction_id": "txn-wholefoods-202505141224",
+    "refund_policy_url": "https://www.wholefoods.com/refund-policy",
+    "warranty_info": "30-day standard return policy applies to all items",
+    "loyalty_rewards": {
+      "points_earned": 146,
+      "membership_level": "Gold"
+    }
+  }
+}
