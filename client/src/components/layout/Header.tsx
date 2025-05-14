@@ -56,6 +56,16 @@ const Header: React.FC = () => {
                 Encryption
               </span>
             </Link>
+            <Link href="/nft-wallet">
+              <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                NFT Wallet
+              </span>
+            </Link>
+            <Link href="/merchant-dashboard">
+              <span className={`text-sm font-medium ${currentLocation === "/merchant-dashboard" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                Merchant
+              </span>
+            </Link>
             <Link href="/verify-receipt">
               <span className={`text-sm font-medium ${currentLocation === "/verify-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
                 Verify Receipt
@@ -118,6 +128,16 @@ const Header: React.FC = () => {
                   <Link href="/encryption-settings">
                     <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                       <Lock className="h-5 w-5" /> Encryption
+                    </span>
+                  </Link>
+                  <Link href="/nft-wallet">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <Receipt className="h-5 w-5" /> NFT Wallet
+                    </span>
+                  </Link>
+                  <Link href="/merchant-dashboard">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <ShoppingCart className="h-5 w-5" /> Merchant
                     </span>
                   </Link>
                   <Link href="/verify-receipt">

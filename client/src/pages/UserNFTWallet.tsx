@@ -7,7 +7,23 @@ import { Separator } from '@/components/ui/separator';
 import { Wallet, ShoppingBag, Filter, Search, QrCode, Share2, Grid3X3, List, Download, Info } from 'lucide-react';
 import { EnhancedNFTReceiptCard } from '@/components/receipts/EnhancedNFTReceiptCard';
 
-const mockReceipts = [
+// Type-safe receipt types
+type ReceiptType = 'standard' | 'premium' | 'luxury';
+
+interface MockReceipt {
+  id: number;
+  merchant: { name: string; logo: string };
+  purchaseDate: string;
+  amount: number;
+  currencySymbol: string;
+  items: number;
+  receiptType: ReceiptType;
+  tokenId: number;
+  contractAddress: string;
+  revoked?: boolean;
+}
+
+const mockReceipts: MockReceipt[] = [
   {
     id: 1,
     merchant: { name: "Whole Foods Market", logo: "wholefoods.png" },

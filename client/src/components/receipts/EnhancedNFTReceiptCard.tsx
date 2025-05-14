@@ -1,259 +1,147 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
-import { AlertCircle, ArrowRight, Calendar, CreditCard, Download, Eye, Share2, ShoppingBag, Tag } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { ReceiptVerification } from './ReceiptVerification';
+import { Button } from '@/components/ui/button';
+import { Download, Share2, Info, Eye, Lock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-// NFT receipt types with corresponding styling
-const receiptStyles = {
-  standard: {
-    borderColor: 'border-blue-400',
-    gradientFrom: 'from-blue-50',
-    gradientTo: 'to-white',
-    shadow: 'shadow-blue-100',
-    badgeColor: 'bg-blue-100 text-blue-800',
-    iconColor: 'text-blue-500'
-  },
-  premium: {
-    borderColor: 'border-purple-400',
-    gradientFrom: 'from-purple-50',
-    gradientTo: 'to-pink-50',
-    shadow: 'shadow-purple-100',
-    badgeColor: 'bg-purple-100 text-purple-800',
-    iconColor: 'text-purple-500'
-  },
-  luxury: {
-    borderColor: 'border-amber-400',
-    gradientFrom: 'from-amber-50',
-    gradientTo: 'to-yellow-100',
-    shadow: 'shadow-amber-100',
-    badgeColor: 'bg-amber-100 text-amber-800',
-    iconColor: 'text-amber-500',
-    shimmer: 'animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent'
-  }
-};
+export type ReceiptType = 'standard' | 'premium' | 'luxury';
 
-interface EnhancedNFTReceiptCardProps {
+export interface EnhancedNFTReceiptCardProps {
   id: number;
-  merchant: {
-    name: string;
-    logo?: string;
-  };
-  purchaseDate: string; // ISO date string
+  merchant: { name: string; logo: string };
+  purchaseDate: string;
   amount: number;
-  currencySymbol?: string;
+  currencySymbol: string;
   items: number;
-  receiptType: 'standard' | 'premium' | 'luxury';
+  receiptType: ReceiptType;
   tokenId: number;
   contractAddress: string;
-  imageUrl?: string;
-  onViewDetails?: (id: number) => void;
   revoked?: boolean;
 }
 
-export function EnhancedNFTReceiptCard({
-  id,
+export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
   merchant,
   purchaseDate,
   amount,
-  currencySymbol = '$',
-  items,
-  receiptType = 'standard',
+  currencySymbol,
+  receiptType,
   tokenId,
-  contractAddress,
-  imageUrl,
-  onViewDetails,
-  revoked = false
-}: EnhancedNFTReceiptCardProps) {
-  const { toast } = useToast();
-  const style = receiptStyles[receiptType];
-  const [hovering, setHovering] = useState(false);
-  
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-  
-  // Format timestamp for verification component
-  const getTimestamp = (dateString: string) => {
-    return Math.floor(new Date(dateString).getTime() / 1000);
-  };
-
-  // Handle share action
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `Receipt from ${merchant.name}`,
-        text: `Check out my receipt for ${currencySymbol}${amount.toFixed(2)} from ${merchant.name}`,
-        url: window.location.href
-      }).catch(error => {
-        toast({
-          title: "Sharing failed",
-          description: "Could not share receipt.",
-          variant: "destructive",
-        });
-      });
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link copied",
-        description: "Receipt link copied to clipboard.",
-      });
+  revoked,
+}) => {
+  // Define styles based on receipt type
+  const receiptStyles = {
+    standard: {
+      gradientBg: 'bg-gradient-to-br from-gray-100 to-blue-100',
+      border: 'border-gray-200',
+      headerBg: 'bg-white/70',
+      icon: '🧾',
+      badgeColor: 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+    },
+    premium: {
+      gradientBg: 'bg-gradient-to-br from-indigo-100 to-purple-100',
+      border: 'border-indigo-200',
+      headerBg: 'bg-white/70',
+      icon: '🏆',
+      badgeColor: 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
+    },
+    luxury: {
+      gradientBg: 'bg-gradient-to-br from-amber-100 to-yellow-100',
+      border: 'border-amber-200',
+      headerBg: 'bg-white/80',
+      icon: '✨',
+      badgeColor: 'bg-amber-100 text-amber-800 hover:bg-amber-200'
     }
   };
-  
-  // Handle download action
-  const handleDownload = () => {
-    // In a real implementation, this would generate and download a PDF or image of the receipt
-    toast({
-      title: "Download started",
-      description: "Your receipt is being prepared for download.",
-    });
-  };
+
+  const style = receiptStyles[receiptType];
+  const formattedDate = new Date(purchaseDate).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 
   return (
-    <Card 
-      className={`w-full max-w-sm relative overflow-hidden border-2 ${style.borderColor} ${style.shadow} transition-all duration-300 ease-in-out ${
-        hovering ? 'scale-[1.02]' : ''
-      } ${receiptType === 'luxury' ? 'bg-gradient-to-br from-amber-50 to-yellow-100' : `bg-gradient-to-b ${style.gradientFrom} ${style.gradientTo}`}`}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-    >
-      {/* Shimmer effect for luxury cards */}
-      {receiptType === 'luxury' && (
-        <div className="absolute inset-0 mask-shimmer overflow-hidden">
-          <div className="absolute inset-0 translate-x-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-        </div>
-      )}
-      
-      {/* Revoked badge */}
-      {revoked && (
-        <div className="absolute top-3 right-3 z-10">
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" /> Revoked
+    <Card className={`overflow-hidden ${style.border} hover:shadow-md transition-shadow ${revoked ? 'opacity-60' : ''}`}>
+      <div className={`relative ${style.gradientBg} p-4`}>
+        {/* Merchant info */}
+        <div className={`flex justify-between items-center ${style.headerBg} p-3 rounded-lg mb-3`}>
+          <div className="flex items-center">
+            <div className="text-2xl mr-2">{style.icon}</div>
+            <div>
+              <h3 className="font-bold">{merchant.name}</h3>
+              <div className="text-xs text-gray-500">{formattedDate}</div>
+            </div>
+          </div>
+          <Badge variant="outline" className={style.badgeColor}>
+            {receiptType.charAt(0).toUpperCase() + receiptType.slice(1)}
           </Badge>
         </div>
-      )}
-      
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg font-bold">{merchant.name}</CardTitle>
-            <CardDescription className="flex items-center gap-1 mt-1">
-              <Calendar className={`h-3 w-3 ${style.iconColor}`} />
-              {formatDate(purchaseDate)}
-            </CardDescription>
+
+        {/* NFT Card Content */}
+        <div className="flex flex-col items-center justify-center py-4">
+          <div className="text-center mb-4">
+            <div className="text-2xl font-bold">{currencySymbol}{amount.toFixed(2)}</div>
+            <div className="text-sm text-gray-600">Token #{tokenId}</div>
           </div>
           
-          <Badge variant="outline" className={`${style.badgeColor} capitalize`}>
-            {receiptType}
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="py-2">
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-2xl font-bold">
-            {currencySymbol}{amount.toFixed(2)}
-          </div>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <ShoppingBag className={`h-3 w-3 mr-1 ${style.iconColor}`} />
-            {items} item{items !== 1 ? 's' : ''}
+          {/* NFT Visual representation - simulated for this mock */}
+          <div className={`w-full aspect-square rounded-lg mb-4 flex items-center justify-center 
+                        bg-white/50 border ${style.border} overflow-hidden`}>
+            {revoked ? (
+              <div className="flex flex-col items-center text-gray-400">
+                <Lock size={48} />
+                <span className="mt-2 font-medium">Revoked Receipt</span>
+              </div>
+            ) : (
+              <div className="text-6xl">{style.icon}</div>
+            )}
           </div>
         </div>
-        
-        {imageUrl && (
-          <div className="w-full mb-4 rounded-md overflow-hidden">
-            <img 
-              src={imageUrl} 
-              alt={`Receipt for ${merchant.name}`} 
-              className="w-full h-auto object-cover"
-            />
+
+        {/* Action buttons */}
+        <div className="flex justify-between pt-2">
+          <div className="flex space-x-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Info className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View Details</TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Download Receipt</TooltipContent>
+            </Tooltip>
           </div>
-        )}
-        
-        <div className="flex items-center text-xs text-muted-foreground mt-2">
-          <Tag className={`h-3 w-3 mr-1 ${style.iconColor}`} />
-          Token ID: {tokenId}
+          
+          <div className="flex space-x-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View on Blockchain</TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Share Receipt</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-        
-        <div className="flex items-center text-xs text-muted-foreground mt-1">
-          <CreditCard className={`h-3 w-3 mr-1 ${style.iconColor}`} />
-          <span className="font-mono truncate" title={contractAddress}>
-            Contract: {contractAddress.substring(0, 6)}...{contractAddress.substring(contractAddress.length - 4)}
-          </span>
-        </div>
-      </CardContent>
-      
-      <Separator />
-      
-      <CardFooter className="flex justify-between py-3">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className={`${style.iconColor} hover:bg-opacity-10 hover:bg-black`}
-          onClick={handleShare}
-        >
-          <Share2 className="h-4 w-4 mr-1" />
-          Share
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`${style.iconColor} hover:bg-opacity-10 hover:bg-black`}
-          onClick={handleDownload}
-        >
-          <Download className="h-4 w-4 mr-1" />
-          Download
-        </Button>
-        
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`${style.iconColor} hover:bg-opacity-10 hover:bg-black`}
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              Verify
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <ReceiptVerification
-              receiptId={id}
-              contractAddress={contractAddress}
-              tokenId={tokenId}
-              receiptType={receiptType}
-              revoked={!!revoked}
-              timestamp={getTimestamp(purchaseDate)}
-              network="amoy"
-            />
-          </DialogContent>
-        </Dialog>
-        
-        {onViewDetails && (
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className={`${style.iconColor} hover:bg-opacity-10 hover:bg-black`}
-            onClick={() => onViewDetails(id)}
-          >
-            Details 
-            <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
-        )}
-      </CardFooter>
+      </div>
     </Card>
   );
-}
+};
