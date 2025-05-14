@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
 import { storage } from "../storage";
-import { insertEncryptionKeySchema, insertSharedAccessSchema } from "@shared/schema";
 
 const router = Router();
 
@@ -39,7 +38,17 @@ router.post("/api/encryption-keys", async (req, res) => {
   }
 
   try {
-    const validatedData = insertEncryptionKeySchema.parse({
+    // Create encryption key schema inline
+    const encryptionKeySchema = z.object({
+      userId: z.number(),
+      publicKey: z.string(),
+      encryptedPrivateKey: z.string(),
+      name: z.string().optional(),
+      keyType: z.string().default("rsa"),
+      keySize: z.number().default(2048),
+    });
+    
+    const validatedData = encryptionKeySchema.parse({
       ...req.body,
       userId: req.user.id,
     });
@@ -106,7 +115,17 @@ router.put("/api/encryption-keys/:id", async (req, res) => {
       return res.status(403).json({ error: "Access denied" });
     }
 
-    const validatedData = insertEncryptionKeySchema.partial().parse(req.body);
+    // Create encryption key schema inline (same as before)
+    const encryptionKeySchema = z.object({
+      userId: z.number(),
+      publicKey: z.string(),
+      encryptedPrivateKey: z.string(),
+      name: z.string().optional(),
+      keyType: z.string().default("rsa"),
+      keySize: z.number().default(2048),
+    });
+    
+    const validatedData = encryptionKeySchema.partial().parse(req.body);
     const updatedKey = await storage.updateEncryptionKey(keyId, validatedData);
     res.json(updatedKey);
   } catch (error) {
@@ -176,7 +195,17 @@ router.post("/api/receipts/:id/shared-access", async (req, res) => {
       return res.status(403).json({ error: "Access denied" });
     }
 
-    const validatedData = insertSharedAccessSchema.parse({
+    // Create shared access schema inline
+    const sharedAccessSchema = z.object({
+      receiptId: z.number(),
+      ownerUserId: z.number(),
+      targetUserId: z.number(),
+      reEncryptedKey: z.string(),
+      permissions: z.string().default("read"),
+      expiresAt: z.date().optional()
+    });
+    
+    const validatedData = sharedAccessSchema.parse({
       ...req.body,
       receiptId,
       ownerUserId: req.user.id,

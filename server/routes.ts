@@ -17,6 +17,8 @@ import merchantPluginRoutes from "./routes/merchant-plugin";
 import productsRoutes from "./routes/products";
 import merchantsRoutes from "./routes/merchants";
 import nftReceiptsRoutes from "./routes/nft-receipts";
+// Metadata access control routes
+import metadataRoutes from "./routes/metadata";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -61,6 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/products', productsRoutes);
   app.use('/api/merchants', merchantsRoutes);
   app.use('/api/nft-receipts', nftReceiptsRoutes);
+  
+  // Register metadata access control routes
+  app.use('/api', metadataRoutes);
   
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
