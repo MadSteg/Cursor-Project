@@ -1,763 +1,569 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Input } from '@/components/ui/input';
+import { Link } from 'wouter';
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, Cell
-} from 'recharts';
-import { 
+  Store, 
   BarChart2, 
+  TrendingUp, 
   Users, 
-  CreditCard, 
   ShoppingBag, 
-  Settings, 
-  Bell, 
-  Key, 
-  Brush, 
-  Palette, 
-  PieChart,
-  Database,
-  Share2,
-  AlertCircle,
-  Check,
-  Copy,
-  Edit,
-  Upload,
-  Trash2
+  DollarSign, 
+  ArrowUpRight, 
+  ArrowDownRight,
+  Receipt,
+  GaugeCircle,
+  Settings,
+  Clock,
+  FileText,
+  Key
 } from 'lucide-react';
 
-const analyticsData = [
-  { name: 'Jan', receipts: 42, revenue: 3200 },
-  { name: 'Feb', receipts: 53, revenue: 4100 },
-  { name: 'Mar', receipts: 62, revenue: 5300 },
-  { name: 'Apr', receipts: 78, revenue: 6200 },
-  { name: 'May', receipts: 91, revenue: 7400 },
-];
+// Chart component placeholder (would be recharts in a real implementation)
+const SalesChart: React.FC = () => (
+  <div className="h-64 bg-gray-50 rounded-md flex items-center justify-center">
+    <BarChart2 className="h-10 w-10 text-gray-300" />
+    <span className="text-sm text-gray-500 ml-2">Sales chart visualization</span>
+  </div>
+);
 
-const receiptTypes = [
-  { type: 'Standard', count: 187, percentage: 62 },
-  { type: 'Premium', count: 85, percentage: 28 },
-  { type: 'Luxury', count: 29, percentage: 10 },
-];
+const TopProducts: React.FC = () => (
+  <div className="space-y-3">
+    {[
+      { name: 'Organic Avocado', sales: 423, trend: 'up', percentage: 12 },
+      { name: 'Almond Milk', sales: 358, trend: 'up', percentage: 8 },
+      { name: 'Organic Banana', sales: 294, trend: 'down', percentage: 3 },
+      { name: 'Whole Grain Bread', sales: 247, trend: 'up', percentage: 5 },
+      { name: 'Greek Yogurt', sales: 193, trend: 'down', percentage: 2 },
+    ].map((product, idx) => (
+      <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
+        <div>
+          <div className="font-medium">{product.name}</div>
+          <div className="text-sm text-muted-foreground">{product.sales} units</div>
+        </div>
+        <div className={`flex items-center ${product.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+          {product.trend === 'up' ? (
+            <ArrowUpRight className="h-4 w-4 mr-1" />
+          ) : (
+            <ArrowDownRight className="h-4 w-4 mr-1" />
+          )}
+          <span>{product.percentage}%</span>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
-const mockReceipts = [
-  {
-    id: 123456,
-    customer: 'johndoe@example.com',
-    date: '2025-05-10T10:30:00Z',
-    amount: 84.32,
-    type: 'Premium',
-    status: 'Active'
-  },
-  {
-    id: 123457,
-    customer: 'alice@example.com',
-    date: '2025-05-09T14:20:00Z',
-    amount: 129.99,
-    type: 'Luxury',
-    status: 'Active'
-  },
-  {
-    id: 123458,
-    customer: 'bob@example.com',
-    date: '2025-05-08T09:15:00Z',
-    amount: 49.95,
-    type: 'Standard',
-    status: 'Active'
-  },
-  {
-    id: 123459,
-    customer: 'sarah@example.com',
-    date: '2025-05-07T16:45:00Z',
-    amount: 67.50,
-    type: 'Premium',
-    status: 'Active'
-  },
-  {
-    id: 123460,
-    customer: 'michael@example.com',
-    date: '2025-05-06T11:30:00Z',
-    amount: 199.99,
-    type: 'Luxury',
-    status: 'Revoked'
-  }
-];
+interface KPICardProps {
+  title: string;
+  value: string | number;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+}
 
-export default function MerchantDashboard() {
-  const [apiKey, setApiKey] = useState('bkr_test_l7HzKm9N2s8fR3gT5pW6xY9v');
-  const [webhookUrl, setWebhookUrl] = useState('https://example.com/webhook/receipts');
-  const [loading, setLoading] = useState(false);
-  const [receiptDefaults, setReceiptDefaults] = useState({
-    standardEnabled: true,
-    premiumEnabled: true,
-    luxuryEnabled: false,
-    defaultType: 'standard',
-    autoIssue: true,
-    emailNotification: true,
-  });
+const KPICard: React.FC<KPICardProps> = ({ 
+  title, 
+  value, 
+  trend, 
+  trendValue, 
+  icon, 
+  iconBg, 
+  iconColor 
+}) => {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <h3 className="text-2xl font-bold mt-1">{value}</h3>
+            
+            {trend && (
+              <div className={`flex items-center mt-1 text-sm ${
+                trend === 'up' 
+                  ? 'text-green-600' 
+                  : trend === 'down' 
+                    ? 'text-red-600' 
+                    : 'text-gray-600'
+              }`}>
+                {trend === 'up' ? (
+                  <ArrowUpRight className="h-4 w-4 mr-1" />
+                ) : trend === 'down' ? (
+                  <ArrowDownRight className="h-4 w-4 mr-1" />
+                ) : null}
+                <span>{trendValue}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className={`p-3 rounded-full ${iconBg}`}>
+            <div className={`${iconColor}`}>
+              {icon}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
-  const handleGenerateNewKey = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setApiKey(`bkr_test_${Math.random().toString(36).substring(2, 15)}`);
-      setLoading(false);
-    }, 800);
-  };
-
-  const handleSaveSettings = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 800);
-  };
-
-  const handleCopyApiKey = () => {
-    navigator.clipboard.writeText(apiKey);
-  };
-
+const MerchantDashboard: React.FC = () => {
   return (
     <div className="container mx-auto py-10">
-      <div className="flex flex-col space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold">Merchant Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Manage your blockchain receipt settings, analytics, and integrations</p>
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold flex items-center">
+              <Store className="mr-3 h-8 w-8 text-primary" />
+              Merchant Dashboard
+            </h1>
+            <p className="text-xl text-muted-foreground mt-1">
+              Monitor sales and NFT receipt generation
+            </p>
+          </div>
+          
+          <div className="flex space-x-3">
+            <div className="bg-yellow-50 rounded-lg px-4 py-2 flex items-center border border-yellow-200">
+              <div className="pr-3 border-r border-yellow-200">
+                <GaugeCircle className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div className="px-3">
+                <div className="text-sm text-yellow-800 font-medium">Receipt Credits</div>
+                <div className="text-xl font-bold text-yellow-900">2,450</div>
+              </div>
+              <Button variant="outline" size="sm" className="ml-2 bg-white border-yellow-200 text-yellow-800 hover:bg-yellow-50 hover:text-yellow-900">
+                Buy More
+              </Button>
+            </div>
+            
+            <Button variant="outline">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <ShoppingBag className="h-5 w-5 mr-2" />
-                Receipts Issued
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">301</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
-            </CardContent>
-          </Card>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KPICard
+            title="Total Sales"
+            value="$24,532"
+            trend="up"
+            trendValue="12% from last month"
+            icon={<DollarSign className="h-6 w-6" />}
+            iconBg="bg-green-100"
+            iconColor="text-green-600"
+          />
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <Users className="h-5 w-5 mr-2" />
-                Unique Customers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">178</div>
-              <p className="text-xs text-muted-foreground">+8% from last month</p>
-            </CardContent>
-          </Card>
+          <KPICard
+            title="NFT Receipts Created"
+            value="1,284"
+            trend="up"
+            trendValue="8% from last month"
+            icon={<Receipt className="h-6 w-6" />}
+            iconBg="bg-blue-100"
+            iconColor="text-blue-600"
+          />
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <CreditCard className="h-5 w-5 mr-2" />
-                Revenue Processed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">$26,412</div>
-              <p className="text-xs text-muted-foreground">+15% from last month</p>
-            </CardContent>
-          </Card>
+          <KPICard
+            title="Active Customers"
+            value="832"
+            trend="up"
+            trendValue="5% from last month"
+            icon={<Users className="h-6 w-6" />}
+            iconBg="bg-purple-100"
+            iconColor="text-purple-600"
+          />
+          
+          <KPICard
+            title="Inventory Items"
+            value="472"
+            trend="neutral"
+            trendValue="2 new items this week"
+            icon={<ShoppingBag className="h-6 w-6" />}
+            iconBg="bg-amber-100"
+            iconColor="text-amber-600"
+          />
         </div>
-
-        <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="receipts">Receipts</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+        
+        <Tabs defaultValue="sales">
+          <div className="flex justify-between items-center mb-4">
+            <TabsList>
+              <TabsTrigger value="sales">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Sales & Analytics
+              </TabsTrigger>
+              <TabsTrigger value="receipts">
+                <Receipt className="h-4 w-4 mr-2" />
+                NFT Receipts
+              </TabsTrigger>
+              <TabsTrigger value="customers">
+                <Users className="h-4 w-4 mr-2" />
+                Customers
+              </TabsTrigger>
+            </TabsList>
+            
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <Clock className="h-4 w-4 mr-2" />
+                Last 30 Days
+              </Button>
+              <Button size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                Reports
+              </Button>
+            </div>
+          </div>
           
-          <div className="mt-6">
-            <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="sales" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Sales Overview</CardTitle>
+                  <CardDescription>Daily revenue for the past 30 days</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SalesChart />
+                </CardContent>
+              </Card>
+              
               <Card>
                 <CardHeader>
-                  <CardTitle>Welcome to your BlockReceipt Dashboard</CardTitle>
-                  <CardDescription>
-                    Your central hub for managing blockchain receipts for your customers
-                  </CardDescription>
+                  <CardTitle>Top Selling Products</CardTitle>
+                  <CardDescription>Based on last 30 days</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TopProducts />
+                </CardContent>
+                <CardFooter className="border-t pt-4">
+                  <Button variant="outline" className="w-full">
+                    View All Products
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sales by Category</CardTitle>
+                  <CardDescription>Product category breakdown</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-md bg-blue-50 p-4 border border-blue-100">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <AlertCircle className="h-5 w-5 text-blue-700" />
+                  {[
+                    { category: 'Produce', value: 35, color: 'bg-green-500' },
+                    { category: 'Dairy & Alternatives', value: 27, color: 'bg-blue-500' },
+                    { category: 'Bakery', value: 18, color: 'bg-amber-500' },
+                    { category: 'Meat & Seafood', value: 12, color: 'bg-red-500' },
+                    { category: 'Pantry', value: 8, color: 'bg-purple-500' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{item.category}</span>
+                        <span className="font-medium">{item.value}%</span>
                       </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-blue-800">API Integration</h3>
-                        <div className="mt-2 text-sm text-blue-700">
-                          <p>
-                            Use your API key to integrate BlockReceipt with your POS system or e-commerce platform.
-                          </p>
-                        </div>
-                      </div>
+                      <Progress value={item.value} className={`h-2 ${item.color}`} />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Receipt Engagement</CardTitle>
+                  <CardDescription>How customers interact with their receipts</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 p-4 rounded-lg text-center">
+                      <div className="text-3xl font-bold text-green-600">78%</div>
+                      <div className="text-sm text-gray-600 mt-1">View Rate</div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg text-center">
+                      <div className="text-3xl font-bold text-blue-600">4.2</div>
+                      <div className="text-sm text-gray-600 mt-1">Avg. Return Visits</div>
                     </div>
                   </div>
-
-                  <div>
-                    <h3 className="text-lg font-medium">Your API Key</h3>
-                    <p className="text-sm text-gray-500 mb-2">
-                      Use this key to authenticate your integration with the BlockReceipt API.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      value={apiKey}
-                      readOnly
-                      type="password"
-                    />
-                    <Button variant="outline" size="icon" onClick={handleCopyApiKey}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="pt-4">
-                    <Button 
-                      onClick={handleGenerateNewKey}
-                      disabled={loading}
-                    >
-                      {loading ? "Generating..." : "Generate New API Key"}
-                    </Button>
-                  </div>
-
-                  <Separator className="my-6" />
-
-                  <div>
-                    <h3 className="text-lg font-medium">Webhook URL</h3>
-                    <p className="text-sm text-gray-500 mb-2">
-                      Receive real-time notifications when receipts are minted or interacted with.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      value={webhookUrl}
-                      onChange={(e) => setWebhookUrl(e.target.value)}
-                      placeholder="https://your-website.com/webhook"
-                    />
-                    <Button variant="outline" size="icon">
-                      <Check className="h-4 w-4" />
-                    </Button>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Warranty Tracked</span>
+                      <span className="font-medium">64%</span>
+                    </div>
+                    <Progress value={64} className="h-2 bg-amber-200" />
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Verified by Customer</span>
+                      <span className="font-medium">53%</span>
+                    </div>
+                    <Progress value={53} className="h-2 bg-purple-200" />
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Shared with Others</span>
+                      <span className="font-medium">21%</span>
+                    </div>
+                    <Progress value={21} className="h-2 bg-blue-200" />
                   </div>
                 </CardContent>
               </Card>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Receipt Distribution</CardTitle>
-                    <CardDescription>
-                      Breakdown of receipt types issued
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {receiptTypes.map((item) => (
-                        <div key={item.type} className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Badge variant={item.type === 'Standard' ? 'default' : 
-                                          item.type === 'Premium' ? 'secondary' : 'destructive'} 
-                                   className="mr-2">
-                              {item.type}
-                            </Badge>
-                            <span>{item.count} receipts</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full ${
-                                  item.type === 'Standard' ? 'bg-blue-500' : 
-                                  item.type === 'Premium' ? 'bg-purple-500' : 'bg-amber-500'
-                                }`} 
-                                style={{ width: `${item.percentage}%` }}
-                              />
-                            </div>
-                            <span className="text-sm text-gray-500">{item.percentage}%</span>
-                          </div>
-                        </div>
-                      ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="receipts" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Recent NFT Receipts Generated</CardTitle>
+                    <CardDescription>Last 20 receipts generated for customers</CardDescription>
+                  </div>
+                  <Input placeholder="Search receipts..." className="w-64" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
+                    <div className="col-span-1">ID</div>
+                    <div className="col-span-2">Date</div>
+                    <div className="col-span-3">Customer</div>
+                    <div className="col-span-2">Amount</div>
+                    <div className="col-span-2">Type</div>
+                    <div className="col-span-2">Status</div>
+                  </div>
+                  {[
+                    { id: '7891', date: '2025-05-14', customer: 'John Smith', email: 'john@example.com', amount: 84.32, type: 'luxury', status: 'completed' },
+                    { id: '7890', date: '2025-05-14', customer: 'Sarah Johnson', email: 'sarah@example.com', amount: 45.99, type: 'standard', status: 'completed' },
+                    { id: '7889', date: '2025-05-14', customer: 'Michael Brown', email: 'michael@example.com', amount: 129.50, type: 'premium', status: 'completed' },
+                    { id: '7888', date: '2025-05-13', customer: 'Emily Davis', email: 'emily@example.com', amount: 67.25, type: 'standard', status: 'completed' },
+                    { id: '7887', date: '2025-05-13', customer: 'David Wilson', email: 'david@example.com', amount: 93.75, type: 'premium', status: 'completed' },
+                    { id: '7886', date: '2025-05-13', customer: 'Jessica Taylor', email: 'jessica@example.com', amount: 22.50, type: 'standard', status: 'completed' },
+                    { id: '7885', date: '2025-05-12', customer: 'Robert Miller', email: 'robert@example.com', amount: 156.40, type: 'luxury', status: 'completed' },
+                    { id: '7884', date: '2025-05-12', customer: 'Jennifer Anderson', email: 'jennifer@example.com', amount: 35.99, type: 'standard', status: 'completed' },
+                  ].map((receipt, idx) => (
+                    <div key={idx} className="grid grid-cols-12 gap-4 p-4 border-b hover:bg-gray-50 text-sm">
+                      <div className="col-span-1 font-mono text-gray-600">#{receipt.id}</div>
+                      <div className="col-span-2">{receipt.date}</div>
+                      <div className="col-span-3">
+                        <div>{receipt.customer}</div>
+                        <div className="text-xs text-muted-foreground">{receipt.email}</div>
+                      </div>
+                      <div className="col-span-2">${receipt.amount.toFixed(2)}</div>
+                      <div className="col-span-2">
+                        <Badge variant="outline" className={
+                          receipt.type === 'luxury' 
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : receipt.type === 'premium'
+                              ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }>
+                          {receipt.type.charAt(0).toUpperCase() + receipt.type.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="col-span-2">
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          {receipt.status.charAt(0).toUpperCase() + receipt.status.slice(1)}
+                        </Badge>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>
-                      Latest blockchain receipt transactions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {mockReceipts.slice(0, 3).map((receipt) => (
-                        <div key={receipt.id} className="flex items-center justify-between border-b pb-2 last:border-0">
-                          <div>
-                            <div className="font-medium">{receipt.customer}</div>
-                            <div className="text-sm text-gray-500">
-                              {new Date(receipt.date).toLocaleDateString()} • ${receipt.amount.toFixed(2)}
-                            </div>
-                          </div>
-                          <Badge variant={
-                            receipt.type === 'Standard' ? 'default' :
-                            receipt.type === 'Premium' ? 'secondary' : 'destructive'
-                          }>
-                            {receipt.type}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" className="w-full">View All Receipts</Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </TabsContent>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Showing 8 of 1,284 receipts
+                </div>
+                <Button variant="outline">
+                  View All Receipts
+                </Button>
+              </CardFooter>
+            </Card>
             
-            <TabsContent value="receipts" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Receipt Management</CardTitle>
-                  <CardDescription>
-                    View and manage customer receipts
-                  </CardDescription>
+                  <CardTitle>Receipt Distribution</CardTitle>
+                  <CardDescription>By tier type</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Standard Tier</span>
+                      <span className="font-medium">65%</span>
+                    </div>
+                    <Progress value={65} className="h-2 bg-blue-500" />
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Premium Tier</span>
+                      <span className="font-medium">28%</span>
+                    </div>
+                    <Progress value={28} className="h-2 bg-purple-500" />
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Luxury Tier</span>
+                      <span className="font-medium">7%</span>
+                    </div>
+                    <Progress value={7} className="h-2 bg-amber-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Privacy Features</CardTitle>
+                  <CardDescription>TACo encryption usage</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex justify-between items-center mb-4">
-                    <Input placeholder="Search receipts..." className="max-w-sm" />
-                    <div className="flex items-center space-x-2">
-                      <Select defaultValue="all">
-                        <SelectTrigger className="w-[160px]">
-                          <SelectValue placeholder="Filter by type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Receipt Type</SelectLabel>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="standard">Standard</SelectItem>
-                            <SelectItem value="premium">Premium</SelectItem>
-                            <SelectItem value="luxury">Luxury</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" size="sm">Export</Button>
-                    </div>
-                  </div>
-                  
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Receipt ID</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {mockReceipts.map((receipt) => (
-                          <TableRow key={receipt.id}>
-                            <TableCell className="font-medium">{receipt.id}</TableCell>
-                            <TableCell>{receipt.customer}</TableCell>
-                            <TableCell>{new Date(receipt.date).toLocaleDateString()}</TableCell>
-                            <TableCell>${receipt.amount.toFixed(2)}</TableCell>
-                            <TableCell>
-                              <Badge variant={
-                                receipt.type === 'Standard' ? 'default' :
-                                receipt.type === 'Premium' ? 'secondary' : 'destructive'
-                              }>
-                                {receipt.type}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={receipt.status === 'Active' ? 'outline' : 'destructive'}>
-                                {receipt.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end space-x-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Share2 className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <div className="text-sm text-muted-foreground">
-                    Showing 5 of 301 receipts
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" disabled>Previous</Button>
-                    <Button variant="outline" size="sm">Next</Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="settings" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Integration Settings</CardTitle>
-                  <CardDescription>
-                    Configure your API and integration preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-medium">API Configuration</h3>
-                      <p className="text-sm text-gray-500">
-                        Manage your API keys and webhook endpoints
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="flex flex-col space-y-1.5">
-                        <Label htmlFor="apiKey">API Key</Label>
-                        <div className="flex">
-                          <Input
-                            id="apiKey"
-                            value={apiKey}
-                            readOnly
-                            type="password"
-                            className="rounded-r-none"
-                          />
-                          <Button variant="outline" className="rounded-l-none border-l-0" onClick={handleCopyApiKey}>
-                            Copy
-                          </Button>
-                        </div>
+                    <div className="text-center pb-4">
+                      <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-blue-50 border-4 border-blue-100">
+                        <div className="text-2xl font-bold text-blue-700">43%</div>
                       </div>
-                      
-                      <div className="flex flex-col space-y-1.5">
-                        <Label htmlFor="webhookUrl">Webhook URL</Label>
-                        <Input
-                          id="webhookUrl"
-                          value={webhookUrl}
-                          onChange={(e) => setWebhookUrl(e.target.value)}
-                          placeholder="https://your-website.com/webhook"
-                        />
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Switch id="webhookEnabled" defaultChecked />
-                        <Label htmlFor="webhookEnabled">Enable webhook notifications</Label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-medium">Receipt Defaults</h3>
-                      <p className="text-sm text-gray-500">
-                        Configure default settings for receipt generation
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="standardEnabled">Standard Receipt Tier</Label>
-                          <Switch 
-                            id="standardEnabled" 
-                            checked={receiptDefaults.standardEnabled}
-                            onCheckedChange={(checked) => setReceiptDefaults({...receiptDefaults, standardEnabled: checked})}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="premiumEnabled">Premium Receipt Tier</Label>
-                          <Switch 
-                            id="premiumEnabled" 
-                            checked={receiptDefaults.premiumEnabled}
-                            onCheckedChange={(checked) => setReceiptDefaults({...receiptDefaults, premiumEnabled: checked})}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="luxuryEnabled">Luxury Receipt Tier</Label>
-                          <Switch 
-                            id="luxuryEnabled" 
-                            checked={receiptDefaults.luxuryEnabled}
-                            onCheckedChange={(checked) => setReceiptDefaults({...receiptDefaults, luxuryEnabled: checked})}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Default Receipt Type</Label>
-                          <RadioGroup 
-                            defaultValue={receiptDefaults.defaultType}
-                            className="flex flex-col space-y-1 mt-2"
-                            onValueChange={(value) => setReceiptDefaults({...receiptDefaults, defaultType: value})}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="standard" id="standard" />
-                              <Label htmlFor="standard">Standard</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="premium" id="premium" />
-                              <Label htmlFor="premium">Premium</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="luxury" id="luxury" />
-                              <Label htmlFor="luxury">Luxury</Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
+                      <div className="mt-2 text-sm text-gray-600">
+                        of receipts use TACo encryption
                       </div>
                     </div>
                     
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          id="autoIssue" 
-                          checked={receiptDefaults.autoIssue}
-                          onCheckedChange={(checked) => setReceiptDefaults({...receiptDefaults, autoIssue: checked})}
-                        />
-                        <Label htmlFor="autoIssue">Automatically issue receipts for all transactions</Label>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Access Granted</span>
+                        <span className="font-medium">76%</span>
                       </div>
+                      <Progress value={76} className="h-2 bg-green-500" />
                       
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          id="emailNotification" 
-                          checked={receiptDefaults.emailNotification}
-                          onCheckedChange={(checked) => setReceiptDefaults({...receiptDefaults, emailNotification: checked})}
-                        />
-                        <Label htmlFor="emailNotification">Send email notifications for new receipts</Label>
+                      <div className="flex justify-between text-sm">
+                        <span>Access Revoked</span>
+                        <span className="font-medium">24%</span>
                       </div>
+                      <Progress value={24} className="h-2 bg-red-500" />
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleSaveSettings} disabled={loading}>
-                    {loading ? "Saving..." : "Save Settings"}
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Key className="h-4 w-4 mr-2" />
+                    Manage Encryption
                   </Button>
                 </CardFooter>
               </Card>
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Receipt Appearance</CardTitle>
-                  <CardDescription>
-                    Customize how your NFT receipts look
-                  </CardDescription>
+                  <CardTitle>Upcoming Features</CardTitle>
+                  <CardDescription>Coming soon to BlockReceipt</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label>Brand Color</Label>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <div className="w-10 h-10 rounded-md bg-blue-600 border"></div>
-                          <Input type="text" value="#2563eb" className="w-24" />
-                          <Button variant="outline" size="sm">
-                            <Palette className="h-4 w-4 mr-2" />
-                            Change
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label>Logo Image</Label>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <div className="w-10 h-10 rounded-md bg-gray-100 border flex items-center justify-center">
-                            <ShoppingBag className="h-6 w-6 text-gray-500" />
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'Auto Receipt Scanning', status: 'beta', date: 'May 20, 2025' },
+                      { name: 'Customer Loyalty Points', status: 'development', date: 'June 5, 2025' },
+                      { name: 'Enhanced Analytics', status: 'planning', date: 'July 2025' },
+                      { name: 'Merchant API', status: 'alpha', date: 'May 30, 2025' },
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex justify-between items-center">
+                        <div>
+                          <div className="font-medium">{feature.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {feature.date}
                           </div>
-                          <Button variant="outline" size="sm">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload
-                          </Button>
                         </div>
+                        <Badge variant="outline" className={
+                          feature.status === 'beta' 
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : feature.status === 'alpha'
+                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              : feature.status === 'development'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-gray-50 text-gray-700 border-gray-200'
+                        }>
+                          {feature.status.charAt(0).toUpperCase() + feature.status.slice(1)}
+                        </Badge>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <Label>Receipt Style</Label>
-                        <Select defaultValue="modern">
-                          <SelectTrigger className="w-full mt-2">
-                            <SelectValue placeholder="Select a style" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="modern">Modern</SelectItem>
-                              <SelectItem value="classic">Classic</SelectItem>
-                              <SelectItem value="minimal">Minimal</SelectItem>
-                              <SelectItem value="vibrant">Vibrant</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Animation Effect</Label>
-                        <Select defaultValue="shine">
-                          <SelectTrigger className="w-full mt-2">
-                            <SelectValue placeholder="Select animation" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="none">None</SelectItem>
-                              <SelectItem value="shine">Shine</SelectItem>
-                              <SelectItem value="pulse">Pulse</SelectItem>
-                              <SelectItem value="rotate">Rotate</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleSaveSettings} disabled={loading}>
-                    {loading ? "Saving..." : "Save Appearance"}
+                  <Button variant="outline" size="sm" className="w-full">
+                    View Roadmap
                   </Button>
                 </CardFooter>
               </Card>
-            </TabsContent>
-            
-            <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Monthly Performance</CardTitle>
-                  <CardDescription>
-                    Receipts issued and revenue processed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div style={{ width: '100%', height: 300 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={analyticsData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis yAxisId="left" />
-                        <YAxis yAxisId="right" orientation="right" />
-                        <Tooltip />
-                        <Legend />
-                        <Line yAxisId="left" type="monotone" dataKey="receipts" stroke="#8884d8" activeDot={{ r: 8 }} />
-                        <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#82ca9d" />
-                      </LineChart>
-                    </ResponsiveContainer>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="customers" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Customer Overview</CardTitle>
+                    <CardDescription>Key customer metrics and insights</CardDescription>
                   </div>
-                </CardContent>
-              </Card>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Receipt Distribution</CardTitle>
-                    <CardDescription>
-                      By receipt type
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div style={{ width: '100%', height: 200 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={receiptTypes}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="type" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="count" fill="#8884d8">
-                            {receiptTypes.map((entry, index) => (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={
-                                  entry.type === 'Standard' ? '#3b82f6' : 
-                                  entry.type === 'Premium' ? '#8b5cf6' : '#f59e0b'
-                                } 
-                              />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Total Customers</div>
+                    <div className="text-3xl font-bold">3,284</div>
+                    <div className="text-sm text-green-600 flex items-center mt-1">
+                      <ArrowUpRight className="h-3 w-3 mr-1" />
+                      <span>12% increase this month</span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Avg. Receipts per Customer</div>
+                    <div className="text-3xl font-bold">4.7</div>
+                    <div className="text-sm text-green-600 flex items-center mt-1">
+                      <ArrowUpRight className="h-3 w-3 mr-1" />
+                      <span>0.3 increase from last month</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Avg. Purchase Value</div>
+                    <div className="text-3xl font-bold">$68.42</div>
+                    <div className="text-sm text-red-600 flex items-center mt-1">
+                      <ArrowDownRight className="h-3 w-3 mr-1" />
+                      <span>3% decrease this month</span>
+                    </div>
+                  </div>
+                </div>
                 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Top Customers</CardTitle>
-                    <CardDescription>
-                      By receipt volume
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">johndoe@example.com</div>
-                          <div className="text-sm text-gray-500">12 receipts</div>
-                        </div>
-                        <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: '80%' }} />
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">alice@example.com</div>
-                          <div className="text-sm text-gray-500">9 receipts</div>
-                        </div>
-                        <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: '60%' }} />
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">bob@example.com</div>
-                          <div className="text-sm text-gray-500">7 receipts</div>
-                        </div>
-                        <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: '47%' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </div>
+                <div className="space-y-2 pt-4">
+                  <h3 className="text-sm font-medium mb-2">Customer Retention</h3>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span>Returning Customers</span>
+                    <span className="font-medium">72%</span>
+                  </div>
+                  <Progress value={72} className="h-2 bg-green-500" />
+                  
+                  <div className="flex justify-between text-sm">
+                    <span>One-time Shoppers</span>
+                    <span className="font-medium">28%</span>
+                  </div>
+                  <Progress value={28} className="h-2 bg-gray-500" />
+                  
+                  <div className="flex justify-between text-sm">
+                    <span>NFT Receipt Engagement</span>
+                    <span className="font-medium">64%</span>
+                  </div>
+                  <Progress value={64} className="h-2 bg-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
   );
-}
+};
+
+export default MerchantDashboard;

@@ -1,523 +1,424 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Wallet, ShoppingBag, Filter, Search, QrCode, Share2, Grid3X3, List, Download, Info, ShieldCheck } from 'lucide-react';
-import { EnhancedNFTReceiptCard } from '@/components/receipts/EnhancedNFTReceiptCard';
+import { Button } from '@/components/ui/button';
+import { Link } from 'wouter';
+import {
+  Wallet,
+  Filter,
+  Search,
+  ChevronDown,
+  RefreshCw,
+  Plus,
+  Lock,
+  Unlock,
+  Clock,
+  CalendarDays,
+  SortAsc,
+  SortDesc,
+  Upload,
+  Scan
+} from 'lucide-react';
+import EnhancedNFTReceiptCard, { NFTReceiptProps } from '@/components/receipts/EnhancedNFTReceiptCard';
 
-// Type-safe receipt types
-type ReceiptType = 'standard' | 'premium' | 'luxury';
-
-interface MockReceipt {
-  id: number;
-  merchant: { name: string; logo: string };
-  purchaseDate: string;
-  amount: number;
-  currencySymbol: string;
-  items: number;
-  receiptType: ReceiptType;
-  tokenId: number;
-  contractAddress: string;
-  revoked?: boolean;
-  // TACo encryption related fields
-  isEncrypted?: boolean;
-  hasEncryptedMetadata?: boolean;
-  grantedAccessTo?: string[];
-}
-
-const mockReceipts: MockReceipt[] = [
+// Mock data for demonstration
+const mockReceipts: NFTReceiptProps[] = [
   {
-    id: 1,
-    merchant: { name: "Whole Foods Market", logo: "wholefoods.png" },
-    purchaseDate: "2025-05-10T10:30:00Z",
-    amount: 84.32,
-    currencySymbol: "$",
-    items: 12,
-    receiptType: "premium",
-    tokenId: 23456,
-    contractAddress: "0x1234567890123456789012345678901234567890",
+    id: '1',
+    merchantName: 'Whole Foods Market',
+    date: '2025-05-14',
+    total: 84.32,
+    items: 9,
+    txHash: '0x7d3e9e6bd34cf3c22376138b586d9a551349e0a34c3967d3cbc5c2d3f1bb8d32',
     isEncrypted: true,
-    hasEncryptedMetadata: true,
-    grantedAccessTo: ['0x71C7656EC7ab88b098defB751B7401B5f6d8976F']
+    hasGrantedAccess: true,
+    grantedTo: ['0x1234...5678'],
+    tokenId: '123456',
+    receiptType: 'luxury',
+    status: 'confirmed',
+    warranty: {
+      expiryDate: '2026-05-14',
+      duration: '1 year',
+      isActive: true
+    }
   },
   {
-    id: 2,
-    merchant: { name: "Apple Store", logo: "apple.png" },
-    purchaseDate: "2025-05-08T15:45:00Z",
-    amount: 1299.99,
-    currencySymbol: "$",
-    items: 2,
-    receiptType: "luxury",
-    tokenId: 23457,
-    contractAddress: "0x1234567890123456789012345678901234567890",
-    isEncrypted: true,
-    hasEncryptedMetadata: true,
-    grantedAccessTo: ['0x71C7656EC7ab88b098defB751B7401B5f6d8976F', '0x82A7656EC7ab88b098defB751B7401B5f6d8976F']
-  },
-  {
-    id: 3,
-    merchant: { name: "Target", logo: "target.png" },
-    purchaseDate: "2025-05-05T09:15:00Z",
-    amount: 49.95,
-    currencySymbol: "$",
-    items: 7,
-    receiptType: "standard",
-    tokenId: 23458,
-    contractAddress: "0x1234567890123456789012345678901234567890",
-    isEncrypted: false,
-    hasEncryptedMetadata: false
-  },
-  {
-    id: 4,
-    merchant: { name: "Amazon", logo: "amazon.png" },
-    purchaseDate: "2025-05-01T14:20:00Z",
-    amount: 67.50,
-    currencySymbol: "$",
-    items: 4,
-    receiptType: "premium",
-    tokenId: 23459,
-    contractAddress: "0x1234567890123456789012345678901234567890",
-    isEncrypted: true,
-    hasEncryptedMetadata: true,
-    grantedAccessTo: []
-  },
-  {
-    id: 5,
-    merchant: { name: "Best Buy", logo: "bestbuy.png" },
-    purchaseDate: "2025-04-28T11:30:00Z",
-    amount: 599.99,
-    currencySymbol: "$",
+    id: '2',
+    merchantName: 'Best Buy',
+    date: '2025-05-12',
+    total: 1299.99,
     items: 1,
-    receiptType: "luxury",
-    tokenId: 23460,
-    contractAddress: "0x1234567890123456789012345678901234567890",
-    revoked: true
+    txHash: '0x2a1b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
+    isEncrypted: true,
+    hasGrantedAccess: true,
+    tokenId: '123457',
+    receiptType: 'premium',
+    status: 'confirmed',
+    warranty: {
+      expiryDate: '2027-05-12',
+      duration: '2 years',
+      isActive: true
+    }
+  },
+  {
+    id: '3',
+    merchantName: 'Amazon',
+    date: '2025-05-10',
+    total: 67.45,
+    items: 3,
+    txHash: '0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d',
+    isEncrypted: true,
+    hasGrantedAccess: false,
+    tokenId: '123458',
+    receiptType: 'standard',
+    status: 'confirmed'
+  },
+  {
+    id: '4',
+    merchantName: 'Apple Store',
+    date: '2025-05-08',
+    total: 899.00,
+    items: 2,
+    txHash: '0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
+    isEncrypted: false,
+    tokenId: '123459',
+    receiptType: 'premium',
+    status: 'confirmed',
+    warranty: {
+      expiryDate: '2027-05-08',
+      duration: '2 years',
+      isActive: true
+    }
+  },
+  {
+    id: '5',
+    merchantName: 'Target',
+    date: '2025-05-05',
+    total: 142.76,
+    items: 12,
+    txHash: '0x5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f',
+    isEncrypted: true,
+    hasGrantedAccess: true,
+    tokenId: '123460',
+    receiptType: 'standard',
+    status: 'confirmed'
+  },
+  {
+    id: '6',
+    merchantName: 'REI',
+    date: '2025-05-01',
+    total: 321.88,
+    items: 4,
+    txHash: '0x6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a',
+    isEncrypted: false,
+    tokenId: '123461',
+    receiptType: 'standard',
+    status: 'confirmed'
   }
 ];
 
-export default function UserNFTWallet() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [connectedWallet, setConnectedWallet] = useState(true);
-  const [showEncryptedOnly, setShowEncryptedOnly] = useState(false);
+type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
+type ReceiptFilter = 'all' | 'encrypted' | 'unencrypted' | 'accessible' | 'premium' | 'luxury';
 
-  const filteredReceipts = mockReceipts.filter(receipt => {
-    const matchesSearch = receipt.merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      receipt.tokenId.toString().includes(searchQuery);
+const UserNFTWallet: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
+  const [filter, setFilter] = useState<ReceiptFilter>('all');
+  
+  // Filter and sort receipts
+  const getFilteredReceipts = () => {
+    let filtered = [...mockReceipts];
     
-    const matchesEncryptedFilter = !showEncryptedOnly || receipt.isEncrypted === true;
+    // Apply date filter
+    if (activeTab === 'recent') {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      filtered = filtered.filter(receipt => new Date(receipt.date) >= oneMonthAgo);
+    } else if (activeTab === 'premium') {
+      filtered = filtered.filter(receipt => receipt.receiptType === 'premium' || receipt.receiptType === 'luxury');
+    } else if (activeTab === 'warranty') {
+      filtered = filtered.filter(receipt => receipt.warranty && receipt.warranty.isActive);
+    }
     
-    return matchesSearch && matchesEncryptedFilter;
-  });
-
-  const handleConnectWallet = () => {
-    setConnectedWallet(true);
+    // Apply text search
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(receipt => 
+        receipt.merchantName.toLowerCase().includes(term) ||
+        receipt.tokenId?.toLowerCase().includes(term) ||
+        receipt.total.toString().includes(term)
+      );
+    }
+    
+    // Apply additional filter
+    if (filter === 'encrypted') {
+      filtered = filtered.filter(receipt => receipt.isEncrypted);
+    } else if (filter === 'unencrypted') {
+      filtered = filtered.filter(receipt => !receipt.isEncrypted);
+    } else if (filter === 'accessible') {
+      filtered = filtered.filter(receipt => !receipt.isEncrypted || receipt.hasGrantedAccess);
+    } else if (filter === 'premium') {
+      filtered = filtered.filter(receipt => receipt.receiptType === 'premium');
+    } else if (filter === 'luxury') {
+      filtered = filtered.filter(receipt => receipt.receiptType === 'luxury');
+    }
+    
+    // Apply sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'date-desc':
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case 'date-asc':
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case 'amount-desc':
+          return b.total - a.total;
+        case 'amount-asc':
+          return a.total - b.total;
+        default:
+          return 0;
+      }
+    });
+    
+    return filtered;
   };
-
-  const handleDisconnectWallet = () => {
-    setConnectedWallet(false);
-  };
-
+  
+  const filteredReceipts = getFilteredReceipts();
+  
   return (
     <div className="container mx-auto py-10">
-      <div className="flex flex-col space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold">Your NFT Receipts</h1>
-          <p className="text-muted-foreground mt-2">Manage and view your blockchain-verified purchase receipts</p>
-        </div>
-
-        {!connectedWallet ? (
-          <Card className="flex flex-col items-center justify-center p-12">
-            <Wallet className="h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-            <p className="text-muted-foreground text-center max-w-md mb-6">
-              Connect your blockchain wallet to view all your NFT receipts across multiple merchants.
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold flex items-center">
+              <Wallet className="mr-3 h-8 w-8 text-primary" />
+              NFT Receipt Wallet
+            </h1>
+            <p className="text-xl text-muted-foreground mt-1">
+              Your blockchain-verified purchase history
             </p>
-            <Button onClick={handleConnectWallet} size="lg">
-              Connect Wallet
-            </Button>
-          </Card>
-        ) : (
-          <>
-            <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg p-6 flex justify-between items-center">
-              <div>
-                <div className="text-sm text-blue-800 mb-1">Connected Wallet</div>
-                <div className="font-mono text-blue-950 flex items-center">
-                  0x71C7656EC7ab88b098defB751B7401B5f6d8976F
-                  <Button variant="ghost" size="sm" className="ml-2 h-6 w-6 p-0">
-                    <QrCode className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-                <div className="text-sm text-blue-800 mt-2">
-                  <span className="font-medium">5</span> NFT Receipts
-                </div>
-              </div>
-              <Button variant="outline" onClick={handleDisconnectWallet}>
-                Disconnect
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link href="/scan-receipt">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Scan className="mr-2 h-4 w-4" />
+                Scan Receipt
               </Button>
+            </Link>
+            <Link href="/verify-receipt">
+              <Button variant="outline">
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Receipt
+              </Button>
+            </Link>
+          </div>
+        </div>
+        
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="w-full md:w-64 lg:w-72 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search receipts..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-
-            <div className="flex flex-col space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by merchant or token ID..."
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center space-x-2 ml-4">
-                  <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
-                    size="icon"
-                    onClick={() => setViewMode('grid')}
+            
+            <div className="bg-white rounded-lg border shadow-sm divide-y">
+              <div className="p-3">
+                <h3 className="font-medium mb-2">Receipt Categories</h3>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => setActiveTab('all')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
                   >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
-                    size="icon"
-                    onClick={() => setViewMode('list')}
+                    <Wallet className="mr-2 h-4 w-4" />
+                    All Receipts
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('recent')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'recent' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
                   >
-                    <List className="h-4 w-4" />
-                  </Button>
+                    <Clock className="mr-2 h-4 w-4" />
+                    Recent (30 days)
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('premium')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'premium' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    Premium & Luxury
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('warranty')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${activeTab === 'warranty' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    Active Warranty
+                  </button>
                 </div>
               </div>
               
-              <div className="flex items-center">
-                <div className="bg-blue-50 flex items-center space-x-2 px-3 py-2 rounded-md border border-blue-100">
-                  <ShieldCheck className="h-4 w-4 text-blue-600" />
-                  <Label htmlFor="encrypted-only" className="text-sm text-blue-700 cursor-pointer">
-                    Show TACo encrypted receipts only
-                  </Label>
-                  <Switch 
-                    id="encrypted-only" 
-                    checked={showEncryptedOnly} 
-                    onCheckedChange={setShowEncryptedOnly}
-                  />
+              <div className="p-3">
+                <h3 className="font-medium mb-2">Privacy Filters</h3>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => setFilter('all')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Filter className="mr-2 h-4 w-4" />
+                    All Encryption Types
+                  </button>
+                  <button
+                    onClick={() => setFilter('encrypted')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'encrypted' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Lock className="mr-2 h-4 w-4" />
+                    Encrypted Only
+                  </button>
+                  <button
+                    onClick={() => setFilter('unencrypted')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'unencrypted' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Unlock className="mr-2 h-4 w-4" />
+                    Unencrypted Only
+                  </button>
+                  <button
+                    onClick={() => setFilter('accessible')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'accessible' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Unlock className="mr-2 h-4 w-4" />
+                    Currently Accessible
+                  </button>
                 </div>
-                <div className="ml-2 text-xs text-blue-600">
-                  {showEncryptedOnly ? 
-                    `Showing ${filteredReceipts.length} encrypted receipts` : 
-                    `${mockReceipts.filter(r => r.isEncrypted).length} receipts have TACo encryption`
-                  }
+              </div>
+              
+              <div className="p-3">
+                <h3 className="font-medium mb-2">Receipt Tiers</h3>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => setFilter('all')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'all' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Filter className="mr-2 h-4 w-4" />
+                    All Tiers
+                  </button>
+                  <button
+                    onClick={() => setFilter('premium')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'premium' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Premium
+                  </button>
+                  <button
+                    onClick={() => setFilter('luxury')}
+                    className={`w-full text-left px-2 py-1 rounded text-sm flex items-center ${filter === 'luxury' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Luxury
+                  </button>
                 </div>
               </div>
             </div>
-
-            <Tabs defaultValue="all">
-              <TabsList>
-                <TabsTrigger value="all">All Receipts</TabsTrigger>
-                <TabsTrigger value="encrypted">TACo Encrypted</TabsTrigger>
-                <TabsTrigger value="recent">Recent (30 Days)</TabsTrigger>
-                <TabsTrigger value="standard">Standard</TabsTrigger>
-                <TabsTrigger value="premium">Premium</TabsTrigger>
-                <TabsTrigger value="luxury">Luxury</TabsTrigger>
-              </TabsList>
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">
+                {filteredReceipts.length} {filteredReceipts.length === 1 ? 'Receipt' : 'Receipts'} Found
+              </h2>
               
-              <div className="mt-6">
-                <TabsContent value="all" className="space-y-4">
-                  {filteredReceipts.length === 0 ? (
-                    <div className="text-center py-12">
-                      <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No receipts found</h3>
-                      <p className="text-muted-foreground max-w-sm mx-auto">
-                        {searchQuery ? 
-                          "Try a different search term or clear the search field." : 
-                          "Make a purchase from one of our partner merchants to get your first NFT receipt."}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className={viewMode === 'grid' ? 
-                      'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
-                      'space-y-4'
-                    }>
-                      {filteredReceipts.map(receipt => (
-                        <div key={receipt.id}>
-                          {viewMode === 'grid' ? (
-                            <EnhancedNFTReceiptCard {...receipt} />
-                          ) : (
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h3 className="font-medium">{receipt.merchant.name}</h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {new Date(receipt.purchaseDate).toLocaleDateString()}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
-                                    <div className="text-sm text-muted-foreground capitalize">
-                                      {receipt.receiptType} Receipt
-                                    </div>
-                                  </div>
-                                </div>
-                                <Separator className="my-4" />
-                                <div className="flex justify-between items-center">
-                                  <div className="text-xs text-muted-foreground">
-                                    Token ID: {receipt.tokenId}
-                                  </div>
-                                  <div className="flex space-x-2">
-                                    <Button variant="ghost" size="sm">
-                                      <Info className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Share2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setActiveTab('all');
+                    setFilter('all');
+                    setSortBy('date-desc');
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
                 
-                <TabsContent value="encrypted" className="space-y-4">
-                  {filteredReceipts.filter(receipt => receipt.isEncrypted).length === 0 ? (
-                    <div className="text-center py-12">
-                      <ShieldCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No TACo-encrypted receipts found</h3>
-                      <p className="text-muted-foreground max-w-sm mx-auto">
-                        You don't have any receipts with TACo encryption. Enhanced receipts with sensitive information are encrypted using Threshold Network technology.
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="bg-blue-50 border border-blue-100 rounded-md p-4 mb-6">
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0">
-                            <ShieldCheck className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-blue-800">TACo-Protected Receipts</h3>
-                            <div className="mt-2 text-sm text-blue-700">
-                              <p>
-                                These receipts contain encrypted data protected by Threshold Network's TACo technology. You have full control over who can access your sensitive receipt information.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    
-                      <div className={viewMode === 'grid' ? 
-                        'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
-                        'space-y-4'
-                      }>
-                        {filteredReceipts
-                          .filter(receipt => receipt.isEncrypted)
-                          .map(receipt => (
-                            <div key={receipt.id}>
-                              {viewMode === 'grid' ? (
-                                <EnhancedNFTReceiptCard {...receipt} />
-                              ) : (
-                                <Card>
-                                  <CardContent className="p-4">
-                                    <div className="flex justify-between items-center">
-                                      <div>
-                                        <h3 className="font-medium flex items-center">
-                                          {receipt.merchant.name}
-                                          <ShieldCheck className="h-3 w-3 ml-1 text-blue-600" />
-                                        </h3>
-                                        <div className="text-sm text-muted-foreground">
-                                          {new Date(receipt.purchaseDate).toLocaleDateString()}
-                                        </div>
-                                      </div>
-                                      <div className="text-right">
-                                        <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
-                                        <div className="text-sm text-muted-foreground capitalize">
-                                          {receipt.receiptType} Receipt
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <Separator className="my-4" />
-                                    <div className="flex justify-between items-center">
-                                      <div className="text-xs text-muted-foreground">
-                                        Token ID: {receipt.tokenId}
-                                      </div>
-                                      <div className="flex space-x-2">
-                                        <Button variant="ghost" size="sm">
-                                          <Info className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="sm">
-                                          <Download className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="sm">
-                                          <Share2 className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              )}
-                            </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="recent">
-                  <div className={viewMode === 'grid' ? 
-                    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
-                    'space-y-4'
-                  }>
-                    {filteredReceipts.slice(0, 4).map(receipt => (
-                      <div key={receipt.id}>
-                        {viewMode === 'grid' ? (
-                          <EnhancedNFTReceiptCard {...receipt} />
-                        ) : (
-                          <Card>
-                            <CardContent className="p-4">
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <h3 className="font-medium">{receipt.merchant.name}</h3>
-                                  <div className="text-sm text-muted-foreground">
-                                    {new Date(receipt.purchaseDate).toLocaleDateString()}
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
-                                  <div className="text-sm text-muted-foreground capitalize">
-                                    {receipt.receiptType} Receipt
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="standard">
-                  <div className={viewMode === 'grid' ? 
-                    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
-                    'space-y-4'
-                  }>
-                    {filteredReceipts
-                      .filter(receipt => receipt.receiptType === 'standard')
-                      .map(receipt => (
-                        <div key={receipt.id}>
-                          {viewMode === 'grid' ? (
-                            <EnhancedNFTReceiptCard {...receipt} />
-                          ) : (
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h3 className="font-medium">{receipt.merchant.name}</h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {new Date(receipt.purchaseDate).toLocaleDateString()}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
-                                    <div className="text-sm text-muted-foreground capitalize">
-                                      {receipt.receiptType} Receipt
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="premium">
-                  <div className={viewMode === 'grid' ? 
-                    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
-                    'space-y-4'
-                  }>
-                    {filteredReceipts
-                      .filter(receipt => receipt.receiptType === 'premium')
-                      .map(receipt => (
-                        <div key={receipt.id}>
-                          {viewMode === 'grid' ? (
-                            <EnhancedNFTReceiptCard {...receipt} />
-                          ) : (
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h3 className="font-medium">{receipt.merchant.name}</h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {new Date(receipt.purchaseDate).toLocaleDateString()}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
-                                    <div className="text-sm text-muted-foreground capitalize">
-                                      {receipt.receiptType} Receipt
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="luxury">
-                  <div className={viewMode === 'grid' ? 
-                    'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 
-                    'space-y-4'
-                  }>
-                    {filteredReceipts
-                      .filter(receipt => receipt.receiptType === 'luxury')
-                      .map(receipt => (
-                        <div key={receipt.id}>
-                          {viewMode === 'grid' ? (
-                            <EnhancedNFTReceiptCard {...receipt} />
-                          ) : (
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h3 className="font-medium">{receipt.merchant.name}</h3>
-                                    <div className="text-sm text-muted-foreground">
-                                      {new Date(receipt.purchaseDate).toLocaleDateString()}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-medium">{receipt.currencySymbol}{receipt.amount.toFixed(2)}</div>
-                                    <div className="text-sm text-muted-foreground capitalize">
-                                      {receipt.receiptType} Receipt
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </div>
-                    ))}
-                  </div>
-                </TabsContent>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Sort
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortBy('date-desc')}>
+                      <SortDesc className="h-4 w-4 mr-2" />
+                      Newest First
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('date-asc')}>
+                      <SortAsc className="h-4 w-4 mr-2" />
+                      Oldest First
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('amount-desc')}>
+                      <SortDesc className="h-4 w-4 mr-2" />
+                      Highest Amount
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('amount-asc')}>
+                      <SortAsc className="h-4 w-4 mr-2" />
+                      Lowest Amount
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            </Tabs>
-          </>
-        )}
+            </div>
+
+            {filteredReceipts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredReceipts.map((receipt) => (
+                  <EnhancedNFTReceiptCard key={receipt.id} {...receipt} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 border rounded-lg p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-4">
+                  <Wallet className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">No receipts found</h3>
+                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                  No receipts match your current filters. Try adjusting your search or filters to find what you're looking for.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setActiveTab('all');
+                    setFilter('all');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default UserNFTWallet;
