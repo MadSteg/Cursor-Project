@@ -1,13 +1,24 @@
-import { useState } from 'react';
-import { useLocation } from 'wouter';
+import { useState, useEffect } from 'react';
+import { useLocation, useParams } from 'wouter';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Upload, Receipt, ShoppingBag, Tag, Smile } from 'lucide-react';
-import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  Upload,
+  Image,
+  X,
+  Calendar,
+  Receipt,
+  CreditCard,
+  Shield,
+  Smartphone
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -17,402 +28,375 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
-// Define the form schema with validation
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+// Form schema
+const inventoryItemSchema = z.object({
+  name: z.string().min(1, 'Item name is required'),
   description: z.string().optional(),
-  quantity: z.coerce.number().int().positive().default(1),
-  purchasePrice: z.string().optional(),
-  purchaseDate: z.date().optional(),
-  expiryDate: z.date().optional(),
-  categoryId: z.coerce.number().optional(),
-  brandName: z.string().optional(),
-  modelNumber: z.string().optional(),
   serialNumber: z.string().optional(),
-  currentLocation: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  tagInput: z.string().optional(),
-  receiptId: z.coerce.number().optional(),
-  warrantyExpiryDate: z.date().optional(),
-  isReplaceable: z.boolean().default(false),
-  replacementInterval: z.coerce.number().int().positive().optional(),
-  replacementReminder: z.boolean().default(false),
+  modelNumber: z.string().optional(),
+  brandName: z.string().optional(),
+  categoryId: z.string().optional(),
+  status: z.string().default('active'),
+  condition: z.string().default('new'),
+  purchaseDate: z.string().optional(),
+  purchasePrice: z.string().optional(),
+  retailer: z.string().optional(),
+  purchaseLocation: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  orderNumber: z.string().optional(),
+  receiptId: z.string().optional(),
+  imageUrl: z.string().optional(),
+  location: z.string().optional(),
+  color: z.string().optional(),
+  dimensions: z.string().optional(),
+  weight: z.string().optional(),
   notes: z.string().optional(),
-  status: z.string().default("active"),
-  manualUpload: z.boolean().default(false),
-  importFromReceipt: z.boolean().default(false),
+  hasWarranty: z.boolean().default(false),
+  warranty: z.object({
+    provider: z.string().optional(),
+    coverageType: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    lengthInMonths: z.string().optional(),
+    contactInfo: z.string().optional(),
+    notes: z.string().optional(),
+  }).optional(),
+  customFields: z.array(
+    z.object({
+      name: z.string(),
+      value: z.string(),
+    })
+  ).optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type InventoryItemFormValues = z.infer<typeof inventoryItemSchema>;
+
+// Custom field component
+const CustomField = ({ 
+  index, 
+  remove, 
+  register 
+}: { 
+  index: number, 
+  remove: (index: number) => void,
+  register: any
+}) => (
+  <div className="flex gap-2 items-start mb-2">
+    <div className="flex-grow">
+      <Input 
+        placeholder="Field name" 
+        {...register(`customFields.${index}.name`)}
+        className="mb-1" 
+      />
+      <Input 
+        placeholder="Field value" 
+        {...register(`customFields.${index}.value`)}
+      />
+    </div>
+    <Button 
+      type="button" 
+      variant="ghost" 
+      size="sm" 
+      onClick={() => remove(index)}
+      className="mt-1"
+    >
+      <X className="h-4 w-4" />
+    </Button>
+  </div>
+);
 
 export default function InventoryUpload() {
+  const { id } = useParams();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('manual');
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-
-  // Initialize the form
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [customFields, setCustomFields] = useState<{name: string, value: string}[]>([]);
+  const [isEditMode, setIsEditMode] = useState(!!id);
+  
+  // Get categories for the dropdown
+  const { data: categories } = useQuery({
+    queryKey: ['/api/categories'],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      return response.json();
+    },
+  });
+  
+  // Get receipts for the dropdown
+  const { data: receipts } = useQuery({
+    queryKey: ['/api/receipts'],
+    queryFn: async () => {
+      const response = await fetch('/api/receipts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch receipts');
+      }
+      return response.json();
+    },
+  });
+  
+  // Get item details if in edit mode
+  const { data: itemDetails, isLoading: isLoadingDetails } = useQuery({
+    queryKey: ['/api/inventory', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const response = await fetch(`/api/inventory/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch item details');
+      }
+      return response.json();
+    },
+    enabled: !!id,
+  });
+  
+  // Create form
+  const form = useForm<InventoryItemFormValues>({
+    resolver: zodResolver(inventoryItemSchema),
     defaultValues: {
       name: '',
       description: '',
-      quantity: 1,
-      purchasePrice: '',
-      categoryId: undefined,
-      brandName: '',
-      modelNumber: '',
-      serialNumber: '',
-      currentLocation: '',
-      tags: [],
-      receiptId: undefined,
-      isReplaceable: false,
-      replacementReminder: false,
-      notes: '',
       status: 'active',
-      manualUpload: true,
-      importFromReceipt: false,
+      condition: 'new',
+      hasWarranty: false,
+      warranty: {
+        provider: '',
+        coverageType: '',
+        startDate: '',
+        endDate: '',
+        lengthInMonths: '',
+        contactInfo: '',
+        notes: '',
+      },
+      customFields: [],
     },
   });
-
-  // Fetch categories for the dropdown
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
-    queryKey: ['/api/categories'],
-    queryFn: async () => {
-      // This will be replaced with a real API call
-      return new Promise(resolve => setTimeout(() => {
-        resolve([
-          { id: 1, name: 'Electronics', color: '#4f46e5', icon: 'smartphone' },
-          { id: 2, name: 'Home Appliances', color: '#0891b2', icon: 'home' },
-          { id: 3, name: 'Clothing & Accessories', color: '#db2777', icon: 'shirt' },
-          { id: 4, name: 'Furniture', color: '#a16207', icon: 'sofa' },
-          { id: 5, name: 'Books & Media', color: '#9333ea', icon: 'book' },
-          { id: 6, name: 'Groceries', color: '#16a34a', icon: 'shopping-basket' },
-        ]);
-      }, 500));
+  
+  // Populate form with item details when available
+  useEffect(() => {
+    if (isEditMode && itemDetails) {
+      // Create a copy of the data to modify safely
+      const formData = { ...itemDetails };
+      
+      // Format the date fields to YYYY-MM-DD for input[type="date"]
+      if (formData.purchaseDate) {
+        const date = new Date(formData.purchaseDate);
+        formData.purchaseDate = date.toISOString().split('T')[0];
+      }
+      
+      if (formData.warranty?.startDate) {
+        const date = new Date(formData.warranty.startDate);
+        formData.warranty.startDate = date.toISOString().split('T')[0];
+      }
+      
+      if (formData.warranty?.endDate) {
+        const date = new Date(formData.warranty.endDate);
+        formData.warranty.endDate = date.toISOString().split('T')[0];
+      }
+      
+      // Set hasWarranty flag
+      formData.hasWarranty = !!formData.warranty;
+      
+      // Convert categoryId to string (select inputs expect string values)
+      if (formData.categoryId) {
+        formData.categoryId = formData.categoryId.toString();
+      }
+      
+      if (formData.receiptId) {
+        formData.receiptId = formData.receiptId.toString();
+      }
+      
+      // Set image preview if available
+      if (formData.imageUrl) {
+        setImagePreview(formData.imageUrl);
+      }
+      
+      // Set custom fields
+      if (formData.customFields) {
+        setCustomFields(formData.customFields);
+      }
+      
+      // Reset form with the data
+      form.reset(formData);
     }
-  });
-
-  // Fetch receipts for the import option
-  const { data: receipts, isLoading: isReceiptsLoading } = useQuery({
-    queryKey: ['/api/receipts'],
-    queryFn: async () => {
-      // This will be replaced with a real API call
-      return new Promise(resolve => setTimeout(() => {
-        resolve([
-          { 
-            id: 101, 
-            merchant: { name: 'Apple Store' }, 
-            date: '2025-04-10', 
-            total: '1499.99',
-            items: [
-              { name: 'iPhone 15 Pro', price: '1299.99', quantity: 1 },
-              { name: 'AppleCare+', price: '199.99', quantity: 1 },
-            ]
-          },
-          { 
-            id: 102, 
-            merchant: { name: 'Best Buy' }, 
-            date: '2024-11-15', 
-            total: '599.99',
-            items: [
-              { name: 'Dyson V11 Vacuum', price: '499.99', quantity: 1 },
-              { name: 'Extended Warranty', price: '99.99', quantity: 1 },
-            ]
-          },
-          { 
-            id: 103, 
-            merchant: { name: 'Amazon' }, 
-            date: '2024-08-12', 
-            total: '389.99',
-            items: [
-              { name: 'Sony WH-1000XM4 Headphones', price: '349.99', quantity: 1 },
-              { name: 'Headphone Case', price: '39.99', quantity: 1 },
-            ]
-          },
-          { 
-            id: 104, 
-            merchant: { name: 'Target' }, 
-            date: '2024-09-05', 
-            total: '89.99',
-            items: [
-              { name: 'Instant Pot Duo', price: '89.99', quantity: 1 },
-            ]
-          },
-          { 
-            id: 105, 
-            merchant: { name: 'Nike' }, 
-            date: '2024-09-20', 
-            total: '129.99',
-            items: [
-              { name: 'Nike Air Zoom Pegasus 38', price: '129.99', quantity: 1 },
-            ]
-          },
-        ]);
-      }, 500));
-    }
-  });
-
-  // Handle tag input
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      const newTags = [...tags, tagInput.trim()];
-      setTags(newTags);
-      form.setValue('tags', newTags);
-      setTagInput('');
+  }, [form, isEditMode, itemDetails]);
+  
+  // Add custom field handler
+  const addCustomField = () => {
+    setCustomFields([...customFields, { name: '', value: '' }]);
+  };
+  
+  // Remove custom field handler
+  const removeCustomField = (index: number) => {
+    const updatedFields = [...customFields];
+    updatedFields.splice(index, 1);
+    setCustomFields(updatedFields);
+  };
+  
+  // Handle image upload
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    const newTags = tags.filter(tag => tag !== tagToRemove);
-    setTags(newTags);
-    form.setValue('tags', newTags);
+  
+  // Remove uploaded image
+  const handleRemoveImage = () => {
+    setImagePreview(null);
   };
-
-  // Handle form submission
+  
+  // Create/update item mutation
   const mutation = useMutation({
-    mutationFn: async (data: FormValues) => {
-      // Replace with actual API call
-      return await new Promise(resolve => {
-        setTimeout(() => {
-          console.log('Submitting data:', data);
-          resolve({ success: true, id: 123 });
-        }, 1000);
-      });
+    mutationFn: async (data: InventoryItemFormValues) => {
+      // Clone the data before modifying
+      const formattedData = { ...data };
+      
+      // Include imageUrl if available
+      if (imagePreview) {
+        formattedData.imageUrl = imagePreview;
+      }
+      
+      // Include custom fields
+      formattedData.customFields = customFields;
+      
+      // Only include warranty if hasWarranty is true
+      if (!formattedData.hasWarranty) {
+        delete formattedData.warranty;
+      }
+      
+      // Remove hasWarranty as it's not part of the actual model
+      delete formattedData.hasWarranty;
+      
+      if (isEditMode) {
+        return apiRequest('PATCH', `/api/inventory/${id}`, formattedData);
+      } else {
+        return apiRequest('POST', '/api/inventory', formattedData);
+      }
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
+      queryClient.invalidateQuery({ queryKey: ['/api/inventory'] });
       toast({
-        title: "Item added to inventory",
-        description: "Your item has been successfully added to your inventory.",
+        title: isEditMode ? 'Item Updated' : 'Item Added',
+        description: isEditMode ? 'The inventory item has been updated successfully.' : 'The item has been added to your inventory.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/inventory'] });
       setLocation(`/inventory/${data.id}`);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        variant: "destructive",
-        title: "Error adding item",
-        description: "There was a problem adding your item. Please try again.",
+        title: 'Error',
+        description: `Failed to ${isEditMode ? 'update' : 'add'} item: ${error.message}`,
+        variant: 'destructive',
       });
-      console.error("Error adding inventory item:", error);
-    }
+    },
   });
-
-  const onSubmit = (data: FormValues) => {
-    // Ensure tags are included in form data
-    data.tags = tags;
+  
+  const onSubmit = (data: InventoryItemFormValues) => {
     mutation.mutate(data);
   };
-
-  // Handle receipt selection for import
-  const handleReceiptSelect = (receiptId: string) => {
-    const selectedReceipt = receipts?.find(r => r.id === parseInt(receiptId));
-    if (selectedReceipt) {
-      form.setValue('receiptId', selectedReceipt.id);
-      
-      // Auto-populate fields if this is the first receipt item
-      if (selectedReceipt.items && selectedReceipt.items.length === 1) {
-        const item = selectedReceipt.items[0];
-        form.setValue('name', item.name);
-        form.setValue('purchasePrice', item.price);
-        form.setValue('quantity', item.quantity);
-      }
-      
-      // Set purchase date from receipt
-      if (selectedReceipt.date) {
-        form.setValue('purchaseDate', new Date(selectedReceipt.date));
-      }
-    }
-  };
-
-  return (
-    <div className="container py-8">
-      <div className="flex items-center gap-2 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => setLocation('/inventory')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-2xl font-bold">Add to Inventory</h1>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Item Methods</CardTitle>
-              <CardDescription>
-                Choose how you want to add an item to your inventory
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-2 mb-4">
-                  <TabsTrigger value="manual" onClick={() => form.setValue('manualUpload', true)}>
-                    Manual
-                  </TabsTrigger>
-                  <TabsTrigger value="receipt" onClick={() => form.setValue('importFromReceipt', true)}>
-                    From Receipt
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="manual" className="space-y-4">
-                  <div className="flex items-center p-4 border border-dashed rounded-lg">
-                    <div className="rounded-full p-2 bg-primary/10 mr-4">
-                      <Plus className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Manual Entry</h3>
-                      <p className="text-muted-foreground text-sm">
-                        Add an item without connecting it to a receipt
-                      </p>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="receipt" className="space-y-4">
-                  <div className="flex items-center p-4 border border-dashed rounded-lg">
-                    <div className="rounded-full p-2 bg-primary/10 mr-4">
-                      <Receipt className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">From Receipt</h3>
-                      <p className="text-muted-foreground text-sm">
-                        Import details from an existing receipt
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {isReceiptsLoading ? (
-                    <p className="text-sm text-muted-foreground py-2">Loading receipts...</p>
-                  ) : receipts && receipts.length > 0 ? (
-                    <div className="mt-4">
-                      <FormLabel>Select Receipt</FormLabel>
-                      <Select 
-                        onValueChange={handleReceiptSelect}
-                        disabled={mutation.isPending}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a receipt" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {receipts.map(receipt => (
-                            <SelectItem key={receipt.id} value={receipt.id.toString()}>
-                              {receipt.merchant.name} - ${receipt.total} ({format(new Date(receipt.date), 'PP')})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground py-2">No receipts found</p>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+  
+  if (isEditMode && isLoadingDetails) {
+    return (
+      <main className="container py-8">
+        <div className="flex flex-col space-y-6">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-1"
+              onClick={() => setLocation('/inventory')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Inventory
+            </Button>
+          </div>
           
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle>Tips</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-sm space-y-2">
-                <p className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-primary" />
-                  <span>Add tags to make your items easier to find</span>
-                </p>
-                <p className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-primary" />
-                  <span>Link to a receipt for warranty claims</span>
-                </p>
-                <p className="flex items-center gap-2">
-                  <ShoppingBag className="h-4 w-4 text-primary" />
-                  <span>Include brand and model for accurate records</span>
-                </p>
-                <p className="flex items-center gap-2">
-                  <Smile className="h-4 w-4 text-primary" />
-                  <span>Track location to always know where your items are</span>
-                </p>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-60" />
+            <Skeleton className="h-6 w-40" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Skeleton className="h-64 w-full rounded-md" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+  
+  return (
+    <main className="container py-8">
+      <div className="flex flex-col space-y-6">
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => setLocation('/inventory')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Inventory
+          </Button>
         </div>
         
-        <div className="md:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Item Information</CardTitle>
-              <CardDescription>
-                Enter the details of the item you want to add to your inventory
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Item Name *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Enter item name" 
-                              {...field} 
-                              disabled={mutation.isPending}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">
+            {isEditMode ? 'Edit Inventory Item' : 'Add New Inventory Item'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isEditMode 
+              ? 'Update the details of your inventory item.' 
+              : 'Fill in the details to add an item to your inventory.'}
+          </p>
+        </div>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left column */}
+              <div className="space-y-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-medium">Basic Information</h2>
+                      <Separator />
+                      
                       <FormField
                         control={form.control}
-                        name="quantity"
+                        name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Quantity</FormLabel>
+                            <FormLabel>Item Name*</FormLabel>
                             <FormControl>
-                              <Input 
-                                type="number" 
-                                min="1" 
-                                {...field} 
-                                disabled={mutation.isPending}
-                              />
+                              <Input placeholder="Enter item name" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -421,339 +405,358 @@ export default function InventoryUpload() {
                       
                       <FormField
                         control={form.control}
-                        name="purchasePrice"
+                        name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Purchase Price</FormLabel>
+                            <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="0.00" 
+                              <Textarea 
+                                placeholder="Enter a description of the item" 
+                                className="resize-none"
                                 {...field} 
-                                disabled={mutation.isPending}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="purchaseDate"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel>Purchase Date</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                    disabled={mutation.isPending}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() || date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                       
-                      <FormField
-                        control={form.control}
-                        name="categoryId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Category</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value?.toString()}
-                              disabled={mutation.isPending || isCategoriesLoading}
-                            >
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="brandName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Brand</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a category" />
-                                </SelectTrigger>
+                                <Input placeholder="Brand name" {...field} />
                               </FormControl>
-                              <SelectContent>
-                                {categories?.map((category: any) => (
-                                  <SelectItem key={category.id} value={category.id.toString()}>
-                                    <div className="flex items-center">
-                                      <div 
-                                        className="w-2 h-2 rounded-full mr-2"
-                                        style={{ backgroundColor: category.color }}
-                                      />
-                                      {category.name}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="brandName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Brand</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Brand name" 
-                                {...field} 
-                                disabled={mutation.isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="modelNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Model Number</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Model number" 
-                                {...field} 
-                                disabled={mutation.isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="serialNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Serial Number</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Serial number" 
-                                {...field} 
-                                disabled={mutation.isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="currentLocation"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Location</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Where is this item stored?" 
-                                {...field} 
-                                disabled={mutation.isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="warrantyExpiryDate"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel>Warranty Expiry Date</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                    disabled={mutation.isPending}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              disabled={mutation.isPending}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="used">Used</SelectItem>
-                                <SelectItem value="expired">Expired</SelectItem>
-                                <SelectItem value="sold">Sold</SelectItem>
-                                <SelectItem value="damaged">Damaged</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <FormLabel>Tags</FormLabel>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Add tags (press Enter)"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddTag();
-                            }
-                          }}
-                          disabled={mutation.isPending}
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                        <Button 
-                          type="button" 
-                          onClick={handleAddTag}
-                          disabled={mutation.isPending}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      {tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {tags.map(tag => (
-                            <Badge 
-                              key={tag} 
-                              variant="secondary"
-                              className="gap-1"
-                            >
-                              {tag}
-                              <button
-                                type="button"
-                                className="ml-1 rounded-full hover:bg-muted p-0.5"
-                                onClick={() => handleRemoveTag(tag)}
-                                disabled={mutation.isPending}
+                        
+                        <FormField
+                          control={form.control}
+                          name="categoryId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                                value={field.value}
                               >
-                                ×
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {categories?.map((category: any) => (
+                                    <SelectItem 
+                                      key={category.id} 
+                                      value={category.id.toString()}
+                                    >
+                                      {category.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
-                    
-                    <Separator />
-                    
-                    <FormField
-                      control={form.control}
-                      name="isReplaceable"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={mutation.isPending}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>This is a consumable item</FormLabel>
-                            <FormDescription>
-                              Mark if this item will need to be replaced in the future (like food, supplies, etc.)
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    {form.watch('isReplaceable') && (
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-medium">Image</h2>
+                      <Separator />
+                      
                       <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {imagePreview ? (
+                          <div className="relative">
+                            <img 
+                              src={imagePreview} 
+                              alt="Item preview" 
+                              className="max-h-64 rounded-md border w-full object-contain" 
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={handleRemoveImage}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="border-2 border-dashed rounded-md p-6 text-center">
+                            <Image className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                            <div className="text-sm text-muted-foreground mb-4">
+                              Upload an image of your item
+                            </div>
+                            <input
+                              type="file"
+                              id="image-upload"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                            />
+                            <label htmlFor="image-upload">
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="gap-2"
+                                asChild
+                              >
+                                <span>
+                                  <Upload className="h-4 w-4" />
+                                  Upload Image
+                                </span>
+                              </Button>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-medium">Product Details</h2>
+                      <Separator />
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="serialNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Serial Number</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Serial number" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="modelNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Model Number</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Model number" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="color"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Color</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Color" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="dimensions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dimensions</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 10x20x30 cm" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weight</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., 1.5 kg" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Right column */}
+              <div className="space-y-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <Tabs defaultValue="status">
+                      <TabsList className="mb-4">
+                        <TabsTrigger value="status">Status</TabsTrigger>
+                        <TabsTrigger value="purchase">Purchase Info</TabsTrigger>
+                        <TabsTrigger value="warranty">Warranty</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="status" className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
-                            name="replacementInterval"
+                            name="status"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Replacement Interval (days)</FormLabel>
+                                <FormLabel>Status</FormLabel>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="used">Used</SelectItem>
+                                    <SelectItem value="sold">Sold</SelectItem>
+                                    <SelectItem value="expired">Expired</SelectItem>
+                                    <SelectItem value="damaged">Damaged</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="condition"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Condition</FormLabel>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select condition" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="new">New</SelectItem>
+                                    <SelectItem value="like-new">Like New</SelectItem>
+                                    <SelectItem value="good">Good</SelectItem>
+                                    <SelectItem value="fair">Fair</SelectItem>
+                                    <SelectItem value="poor">Poor</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Storage Location</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Where the item is stored" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="purchase" className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="purchaseDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Purchase Date</FormLabel>
+                                <div className="relative">
+                                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                  <FormControl>
+                                    <Input 
+                                      type="date" 
+                                      placeholder="YYYY-MM-DD" 
+                                      className="pl-10"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="purchasePrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Purchase Price</FormLabel>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.01" 
+                                      placeholder="0.00" 
+                                      className="pl-8"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="retailer"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Retailer</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="30" 
-                                    {...field} 
-                                    disabled={mutation.isPending}
-                                  />
+                                  <Input placeholder="Store or website" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -762,92 +765,327 @@ export default function InventoryUpload() {
                           
                           <FormField
                             control={form.control}
-                            name="replacementReminder"
+                            name="purchaseLocation"
                             render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                              <FormItem>
+                                <FormLabel>Purchase Location</FormLabel>
                                 <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={mutation.isPending}
-                                  />
+                                  <Input placeholder="City, country or website" {...field} />
                                 </FormControl>
-                                <div className="space-y-1 leading-none">
-                                  <FormLabel>Enable replacement reminders</FormLabel>
-                                  <FormDescription>
-                                    You'll be notified when it's time to replace this item
-                                  </FormDescription>
-                                </div>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="paymentMethod"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Payment Method</FormLabel>
+                                <div className="relative">
+                                  <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="Credit card, PayPal, etc." 
+                                      className="pl-10"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="orderNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Order Number</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Order reference number" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="receiptId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Link to Receipt</FormLabel>
+                              <div className="relative">
+                                <Receipt className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="pl-10">
+                                      <SelectValue placeholder="Link to a receipt" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {receipts?.map((receipt: any) => (
+                                      <SelectItem 
+                                        key={receipt.id} 
+                                        value={receipt.id.toString()}
+                                      >
+                                        {receipt.merchant?.name || 'Unknown'} - ${receipt.total} 
+                                        ({new Date(receipt.date).toLocaleDateString()})
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="warranty" className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="hasWarranty"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                              <div className="space-y-0.5">
+                                <FormLabel>Warranty Coverage</FormLabel>
+                                <FormDescription>
+                                  Does this item have a warranty?
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {form.watch('hasWarranty') && (
+                          <div className="border rounded-lg p-4 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="warranty.provider"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Provider</FormLabel>
+                                    <div className="relative">
+                                      <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Warranty provider" 
+                                          className="pl-10"
+                                          {...field} 
+                                        />
+                                      </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="warranty.coverageType"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Coverage Type</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        placeholder="e.g., Full, Limited, Extended" 
+                                        {...field} 
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="warranty.startDate"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Start Date</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="date" 
+                                        {...field} 
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="warranty.endDate"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>End Date</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="date" 
+                                        {...field} 
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="warranty.lengthInMonths"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Duration (months)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        placeholder="e.g., 12, 24, 36" 
+                                        {...field} 
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="warranty.contactInfo"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Contact Information</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        placeholder="Email, phone or website" 
+                                        {...field} 
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <FormField
+                              control={form.control}
+                              name="warranty.notes"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Warranty Notes</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Additional information about the warranty" 
+                                      className="resize-none"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-medium">Additional Information</h2>
+                      <Separator />
+                      
+                      <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notes</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Additional notes about this item" 
+                                className="resize-none"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <FormLabel>Custom Fields</FormLabel>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={addCustomField}
+                          >
+                            Add Field
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-2 mt-2">
+                          {customFields.map((field, index) => (
+                            <CustomField 
+                              key={index} 
+                              index={index} 
+                              remove={removeCustomField}
+                              register={form.register}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    )}
-                    
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter item description" 
-                              className="min-h-24"
-                              {...field} 
-                              disabled={mutation.isPending}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notes</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Add any additional notes about this item" 
-                              className="min-h-24"
-                              {...field} 
-                              disabled={mutation.isPending}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <CardFooter className="px-0 flex justify-between">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setLocation('/inventory')}
-                      disabled={mutation.isPending}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="submit"
-                      disabled={mutation.isPending}
-                      className="gap-2"
-                    >
-                      {mutation.isPending ? "Adding..." : "Add to Inventory"}
-                      {!mutation.isPending && <Upload className="h-4 w-4" />}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => setLocation('/inventory')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={mutation.isPending}
+                  >
+                    {mutation.isPending ? 'Saving...' : isEditMode ? 'Update Item' : 'Add Item'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </Form>
       </div>
-    </div>
+    </main>
   );
 }

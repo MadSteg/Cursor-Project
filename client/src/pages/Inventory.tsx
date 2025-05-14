@@ -1,12 +1,42 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useLocation } from 'wouter';
-import { PlusCircle, Search, Tag, Filter, Box, Calendar, LifeBuoy, SlidersHorizontal } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { 
+  Search, 
+  Plus, 
+  FileBox, 
+  Grid3x3, 
+  LayoutList, 
+  Filter,
+  ChevronDown,
+  Tag,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  AlertCircle,
+  Package,
+  Calendar,
+  Smartphone,
+  Home,
+  Shirt,
+  Sofa,
+  BookOpen,
+  ShoppingBasket,
+  QrCode,
+  Upload,
+  BarChart
+} from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,498 +45,455 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { queryClient } from '@/lib/queryClient';
-import { formatDistanceToNow } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
 
-// Helper function to format date for display
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return `${date.toLocaleDateString()} (${formatDistanceToNow(date, { addSuffix: true })})`;
+// Category icons map
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'Electronics': <Smartphone className="h-4 w-4" />,
+  'Home Appliances': <Home className="h-4 w-4" />,
+  'Clothing & Accessories': <Shirt className="h-4 w-4" />,
+  'Furniture': <Sofa className="h-4 w-4" />,
+  'Books & Media': <BookOpen className="h-4 w-4" />,
+  'Groceries': <ShoppingBasket className="h-4 w-4" />
 };
 
-// Card for displaying an inventory item
-const InventoryItemCard = ({ item }: { item: any }) => {
-  const warranty = item.warranty?.expiryDate ? (
-    <Badge variant={item.warranty.status === 'active' ? 'outline' : 'destructive'} className="ml-2">
-      Warranty: {item.warranty.status}
-    </Badge>
-  ) : null;
+// Status badge variants
+const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  'active': 'default',
+  'used': 'secondary',
+  'expired': 'destructive',
+  'sold': 'outline',
+  'damaged': 'destructive'
+};
 
+// Status icons
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  'active': <CheckCircle2 className="h-3 w-3" />,
+  'used': <Clock className="h-3 w-3" />,
+  'expired': <XCircle className="h-3 w-3" />,
+  'sold': <Package className="h-3 w-3" />,
+  'damaged': <AlertCircle className="h-3 w-3" />
+};
+
+// Inventory grid item component
+const InventoryGridItem = ({ item }: { item: any }) => {
+  const [, setLocation] = useLocation();
+  
   return (
-    <Card className="h-full overflow-hidden transition-all duration-200 hover:shadow-md">
-      <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg line-clamp-1">{item.name}</CardTitle>
-          <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
+    <Card 
+      className="overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => setLocation(`/inventory/${item.id}`)}
+    >
+      <div className="aspect-square bg-muted relative">
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <FileBox className="h-16 w-16 text-muted-foreground/50" />
+          </div>
+        )}
+        {item.status && (
+          <Badge 
+            variant={STATUS_VARIANTS[item.status] || 'secondary'}
+            className="absolute top-2 right-2 font-normal gap-1"
+          >
+            {STATUS_ICONS[item.status]}
             {item.status}
           </Badge>
-        </div>
-        <CardDescription className="flex flex-wrap gap-1 items-center text-xs">
-          {item.brand && <span className="font-medium">{item.brand}</span>}
-          {item.model && <span>Model: {item.model}</span>}
-          {warranty}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="h-32 rounded-md mb-2 bg-muted flex items-center justify-center overflow-hidden">
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
-          ) : (
-            <Box className="h-10 w-10 text-muted-foreground opacity-50" />
+        )}
+      </div>
+      <CardContent className="p-4 flex-grow">
+        <h3 className="font-medium text-base line-clamp-1">{item.name}</h3>
+        <div className="flex items-center gap-1 mt-1">
+          {item.category && (
+            <Badge 
+              variant="outline" 
+              className="gap-1 text-xs font-normal px-2 py-0"
+              style={item.category.color ? {
+                borderColor: item.category.color,
+                color: item.category.color
+              } : undefined}
+            >
+              {CATEGORY_ICONS[item.category.name] || <Tag className="h-3 w-3" />}
+              {item.category.name}
+            </Badge>
+          )}
+          {item.brandName && (
+            <span className="text-xs text-muted-foreground">{item.brandName}</span>
           )}
         </div>
-        <div className="space-y-1 text-sm">
-          {item.location && (
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <span>Location: {item.location}</span>
-            </div>
-          )}
-          {item.purchaseDate && (
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <span>Purchased: {formatDate(item.purchaseDate)}</span>
-            </div>
-          )}
-          {item.tags && item.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {item.tags.map((tag: string) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+        <div className="mt-2 text-xs text-muted-foreground line-clamp-2">
+          {item.description || 'No description available'}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-2 border-t flex justify-between">
-        <div className="text-sm text-muted-foreground">
-          Qty: {item.quantity}
+      <CardFooter className="p-4 pt-0 text-sm justify-between">
+        <div className="flex items-center gap-1 text-xs">
+          <Calendar className="h-3 w-3 text-muted-foreground" />
+          <span>
+            {item.purchaseDate 
+              ? new Date(item.purchaseDate).toLocaleDateString() 
+              : 'No date'}
+          </span>
         </div>
-        <Link to={`/inventory/${item.id}`}>
-          <Button size="sm" variant="outline">
-            View Details
-          </Button>
-        </Link>
+        {item.purchasePrice && (
+          <div className="font-medium">${parseFloat(item.purchasePrice).toFixed(2)}</div>
+        )}
       </CardFooter>
     </Card>
   );
 };
 
-// Skeleton for loading state
-const InventoryItemSkeleton = () => (
-  <Card className="h-full">
-    <CardHeader className="p-4 pb-2">
-      <Skeleton className="h-6 w-3/4 mb-2" />
-      <Skeleton className="h-4 w-1/2" />
-    </CardHeader>
-    <CardContent className="p-4 pt-0">
-      <Skeleton className="h-32 w-full mb-2 rounded-md" />
-      <div className="space-y-1">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
+// Inventory list item component
+const InventoryListItem = ({ item }: { item: any }) => {
+  const [, setLocation] = useLocation();
+  
+  return (
+    <div 
+      className="flex gap-4 py-3 px-4 items-center hover:bg-muted cursor-pointer rounded-md transition-colors"
+      onClick={() => setLocation(`/inventory/${item.id}`)}
+    >
+      <div className="w-12 h-12 bg-muted rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+        ) : (
+          <FileBox className="h-6 w-6 text-muted-foreground/50" />
+        )}
       </div>
-    </CardContent>
-    <CardFooter className="p-4 pt-2 border-t flex justify-between">
-      <Skeleton className="h-4 w-1/4" />
-      <Skeleton className="h-8 w-24" />
-    </CardFooter>
-  </Card>
-);
+      <div className="flex-grow min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-base line-clamp-1">{item.name}</h3>
+          {item.status && (
+            <Badge 
+              variant={STATUS_VARIANTS[item.status] || 'secondary'}
+              className="font-normal gap-1 text-xs"
+            >
+              {STATUS_ICONS[item.status]}
+              {item.status}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          {item.category && (
+            <Badge 
+              variant="outline" 
+              className="gap-1 text-xs font-normal px-2 py-0"
+              style={item.category.color ? {
+                borderColor: item.category.color,
+                color: item.category.color
+              } : undefined}
+            >
+              {CATEGORY_ICONS[item.category.name] || <Tag className="h-3 w-3" />}
+              {item.category.name}
+            </Badge>
+          )}
+          {item.brandName && (
+            <span className="text-xs text-muted-foreground">{item.brandName}</span>
+          )}
+          {item.modelNumber && (
+            <span className="text-xs text-muted-foreground">{item.modelNumber}</span>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-1 min-w-[120px]">
+        {item.purchasePrice && (
+          <div className="font-medium">${parseFloat(item.purchasePrice).toFixed(2)}</div>
+        )}
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Calendar className="h-3 w-3" />
+          <span>
+            {item.purchaseDate 
+              ? new Date(item.purchaseDate).toLocaleDateString() 
+              : 'No date'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Inventory() {
   const [, setLocation] = useLocation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-
-  // Fetch inventory items - we're using mock data for now
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
+  
+  // Fetch inventory items
   const { data: inventoryItems, isLoading } = useQuery({
-    queryKey: ['/api/inventory'],
+    queryKey: ['/api/inventory', searchQuery, selectedCategory, selectedStatus],
     queryFn: async () => {
-      // This will be replaced with a real API call
-      return new Promise(resolve => setTimeout(() => {
-        resolve([
-          {
-            id: 1,
-            name: 'Apple iPhone 15 Pro',
-            description: 'Latest iPhone model with 256GB storage',
-            quantity: 1,
-            purchasePrice: '1299.99',
-            purchaseDate: '2025-04-10',
-            category: {
-              id: 1, 
-              name: 'Electronics',
-              color: '#4f46e5',
-              icon: 'smartphone'
-            },
-            receipt: {
-              id: 101,
-              date: '2025-04-10',
-              merchant: {
-                name: 'Apple Store',
-                logo: 'https://example.com/apple.png'
-              },
-              blockchainVerified: true,
-              nftTokenId: '0x123abc'
-            },
-            brand: 'Apple',
-            model: 'iPhone 15 Pro',
-            serial: 'IMEI123456789',
-            warranty: {
-              expiryDate: '2026-04-10',
-              daysRemaining: 360,
-              status: 'active'
-            },
-            location: 'Home Office',
-            status: 'active',
-            tags: ['tech', 'smartphone', 'apple'],
-            imageUrl: 'https://placehold.co/600x400?text=iPhone15Pro'
-          },
-          {
-            id: 2,
-            name: 'Dyson V11 Vacuum',
-            description: 'Cordless vacuum cleaner',
-            quantity: 1,
-            purchasePrice: '499.99',
-            purchaseDate: '2024-11-15',
-            category: {
-              id: 2,
-              name: 'Home Appliances',
-              color: '#0891b2',
-              icon: 'home'
-            },
-            receipt: {
-              id: 102,
-              date: '2024-11-15',
-              merchant: {
-                name: 'Best Buy',
-                logo: 'https://example.com/bestbuy.png'
-              }
-            },
-            brand: 'Dyson',
-            model: 'V11 Absolute',
-            serial: 'DYS987654321',
-            warranty: {
-              expiryDate: '2026-11-15',
-              daysRemaining: 580,
-              status: 'active'
-            },
-            location: 'Storage Closet',
-            status: 'active',
-            tags: ['appliance', 'cleaning', 'household'],
-            imageUrl: 'https://placehold.co/600x400?text=DysonV11'
-          },
-          {
-            id: 3,
-            name: 'Nike Air Zoom Pegasus 38',
-            description: 'Running shoes',
-            quantity: 1,
-            purchasePrice: '129.99',
-            purchaseDate: '2024-09-20',
-            category: {
-              id: 3,
-              name: 'Clothing & Accessories',
-              color: '#db2777',
-              icon: 'shirt'
-            },
-            brand: 'Nike',
-            model: 'Air Zoom Pegasus 38',
-            location: 'Closet',
-            status: 'active',
-            tags: ['shoes', 'running', 'clothing'],
-            imageUrl: 'https://placehold.co/600x400?text=NikeShoes'
-          },
-          {
-            id: 4,
-            name: 'Instant Pot Duo',
-            description: 'Multi-use pressure cooker',
-            quantity: 1,
-            purchasePrice: '89.99',
-            purchaseDate: '2024-06-05',
-            category: {
-              id: 2,
-              name: 'Home Appliances',
-              color: '#0891b2',
-              icon: 'home'
-            },
-            brand: 'Instant Pot',
-            model: 'Duo 6-Quart',
-            serial: 'IP789456123',
-            warranty: {
-              expiryDate: '2025-06-05',
-              daysRemaining: 45,
-              status: 'active'
-            },
-            location: 'Kitchen',
-            status: 'active',
-            tags: ['kitchen', 'cooking', 'appliance'],
-            imageUrl: 'https://placehold.co/600x400?text=InstantPot'
-          },
-          {
-            id: 5,
-            name: 'Sony WH-1000XM4 Headphones',
-            description: 'Wireless noise-canceling headphones',
-            quantity: 1,
-            purchasePrice: '349.99',
-            purchaseDate: '2024-08-12',
-            category: {
-              id: 1,
-              name: 'Electronics',
-              color: '#4f46e5',
-              icon: 'smartphone'
-            },
-            receipt: {
-              id: 105,
-              date: '2024-08-12',
-              merchant: {
-                name: 'Amazon',
-                logo: 'https://example.com/amazon.png'
-              }
-            },
-            brand: 'Sony',
-            model: 'WH-1000XM4',
-            serial: 'SONY456789123',
-            warranty: {
-              expiryDate: '2025-08-12',
-              daysRemaining: 90,
-              status: 'active'
-            },
-            location: 'Home Office',
-            status: 'active',
-            tags: ['audio', 'electronics', 'headphones'],
-            imageUrl: 'https://placehold.co/600x400?text=SonyHeadphones'
-          }
-        ]);
-      }, 1000));
-    }
+      const queryParams = new URLSearchParams();
+      
+      if (searchQuery) {
+        queryParams.append('q', searchQuery);
+      }
+      
+      if (selectedCategory) {
+        queryParams.append('categoryId', selectedCategory.toString());
+      }
+      
+      if (selectedStatus) {
+        queryParams.append('status', selectedStatus);
+      }
+      
+      const response = await fetch(`/api/inventory?${queryParams.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch inventory items');
+      }
+      return response.json();
+    },
   });
-
-  // Filter and search inventory items
-  const filteredItems = inventoryItems?.filter(item => {
-    // Filter by status
-    if (activeFilter !== 'all' && item.status !== activeFilter) {
-      return false;
-    }
-    
-    // Search term filtering
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        item.name.toLowerCase().includes(searchLower) ||
-        (item.description && item.description.toLowerCase().includes(searchLower)) ||
-        (item.brand && item.brand.toLowerCase().includes(searchLower)) ||
-        (item.model && item.model.toLowerCase().includes(searchLower)) ||
-        (item.serial && item.serial.toLowerCase().includes(searchLower)) ||
-        (item.location && item.location.toLowerCase().includes(searchLower)) ||
-        (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(searchLower)))
-      );
-    }
-    
-    return true;
+  
+  // Fetch categories
+  const { data: categories } = useQuery({
+    queryKey: ['/api/categories'],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+      return response.json();
+    },
   });
 
   return (
-    <div className="container py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <main className="container py-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Inventory Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Track and manage your purchased items from all receipts
-          </p>
+          <h1 className="text-3xl font-bold">Inventory</h1>
+          <p className="text-muted-foreground">Manage your items and collections</p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/inventory-upload">
-            <Button className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Add Item
+        
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setLocation('/receipts')}
+            >
+              <BarChart className="mr-2 h-4 w-4" />
+              View Receipt History
             </Button>
-          </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4" />
-                <span className="hidden sm:inline">Options</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Inventory Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Calendar className="h-4 w-4 mr-2" />
-                Warranty Calendar
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <LifeBuoy className="h-4 w-4 mr-2" />
-                Warranty Alerts
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Box className="h-4 w-4 mr-2" />
-                Import Items
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Tag className="h-4 w-4 mr-2" />
-                Manage Tags
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            
+            <Button
+              variant="outline" 
+              size="sm"
+              className="shrink-0"
+            >
+              <QrCode className="mr-2 h-4 w-4" />
+              Scan Product
+            </Button>
+          </div>
+          
+          <Button 
+            onClick={() => setLocation('/inventory-upload')}
+            className="shrink-0"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Item
+          </Button>
         </div>
       </div>
       
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search inventory..."
-            className="pl-9 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search items..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="gap-2">
                 <Filter className="h-4 w-4" />
-                <span>Filter</span>
+                Filter
+                <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Filter By</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setActiveFilter('all')}>
-                All Items
+              
+              <DropdownMenuLabel className="text-xs pt-2">Category</DropdownMenuLabel>
+              <DropdownMenuItem 
+                onClick={() => setSelectedCategory(undefined)}
+                className="gap-2"
+              >
+                <div 
+                  className={`w-2 h-2 rounded-full ${!selectedCategory ? "bg-primary" : "bg-transparent"}`}
+                />
+                All Categories
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveFilter('active')}>
-                Active Items
+              {categories?.map((category: any) => (
+                <DropdownMenuItem 
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className="gap-2"
+                >
+                  <div 
+                    className={`w-2 h-2 rounded-full`}
+                    style={{ 
+                      backgroundColor: selectedCategory === category.id 
+                        ? category.color 
+                        : 'transparent' 
+                    }}
+                  />
+                  {category.name}
+                </DropdownMenuItem>
+              ))}
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs pt-2">Status</DropdownMenuLabel>
+              <DropdownMenuItem 
+                onClick={() => setSelectedStatus(undefined)}
+                className="gap-2"
+              >
+                <div 
+                  className={`w-2 h-2 rounded-full ${!selectedStatus ? "bg-primary" : "bg-transparent"}`}
+                />
+                All Statuses
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveFilter('used')}>
-                Used Items
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveFilter('expired')}>
-                Expired Items
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveFilter('sold')}>
-                Sold Items
-              </DropdownMenuItem>
+              {['active', 'used', 'expired', 'sold', 'damaged'].map((status) => (
+                <DropdownMenuItem 
+                  key={status}
+                  onClick={() => setSelectedStatus(status)}
+                  className="gap-2"
+                >
+                  {STATUS_ICONS[status]}
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </div>
-
-      <Tabs defaultValue="grid" className="mb-6">
-        <div className="flex justify-between items-center">
-          <TabsList>
-            <TabsTrigger value="grid">Grid View</TabsTrigger>
-            <TabsTrigger value="list">List View</TabsTrigger>
-          </TabsList>
           
-          <div className="text-sm text-muted-foreground">
-            {filteredItems ? (
-              `${filteredItems.length} item${filteredItems.length !== 1 ? 's' : ''} ${
-                activeFilter !== 'all' ? `(${activeFilter})` : ''
-              }`
-            ) : null}
+          <div className="border rounded-md flex">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-r-none h-10 px-3"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid3x3 className="h-4 w-4" />
+            </Button>
+            <Separator orientation="vertical" />
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-l-none h-10 px-3"
+              onClick={() => setViewMode('list')}
+            >
+              <LayoutList className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+      </div>
+      
+      <Tabs defaultValue="items">
+        <TabsList className="mb-6">
+          <TabsTrigger value="items">All Items</TabsTrigger>
+          <TabsTrigger value="collections">Collections</TabsTrigger>
+          <TabsTrigger value="warranties">Warranty Tracking</TabsTrigger>
+        </TabsList>
         
-        <TabsContent value="grid" className="mt-4">
+        <TabsContent value="items">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <InventoryItemSkeleton key={i} />
-              ))}
-            </div>
-          ) : filteredItems && filteredItems.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredItems.map((item) => (
-                <InventoryItemCard key={item.id} item={item} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Box className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No items found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm
-                  ? "No items match your search criteria"
-                  : "Your inventory is empty. Add items to get started."}
-              </p>
-              <Link to="/inventory-upload">
-                <Button>Add Your First Item</Button>
-              </Link>
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="list" className="mt-4">
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <Skeleton className="h-16 w-16 rounded-md flex-shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-5 w-1/3" />
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Card key={i} className="overflow-hidden">
+                    <Skeleton className="aspect-square" />
+                    <CardContent className="p-4">
+                      <Skeleton className="h-4 w-2/3 mb-2" />
+                      <Skeleton className="h-3 w-1/2 mb-1" />
+                      <Skeleton className="h-3 w-full mb-1" />
+                      <Skeleton className="h-3 w-5/6" />
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                      <Skeleton className="h-3 w-1/3" />
+                      <Skeleton className="h-3 w-1/4 ml-auto" />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex gap-4 p-4 items-center">
+                    <Skeleton className="w-12 h-12 rounded" />
+                    <div className="flex-grow">
+                      <Skeleton className="h-5 w-1/3 mb-2" />
                       <Skeleton className="h-4 w-1/2" />
                     </div>
-                    <Skeleton className="h-10 w-24" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredItems && filteredItems.length > 0 ? (
-            <div className="space-y-3">
-              {filteredItems.map((item) => (
-                <Card key={item.id} className="overflow-hidden transition-all duration-200 hover:shadow-md">
-                  <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
-                    <div className="h-20 w-20 rounded-md bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <Box className="h-8 w-8 text-muted-foreground opacity-50" />
-                      )}
+                    <div className="flex flex-col items-end">
+                      <Skeleton className="h-5 w-16 mb-2" />
+                      <Skeleton className="h-4 w-24" />
                     </div>
-                    <div className="flex-1 space-y-1 text-center sm:text-left">
-                      <h3 className="font-medium">{item.name}</h3>
-                      <div className="text-sm text-muted-foreground flex flex-wrap gap-2 justify-center sm:justify-start">
-                        {item.brand && <span>{item.brand}</span>}
-                        {item.model && <span>• {item.model}</span>}
-                        {item.location && <span>• {item.location}</span>}
-                      </div>
-                      {item.warranty && (
-                        <Badge variant={item.warranty.status === 'active' ? 'outline' : 'destructive'} className="mt-1">
-                          Warranty: {item.warranty.status}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2 items-center mt-2 sm:mt-0">
-                      <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
-                        {item.status}
-                      </Badge>
-                      <Link to={`/inventory/${item.id}`}>
-                        <Button size="sm" variant="outline">View Details</Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : inventoryItems?.length > 0 ? (
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {inventoryItems.map((item: any) => (
+                  <InventoryGridItem key={item.id} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 divide-y">
+                {inventoryItems.map((item: any) => (
+                  <InventoryListItem key={item.id} item={item} />
+                ))}
+              </div>
+            )
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Box className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No items found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm
-                  ? "No items match your search criteria"
-                  : "Your inventory is empty. Add items to get started."}
+            <div className="text-center py-12">
+              <FileBox className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No items found</h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                {searchQuery || selectedCategory || selectedStatus
+                  ? "Try adjusting your filters or search query"
+                  : "Your inventory is empty. Start by adding your first item."}
               </p>
-              <Link to="/inventory-upload">
-                <Button>Add Your First Item</Button>
-              </Link>
+              <Button onClick={() => setLocation('/inventory-upload')}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Item
+              </Button>
             </div>
           )}
         </TabsContent>
+        
+        <TabsContent value="collections">
+          <div className="text-center py-12">
+            <Grid3x3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Collections Coming Soon</h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              Organize your items into collections for easier management. 
+              This feature will be available soon.
+            </p>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="warranties">
+          <div className="text-center py-12">
+            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Warranty Tracking Coming Soon</h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              Keep track of your product warranties and get notified before they expire.
+              This feature will be available soon.
+            </p>
+          </div>
+        </TabsContent>
       </Tabs>
-    </div>
+    </main>
   );
 }
