@@ -35,6 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { NFTReceiptTier, calculateNFTReceiptPrice, calculateTotalPrice } from "@shared/products";
+import CryptoCheckoutModal from "@/components/checkout/CryptoCheckoutModal";
 
 export default function ProductDetail() {
   const { id } = useParams();

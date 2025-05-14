@@ -352,9 +352,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -388,9 +388,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.STANDARD,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -425,9 +425,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -463,9 +463,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -499,9 +499,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.STANDARD,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -535,9 +535,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -572,9 +572,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -609,9 +609,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -648,9 +648,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -687,9 +687,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -723,9 +723,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.STANDARD,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -758,9 +758,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -794,9 +794,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -831,9 +831,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -869,9 +869,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -905,9 +905,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -942,9 +942,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -978,9 +978,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -1014,9 +1014,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -1052,9 +1052,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -1089,9 +1089,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -1126,9 +1126,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -1164,9 +1164,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.PREMIUM,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
@@ -1201,9 +1201,9 @@ export const products: Product[] = [
       availableTiers: [NFTReceiptTier.STANDARD, NFTReceiptTier.PREMIUM, NFTReceiptTier.LUXURY],
       defaultTier: NFTReceiptTier.LUXURY,
       pricing: {
-        [NFTReceiptTier.STANDARD]: 0.99,
-        [NFTReceiptTier.PREMIUM]: 2.99,
-        [NFTReceiptTier.LUXURY]: 5.00
+        [NFTReceiptTier.STANDARD]: 0.01,
+        [NFTReceiptTier.PREMIUM]: 0.01,
+        [NFTReceiptTier.LUXURY]: 0.01
       },
       encryptionScheme: 'taco-tpre',
       additionalMetadata: {
