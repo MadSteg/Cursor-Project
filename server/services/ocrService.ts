@@ -213,12 +213,25 @@ export async function extractReceiptData(imageBase64: string): Promise<Extracted
       console.log('No OpenAI API key available, skipping OpenAI processing');
     }
     
-    // If result is null (API failed or no key), we could implement fallback OCR here
-    // For now, we'll just return null but in production you'd want another OCR option
-    
+    // If result is null (API failed or no key), use Tesseract OCR as fallback
     if (!result) {
-      console.log('OpenAI OCR failed, falling back to mock data: No fallback implemented');
-      return null;
+      console.log('OpenAI OCR failed, falling back to Tesseract OCR');
+      
+      try {
+        // Dynamically import Tesseract OCR service to avoid circular dependency
+        const { processTesseractOCR } = await import('./tesseractOcrService');
+        result = await processTesseractOCR(imageBase64);
+        
+        if (result) {
+          console.log('Successfully processed receipt with Tesseract OCR fallback');
+        } else {
+          console.warn('Tesseract OCR fallback also failed');
+          return null;
+        }
+      } catch (fallbackError) {
+        console.error('Error in Tesseract OCR fallback:', fallbackError);
+        return null;
+      }
     }
     
     // Validate and transform the data
@@ -389,44 +402,60 @@ export async function inferReceiptCategory(
  * @param itemDescriptions The item descriptions
  * @returns A category
  */
-function fallbackCategorization(merchantName: string, itemDescriptions: string): string {
-  const merchant = merchantName.toLowerCase();
-  const items = itemDescriptions.toLowerCase();
-  
-  const keywords = {
-    groceries: ['grocery', 'supermarket', 'food', 'mart', 'market', 'fresh', 'produce', 'deli'],
-    dining: ['restaurant', 'cafe', 'coffee', 'bar', 'grill', 'eatery', 'bistro', 'kitchen', 'diner'],
-    retail: ['store', 'shop', 'mall', 'boutique', 'outlet', 'clothing', 'apparel', 'fashion'],
-    electronics: ['electronic', 'tech', 'computer', 'phone', 'device', 'gadget', 'digital', 'tv', 'appliance'],
-    travel: ['airline', 'hotel', 'motel', 'flight', 'car rental', 'vacation', 'travel', 'booking', 'trip'],
-    entertainment: ['movie', 'theater', 'cinema', 'concert', 'show', 'ticket', 'event', 'game', 'streaming'],
-    utilities: ['electric', 'water', 'gas', 'power', 'internet', 'phone', 'telecom', 'utility', 'bill'],
-    health: ['pharmacy', 'drug', 'medical', 'doctor', 'health', 'hospital', 'clinic', 'care'],
-    beauty: ['salon', 'spa', 'cosmetic', 'beauty', 'nail', 'hair', 'makeup', 'barber'],
-    home: ['hardware', 'furniture', 'home', 'garden', 'decor', 'improvement', 'repair', 'tool'],
-    education: ['school', 'college', 'university', 'course', 'class', 'tuition', 'education', 'book', 'learning'],
-    charity: ['donation', 'charity', 'foundation', 'nonprofit', 'fund', 'giving', 'support']
-  };
-  
-  // Check merchant name first
-  for (const [category, terms] of Object.entries(keywords)) {
-    for (const term of terms) {
-      if (merchant.includes(term)) {
-        return category;
+async function fallbackCategorization(merchantName: string, itemDescriptions: string): Promise<string> {
+  try {
+    // Try to use the more advanced Tesseract categorization algorithm
+    const { inferCategoryFromText } = await import('./tesseractOcrService');
+    
+    // Convert string itemDescriptions to array of objects for Tesseract categorization
+    const items = itemDescriptions.split(',').map(item => ({
+      name: item.trim(),
+      price: 0
+    }));
+    
+    return inferCategoryFromText(merchantName, items);
+  } catch (error) {
+    console.warn('Error using Tesseract categorization, falling back to basic keywords', error);
+    
+    // Basic keyword-based categorization as final fallback
+    const merchant = merchantName.toLowerCase();
+    const items = itemDescriptions.toLowerCase();
+    
+    const keywords = {
+      groceries: ['grocery', 'supermarket', 'food', 'mart', 'market', 'fresh', 'produce', 'deli'],
+      dining: ['restaurant', 'cafe', 'coffee', 'bar', 'grill', 'eatery', 'bistro', 'kitchen', 'diner'],
+      retail: ['store', 'shop', 'mall', 'boutique', 'outlet', 'clothing', 'apparel', 'fashion'],
+      electronics: ['electronic', 'tech', 'computer', 'phone', 'device', 'gadget', 'digital', 'tv', 'appliance'],
+      travel: ['airline', 'hotel', 'motel', 'flight', 'car rental', 'vacation', 'travel', 'booking', 'trip'],
+      entertainment: ['movie', 'theater', 'cinema', 'concert', 'show', 'ticket', 'event', 'game', 'streaming'],
+      utilities: ['electric', 'water', 'gas', 'power', 'internet', 'phone', 'telecom', 'utility', 'bill'],
+      health: ['pharmacy', 'drug', 'medical', 'doctor', 'health', 'hospital', 'clinic', 'care'],
+      beauty: ['salon', 'spa', 'cosmetic', 'beauty', 'nail', 'hair', 'makeup', 'barber'],
+      home: ['hardware', 'furniture', 'home', 'garden', 'decor', 'improvement', 'repair', 'tool'],
+      education: ['school', 'college', 'university', 'course', 'class', 'tuition', 'education', 'book', 'learning'],
+      charity: ['donation', 'charity', 'foundation', 'nonprofit', 'fund', 'giving', 'support']
+    };
+    
+    // Check merchant name first
+    for (const [category, terms] of Object.entries(keywords)) {
+      for (const term of terms) {
+        if (merchant.includes(term)) {
+          return category;
+        }
       }
     }
-  }
-  
-  // Then check items
-  for (const [category, terms] of Object.entries(keywords)) {
-    for (const term of terms) {
-      if (items.includes(term)) {
-        return category;
+    
+    // Then check items
+    for (const [category, terms] of Object.entries(keywords)) {
+      for (const term of terms) {
+        if (items.includes(term)) {
+          return category;
+        }
       }
     }
+    
+    return 'other';
   }
-  
-  return 'other';
 }
 
 export default {

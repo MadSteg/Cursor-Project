@@ -8,7 +8,6 @@ import { Router } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { extractReceiptData, inferReceiptCategory } from '../services/ocrService';
-import { getMockReceiptData, mockInferCategory } from '../services/mockOcrService';
 
 const router = Router();
 
@@ -47,23 +46,18 @@ router.post('/upload', upload.single('receipt'), async (req, res) => {
     // Convert the buffer to base64
     const base64Image = req.file.buffer.toString('base64');
     
-    // Try to use OpenAI OCR with fallback to mock data
-    let extractedData;
-    try {
-      extractedData = await extractReceiptData(base64Image);
-      
-      if (!extractedData) {
-        throw new Error('OpenAI returned null data');
-      }
-    } catch (ocrError) {
-      console.log('OpenAI OCR failed, falling back to mock data:', ocrError.message || 'Unknown error');
-      
-      // Fall back to mock data
-      extractedData = await getMockReceiptData(base64Image);
-    }
+    // Process with our robust OCR pipeline (includes both OpenAI and Tesseract with fallbacks)
+    console.log('Starting receipt OCR processing...');
+    console.log('Processing receipt image:', base64Image.substring(0, 20) + '...');
+    
+    const extractedData = await extractReceiptData(base64Image);
     
     if (!extractedData) {
-      return res.status(422).json({ error: 'Failed to extract receipt data' });
+      console.error('All OCR methods failed. Unable to process receipt image.');
+      return res.status(422).json({ 
+        success: false,
+        error: 'Failed to process receipt image. Please try again with a clearer image.'
+      });
     }
     
     // If category was not identified, try to infer it
@@ -71,20 +65,18 @@ router.post('/upload', upload.single('receipt'), async (req, res) => {
       try {
         extractedData.category = await inferReceiptCategory(
           extractedData.merchantName,
-          extractedData.items
+          extractedData.items.map(item => item.name).join(', ')
         );
       } catch (categoryError) {
-        // Fall back to mock category if inference fails
-        extractedData.category = await mockInferCategory(
-          extractedData.merchantName,
-          extractedData.items
-        );
+        console.warn('Failed to infer receipt category:', categoryError);
+        extractedData.category = 'other';
       }
     }
     
     res.json({
       success: true,
       data: extractedData,
+      source: extractedData.confidence > 0.8 ? 'openai' : 'tesseract'
     });
   } catch (error) {
     console.error('Receipt upload error:', error);
@@ -118,23 +110,18 @@ router.post('/process', async (req, res) => {
       ? image.split('base64,')[1] 
       : image;
     
-    // Try to use OpenAI OCR with fallback to mock data
-    let extractedData;
-    try {
-      extractedData = await extractReceiptData(base64Image);
-      
-      if (!extractedData) {
-        throw new Error('OpenAI returned null data');
-      }
-    } catch (ocrError) {
-      console.log('OpenAI OCR failed, falling back to mock data:', ocrError.message || 'Unknown error');
-      
-      // Fall back to mock data
-      extractedData = await getMockReceiptData(base64Image);
-    }
+    // Process with our robust OCR pipeline (includes both OpenAI and Tesseract with fallbacks)
+    console.log('Starting receipt OCR processing...');
+    console.log('Processing receipt image:', base64Image.substring(0, 20) + '...');
+    
+    const extractedData = await extractReceiptData(base64Image);
     
     if (!extractedData) {
-      return res.status(422).json({ error: 'Failed to extract receipt data' });
+      console.error('All OCR methods failed. Unable to process receipt image.');
+      return res.status(422).json({ 
+        success: false,
+        error: 'Failed to process receipt image. Please try again with a clearer image.'
+      });
     }
     
     // If category was not identified, try to infer it
@@ -142,26 +129,24 @@ router.post('/process', async (req, res) => {
       try {
         extractedData.category = await inferReceiptCategory(
           extractedData.merchantName,
-          extractedData.items
+          extractedData.items.map(item => item.name).join(', ')
         );
       } catch (categoryError) {
-        // Fall back to mock category if inference fails
-        extractedData.category = await mockInferCategory(
-          extractedData.merchantName,
-          extractedData.items
-        );
+        console.warn('Failed to infer receipt category:', categoryError);
+        extractedData.category = 'other';
       }
     }
     
     res.json({
       success: true,
       data: extractedData,
+      source: extractedData.confidence > 0.8 ? 'openai' : 'tesseract'
     });
   } catch (error) {
     console.error('Receipt processing error:', error);
     res.status(500).json({ 
       error: 'Failed to process receipt image',
-      details: error.message
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
