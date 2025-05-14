@@ -1,384 +1,239 @@
-import { useState } from "react";
-import { useParams, useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import {
+import { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { 
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
+import NFTReceiptCard from '@/components/receipts/NFTReceiptCard';
 
 export default function NFTReceiptDetail() {
   const { id } = useParams();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  const [showDecryptDialog, setShowDecryptDialog] = useState(false);
-  const [decryptedData, setDecryptedData] = useState<any>(null);
+  const receiptId = parseInt(id || '0');
 
-  // Fetch receipt data
-  const { data: receipt, isLoading: receiptLoading } = useQuery({
-    queryKey: [`/api/nft-receipts/${id}`],
+  // Fetch receipt details
+  const { data: receipt, isLoading, error } = useQuery({
+    queryKey: [`/api/nft-receipts/${receiptId}`],
     queryFn: async () => {
-      const response = await fetch(`/api/nft-receipts/${id}`);
+      if (!receiptId) return null;
+      const response = await fetch(`/api/nft-receipts/${receiptId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch receipt');
-      }
-      return response.json();
-    }
-  });
-
-  // Mutation to decrypt receipt data
-  const decryptReceipt = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(`/api/nft-receipts/${id}/decrypt`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to decrypt receipt');
+        throw new Error('Failed to fetch receipt details');
       }
       return response.json();
     },
-    onSuccess: (data) => {
-      setDecryptedData(data.decryptedData);
-      setShowDecryptDialog(true);
-      toast({
-        title: "Receipt Decrypted",
-        description: "Successfully decrypted receipt data",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Decryption Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    enabled: !!receiptId && receiptId > 0
   });
 
-  // Handle decrypt button click
-  const handleDecrypt = () => {
-    decryptReceipt.mutate();
-  };
-
-  if (receiptLoading) {
+  // Loading state
+  if (isLoading) {
     return (
       <main className="container py-10">
         <div className="animate-pulse space-y-6">
           <div className="h-10 w-1/3 bg-muted rounded"></div>
-          <div className="h-64 bg-muted rounded"></div>
-          <div className="space-y-2">
-            <div className="h-6 w-1/2 bg-muted rounded"></div>
-            <div className="h-6 w-3/4 bg-muted rounded"></div>
-            <div className="h-6 w-1/4 bg-muted rounded"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="aspect-square bg-muted rounded col-span-1"></div>
+            <div className="space-y-4 col-span-2">
+              <div className="h-8 w-3/4 bg-muted rounded"></div>
+              <div className="h-6 w-1/2 bg-muted rounded"></div>
+              <div className="h-4 w-full bg-muted rounded"></div>
+              <div className="h-4 w-full bg-muted rounded"></div>
+              <div className="h-4 w-2/3 bg-muted rounded"></div>
+            </div>
           </div>
         </div>
       </main>
     );
   }
 
-  if (!receipt) {
+  // Error state
+  if (error || !receipt) {
     return (
       <main className="container py-10">
         <div className="text-center py-16">
           <h1 className="text-2xl font-bold mb-4">Receipt Not Found</h1>
-          <p className="text-muted-foreground mb-6">The NFT receipt you're looking for doesn't exist or may have been removed.</p>
-          <Button onClick={() => setLocation("/products")}>
-            Browse Products
+          <p className="text-muted-foreground mb-6">The NFT receipt you're looking for doesn't exist or has been removed.</p>
+          <Button onClick={() => setLocation("/")}>
+            Back to Dashboard
           </Button>
         </div>
       </main>
     );
   }
 
-  const formattedDate = new Date(receipt.createdAt).toLocaleString();
+  // Mock data for development - will be replaced with real data from backend
+  const mockData = {
+    receiptId: receiptId,
+    transactionHash: receipt.transactionHash || '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    nftId: receipt.tokenId || `NFT-${Date.now()}`,
+    tier: receipt.tier || 'standard',
+    productName: receipt.productName || 'Example Product',
+    merchantName: receipt.merchantName || 'Example Merchant',
+    purchaseDate: receipt.createdAt || new Date().toISOString(),
+    totalAmount: receipt.amount || 0.01,
+    ipfsHash: receipt.ipfsHash || 'ipfs://QmExampleHashGoesHere',
+    nftImageUrl: receipt.imageUrl || '/products/receipt-placeholder.jpg'
+  };
+
+  // View on block explorer
+  const handleViewOnBlockExplorer = () => {
+    // Polygon Amoy explorer URL
+    const explorerUrl = `https://amoy.polygonscan.com/tx/${mockData.transactionHash}`;
+    window.open(explorerUrl, '_blank');
+  };
 
   return (
     <main className="container py-10">
-      <Button 
-        variant="ghost" 
-        onClick={() => setLocation("/products")}
+      <Button
+        variant="ghost"
+        onClick={() => setLocation("/")}
         className="mb-6"
       >
-        ← Back to Products
+        ← Back to Dashboard
       </Button>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* NFT Receipt Card */}
-        <div className="lg:col-span-2">
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl">NFT Receipt #{id}</CardTitle>
-                  <CardDescription className="text-white/80">
-                    Issued on {formattedDate}
-                  </CardDescription>
-                </div>
-                <Badge 
-                  className="capitalize"
-                  variant="secondary"
-                >
-                  {receipt.tier}
-                </Badge>
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Product Details</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm text-muted-foreground">Product Name</label>
-                      <p className="font-medium">{receipt.product?.name}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-muted-foreground">Merchant</label>
-                      <p className="font-medium">{receipt.merchant?.name}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-muted-foreground">Price</label>
-                      <p className="font-medium">${receipt.product?.price.toFixed(2)}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-muted-foreground">Purchase Date</label>
-                      <p className="font-medium">{formattedDate}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Blockchain Details</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm text-muted-foreground">NFT Token ID</label>
-                      <p className="font-medium truncate">{receipt.nftTokenId}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-muted-foreground">Transaction Hash</label>
-                      <p className="font-medium truncate">{receipt.transactionHash}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-muted-foreground">IPFS Hash</label>
-                      <p className="font-medium truncate">{receipt.ipfsHash}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-muted-foreground">Owner Wallet</label>
-                      <p className="font-medium truncate">{receipt.customerWalletAddress}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator className="my-6" />
-
-              <div className="text-center space-y-4">
-                <h3 className="text-lg font-semibold">Encrypted Receipt Data</h3>
-                <p className="text-muted-foreground">
-                  This NFT receipt contains encrypted data using Threshold Pre-Encryption (TPRE).
-                  Only authorized parties can decrypt and view the detailed receipt information.
-                </p>
-                <Button 
-                  onClick={handleDecrypt}
-                  disabled={decryptReceipt.isPending}
-                  className="w-full max-w-md mx-auto"
-                >
-                  {decryptReceipt.isPending ? "Decrypting..." : "Decrypt Receipt Data"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="lg:col-span-1">
+          <NFTReceiptCard
+            receiptId={mockData.receiptId}
+            transactionHash={mockData.transactionHash}
+            nftId={mockData.nftId}
+            tier={mockData.tier}
+            productName={mockData.productName}
+            merchantName={mockData.merchantName}
+            purchaseDate={mockData.purchaseDate}
+            totalAmount={mockData.totalAmount}
+            ipfsHash={mockData.ipfsHash}
+            nftImageUrl={mockData.nftImageUrl}
+            onViewOnBlockExplorer={handleViewOnBlockExplorer}
+          />
         </div>
 
-        {/* Sidebar Info */}
-        <div>
+        {/* Receipt Details */}
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Receipt Authentication</CardTitle>
-              <CardDescription>
-                Verify the authenticity of this NFT receipt
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Receipt #{mockData.receiptId}</CardTitle>
+                  <CardDescription>
+                    Purchased on {new Date(mockData.purchaseDate).toLocaleDateString()}
+                  </CardDescription>
+                </div>
+                <Badge className="capitalize">{mockData.tier} Tier</Badge>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 border rounded-lg bg-green-50 text-green-700">
-                <h4 className="font-semibold mb-1">✓ Verified on Blockchain</h4>
-                <p className="text-sm">This receipt has been verified on the Polygon Amoy blockchain.</p>
+            
+            <CardContent className="space-y-6">
+              {/* Product Details */}
+              <div>
+                <h3 className="text-lg font-medium mb-2">Product Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Product Name</p>
+                    <p className="font-medium">{mockData.productName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Merchant</p>
+                    <p className="font-medium">{mockData.merchantName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Purchase Date</p>
+                    <p className="font-medium">{new Date(mockData.purchaseDate).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Amount</p>
+                    <p className="font-medium">${mockData.totalAmount.toFixed(2)}</p>
+                  </div>
+                </div>
               </div>
 
+              <Separator />
+
+              {/* Blockchain Details */}
               <div>
-                <h4 className="font-medium mb-2">Security Features</h4>
-                <ul className="space-y-1 text-sm">
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span>Blockchain verification</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span>Tamper-proof data</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span>Threshold Pre-Encryption (TPRE)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-2">✓</span>
-                    <span>Authorized access controls</span>
-                  </li>
-                  {receipt.tier === 'premium' || receipt.tier === 'luxury' ? (
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      <span>Enhanced metadata verification</span>
-                    </li>
-                  ) : null}
-                  {receipt.tier === 'luxury' ? (
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      <span>Premium service access</span>
-                    </li>
-                  ) : null}
-                </ul>
+                <h3 className="text-lg font-medium mb-2">Blockchain Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Network</p>
+                    <p className="font-medium">Polygon Amoy (Testnet)</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">NFT ID</p>
+                    <p className="font-medium">{mockData.nftId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Transaction Hash</p>
+                    <p className="font-medium text-sm break-all">{mockData.transactionHash}</p>
+                  </div>
+                  {mockData.ipfsHash && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">IPFS Data</p>
+                      <p className="font-medium text-sm break-all">{mockData.ipfsHash}</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
+              <Separator />
+
+              {/* Receipt Features */}
               <div>
-                <h4 className="font-medium mb-2">Verification Links</h4>
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <span className="truncate">View on Blockchain Explorer</span>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    <span className="truncate">Verify on IPFS</span>
-                  </Button>
+                <h3 className="text-lg font-medium mb-2">Receipt Features</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="border rounded-md p-3 flex flex-col items-center justify-center text-center space-y-1">
+                    <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <p className="text-sm font-medium">Authenticity Verification</p>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center justify-center text-center space-y-1">
+                    <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                    <p className="text-sm font-medium">Transferable</p>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center justify-center text-center space-y-1">
+                    <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                    </svg>
+                    <p className="text-sm font-medium">IPFS Storage</p>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center justify-center text-center space-y-1">
+                    <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <p className="text-sm font-medium">Encrypted Data</p>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center justify-center text-center space-y-1">
+                    <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                    </svg>
+                    <p className="text-sm font-medium">Purchase Proof</p>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center justify-center text-center space-y-1">
+                    <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    <p className="text-sm font-medium">Transaction History</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => window.print()}>
-                Print Receipt
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </div>
-
-      {/* Decrypted Data Dialog */}
-      <Dialog open={showDecryptDialog} onOpenChange={setShowDecryptDialog}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Decrypted Receipt Data</DialogTitle>
-            <DialogDescription>
-              This is the decrypted data from your NFT receipt. This information is encrypted on the blockchain
-              and can only be accessed by authorized parties using Threshold Pre-Encryption.
-            </DialogDescription>
-          </DialogHeader>
-
-          {decryptedData && (
-            <div className="py-4 overflow-auto max-h-[60vh]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-1/3">Field</TableHead>
-                    <TableHead>Value</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Product ID</TableCell>
-                    <TableCell>{decryptedData.productId}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Product Name</TableCell>
-                    <TableCell>{decryptedData.productName}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">SKU</TableCell>
-                    <TableCell>{decryptedData.productSku}</TableCell>
-                  </TableRow>
-                  {decryptedData.serialNumber && (
-                    <TableRow>
-                      <TableCell className="font-medium">Serial Number</TableCell>
-                      <TableCell>{decryptedData.serialNumber}</TableCell>
-                    </TableRow>
-                  )}
-                  <TableRow>
-                    <TableCell className="font-medium">Price</TableCell>
-                    <TableCell>{decryptedData.price} {decryptedData.currency}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Merchant</TableCell>
-                    <TableCell>{decryptedData.merchantName}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Merchant Wallet</TableCell>
-                    <TableCell className="truncate">{decryptedData.merchantWalletAddress}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Purchase Date</TableCell>
-                    <TableCell>{new Date(decryptedData.purchaseDate).toLocaleString()}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Customer Wallet</TableCell>
-                    <TableCell className="truncate">{decryptedData.customerWalletAddress}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Payment Method</TableCell>
-                    <TableCell>{decryptedData.paymentMethod}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Payment ID</TableCell>
-                    <TableCell>{decryptedData.paymentId}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">NFT Receipt Tier</TableCell>
-                    <TableCell className="capitalize">{decryptedData.tier}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-
-              {decryptedData.metadata && Object.keys(decryptedData.metadata).length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-2">Additional Metadata</h3>
-                  <div className="border rounded-lg p-4 bg-muted/30">
-                    <pre className="whitespace-pre-wrap text-sm">
-                      {JSON.stringify(decryptedData.metadata, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button onClick={() => setShowDecryptDialog(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }
