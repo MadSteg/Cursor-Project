@@ -161,6 +161,16 @@ const UserNFTWallet: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortOption>('date-desc');
   const [filter, setFilter] = useState<ReceiptFilter>('all');
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [warrantyDialog, setWarrantyDialog] = useState<{
+    isOpen: boolean;
+    receipt?: NFTReceiptProps;
+    processing?: boolean;
+    completed?: boolean;
+    returnLabel?: string;
+  }>({
+    isOpen: false
+  });
   
   // Filter and sort receipts
   const getFilteredReceipts = () => {
@@ -440,7 +450,56 @@ const UserNFTWallet: React.FC = () => {
                   {filteredReceipts.map((receipt) => (
                     <EnhancedNFTReceiptCard
                       key={receipt.id}
-                      receipt={receipt}
+                      receipt={{
+                        id: parseInt(receipt.id),
+                        tokenId: receipt.tokenId || '',
+                        merchantId: 1,
+                        merchant: {
+                          id: 1,
+                          name: receipt.merchantName,
+                          category: receipt.receiptType
+                        },
+                        date: receipt.date,
+                        subtotal: Math.round(receipt.total * 0.9 * 100), // approximation
+                        tax: Math.round(receipt.total * 0.1 * 100), // approximation
+                        total: Math.round(receipt.total * 100),
+                        items: [{ id: 1, name: 'Item', price: Math.round(receipt.total * 100), quantity: 1 }],
+                        blockchainTxHash: receipt.txHash,
+                        blockchainVerified: Boolean(receipt.txHash),
+                        nftArt: {
+                          id: receipt.id,
+                          name: receipt.merchantName,
+                          tier: receipt.receiptType as any,
+                          imageUrl: `/assets/nft-${receipt.receiptType.toLowerCase()}.png`
+                        }
+                      }}
+                      accessControl={{
+                        granted: !receipt.isEncrypted || receipt.hasGrantedAccess || false,
+                        isOwner: true,
+                        accessGrantedTo: receipt.grantedTo?.map(addr => ({
+                          address: addr,
+                          date: new Date().toISOString()
+                        })) || []
+                      }}
+                      onViewMetadata={() => {
+                        toast({
+                          title: "Viewing Metadata",
+                          description: "Full receipt metadata is being loaded..."
+                        });
+                      }}
+                      onGrantAccess={async (address) => {
+                        toast({
+                          title: "Access Granted",
+                          description: `Access granted to ${address.substring(0, 6)}...`
+                        });
+                        return true;
+                      }}
+                      onClaimWarranty={receipt.warranty?.isActive ? async () => {
+                        setWarrantyDialog({
+                          isOpen: true,
+                          receipt: receipt
+                        });
+                      } : undefined}
                     />
                   ))}
                 </div>
