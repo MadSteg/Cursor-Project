@@ -8,7 +8,7 @@ interface NFTReceiptCardProps {
   receiptId: number;
   transactionHash: string;
   nftId: string;
-  tier: NFTReceiptTier;
+  tier: string;
   productName: string;
   merchantName: string;
   purchaseDate: string;

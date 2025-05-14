@@ -47,6 +47,8 @@ export default function ProductDetail() {
   const [walletAddress, setWalletAddress] = useState("");
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showCryptoCheckout, setShowCryptoCheckout] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'card'>('crypto');
   const [createdReceiptId, setCreatedReceiptId] = useState<number | null>(null);
 
   // Fetch product detail
@@ -133,20 +135,59 @@ export default function ProductDetail() {
     }
   });
 
-  // Handle purchase with wallet
+  // Handle purchase initiation
   const handlePurchase = () => {
     if (!product) return;
     
-    if (!walletAddress) {
-      setShowWalletDialog(true);
-      return;
+    if (paymentMethod === 'crypto') {
+      setShowCryptoCheckout(true);
+    } else {
+      // For card payments, we still need a wallet for NFT delivery
+      if (!walletAddress) {
+        setShowWalletDialog(true);
+        return;
+      }
+      
+      createReceipt.mutate({
+        productId: product.id,
+        customerWalletAddress: walletAddress,
+        tier: selectedTier
+      });
     }
+  };
+  
+  // Handle crypto payment success
+  const handleCryptoPaymentSuccess = (data: {
+    receiptId: number;
+    deliveryEmail?: string;
+    deliveryWallet: string;
+    deliveryPreference: 'email' | 'wallet' | 'both';
+  }) => {
+    setCreatedReceiptId(data.receiptId);
+    setWalletAddress(data.deliveryWallet);
     
-    createReceipt.mutate({
-      productId: product.id,
-      customerWalletAddress: walletAddress,
-      tier: selectedTier
-    });
+    // Create receipt in system
+    if (product) {
+      createReceipt.mutate({
+        productId: product.id,
+        customerWalletAddress: data.deliveryWallet,
+        tier: selectedTier
+      }, {
+        onSuccess: () => {
+          // Use the provided receipt ID
+          setCreatedReceiptId(data.receiptId);
+          
+          // Show confirmation
+          setShowConfirmation(true);
+          
+          // Send email if needed
+          if (data.deliveryEmail && (data.deliveryPreference === 'email' || data.deliveryPreference === 'both')) {
+            // Call email delivery endpoint here if needed
+            console.log(`Sending email summary to ${data.deliveryEmail}`);
+          }
+        }
+      });
+    }
   };
 
   // Handle wallet connection
@@ -296,20 +337,49 @@ export default function ProductDetail() {
             </div>
           </div>
           
-          <Button 
-            className="w-full"
-            size="lg"
-            onClick={handlePurchase}
-            disabled={createReceipt.isPending}
-          >
-            {createReceipt.isPending ? "Processing..." : "Buy with NFT Receipt"}
-          </Button>
-          
-          {walletAddress && (
-            <p className="text-sm text-center text-muted-foreground mt-2">
-              Using wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-            </p>
-          )}
+          <div className="space-y-4">
+            <div className="rounded-lg border p-4">
+              <h3 className="font-medium mb-3">Payment Method</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={paymentMethod === 'crypto' ? 'default' : 'outline'}
+                  className="flex items-center justify-center gap-1"
+                  onClick={() => setPaymentMethod('crypto')}
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 4.5H15M12 4.5V19.5M12 19.5H7.5M12 19.5H16.5M4.5 9H19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Cryptocurrency
+                </Button>
+                <Button
+                  variant={paymentMethod === 'card' ? 'default' : 'outline'}
+                  className="flex items-center justify-center gap-1"
+                  onClick={() => setPaymentMethod('card')}
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 10H2M2 8.2L2 15.8C2 16.9201 2 17.4802 2.21799 17.908C2.40973 18.2843 2.71569 18.5903 3.09202 18.782C3.51984 19 4.07989 19 5.2 19L18.8 19C19.9201 19 20.4802 19 20.908 18.782C21.2843 18.5903 21.5903 18.2843 21.782 17.908C22 17.4802 22 16.9201 22 15.8V8.2C22 7.0799 22 6.51984 21.782 6.09202C21.5903 5.7157 21.2843 5.40974 20.908 5.21799C20.4802 5 19.9201 5 18.8 5L5.2 5C4.0799 5 3.51984 5 3.09202 5.21799C2.7157 5.40973 2.40974 5.71569 2.21799 6.09202C2 6.51984 2 7.07989 2 8.2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Credit Card
+                </Button>
+              </div>
+            </div>
+            
+            <Button 
+              className="w-full"
+              size="lg"
+              onClick={handlePurchase}
+              disabled={createReceipt.isPending}
+            >
+              {createReceipt.isPending ? "Processing..." : 
+                paymentMethod === 'crypto' ? "Pay with Cryptocurrency" : "Pay with Card"}
+            </Button>
+            
+            {walletAddress && (
+              <p className="text-sm text-center text-muted-foreground mt-2">
+                Using wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              </p>
+            )}
+          </div>
         </div>
       </div>
       
@@ -365,7 +435,7 @@ export default function ProductDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Standard</CardTitle>
-                <CardDescription>$0.99</CardDescription>
+                <CardDescription>$0.01</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="list-disc list-inside space-y-1 text-sm">
@@ -390,7 +460,7 @@ export default function ProductDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Premium</CardTitle>
-                <CardDescription>$2.99</CardDescription>
+                <CardDescription>$0.01</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="list-disc list-inside space-y-1 text-sm">
@@ -416,7 +486,7 @@ export default function ProductDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Luxury</CardTitle>
-                <CardDescription>$5.00</CardDescription>
+                <CardDescription>$0.01</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="list-disc list-inside space-y-1 text-sm">
@@ -601,6 +671,20 @@ export default function ProductDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Crypto Checkout Modal */}
+      {product && (
+        <CryptoCheckoutModal
+          open={showCryptoCheckout}
+          onClose={() => setShowCryptoCheckout(false)}
+          onSuccess={handleCryptoPaymentSuccess}
+          productName={product.name}
+          productPrice={product.price}
+          nftTier={selectedTier}
+          nftPrice={calculateNFTReceiptPrice(product, selectedTier as any)}
+          totalPrice={calculateTotalPrice(product, selectedTier as any)}
+        />
+      )}
     </main>
   );
 }
