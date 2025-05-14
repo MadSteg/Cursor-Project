@@ -38,7 +38,7 @@ export default function VerifyReceipt() {
   const form = useForm<VerifyFormValues>({
     resolver: zodResolver(verifyFormSchema),
     defaultValues: {
-      contractAddress: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '',
+      contractAddress: import.meta.env.VITE_RECEIPT_NFT_CONTRACT_ADDRESS || '0x1111111111111111111111111111111111111111',
       tokenId: undefined,
       network: 'amoy'
     }
