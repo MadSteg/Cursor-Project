@@ -33,7 +33,12 @@ export default function Checkout() {
   
   // NFT receipt options
   const [mintNFT, setMintNFT] = useState(true); // Default to selected
-  const NFT_RECEIPT_FEE = 0.99;
+  const [nftTier, setNftTier] = useState('standard'); // 'standard', 'premium', or 'luxury'
+  const NFT_RECEIPT_TIERS = {
+    standard: { name: 'Standard', price: 0.99, appleWalletSupport: false },
+    premium: { name: 'Premium', price: 2.99, appleWalletSupport: false },
+    luxury: { name: 'Luxury', price: 5.00, appleWalletSupport: true },
+  };
   const [nftTheme, setNftTheme] = useState('default');
   
   // Payment method selection
@@ -62,7 +67,7 @@ export default function Checkout() {
   // Calculate total amount with NFT fee if selected
   const calculateTotal = () => {
     const baseAmount = parseFloat(amount);
-    return mintNFT ? baseAmount + NFT_RECEIPT_FEE : baseAmount;
+    return mintNFT ? baseAmount + NFT_RECEIPT_TIERS[nftTier].price : baseAmount;
   };
   
   // Handle mock payment submission
