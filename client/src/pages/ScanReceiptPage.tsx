@@ -704,8 +704,22 @@ const ScanReceiptPage = () => {
                     >
                       Scan Another
                     </Button>
-                    <Button className="flex-1">
-                      Create NFT Receipt
+                    <Button 
+                      className="flex-1"
+                      onClick={mintNFTReceipt}
+                      disabled={isMinting}
+                    >
+                      {isMinting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Minting...
+                        </>
+                      ) : (
+                        <>
+                          <Coins className="h-4 w-4 mr-2" />
+                          Create NFT Receipt
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
