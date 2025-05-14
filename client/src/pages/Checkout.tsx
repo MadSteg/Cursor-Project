@@ -375,9 +375,12 @@ export default function Checkout() {
                           <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                             <li>Permanent proof of purchase that can't be lost</li>
                             <li>Verify authenticity of your purchase anytime</li>
+                            <li><span className="font-medium text-blue-600">Display on Apple Watch & iPhone</span></li>
                             <li>Enhanced warranty and return claim support</li>
                             <li>Access to exclusive rewards and benefits</li>
                           </ul>
+                          
+                          <MobileWalletInfo />
                           
                           <div className="pt-2">
                             <Label htmlFor="nft-theme" className="text-sm font-medium mb-1.5 block">Receipt Theme</Label>
@@ -393,14 +396,22 @@ export default function Checkout() {
                                 <Label htmlFor="theme-default" className="cursor-pointer">Default</Label>
                               </div>
                               <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
-                                <RadioGroupItem value="luxury" id="theme-luxury" />
-                                <Label htmlFor="theme-luxury" className="cursor-pointer">Luxury</Label>
+                                <RadioGroupItem value="dark" id="theme-dark" />
+                                <Label htmlFor="theme-dark" className="cursor-pointer">Dark</Label>
                               </div>
                               <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
-                                <RadioGroupItem value="minimal" id="theme-minimal" />
-                                <Label htmlFor="theme-minimal" className="cursor-pointer">Minimal</Label>
+                                <RadioGroupItem value="light" id="theme-light" />
+                                <Label htmlFor="theme-light" className="cursor-pointer">Light</Label>
+                              </div>
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="colorful" id="theme-colorful" />
+                                <Label htmlFor="theme-colorful" className="cursor-pointer">Colorful</Label>
                               </div>
                             </RadioGroup>
+                            
+                            <div className="mt-4 bg-white rounded-lg p-3 border">
+                              <MobileWalletPreview theme={nftTheme as any} amount={`$${parseFloat(amount).toFixed(2)}`} />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -512,14 +523,22 @@ export default function Checkout() {
                                 <Label htmlFor="mock-theme-default" className="cursor-pointer">Default</Label>
                               </div>
                               <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
-                                <RadioGroupItem value="luxury" id="mock-theme-luxury" />
-                                <Label htmlFor="mock-theme-luxury" className="cursor-pointer">Luxury</Label>
+                                <RadioGroupItem value="dark" id="mock-theme-dark" />
+                                <Label htmlFor="mock-theme-dark" className="cursor-pointer">Dark</Label>
                               </div>
                               <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
-                                <RadioGroupItem value="minimal" id="mock-theme-minimal" />
-                                <Label htmlFor="mock-theme-minimal" className="cursor-pointer">Minimal</Label>
+                                <RadioGroupItem value="light" id="mock-theme-light" />
+                                <Label htmlFor="mock-theme-light" className="cursor-pointer">Light</Label>
+                              </div>
+                              <div className="flex items-center space-x-2 border rounded-md p-2 data-[state=checked]:border-primary data-[state=checked]:bg-primary/5">
+                                <RadioGroupItem value="colorful" id="mock-theme-colorful" />
+                                <Label htmlFor="mock-theme-colorful" className="cursor-pointer">Colorful</Label>
                               </div>
                             </RadioGroup>
+                            
+                            <div className="mt-4 bg-white rounded-lg p-3 border">
+                              <MobileWalletPreview theme={nftTheme as any} amount={`$${parseFloat(amount).toFixed(2)}`} />
+                            </div>
                           </div>
                         </div>
                       </div>
