@@ -40,10 +40,12 @@ export default function ReceiptScannerPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   /**
    * Handle file selection
@@ -107,7 +109,7 @@ export default function ReceiptScannerPage() {
       formData.append('image', selectedFile);
 
       // Send request to OCR service
-      const response = await apiRequest('POST', '/api/ocr/upload', formData, true);
+      const response = await apiRequest('POST', '/api/ocr/upload', { body: formData, isFormData: true });
       const data = await response.json();
       
       // Update state with response data
@@ -144,6 +146,56 @@ export default function ReceiptScannerPage() {
     setProcessingError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+  
+  /**
+   * Mint the receipt as an NFT
+   */
+  const mintReceiptAsNFT = async () => {
+    if (!receiptData) {
+      toast({
+        title: "No receipt data",
+        description: "Please process a receipt before minting",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsMinting(true);
+      
+      // Send request to mint the NFT
+      const response = await apiRequest('POST', '/api/receipts/mint', {
+        receipt: receiptData,
+        imageData: imagePreview
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.tokenId) {
+        toast({
+          title: "NFT Minted Successfully",
+          description: `Receipt NFT created with token ID: ${data.tokenId}`,
+          variant: "default"
+        });
+        
+        // Navigate to the NFT wallet page to view the minted NFT
+        setTimeout(() => {
+          setLocation('/wallet');
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Failed to mint NFT');
+      }
+    } catch (error) {
+      console.error('NFT minting error:', error);
+      toast({
+        title: "Minting failed",
+        description: error instanceof Error ? error.message : 'Failed to mint NFT receipt',
+        variant: "destructive"
+      });
+    } finally {
+      setIsMinting(false);
     }
   };
 
@@ -317,10 +369,27 @@ export default function ReceiptScannerPage() {
           </CardContent>
           
           {receiptData && (
-            <CardFooter>
-              <Button variant="outline" className="w-full">
+            <CardFooter className="flex gap-4">
+              <Button variant="outline" className="w-1/2">
                 <Check className="mr-2 h-4 w-4" />
                 Save Receipt
+              </Button>
+              <Button 
+                className="w-1/2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                onClick={mintReceiptAsNFT}
+                disabled={isMinting}
+              >
+                {isMinting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Minting...
+                  </>
+                ) : (
+                  <>
+                    <Coins className="mr-2 h-4 w-4" />
+                    Mint as NFT
+                  </>
+                )}
               </Button>
             </CardFooter>
           )}
