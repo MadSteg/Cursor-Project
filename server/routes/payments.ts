@@ -190,8 +190,11 @@ router.post("/mock-payment", async (req, res) => {
               // Update receipt with blockchain info
               await storage.updateReceipt(receiptId, {
                 blockchainTxHash: mintResult.txHash,
-                blockchainTokenId: mintResult.tokenId?.toString(),
-                blockchainVerified: true
+                nftTokenId: mintResult.tokenId?.toString(),
+                blockchainVerified: true,
+                ipfsCid: mintResult.ipfsCid,
+                ipfsUrl: mintResult.ipfsUrl,
+                encryptionKey: mintResult.encryptionKey
               });
               
               log(`Successfully minted NFT for receipt ${receiptId}`, "blockchain");
