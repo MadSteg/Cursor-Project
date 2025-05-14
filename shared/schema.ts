@@ -368,6 +368,9 @@ export const fullReceiptSchema = z.object({
     price: z.string(),
     quantity: z.number(),
     categoryId: z.number().optional(),
+    modelNumber: z.string().optional(),
+    serialNumber: z.string().optional(),
+    warrantyExpiryDate: z.date().optional(),
   })),
   blockchain: z.object({
     txHash: z.string().optional(),
@@ -378,6 +381,13 @@ export const fullReceiptSchema = z.object({
     ipfsUrl: z.string().optional(),
     network: z.string().optional(),
     contractAddress: z.string().optional(),
+    warrantyData: z.object({
+      modelNumbers: z.array(z.string()).optional(),
+      serialNumbers: z.array(z.string()).optional(),
+      warrantyExpiryDates: z.array(z.date()).optional(),
+      manufacturerInfo: z.string().optional(),
+      supportUrl: z.string().optional()
+    }).optional(),
   }),
   encryption: z.object({
     isEncrypted: z.boolean().default(false),
@@ -393,11 +403,20 @@ export const fullReceiptSchema = z.object({
   }),
   payment: z.object({
     paymentId: z.string().optional(),
-    paymentMethod: z.string().optional(),
+    paymentMethod: z.string().optional(), // 'stripe', 'crypto', 'card', 'cash', etc.
     paymentStatus: z.string().optional(),
     paymentAmount: z.string().optional(),
-    paymentCurrency: z.string().optional(),
+    paymentCurrency: z.string().optional(), // 'usd', 'eth', 'matic', etc.
     receiptUrl: z.string().optional(),
+    cryptoData: z.object({
+      walletAddress: z.string().optional(),
+      transactionHash: z.string().optional(),
+      network: z.string().optional(), // 'ethereum', 'polygon', etc.
+      tokenType: z.string().optional(), // 'eth', 'matic', 'usdc', etc.
+      gasFee: z.string().optional(),
+      confirmations: z.number().optional(),
+      blockExplorerUrl: z.string().optional()
+    }).optional(),
   }).optional(),
 });
 

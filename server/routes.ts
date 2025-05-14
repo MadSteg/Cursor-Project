@@ -9,6 +9,7 @@ import thresholdReceiptRoutes from "./routes/threshold-receipt";
 import encryptedPaymentRoutes from "./routes/encrypted-payments";
 import encryptionRoutes from "./routes/encryption";
 import tacoRoutes from "./routes/taco";
+import cryptoRoutes from "./routes/crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
