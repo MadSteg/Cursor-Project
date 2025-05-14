@@ -21,6 +21,7 @@ import Admin from "@/pages/Admin";
 import ProductCatalog from "@/pages/ProductCatalog";
 import ProductDetail from "@/pages/ProductDetail";
 import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
+import VerifyReceipt from "@/pages/VerifyReceipt";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -47,6 +48,7 @@ function Router() {
         <Route path="/products" component={ProductCatalog} />
         <Route path="/product/:id" component={ProductDetail} />
         <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
+        <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

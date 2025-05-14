@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Receipt, BarChart3, Settings, User, Lock, Package, Activity, ShoppingCart } from "lucide-react";
+import { Menu, Receipt, BarChart3, Settings, User, Lock, Package, Activity, ShoppingCart, Shield } from "lucide-react";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
 const Header: React.FC = () => {
@@ -54,6 +54,11 @@ const Header: React.FC = () => {
             <Link href="/encryption-settings">
               <span className={`text-sm font-medium ${currentLocation === "/encryption-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
                 Encryption
+              </span>
+            </Link>
+            <Link href="/verify-receipt">
+              <span className={`text-sm font-medium ${currentLocation === "/verify-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                Verify Receipt
               </span>
             </Link>
             <Link href="/settings">
@@ -113,6 +118,11 @@ const Header: React.FC = () => {
                   <Link href="/encryption-settings">
                     <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                       <Lock className="h-5 w-5" /> Encryption
+                    </span>
+                  </Link>
+                  <Link href="/verify-receipt">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <Shield className="h-5 w-5" /> Verify Receipt
                     </span>
                   </Link>
                   <Link href="/settings">
