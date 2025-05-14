@@ -130,6 +130,39 @@ const Dashboard: React.FC = () => {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-dark">Shop Products with NFT Receipts</h2>
+          <Link href="/products">
+            <a className="text-primary text-sm font-medium flex items-center">
+              Browse Products <ArrowRight className="ml-1 h-4 w-4" />
+            </a>
+          </Link>
+        </div>
+        
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-8 border border-blue-100">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-2/3 mb-6 md:mb-0 md:pr-6">
+              <h3 className="text-lg font-semibold mb-2">Secure Your Purchases with Blockchain Technology</h3>
+              <p className="text-gray-600 mb-4">
+                Browse our curated collection of products and receive a blockchain-verified NFT receipt with each purchase.
+                Our NFT receipts are encrypted using Threshold Pre-Encryption (TPRE) technology to ensure your data remains private.
+              </p>
+              <Link href="/products">
+                <a className="inline-flex items-center justify-center h-10 px-4 font-medium tracking-wide text-white transition duration-200 bg-primary rounded-lg hover:bg-primary/90 focus:shadow-outline focus:outline-none">
+                  Shop Now
+                </a>
+              </Link>
+            </div>
+            <div className="md:w-1/3 flex justify-center">
+              <div className="w-24 h-24 bg-white rounded-lg shadow-md flex items-center justify-center">
+                <ShoppingCart className="h-12 w-12 text-primary" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-dark">Email Receipts</h2>
         </div>
         

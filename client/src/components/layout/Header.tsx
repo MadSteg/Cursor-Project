@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Receipt, BarChart3, Settings, User, Lock, Package, Activity } from "lucide-react";
+import { Menu, Receipt, BarChart3, Settings, User, Lock, Package, Activity, ShoppingCart } from "lucide-react";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
 const Header: React.FC = () => {
@@ -34,6 +34,11 @@ const Header: React.FC = () => {
             <Link href="/receipts">
               <span className={`text-sm font-medium ${currentLocation === "/receipts" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
                 Receipts
+              </span>
+            </Link>
+            <Link href="/products">
+              <span className={`text-sm font-medium ${currentLocation === "/products" || currentLocation.startsWith("/product/") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                Products
               </span>
             </Link>
             <Link href="/analytics">
@@ -88,6 +93,11 @@ const Header: React.FC = () => {
                   <Link href="/receipts">
                     <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                       <Receipt className="h-5 w-5" /> Receipts
+                    </span>
+                  </Link>
+                  <Link href="/products">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <ShoppingCart className="h-5 w-5" /> Products
                     </span>
                   </Link>
                   <Link href="/analytics">

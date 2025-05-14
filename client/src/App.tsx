@@ -17,6 +17,10 @@ import Inventory from "@/pages/Inventory";
 import InventoryDetail from "@/pages/InventoryDetail";
 import InventoryUpload from "@/pages/InventoryUpload";
 import Admin from "@/pages/Admin";
+// New product catalog and NFT receipt routes
+import ProductCatalog from "@/pages/ProductCatalog";
+import ProductDetail from "@/pages/ProductDetail";
+import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -39,6 +43,10 @@ function Router() {
         <Route path="/inventory/:id/edit" component={InventoryUpload} />
         <Route path="/inventory-upload" component={InventoryUpload} />
         <Route path="/admin" component={Admin} />
+        {/* New product catalog routes */}
+        <Route path="/products" component={ProductCatalog} />
+        <Route path="/product/:id" component={ProductDetail} />
+        <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
         <Route component={NotFound} />
       </Switch>
       <Footer />
