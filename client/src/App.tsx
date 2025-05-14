@@ -9,6 +9,7 @@ import Receipts from "@/pages/Receipts";
 import ReceiptDetail from "@/pages/ReceiptDetail";
 import Analytics from "@/pages/Analytics";
 import Checkout from "@/pages/Checkout";
+import CryptoCheckout from "@/pages/CryptoCheckout";
 import EncryptedCheckout from "@/pages/EncryptedCheckout";
 import EncryptionSettings from "@/pages/EncryptionSettings";
 import Header from "@/components/layout/Header";
@@ -24,6 +25,7 @@ function Router() {
         <Route path="/receipts/:id" component={ReceiptDetail} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/checkout" component={Checkout} />
+        <Route path="/crypto-checkout" component={CryptoCheckout} />
         <Route path="/encrypted-checkout" component={EncryptedCheckout} />
         <Route path="/encryption-settings" component={EncryptionSettings} />
         <Route component={NotFound} />

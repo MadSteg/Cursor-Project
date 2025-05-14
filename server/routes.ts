@@ -39,6 +39,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Taco threshold encryption routes
   app.use('/api/taco', tacoRoutes);
   
+  // Register crypto payment routes
+  app.use('/api/crypto', cryptoRoutes);
+  
 
   // Get categories
   app.get("/api/categories", async (req, res) => {

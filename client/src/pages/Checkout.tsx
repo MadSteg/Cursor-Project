@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { checkPaymentStatus, createPaymentIntent, createMockPayment } from '@/lib/payments';
-import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone } from 'lucide-react';
+import { Loader2, CheckCircle2, CreditCard, Receipt, AlertCircle, Shield, BadgeCheck, Smartphone, Bitcoin, Wallet } from 'lucide-react';
 import MobileWalletPreview from '@/components/blockchain/MobileWalletPreview';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -35,6 +35,9 @@ export default function Checkout() {
   const [mintNFT, setMintNFT] = useState(true); // Default to selected
   const NFT_RECEIPT_FEE = 0.99;
   const [nftTheme, setNftTheme] = useState('default');
+  
+  // Payment method selection
+  const [paymentMethod, setPaymentMethod] = useState('credit-card'); // 'credit-card' or 'crypto'
   
   // Get URL search params (if any)
   useEffect(() => {
@@ -139,9 +142,29 @@ export default function Checkout() {
     }
   };
   
-  // Handle real payment (with Stripe) - will use mock functionality when keys aren't available
+  // Handle real payment (with Stripe or redirect to crypto) - will use mock functionality when keys aren't available
   const handleRealPayment = async () => {
     try {
+      // If crypto payment is selected, redirect to crypto checkout page
+      if (paymentMethod === 'crypto') {
+        // Calculate total with optional NFT fee
+        const totalAmount = calculateTotal();
+        
+        // Build the search params for the crypto checkout page
+        const searchParams = new URLSearchParams();
+        if (receiptId) {
+          searchParams.set('receipt', receiptId.toString());
+        }
+        searchParams.set('amount', totalAmount.toString());
+        searchParams.set('mintNFT', mintNFT ? 'true' : 'false');
+        searchParams.set('nftTheme', nftTheme);
+        
+        // Redirect to crypto checkout page
+        navigate(`/crypto-checkout?${searchParams.toString()}`);
+        return;
+      }
+      
+      // Regular Stripe payment flow
       setIsLoading(true);
       
       // Calculate total with optional NFT fee
