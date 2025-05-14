@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { QRCodeCanvas } from 'qrcode.react';
 import { format } from 'date-fns';
@@ -17,52 +17,54 @@ interface MobileWalletPreviewProps {
 }
 
 export default function MobileWalletPreview({
-  merchant,
-  amount,
+  merchant = 'Demo Merchant',
+  amount = 0,
   date = new Date(),
-  nftTokenId,
+  nftTokenId = 'demo-receipt-id',
   theme = 'default',
   encrypted = false,
   encryptedData,
   sharedKey
 }: MobileWalletPreviewProps) {
   const [showPass, setShowPass] = useState(true);
-  const [qrValue, setQrValue] = useState('');
-  const [decryptedData, setDecryptedData] = useState<any>(null);
   const [copied, setCopied] = useState(false);
 
-  // Generate QR code data
-  useEffect(() => {
-    // For a real implementation, this would generate a valid Apple Wallet/Google Pay pass
-    const receiptData = {
+  // Use useMemo instead of useEffect to avoid infinite loop
+  const receiptData = useMemo(() => {
+    const amountStr = typeof amount === 'number' ? amount.toFixed(2) : '0.00';
+    const dateStr = date instanceof Date ? date.toISOString() : new Date().toISOString();
+    
+    return {
       merchant,
-      amount: typeof amount === 'number' ? amount.toFixed(2) : amount.toString(),
-      date: date instanceof Date ? date.toISOString() : new Date().toISOString(),
-      id: nftTokenId || `rcpt_${Math.random().toString(36).slice(2, 10)}`,
+      amount: amountStr,
+      date: dateStr,
+      id: nftTokenId,
       type: 'nft_receipt'
     };
-    
-    setQrValue(JSON.stringify(receiptData));
   }, [merchant, amount, date, nftTokenId]);
   
-  // Handle decrypting data if provided
-  useEffect(() => {
+  // Create QR code data from receipt data
+  const qrValue = useMemo(() => {
+    return JSON.stringify(receiptData);
+  }, [receiptData]);
+  
+  // Handle decrypted data
+  const decryptedData = useMemo(() => {
     if (encrypted && encryptedData) {
       try {
-        // Simulate decryption (in a real app this would use the actual key)
-        const mockDecrypted = {
-          merchant,
-          amount: typeof amount === 'number' ? amount.toFixed(2) : amount.toString(),
-          date: date instanceof Date ? date.toISOString() : new Date().toISOString(),
-          tokenId: nftTokenId,
+        // In a real app, this would use the actual decryption logic with the sharedKey
+        // Here we're using a mock implementation for demonstration
+        return {
+          ...receiptData,
           isEncrypted: true
         };
-        setDecryptedData(mockDecrypted);
       } catch (error) {
         console.error("Failed to decrypt data:", error);
+        return null;
       }
     }
-  }, [encrypted, encryptedData, sharedKey, merchant, amount, date, nftTokenId]);
+    return null;
+  }, [encrypted, encryptedData, receiptData]);
 
   const handleCopyShareLink = () => {
     // In a real app, this would generate a URL with the shared encryption key
