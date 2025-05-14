@@ -67,8 +67,8 @@ export default function MobileWalletPreview({
   }, [encrypted, encryptedData, receiptData]);
 
   const handleCopyShareLink = () => {
-    // In a real app, this would generate a URL with the shared encryption key
-    navigator.clipboard.writeText(`https://memorychain.app/share/receipt/${nftTokenId || 'demo-id'}`);
+    // Generate a URL with the shared encryption key
+    navigator.clipboard.writeText(`https://blockreceipt.ai/share/receipt/${nftTokenId || 'demo-id'}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -122,7 +122,7 @@ export default function MobileWalletPreview({
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <Receipt className={`w-5 h-5 mr-2 ${styles.logoClass}`} />
-              <span className={`font-semibold ${styles.text}`}>Memory Chain</span>
+              <span className={`font-semibold ${styles.text}`}>BlockReceipt.ai</span>
             </div>
             {encrypted && (
               <div className="flex items-center">
@@ -140,31 +140,49 @@ export default function MobileWalletPreview({
         
         {/* Body */}
         <div className="p-4">
-          {/* QR Code */}
-          <div className="flex justify-center mb-4">
-            <div className="bg-white p-2 rounded-lg shadow-sm">
-              <QRCodeCanvas 
-                value={qrValue} 
-                size={180}
-                bgColor={"#ffffff"}
-                fgColor={"#000000"}
-                level={"L"}
-                includeMargin={false}
-              />
+          {/* Future of Receipts Heading */}
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">The Future of Receipts</h3>
+            <p className="text-xs text-gray-600 mt-1">Forever on the blockchain, always accessible</p>
+          </div>
+          
+          {/* Preview Graphic */}
+          <div className="flex justify-center mb-4 relative">
+            <div className="bg-white p-3 rounded-xl shadow-lg border border-gray-100 relative overflow-hidden">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl"></div>
+              <div className="absolute -left-4 -bottom-4 w-20 h-20 bg-gradient-to-tr from-pink-400/20 to-orange-400/20 rounded-full blur-xl"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center mb-3 justify-center">
+                  <CreditCard className="w-4 h-4 mr-2 text-indigo-500" />
+                  <span className="text-sm font-medium text-indigo-700">NFT Receipt #{nftTokenId?.slice(-4) || '0000'}</span>
+                </div>
+                
+                <div className="text-center mb-2">
+                  <div className="text-sm font-semibold text-gray-800">{merchant}</div>
+                  <div className="text-lg font-bold text-gray-900">${typeof amount === 'number' ? amount.toFixed(2) : amount.toString()}</div>
+                  <div className="text-xs text-gray-500">{date instanceof Date ? format(date, 'PPP') : new Date().toLocaleDateString()}</div>
+                </div>
+              </div>
             </div>
           </div>
           
-          {/* Receipt Info */}
-          <div className="space-y-2">
-            <div className={`flex justify-between ${styles.text}`}>
-              <span className={`${styles.secondaryText} text-sm`}>Receipt ID</span>
-              <span className="text-sm font-mono">{nftTokenId || 'DEMO-RECEIPT'}</span>
+          {/* Features List */}
+          <div className="space-y-2 mb-2">
+            <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded-md flex items-start">
+              <Shield className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0 text-emerald-500" />
+              <span>Secure blockchain verification with tamper-proof technology</span>
             </div>
             
-            {encrypted && (
-              <div className={`text-xs ${styles.secondaryText} bg-gray-100 p-2 rounded flex items-start`}>
-                <Shield className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0 text-blue-500" />
-                <span>This receipt is secured with threshold encryption for your privacy.</span>
+            {encrypted ? (
+              <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded-md flex items-start">
+                <Lock className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0 text-blue-500" />
+                <span>Enhanced with threshold encryption for ultimate privacy</span>
+              </div>
+            ) : (
+              <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded-md flex items-start">
+                <Share2 className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0 text-indigo-500" />
+                <span>Easily shareable across devices and with others</span>
               </div>
             )}
           </div>
@@ -194,7 +212,7 @@ export default function MobileWalletPreview({
               size="sm" 
               className={`text-xs ${styles.buttonBg} ${styles.buttonText} flex-1`}
             >
-              Add to Wallet
+              Add to Apple Wallet
             </Button>
           </div>
         </div>
