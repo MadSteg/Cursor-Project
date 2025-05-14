@@ -35,6 +35,7 @@ function Router() {
         <Route path="/theme-preview" component={ThemePreview} />
         <Route path="/inventory" component={Inventory} />
         <Route path="/inventory/:id" component={InventoryDetail} />
+        <Route path="/inventory/:id/edit" component={InventoryUpload} />
         <Route path="/inventory-upload" component={InventoryUpload} />
         <Route component={NotFound} />
       </Switch>

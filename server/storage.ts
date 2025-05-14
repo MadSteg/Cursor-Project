@@ -955,6 +955,244 @@ export class MemStorage implements IStorage {
     return Array.from(this.sharedAccesses.values())
       .filter(access => access.targetUserId === userId);
   }
+  
+  // Inventory methods
+  async getInventoryItems(userId: number, options?: {
+    categoryId?: number;
+    status?: string;
+    searchTerm?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<InventoryItem[]> {
+    let items = Array.from(this.inventoryItems.values()).filter(
+      item => item.userId === userId
+    );
+    
+    // Apply filters
+    if (options?.categoryId) {
+      items = items.filter(item => item.categoryId === options.categoryId);
+    }
+    
+    if (options?.status) {
+      items = items.filter(item => item.status === options.status);
+    }
+    
+    if (options?.searchTerm) {
+      const searchTerm = options.searchTerm.toLowerCase();
+      items = items.filter(item => 
+        item.name.toLowerCase().includes(searchTerm) ||
+        (item.description?.toLowerCase() || '').includes(searchTerm) ||
+        (item.brandName?.toLowerCase() || '').includes(searchTerm) ||
+        (item.modelNumber?.toLowerCase() || '').includes(searchTerm) ||
+        (item.serialNumber?.toLowerCase() || '').includes(searchTerm)
+      );
+    }
+    
+    // Apply pagination
+    if (options?.offset !== undefined && options?.limit !== undefined) {
+      items = items.slice(options.offset, options.offset + options.limit);
+    } else if (options?.limit !== undefined) {
+      items = items.slice(0, options.limit);
+    }
+    
+    return items;
+  }
+  
+  async getInventoryItem(id: number): Promise<InventoryItem | undefined> {
+    return this.inventoryItems.get(id);
+  }
+  
+  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
+    const id = this.currentInventoryItemId++;
+    const createdAt = new Date();
+    const updatedAt = createdAt;
+    const item: InventoryItem = { ...insertItem, id, createdAt, updatedAt };
+    this.inventoryItems.set(id, item);
+    return item;
+  }
+  
+  async updateInventoryItem(id: number, updates: Partial<InsertInventoryItem>): Promise<InventoryItem | undefined> {
+    const item = this.inventoryItems.get(id);
+    if (!item) return undefined;
+    
+    const updatedItem: InventoryItem = { 
+      ...item, 
+      ...updates, 
+      updatedAt: new Date() 
+    };
+    this.inventoryItems.set(id, updatedItem);
+    return updatedItem;
+  }
+  
+  async deleteInventoryItem(id: number): Promise<boolean> {
+    const exists = this.inventoryItems.has(id);
+    if (!exists) return false;
+    
+    // Remove item from all collections
+    for (const itemCollection of Array.from(this.inventoryItemCollections.values())) {
+      if (itemCollection.itemId === id) {
+        this.inventoryItemCollections.delete(itemCollection.id);
+      }
+    }
+    
+    this.inventoryItems.delete(id);
+    return true;
+  }
+  
+  async getFullInventoryItem(id: number): Promise<FullInventoryItem | undefined> {
+    const item = this.inventoryItems.get(id);
+    if (!item) return undefined;
+    
+    // Get category
+    const category = item.categoryId ? this.categories.get(item.categoryId) : undefined;
+    
+    // Get receipt if available
+    const receipt = item.receiptId ? this.receipts.get(item.receiptId) : undefined;
+    let merchant;
+    if (receipt && receipt.merchantId) {
+      merchant = this.merchants.get(receipt.merchantId);
+    }
+    
+    // Get collections
+    const collections = await this.getItemCollections(id);
+    
+    // Construct full item
+    return {
+      ...item,
+      category,
+      receipt: receipt ? {
+        id: receipt.id,
+        date: receipt.date,
+        total: receipt.total,
+        blockchainVerified: receipt.blockchainVerified || false,
+        nftTokenId: receipt.nftTokenId || undefined,
+        merchant: merchant ? {
+          id: merchant.id,
+          name: merchant.name,
+          logo: merchant.logo
+        } : undefined
+      } : undefined,
+      collections
+    };
+  }
+  
+  // Inventory collections methods
+  async getInventoryCollections(userId: number): Promise<InventoryCollection[]> {
+    return Array.from(this.inventoryCollections.values()).filter(
+      collection => collection.userId === userId
+    );
+  }
+  
+  async getInventoryCollection(id: number): Promise<InventoryCollection | undefined> {
+    return this.inventoryCollections.get(id);
+  }
+  
+  async createInventoryCollection(insertCollection: InsertInventoryCollection): Promise<InventoryCollection> {
+    const id = this.currentInventoryCollectionId++;
+    const createdAt = new Date();
+    const updatedAt = createdAt;
+    const collection: InventoryCollection = { ...insertCollection, id, createdAt, updatedAt };
+    this.inventoryCollections.set(id, collection);
+    return collection;
+  }
+  
+  async updateInventoryCollection(id: number, updates: Partial<InsertInventoryCollection>): Promise<InventoryCollection | undefined> {
+    const collection = this.inventoryCollections.get(id);
+    if (!collection) return undefined;
+    
+    const updatedCollection: InventoryCollection = { 
+      ...collection, 
+      ...updates, 
+      updatedAt: new Date() 
+    };
+    this.inventoryCollections.set(id, updatedCollection);
+    return updatedCollection;
+  }
+  
+  async deleteInventoryCollection(id: number): Promise<boolean> {
+    const exists = this.inventoryCollections.has(id);
+    if (!exists) return false;
+    
+    // Remove all items from this collection
+    for (const itemCollection of Array.from(this.inventoryItemCollections.values())) {
+      if (itemCollection.collectionId === id) {
+        this.inventoryItemCollections.delete(itemCollection.id);
+      }
+    }
+    
+    this.inventoryCollections.delete(id);
+    return true;
+  }
+  
+  // Inventory item-collection methods
+  async addItemToCollection(itemId: number, collectionId: number): Promise<InventoryItemCollection> {
+    // Check if item and collection exist
+    const item = this.inventoryItems.get(itemId);
+    const collection = this.inventoryCollections.get(collectionId);
+    
+    if (!item || !collection) {
+      throw new Error("Item or collection not found");
+    }
+    
+    // Check if already exists
+    const existing = Array.from(this.inventoryItemCollections.values()).find(
+      ic => ic.itemId === itemId && ic.collectionId === collectionId
+    );
+    
+    if (existing) {
+      return existing;
+    }
+    
+    // Create new relationship
+    const id = this.currentInventoryItemCollectionId++;
+    const addedAt = new Date();
+    const itemCollection: InventoryItemCollection = { 
+      id, 
+      itemId, 
+      collectionId, 
+      addedAt 
+    };
+    
+    this.inventoryItemCollections.set(id, itemCollection);
+    return itemCollection;
+  }
+  
+  async removeItemFromCollection(itemId: number, collectionId: number): Promise<boolean> {
+    const relationship = Array.from(this.inventoryItemCollections.values()).find(
+      ic => ic.itemId === itemId && ic.collectionId === collectionId
+    );
+    
+    if (!relationship) {
+      return false;
+    }
+    
+    this.inventoryItemCollections.delete(relationship.id);
+    return true;
+  }
+  
+  async getItemCollections(itemId: number): Promise<InventoryCollection[]> {
+    // Find all collection relationships for this item
+    const collectionIds = Array.from(this.inventoryItemCollections.values())
+      .filter(ic => ic.itemId === itemId)
+      .map(ic => ic.collectionId);
+    
+    // Get the actual collections
+    return collectionIds
+      .map(id => this.inventoryCollections.get(id))
+      .filter((collection): collection is InventoryCollection => !!collection);
+  }
+  
+  async getCollectionItems(collectionId: number): Promise<InventoryItem[]> {
+    // Find all item relationships for this collection
+    const itemIds = Array.from(this.inventoryItemCollections.values())
+      .filter(ic => ic.collectionId === collectionId)
+      .map(ic => ic.itemId);
+    
+    // Get the actual items
+    return itemIds
+      .map(id => this.inventoryItems.get(id))
+      .filter((item): item is InventoryItem => !!item);
+  }
 }
 
 export const storage = new MemStorage();

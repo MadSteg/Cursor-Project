@@ -10,6 +10,7 @@ import encryptedPaymentRoutes from "./routes/encrypted-payments";
 import encryptionRoutes from "./routes/encryption";
 import tacoRoutes from "./routes/taco";
 import cryptoRoutes from "./routes/crypto";
+import inventoryRoutes from "./routes/inventory";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -41,6 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register crypto payment routes
   app.use('/api/crypto', cryptoRoutes);
+  
+  // Register inventory management routes
+  app.use('/api/inventory', inventoryRoutes);
   
 
   // Get categories
