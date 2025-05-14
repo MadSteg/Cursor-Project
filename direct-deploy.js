@@ -30,7 +30,7 @@ async function compileContract() {
   
   // Create combined source with OpenZeppelin contracts inlined
   // This avoids issues with external imports
-  const ERC1155 = `// SPDX-License-Identifier: MIT
+  const ERC1155 = `// Internal OZ implementations
 pragma solidity ^0.8.24;
 
 // Simplified OpenZeppelin ERC1155 implementation
@@ -232,7 +232,7 @@ async function deployContract() {
     return contract.address;
   } catch (error) {
     console.error('Error deploying contract:', error);
-    return simulateDeployment();
+    return handleDeploymentError(error);
   }
 }
 
@@ -277,7 +277,7 @@ async function main() {
   // Check if direct deployment is possible with available environment variables
   if (!process.env.WALLET_PRIVATE_KEY || !process.env.ALCHEMY_RPC) {
     console.log('Missing required environment variables for direct deployment.');
-    return simulateDeployment();
+    return handleDeploymentError(new Error('Missing required environment variables'));
   }
   
   try {
@@ -300,7 +300,7 @@ async function main() {
     }
   } catch (error) {
     console.error('Deployment process failed:', error);
-    simulateDeployment();
+    handleDeploymentError(error);
   }
 }
 
