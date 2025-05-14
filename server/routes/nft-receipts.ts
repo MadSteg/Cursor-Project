@@ -133,7 +133,7 @@ router.post('/create', async (req, res) => {
       createdAt: receipt.createdAt
     });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating NFT receipt:', error);
     res.status(500).json({ 
       message: 'Failed to create NFT receipt',
@@ -249,7 +249,7 @@ router.get('/:id/decrypt', async (req, res) => {
       decryptedData: decryptedReceipt
     });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error decrypting receipt:', error);
     res.status(500).json({ 
       message: 'Failed to decrypt receipt',

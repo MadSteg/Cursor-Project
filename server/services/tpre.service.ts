@@ -5,7 +5,9 @@
  * which implements threshold cryptography for privacy-preserving receipts.
  */
 
-import * as taco from '@nucypher/taco';
+// Import taco library
+// Note: We're using a mock implementation until we fully integrate with the real taco library
+// import * as taco from '@nucypher/taco';
 import { Product, Merchant } from '@shared/products';
 
 // Interface for receipt data that will be encrypted
@@ -128,7 +130,7 @@ class TPREService {
         encryptionScheme: 'taco-tpre',
         publicKey: encryptionResult.publicKey
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Receipt encryption failed:', error);
       throw new Error(`Failed to encrypt receipt: ${error.message}`);
     }
@@ -155,7 +157,7 @@ class TPREService {
       );
 
       return decryptedData as ReceiptData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Receipt decryption failed:', error);
       throw new Error(`Failed to decrypt receipt: ${error.message}`);
     }
@@ -198,7 +200,9 @@ class TPREService {
         tags: product.tags,
         category: product.category,
         // Add product-specific metadata
-        nftFeatures: merchant.nftReceiptTemplates?.[paymentInfo.tier]?.specialFeatures || []
+        nftFeatures: merchant.nftReceiptTemplates && 
+                    paymentInfo.tier in merchant.nftReceiptTemplates && 
+                    merchant.nftReceiptTemplates[paymentInfo.tier as keyof typeof merchant.nftReceiptTemplates]?.specialFeatures || []
       }
     };
 
