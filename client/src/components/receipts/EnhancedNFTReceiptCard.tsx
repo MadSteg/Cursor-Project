@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Info, Eye, Lock } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Download, Share2, Info, Eye, Lock, KeyRound, ShieldCheck, ShieldOff, AlertTriangle } from 'lucide-react';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export type ReceiptType = 'standard' | 'premium' | 'luxury';
 
@@ -18,6 +33,10 @@ export interface EnhancedNFTReceiptCardProps {
   tokenId: number;
   contractAddress: string;
   revoked?: boolean;
+  // TACo encryption related fields
+  isEncrypted?: boolean;
+  hasEncryptedMetadata?: boolean;
+  grantedAccessTo?: string[];
 }
 
 export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
@@ -28,7 +47,55 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
   receiptType,
   tokenId,
   revoked,
+  isEncrypted = true, // Default to true for demo
+  hasEncryptedMetadata = true, // Default to true for demo
+  grantedAccessTo = [], // Empty array by default
 }) => {
+  const [accessAddress, setAccessAddress] = useState('');
+  const [isGranting, setIsGranting] = useState(false);
+  const [isRevoking, setIsRevoking] = useState(false);
+  const [showGrantAccessDialog, setShowGrantAccessDialog] = useState(false);
+  const [showManageAccessDialog, setShowManageAccessDialog] = useState(false);
+  
+  const handleGrantAccess = async () => {
+    setIsGranting(true);
+    try {
+      // Simulate API call to TACo service
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log(`Granting access to ${accessAddress} for token ${tokenId}`);
+      // In a real implementation, we would call our backend API:
+      // await fetch('/api/grant-access', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ tokenId, address: accessAddress })
+      // });
+      setShowGrantAccessDialog(false);
+      setAccessAddress('');
+    } catch (error) {
+      console.error("Error granting access:", error);
+    } finally {
+      setIsGranting(false);
+    }
+  };
+  
+  const handleRevokeAccess = async (address: string) => {
+    setIsRevoking(true);
+    try {
+      // Simulate API call to TACo service
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log(`Revoking access for ${address} to token ${tokenId}`);
+      // In a real implementation, we would call our backend API:
+      // await fetch('/api/revoke-access', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ tokenId, address })
+      // });
+    } catch (error) {
+      console.error("Error revoking access:", error);
+    } finally {
+      setIsRevoking(false);
+    }
+  };
   // Define styles based on receipt type
   const receiptStyles = {
     standard: {
@@ -73,9 +140,23 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
               <div className="text-xs text-gray-500">{formattedDate}</div>
             </div>
           </div>
-          <Badge variant="outline" className={style.badgeColor}>
-            {receiptType.charAt(0).toUpperCase() + receiptType.slice(1)}
-          </Badge>
+          <div className="flex items-center space-x-2">
+            {isEncrypted && (
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="text-blue-600">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Encrypted with TACo</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            <Badge variant="outline" className={style.badgeColor}>
+              {receiptType.charAt(0).toUpperCase() + receiptType.slice(1)}
+            </Badge>
+          </div>
         </div>
 
         {/* NFT Card Content */}
@@ -87,7 +168,7 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
           
           {/* NFT Visual representation - simulated for this mock */}
           <div className={`w-full aspect-square rounded-lg mb-4 flex items-center justify-center 
-                        bg-white/50 border ${style.border} overflow-hidden`}>
+                        bg-white/50 border ${style.border} overflow-hidden relative`}>
             {revoked ? (
               <div className="flex flex-col items-center text-gray-400">
                 <Lock size={48} />
@@ -96,7 +177,108 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
             ) : (
               <div className="text-6xl">{style.icon}</div>
             )}
+            
+            {/* TACo encryption badge */}
+            {hasEncryptedMetadata && !revoked && (
+              <div className="absolute top-2 right-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium flex items-center">
+                <KeyRound className="h-3 w-3 mr-1" />
+                TACo Protected
+              </div>
+            )}
           </div>
+          
+          {/* TACo metadata access controls */}
+          {hasEncryptedMetadata && !revoked && (
+            <div className="w-full mb-4 px-2">
+              <div className="bg-blue-50 border border-blue-100 rounded-md p-3">
+                <div className="flex items-start">
+                  <ShieldCheck className="h-4 w-4 text-blue-700 mt-0.5 mr-2" />
+                  <div>
+                    <p className="text-xs text-blue-800 font-medium">Private Receipt Data</p>
+                    <p className="text-xs text-blue-700 mt-1">Sensitive details are encrypted with Threshold Network TACo. You control who can access this data.</p>
+                    
+                    <div className="flex mt-2 space-x-2">
+                      <Dialog open={showGrantAccessDialog} onOpenChange={setShowGrantAccessDialog}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-7 text-xs">
+                            <KeyRound className="h-3 w-3 mr-1" />
+                            Grant Access
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Grant Access to Receipt Data</DialogTitle>
+                            <DialogDescription>
+                              Enter a blockchain address to grant access to the encrypted data on this receipt.
+                              The recipient will be able to view warranty information, serial numbers, and other private details.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="address">Recipient Address</Label>
+                              <Input
+                                id="address"
+                                placeholder="0x..."
+                                value={accessAddress}
+                                onChange={(e) => setAccessAddress(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="submit" onClick={handleGrantAccess} disabled={isGranting || !accessAddress}>
+                              {isGranting ? "Granting Access..." : "Grant Access"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      <Dialog open={showManageAccessDialog} onOpenChange={setShowManageAccessDialog}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-7 text-xs">
+                            <ShieldOff className="h-3 w-3 mr-1" />
+                            Manage Access
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Manage Data Access</DialogTitle>
+                            <DialogDescription>
+                              Control which addresses can access the encrypted data on this receipt.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            {grantedAccessTo.length === 0 ? (
+                              <div className="text-center py-4 text-sm text-gray-500">
+                                No access has been granted yet.
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                {grantedAccessTo.map((address, index) => (
+                                  <div key={index} className="flex justify-between items-center border-b pb-2">
+                                    <div className="font-mono text-sm truncate max-w-[200px]">
+                                      {address}
+                                    </div>
+                                    <Button 
+                                      variant="destructive" 
+                                      size="sm"
+                                      onClick={() => handleRevokeAccess(address)}
+                                      disabled={isRevoking}
+                                    >
+                                      Revoke
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action buttons */}

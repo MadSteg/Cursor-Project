@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Wallet, ShoppingBag, Filter, Search, QrCode, Share2, Grid3X3, List, Download, Info } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Wallet, ShoppingBag, Filter, Search, QrCode, Share2, Grid3X3, List, Download, Info, ShieldCheck } from 'lucide-react';
 import { EnhancedNFTReceiptCard } from '@/components/receipts/EnhancedNFTReceiptCard';
 
 // Type-safe receipt types
@@ -21,6 +23,10 @@ interface MockReceipt {
   tokenId: number;
   contractAddress: string;
   revoked?: boolean;
+  // TACo encryption related fields
+  isEncrypted?: boolean;
+  hasEncryptedMetadata?: boolean;
+  grantedAccessTo?: string[];
 }
 
 const mockReceipts: MockReceipt[] = [
@@ -33,7 +39,10 @@ const mockReceipts: MockReceipt[] = [
     items: 12,
     receiptType: "premium",
     tokenId: 23456,
-    contractAddress: "0x1234567890123456789012345678901234567890"
+    contractAddress: "0x1234567890123456789012345678901234567890",
+    isEncrypted: true,
+    hasEncryptedMetadata: true,
+    grantedAccessTo: ['0x71C7656EC7ab88b098defB751B7401B5f6d8976F']
   },
   {
     id: 2,
@@ -44,7 +53,10 @@ const mockReceipts: MockReceipt[] = [
     items: 2,
     receiptType: "luxury",
     tokenId: 23457,
-    contractAddress: "0x1234567890123456789012345678901234567890"
+    contractAddress: "0x1234567890123456789012345678901234567890",
+    isEncrypted: true,
+    hasEncryptedMetadata: true,
+    grantedAccessTo: ['0x71C7656EC7ab88b098defB751B7401B5f6d8976F', '0x82A7656EC7ab88b098defB751B7401B5f6d8976F']
   },
   {
     id: 3,
@@ -55,7 +67,9 @@ const mockReceipts: MockReceipt[] = [
     items: 7,
     receiptType: "standard",
     tokenId: 23458,
-    contractAddress: "0x1234567890123456789012345678901234567890"
+    contractAddress: "0x1234567890123456789012345678901234567890",
+    isEncrypted: false,
+    hasEncryptedMetadata: false
   },
   {
     id: 4,
@@ -66,7 +80,10 @@ const mockReceipts: MockReceipt[] = [
     items: 4,
     receiptType: "premium",
     tokenId: 23459,
-    contractAddress: "0x1234567890123456789012345678901234567890"
+    contractAddress: "0x1234567890123456789012345678901234567890",
+    isEncrypted: true,
+    hasEncryptedMetadata: true,
+    grantedAccessTo: []
   },
   {
     id: 5,
@@ -86,11 +103,16 @@ export default function UserNFTWallet() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [connectedWallet, setConnectedWallet] = useState(true);
+  const [showEncryptedOnly, setShowEncryptedOnly] = useState(false);
 
-  const filteredReceipts = mockReceipts.filter(receipt => 
-    receipt.merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    receipt.tokenId.toString().includes(searchQuery)
-  );
+  const filteredReceipts = mockReceipts.filter(receipt => {
+    const matchesSearch = receipt.merchant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      receipt.tokenId.toString().includes(searchQuery);
+    
+    const matchesEncryptedFilter = !showEncryptedOnly || receipt.isEncrypted === true;
+    
+    return matchesSearch && matchesEncryptedFilter;
+  });
 
   const handleConnectWallet = () => {
     setConnectedWallet(true);
@@ -139,34 +161,56 @@ export default function UserNFTWallet() {
               </Button>
             </div>
 
-            <div className="flex justify-between items-center">
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by merchant or token ID..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+            <div className="flex flex-col space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by merchant or token ID..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center space-x-2 ml-4">
+                  <Button variant="outline" size="icon">
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center space-x-2 ml-4">
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="icon"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="icon"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
+              
+              <div className="flex items-center">
+                <div className="bg-blue-50 flex items-center space-x-2 px-3 py-2 rounded-md border border-blue-100">
+                  <ShieldCheck className="h-4 w-4 text-blue-600" />
+                  <Label htmlFor="encrypted-only" className="text-sm text-blue-700 cursor-pointer">
+                    Show TACo encrypted receipts only
+                  </Label>
+                  <Switch 
+                    id="encrypted-only" 
+                    checked={showEncryptedOnly} 
+                    onCheckedChange={setShowEncryptedOnly}
+                  />
+                </div>
+                <div className="ml-2 text-xs text-blue-600">
+                  {showEncryptedOnly ? 
+                    `Showing ${filteredReceipts.length} encrypted receipts` : 
+                    `${mockReceipts.filter(r => r.isEncrypted).length} receipts have TACo encryption`
+                  }
+                </div>
               </div>
             </div>
 
