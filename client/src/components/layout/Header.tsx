@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Receipt, BarChart3, Settings, User, Plus } from "lucide-react";
+import { Menu, Receipt, BarChart3, Settings, User, Plus, Lock } from "lucide-react";
 
 const Header: React.FC = () => {
   const [, setLocation] = useLocation();
@@ -35,6 +35,11 @@ const Header: React.FC = () => {
             <Link href="/analytics">
               <span className={`text-sm font-medium ${currentLocation === "/analytics" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
                 Analytics
+              </span>
+            </Link>
+            <Link href="/encryption-settings">
+              <span className={`text-sm font-medium ${currentLocation === "/encryption-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer`}>
+                Encryption
               </span>
             </Link>
             <Link href="/settings">
@@ -74,6 +79,11 @@ const Header: React.FC = () => {
                   <Link href="/analytics">
                     <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                       <BarChart3 className="h-5 w-5" /> Analytics
+                    </span>
+                  </Link>
+                  <Link href="/encryption-settings">
+                    <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                      <Lock className="h-5 w-5" /> Encryption
                     </span>
                   </Link>
                   <Link href="/settings">

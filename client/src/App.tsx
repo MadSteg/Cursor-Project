@@ -25,6 +25,7 @@ function Router() {
         <Route path="/analytics" component={Analytics} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/encrypted-checkout" component={EncryptedCheckout} />
+        <Route path="/encryption-settings" component={EncryptionSettings} />
         <Route component={NotFound} />
       </Switch>
       <Footer />
