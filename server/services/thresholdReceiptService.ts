@@ -6,7 +6,7 @@
  */
 import * as ThresholdCrypto from '../lib/thresholdCrypto';
 import { Receipt, ReceiptItem } from '@shared/schema';
-import { blockchainService } from './blockchainService';
+import { blockchainService } from './blockchainService-amoy';
 import { storage } from '../storage';
 
 export interface EncryptedReceipt {

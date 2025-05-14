@@ -59,30 +59,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timestamp = new Date().toISOString();
       
       // Get the services from app.locals - handle possible structure/name differences
-      const blockchainService = req.app.locals.blockchainService || req.app.locals.blockchainProvider;
       const amoyService = req.app.locals.blockchainAmoyService || req.app.locals.amoyProvider;
       const cryptoPaymentService = req.app.locals.cryptoPaymentService;
       
       // Build the status response
-      const status = {
+      const status: {
+        timestamp: string;
+        networks: Record<string, any>;
+        cryptoPayment?: any;
+      } = {
         timestamp,
         networks: {}
       };
       
-      // Add Mumbai status if available
-      if (blockchainService && typeof blockchainService.getNetworkStatus === 'function') {
-        try {
-          status.networks.mumbai = await blockchainService.getNetworkStatus();
-        } catch (err) {
-          status.networks.mumbai = { 
-            status: 'Error', 
-            error: 'Failed to get network status',
-            mockMode: true
-          };
-        }
-      } else {
-        status.networks.mumbai = { status: 'Service Unavailable' };
-      }
+      // Mumbai has been removed
       
       // Add Amoy status if available
       if (amoyService && typeof amoyService.getNetworkStatus === 'function') {
@@ -98,6 +88,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         status.networks.amoy = { status: 'Service Unavailable' };
       }
+      
+      // Add other network statuses as needed
+      status.networks.ethereum = {
+        status: 'Available',
+        chainId: 1,
+        mockMode: true,
+        network: 'ethereum',
+        message: 'Ethereum Mainnet - Coming Soon'
+      };
+      
+      status.networks.bitcoin = {
+        status: 'Available',
+        chainId: 0,
+        mockMode: true,
+        network: 'bitcoin',
+        message: 'Bitcoin Network - Coming Soon'
+      };
+      
+      status.networks.solana = {
+        status: 'Available',
+        chainId: 0,
+        mockMode: true,
+        network: 'solana',
+        message: 'Solana Network - Coming Soon'
+      };
       
       // Add crypto payment service status if available
       if (cryptoPaymentService) {
