@@ -165,6 +165,7 @@ export default function Checkout() {
         searchParams.set('amount', totalAmount.toString());
         searchParams.set('mintNFT', mintNFT ? 'true' : 'false');
         searchParams.set('nftTheme', nftTheme);
+        searchParams.set('nftTier', nftTier);
         
         // Redirect to crypto checkout page
         navigate(`/crypto-checkout?${searchParams.toString()}`);
@@ -766,6 +767,7 @@ export default function Checkout() {
                 if (mintNFT) {
                   searchParams.set('mintNFT', 'true');
                   searchParams.set('nftTheme', nftTheme);
+                  searchParams.set('nftTier', nftTier);
                 }
                 navigate(`/crypto-checkout?${searchParams.toString()}`);
               } else {

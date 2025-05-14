@@ -83,6 +83,11 @@ export default function CryptoCheckout() {
       setNftTheme(themeParam);
     }
     
+    const tierParam = searchParams.get('nftTier');
+    if (tierParam && ['standard', 'premium', 'luxury'].includes(tierParam)) {
+      setNftTier(tierParam);
+    }
+    
     // Load available cryptocurrencies
     loadCurrencies();
   }, []);
@@ -135,6 +140,9 @@ export default function CryptoCheckout() {
       if (mintNFT) {
         metadata.mintNFT = 'true';
         metadata.nftTheme = nftTheme;
+        metadata.nftTier = nftTier;
+        metadata.nftFee = NFT_RECEIPT_TIERS[nftTier].price.toString();
+        metadata.appleWalletSupport = NFT_RECEIPT_TIERS[nftTier].appleWalletSupport.toString();
       }
       
       // Add receipt ID to metadata if available
@@ -535,10 +543,16 @@ export default function CryptoCheckout() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                      NFT Receipt Being Minted
+                      {NFT_RECEIPT_TIERS[nftTier].name} NFT Receipt Being Minted
                     </h3>
                     <p className="text-sm text-indigo-700 mt-1">
-                      Your blockchain-verified NFT receipt is now being minted. This creates a permanent, tamper-proof record of your purchase that you'll be able to access anytime.
+                      Your blockchain-verified {NFT_RECEIPT_TIERS[nftTier].name.toLowerCase()} NFT receipt is now being minted. This creates a permanent, tamper-proof record of your purchase that you'll be able to access anytime.
+                      {NFT_RECEIPT_TIERS[nftTier].appleWalletSupport && (
+                        <span className="block mt-1 text-green-600 flex items-center">
+                          <Smartphone className="h-3 w-3 mr-1" />
+                          Includes Apple Watch/iPhone wallet integration
+                        </span>
+                      )}
                     </p>
                     <div className="mt-3 flex items-center text-xs text-indigo-600">
                       <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
