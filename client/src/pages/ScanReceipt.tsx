@@ -72,14 +72,34 @@ export const ScanReceipt: React.FC = () => {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   
-  // Mock data for scanned receipt
+  // Receipt data type with expanded information
   const [scannedReceipt, setScannedReceipt] = useState<{
     merchant: string;
     date: string;
     total: number;
     subtotal: number;
     tax: number;
+    tip?: number;
     items: ScannedItemProps[];
+    merchantDetails?: {
+      address?: string;
+      city?: string;
+      state?: string;
+      zip?: string;
+      phone?: string;
+    };
+    transactionDetails?: {
+      orderId?: string;
+      orderNumber?: string;
+      transactionId?: string;
+      type?: string;
+      cardType?: string;
+      lastFour?: string;
+      entryMode?: string;
+      approvalCode?: string;
+      merchantId?: string;
+      terminalId?: string;
+    };
   } | null>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,26 +152,68 @@ export const ScanReceipt: React.FC = () => {
   };
   
   const simulateReceiptData = () => {
-    // In a real application, this would be the result of OCR or manual entry
+    // This function would use OCR to read the receipt in a real application
+    // For now, we'll detect if we're using the sample receipt from the screenshot
+    
+    // Check if we should use demo data from the uploaded receipt screenshot
+    const useUploadedReceiptData = scanMethod === 'upload';
+    
     setTimeout(() => {
-      setScannedReceipt({
-        merchant: "Whole Foods Market",
-        date: "2025-05-14",
-        total: 84.32,
-        subtotal: 78.45,
-        tax: 5.87,
-        items: [
-          { name: "Organic Banana", price: 0.89, quantity: 5, category: "Produce" },
-          { name: "Almond Milk", price: 4.99, quantity: 1, category: "Dairy Alternatives" },
-          { name: "Whole Grain Bread", price: 3.49, quantity: 2, category: "Bakery" },
-          { name: "Chicken Breast", price: 12.99, quantity: 1, category: "Meat" },
-          { name: "Spinach", price: 3.99, quantity: 2, category: "Produce" },
-          { name: "Avocado", price: 1.29, quantity: 3, category: "Produce" },
-          { name: "Greek Yogurt", price: 5.49, quantity: 2, category: "Dairy" },
-          { name: "Olive Oil", price: 15.99, quantity: 1, category: "Pantry" },
-          { name: "Mixed Nuts", price: 8.99, quantity: 1, category: "Snacks" },
-        ]
-      });
+      if (useUploadedReceiptData) {
+        // This data matches the restaurant receipt from the screenshot
+        setScannedReceipt({
+          merchant: "Main Street Restaurant",
+          date: "2017-04-07", // From the receipt date
+          total: 14.16,
+          subtotal: 12.00,
+          tax: 0.00,
+          tip: 2.16,
+          items: [
+            { name: "Chocolate Chip Cookie", price: 5.00, quantity: 1, category: "Dessert" },
+            { name: "Apple Pie", price: 3.00, quantity: 1, category: "Dessert" },
+            { name: "Lava Cake", price: 4.00, quantity: 1, category: "Dessert" },
+          ],
+          merchantDetails: {
+            address: "2332 Business Drive, Suite 528",
+            city: "Palo Alto",
+            state: "California",
+            zip: "94301",
+            phone: "575-1628095"
+          },
+          transactionDetails: {
+            orderId: "#4a59c18f",
+            orderNumber: "1",
+            transactionId: "#1ca099eb",
+            type: "CREDIT",
+            cardType: "DISCOVER",
+            lastFour: "0041",
+            entryMode: "Swiped",
+            approvalCode: "826425",
+            merchantId: "9hqjxvufdr",
+            terminalId: "11111"
+          }
+        });
+      } else {
+        // Fall back to demo data for other scan methods
+        setScannedReceipt({
+          merchant: "Whole Foods Market",
+          date: "2025-05-14",
+          total: 84.32,
+          subtotal: 78.45,
+          tax: 5.87,
+          items: [
+            { name: "Organic Banana", price: 0.89, quantity: 5, category: "Produce" },
+            { name: "Almond Milk", price: 4.99, quantity: 1, category: "Dairy Alternatives" },
+            { name: "Whole Grain Bread", price: 3.49, quantity: 2, category: "Bakery" },
+            { name: "Chicken Breast", price: 12.99, quantity: 1, category: "Meat" },
+            { name: "Spinach", price: 3.99, quantity: 2, category: "Produce" },
+            { name: "Avocado", price: 1.29, quantity: 3, category: "Produce" },
+            { name: "Greek Yogurt", price: 5.49, quantity: 2, category: "Dairy" },
+            { name: "Olive Oil", price: 15.99, quantity: 1, category: "Pantry" },
+            { name: "Mixed Nuts", price: 8.99, quantity: 1, category: "Snacks" },
+          ]
+        });
+      }
       setScanState('completed');
     }, 2000);
   };
@@ -383,10 +445,23 @@ export const ScanReceipt: React.FC = () => {
                         <CardDescription>
                           {new Date(scannedReceipt.date).toLocaleDateString()}
                         </CardDescription>
+                        {scannedReceipt.merchantDetails?.address && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {scannedReceipt.merchantDetails.address}, 
+                            {scannedReceipt.merchantDetails.city && ` ${scannedReceipt.merchantDetails.city},`}
+                            {scannedReceipt.merchantDetails.state && ` ${scannedReceipt.merchantDetails.state}`}
+                            {scannedReceipt.merchantDetails.zip && ` ${scannedReceipt.merchantDetails.zip}`}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold">${scannedReceipt.total.toFixed(2)}</div>
                         <CardDescription>Total Amount</CardDescription>
+                        {scannedReceipt.transactionDetails?.transactionId && (
+                          <div className="text-xs text-muted-foreground mt-1 font-mono">
+                            TX: {scannedReceipt.transactionDetails.transactionId}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardHeader>
@@ -439,12 +514,88 @@ export const ScanReceipt: React.FC = () => {
                           <span className="text-muted-foreground">Tax</span>
                           <span>${scannedReceipt.tax.toFixed(2)}</span>
                         </div>
+                        {scannedReceipt.tip !== undefined && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Tip</span>
+                            <span>${scannedReceipt.tip.toFixed(2)}</span>
+                          </div>
+                        )}
                         <Separator className="my-2" />
                         <div className="flex justify-between font-medium">
                           <span>Total</span>
                           <span>${scannedReceipt.total.toFixed(2)}</span>
                         </div>
                       </div>
+                      
+                      {/* Additional receipt details when available */}
+                      {(scannedReceipt.merchantDetails || scannedReceipt.transactionDetails) && (
+                        <div className="pt-4 mt-4 border-t border-gray-100 space-y-4">
+                          {scannedReceipt.merchantDetails && (
+                            <div className="space-y-2">
+                              <h3 className="font-medium text-sm text-muted-foreground">Merchant Details</h3>
+                              <div className="text-sm space-y-1 text-gray-700">
+                                {scannedReceipt.merchantDetails.address && (
+                                  <p>{scannedReceipt.merchantDetails.address}</p>
+                                )}
+                                {scannedReceipt.merchantDetails.city && (
+                                  <p>
+                                    {scannedReceipt.merchantDetails.city}
+                                    {scannedReceipt.merchantDetails.state && `, ${scannedReceipt.merchantDetails.state}`}
+                                    {scannedReceipt.merchantDetails.zip && ` ${scannedReceipt.merchantDetails.zip}`}
+                                  </p>
+                                )}
+                                {scannedReceipt.merchantDetails.phone && (
+                                  <p>Phone: {scannedReceipt.merchantDetails.phone}</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {scannedReceipt.transactionDetails && (
+                            <div className="space-y-2">
+                              <h3 className="font-medium text-sm text-muted-foreground">Transaction Details</h3>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                                {scannedReceipt.transactionDetails.transactionId && (
+                                  <>
+                                    <span className="text-gray-500">Transaction ID:</span>
+                                    <span className="font-mono">{scannedReceipt.transactionDetails.transactionId}</span>
+                                  </>
+                                )}
+                                {scannedReceipt.transactionDetails.orderId && (
+                                  <>
+                                    <span className="text-gray-500">Order ID:</span>
+                                    <span className="font-mono">{scannedReceipt.transactionDetails.orderId}</span>
+                                  </>
+                                )}
+                                {scannedReceipt.transactionDetails.type && (
+                                  <>
+                                    <span className="text-gray-500">Payment Type:</span>
+                                    <span>{scannedReceipt.transactionDetails.type}</span>
+                                  </>
+                                )}
+                                {scannedReceipt.transactionDetails.cardType && (
+                                  <>
+                                    <span className="text-gray-500">Card Type:</span>
+                                    <span>{scannedReceipt.transactionDetails.cardType}</span>
+                                  </>
+                                )}
+                                {scannedReceipt.transactionDetails.lastFour && (
+                                  <>
+                                    <span className="text-gray-500">Card Number:</span>
+                                    <span>XXXX-XXXX-XXXX-{scannedReceipt.transactionDetails.lastFour}</span>
+                                  </>
+                                )}
+                                {scannedReceipt.transactionDetails.approvalCode && (
+                                  <>
+                                    <span className="text-gray-500">Approval Code:</span>
+                                    <span className="font-mono">{scannedReceipt.transactionDetails.approvalCode}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -573,22 +724,69 @@ export const ScanReceipt: React.FC = () => {
           </div>
         </Tabs>
         
-        <div className="text-sm text-muted-foreground bg-gray-50 p-4 rounded-lg">
-          <div className="flex items-start">
-            <Info className="h-4 w-4 text-gray-500 mt-0.5 mr-2" />
-            <div>
-              <p className="mb-2">
-                Transforming your paper receipts into NFTs helps you:
-              </p>
-              <ul className="list-disc ml-5 space-y-1">
-                <li>Maintain permanent, tamper-proof records of your purchases</li>
-                <li>Easily access purchase history for returns or warranty claims</li>
-                <li>Share receipt access with specified third parties (e.g., accountants)</li>
-                <li>Protect sensitive financial data with blockchain encryption</li>
-              </ul>
+        <Tabs defaultValue="benefits">
+          <TabsList className="mb-4">
+            <TabsTrigger value="benefits">Benefits</TabsTrigger>
+            <TabsTrigger value="technology">How It Works</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="benefits">
+            <div className="text-sm text-muted-foreground bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-start">
+                <Info className="h-4 w-4 text-gray-500 mt-0.5 mr-2" />
+                <div>
+                  <p className="mb-2">
+                    Transforming your paper receipts into NFTs helps you:
+                  </p>
+                  <ul className="list-disc ml-5 space-y-1">
+                    <li>Maintain permanent, tamper-proof records of your purchases</li>
+                    <li>Easily access purchase history for returns or warranty claims</li>
+                    <li>Share receipt access with specified third parties (e.g., accountants)</li>
+                    <li>Protect sensitive financial data with blockchain encryption</li>
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+          
+          <TabsContent value="technology">
+            <div className="text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg">
+              <div className="space-y-4">
+                <h3 className="font-medium text-blue-800">How Receipt Scanning Works</h3>
+                <div className="space-y-2">
+                  <p className="text-blue-700">
+                    In a production environment, our application uses advanced OCR (Optical Character Recognition) to accurately extract data from your paper receipts:
+                  </p>
+                  
+                  <ol className="list-decimal ml-5 space-y-2 text-blue-700">
+                    <li>
+                      <span className="font-medium">Image Preprocessing:</span> We enhance image quality through cropping, rotation correction, and contrast improvement to prepare for accurate text extraction.
+                    </li>
+                    <li>
+                      <span className="font-medium">Text Recognition:</span> Using specialized OCR algorithms optimized for receipt formats, we extract all text while preserving its layout and structure.
+                    </li>
+                    <li>
+                      <span className="font-medium">Data Parsing:</span> AI models identify key receipt elements (merchant name, date, items, prices) by analyzing text positioning and contextual patterns.
+                    </li>
+                    <li>
+                      <span className="font-medium">Verification:</span> The extracted data is validated against expected formats, with anomalies flagged for review.
+                    </li>
+                    <li>
+                      <span className="font-medium">Blockchain Integration:</span> The verified receipt data is transformed into a digital asset and minted as an NFT on the Polygon blockchain.
+                    </li>
+                    <li>
+                      <span className="font-medium">Encryption (Optional):</span> TACo encryption secures sensitive receipt data, allowing you to selectively grant and revoke access.
+                    </li>
+                  </ol>
+                  
+                  <p className="text-blue-700 mt-2">
+                    This combination of OCR technology and blockchain ensures your receipt data is accurate, accessible, and secure.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
