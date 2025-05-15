@@ -9,7 +9,7 @@ import {
   Settings, 
   User, 
   Lock, 
-  Package, 
+  Package,
   Activity, 
   ShoppingCart, 
   Shield, 
@@ -20,7 +20,6 @@ import {
   FileImage,
   Upload
 } from "lucide-react";
-import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 
 const Header: React.FC = () => {
   const [, setLocation] = useLocation();
@@ -73,18 +72,9 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* NFT Catalog */}
-            <Link href="/nft-catalog">
-              <span className={`text-sm font-medium ${currentLocation === "/nft-catalog" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Package className="h-4 w-4 mr-1.5" /> NFT Catalog
-              </span>
-            </Link>
           </div>
           
           <div className="flex items-center space-x-3">
-            <div className="hidden md:block">
-              <ConnectWalletButton size="sm" />
-            </div>
             
             <Link href="/sign-in">
               <Button variant="outline" size="sm" className="flex items-center">
@@ -123,11 +113,6 @@ const Header: React.FC = () => {
                         <Receipt className="h-5 w-5" /> Receipt Gallery
                       </span>
                     </Link>
-                    <Link href="/nft-catalog">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Package className="h-5 w-5" /> NFT Catalog
-                      </span>
-                    </Link>
                   </div>
                   
                   {/* Other */}
@@ -148,9 +133,6 @@ const Header: React.FC = () => {
                         <User className="h-5 w-5" /> Login/Signup
                       </span>
                     </Link>
-                    <div className="mt-4">
-                      <ConnectWalletButton />
-                    </div>
                   </div>
                 </div>
               </SheetContent>

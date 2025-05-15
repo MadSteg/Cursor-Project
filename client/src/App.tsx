@@ -10,7 +10,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import HomePage from "@/pages/HomePage";
 import AboutPage from "@/pages/AboutPage";
-import NFTCatalogPage from "@/pages/NFTCatalogPage";
+// NFT Catalog removed per request
 
 // NFT Receipt Features (New Focus)
 import UserNFTWallet from "@/pages/UserNFTWallet";
@@ -69,7 +69,6 @@ function Router() {
         <Route path="/receipt-gallery/:address" component={ReceiptGalleryPage} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
-        <Route path="/nft-catalog" component={NFTCatalogPage} />
         
         {/* NFT Receipt Features - Commented out as requested, but kept for future development */}
         {/* <Route path="/nft-wallet" component={UserNFTWallet} /> */}
