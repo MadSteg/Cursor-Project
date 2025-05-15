@@ -6,11 +6,12 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage } from 'lucide-react';
+import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage, Wallet } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import NFTArtPicker from '@/components/receipts/NFTArtPicker';
 import NFTGiftStatus from '@/components/nft/NFTGiftStatus';
+import { useWeb3Wallet } from '../hooks/useWeb3Wallet';
 
 // Define the tier colors for visualization
 const tierColors = {
@@ -97,10 +98,37 @@ export default function UploadReceiptPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Get wallet info
+  const { address, isConnected, connect } = useWeb3Wallet();
+  const { toast } = useToast();
+  
   // Enhanced file upload handler with better error handling
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
+    // Check if wallet is connected
+    if (!isConnected || !address) {
+      toast({
+        title: "Wallet Required",
+        description: "Please connect your wallet before uploading a receipt",
+        variant: "destructive",
+      });
+      
+      // Try to connect wallet
+      try {
+        await connect();
+        // If connection fails, return early
+        if (!isConnected) {
+          setIsUploading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Wallet connection failed:", err);
+        setIsUploading(false);
+        return;
+      }
+    }
 
     // Reset states
     setIsUploading(true);
@@ -113,6 +141,10 @@ export default function UploadReceiptPage() {
     // Create FormData for multipart upload
     const formData = new FormData();
     formData.append('receipt', file);
+    // Add wallet address to form data
+    if (address) {
+      formData.append('walletAddress', address);
+    }
 
     // Progress simulation interval
     const progressInterval = setInterval(() => {

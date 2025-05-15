@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, LockIcon, UnlockIcon, ReceiptIcon, ShoppingBag, Calendar, AlertCircle, ExternalLink } from "lucide-react";
 import { apiRequest } from '@/lib/queryClient';
-import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
+import { useWeb3Wallet } from '../hooks/useWeb3Wallet';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // NFT Receipt interface
