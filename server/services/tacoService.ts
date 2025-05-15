@@ -3,14 +3,27 @@
  * 
  * This service implements threshold encryption using the Taco (formerly NuCypher) protocol.
  * It enables secure proxy re-encryption for receipt sharing with enhanced privacy.
+ * 
+ * Enhanced with wallet private key encryption for secure wallet generation and storage.
  */
 import { db } from "../db";
+import { eq } from "drizzle-orm";
 import { 
   tacoKeys, 
-  sharedReceipts, 
+  sharedReceipts,
+  userWallets,
   type TacoKey, 
-  type SharedReceipt 
+  type SharedReceipt,
+  type UserWallet,
+  type InsertUserWallet
 } from "@shared/schema";
+
+// Type for Taco encryption result
+export interface TacoEncryptionResult {
+  capsule: string;
+  ciphertext: string;
+  policyPublicKey: string;
+}
 
 class TacoService {
   private provider: any;
@@ -131,6 +144,53 @@ class TacoService {
     
     const base64Data = encryptedData.substring('encrypted:'.length);
     return Buffer.from(base64Data, 'base64').toString();
+  }
+  
+  /**
+   * Encrypt data with threshold encryption (TACo)
+   * This method simulates the Threshold Network's TACo protocol
+   */
+  async encryptWithTACo(recipientPublicKey: string, data: string): Promise<TacoEncryptionResult> {
+    try {
+      // In a real implementation, this would use the Threshold Network TACo library
+      // For now, we'll use a mock implementation that simulates the TACo format
+      
+      // Create a pseudo capsule and encrypted data
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 15);
+      
+      // Encrypt the data with our simple mock encryption
+      const ciphertext = this.mockEncrypt(data);
+      
+      return {
+        capsule: `taco-capsule-${timestamp}-${randomSuffix}`,
+        ciphertext: ciphertext,
+        policyPublicKey: `taco-policy-${timestamp}-${randomSuffix}`
+      };
+    } catch (error) {
+      console.error("Error encrypting with TACo:", error);
+      throw new Error("Failed to encrypt with TACo");
+    }
+  }
+  
+  /**
+   * Decrypt data with TACo using the recipient's private key
+   */
+  async decryptWithTACo(
+    capsule: string, 
+    ciphertext: string, 
+    recipientPrivateKey: string
+  ): Promise<string> {
+    try {
+      // In a real implementation, this would use the Threshold Network TACo library
+      // For now, we'll use a mock implementation
+      
+      // Just use our simple mock decryption
+      return this.mockDecrypt(ciphertext);
+    } catch (error) {
+      console.error("Error decrypting with TACo:", error);
+      throw new Error("Failed to decrypt with TACo");
+    }
   }
 
   /**
@@ -307,6 +367,107 @@ class TacoService {
     } catch (error: any) {
       console.error("Error in TacoService.decryptData:", error);
       throw new Error(`Failed to decrypt data: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Store a user's encrypted wallet private key
+   */
+  async storeEncryptedWallet(
+    userId: number, 
+    address: string, 
+    encryptedWallet: TacoEncryptionResult
+  ): Promise<UserWallet> {
+    try {
+      // Store the encrypted wallet information
+      const [userWallet] = await db
+        .insert(userWallets)
+        .values({
+          userId,
+          address,
+          capsule: encryptedWallet.capsule,
+          ciphertext: encryptedWallet.ciphertext,
+          policyPublicKey: encryptedWallet.policyPublicKey
+        })
+        .returning();
+      
+      return userWallet;
+    } catch (error) {
+      console.error("Error storing encrypted wallet:", error);
+      throw new Error("Failed to store encrypted wallet");
+    }
+  }
+  
+  /**
+   * Get a user's encrypted wallet by user ID
+   */
+  async getUserWallet(userId: number): Promise<UserWallet | null> {
+    try {
+      const [wallet] = await db
+        .select()
+        .from(userWallets)
+        .where(eq(userWallets.userId, userId));
+      
+      return wallet || null;
+    } catch (error) {
+      console.error("Error getting user wallet:", error);
+      throw new Error("Failed to get user wallet");
+    }
+  }
+  
+  /**
+   * Get a user's wallet by address
+   */
+  async getWalletByAddress(address: string): Promise<UserWallet | null> {
+    try {
+      const [wallet] = await db
+        .select()
+        .from(userWallets)
+        .where(eq(userWallets.address, address));
+      
+      return wallet || null;
+    } catch (error) {
+      console.error("Error getting wallet by address:", error);
+      throw new Error("Failed to get wallet by address");
+    }
+  }
+  
+  /**
+   * Decrypt a user's wallet private key using their TACo private key
+   */
+  async decryptWalletPrivateKey(
+    wallet: UserWallet, 
+    recipientPrivateKey: string
+  ): Promise<string> {
+    try {
+      // In a real implementation, this would use the TACo protocol
+      // For now, we use our mock function
+      return this.decryptWithTACo(
+        wallet.capsule,
+        wallet.ciphertext,
+        recipientPrivateKey
+      );
+    } catch (error) {
+      console.error("Error decrypting wallet private key:", error);
+      throw new Error("Failed to decrypt wallet private key");
+    }
+  }
+  
+  /**
+   * Update wallet's last used timestamp
+   */
+  async updateWalletUsage(walletId: number): Promise<boolean> {
+    try {
+      const [updated] = await db
+        .update(userWallets)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(userWallets.id, walletId))
+        .returning();
+      
+      return !!updated;
+    } catch (error) {
+      console.error("Error updating wallet usage:", error);
+      throw new Error("Failed to update wallet usage");
     }
   }
 }
