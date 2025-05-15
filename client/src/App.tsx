@@ -42,6 +42,9 @@ import EncryptionSettings from "@/pages/EncryptionSettings";
 import Admin from "@/pages/Admin";
 import ThemePreview from "@/pages/ThemePreview";
 
+// Development Testing Pages
+import TaskStatusTestPage from "@/pages/TaskStatusTestPage";
+
 // Layout components
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -91,6 +94,9 @@ function Router() {
         <Route path="/encryption-settings" component={EncryptionSettings} />
         <Route path="/admin" component={Admin} />
         <Route path="/theme-preview" component={ThemePreview} />
+        
+        {/* Development Testing Pages */}
+        <Route path="/test/task-status" component={TaskStatusTestPage} />
         
         {/* 404 Page */}
         <Route component={NotFound} />
