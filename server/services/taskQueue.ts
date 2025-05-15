@@ -318,11 +318,43 @@ export function getNFTPurchaseStatus(receiptId: string): Task | null {
   return tasks.length > 0 ? tasks[0] : null;
 }
 
+/**
+ * Get task status with relevant data for frontend display
+ */
+export function getTaskStatus(taskId: string): any {
+  const task = getTaskById(taskId);
+  
+  if (!task) {
+    return null;
+  }
+  
+  // Get cleaned version of task status for frontend
+  return {
+    id: task.id,
+    status: task.status,
+    type: task.type,
+    result: task.result,
+    error: task.error,
+    createdAt: task.createdAt,
+    updatedAt: task.updatedAt,
+    // Format the result for display based on task type
+    nft: task.status === 'completed' && task.result ? {
+      tokenId: task.result.tokenId,
+      name: task.result.name,
+      imageUrl: task.result.imageUrl,
+      contractAddress: task.result.contractAddress,
+      marketplace: task.result.marketplace,
+      txHash: task.result.txHash
+    } : undefined
+  };
+}
+
 export default {
   createTask,
   createNFTPurchaseTask,
   getTaskById,
   getTasksByWallet,
   getNFTPurchaseStatus,
-  updateTaskStatus
+  updateTaskStatus,
+  getTaskStatus
 };

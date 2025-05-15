@@ -5,7 +5,7 @@ import fs from 'fs';
 import { extractReceiptData, determineReceiptTier, type TierInfo } from '../../shared/utils/receiptLogic';
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
 import { encryptLineItems, determineItemCategory } from '../utils/encryptLineItems';
-import { createNFTPurchaseTask } from '../services/taskQueue';
+import { createNFTPurchaseTask, getTaskStatus } from '../services/taskQueue';
 import { metadataService } from '../services/metadataService';
 import { tacoService } from '../services/tacoService';
 
@@ -363,6 +363,8 @@ router.get('/receipt/:fileId', (req: Request, res: Response) => {
   }
 });
 
+// Task status polling endpoint
+
 // Route for checking task status (for NFT minting polling)
 router.get('/task/:taskId/status', async (req: Request, res: Response) => {
   try {
@@ -375,11 +377,8 @@ router.get('/task/:taskId/status', async (req: Request, res: Response) => {
       });
     }
     
-    // Import getTaskStatus from task queue service
-    const { getTaskStatus } = await import('../services/taskQueue');
-    
     // Get task status
-    const taskStatus = await getTaskStatus(taskId);
+    const taskStatus = getTaskStatus(taskId);
     
     if (!taskStatus) {
       return res.status(404).json({
