@@ -35,7 +35,7 @@ import authRoutes from "./routes/auth";
 // Import the gallery routes for NFT display
 import galleryRoutes from "./routes/gallery";
 // Import the NFT catalog routes
-import { getNFTs, selectNFT } from "./routes/nfts";
+import nftsRoutes from "./routes/nfts";
 // Import the NFT Purchase Bot routes
 import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
 // Import the NFT Pool routes
@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/ocr-test', ocrTestRoutes);
   
   // Register receipt upload routes
-  app.use('/api', uploadReceiptRoutes);
+  app.use('/api/upload', uploadReceiptRoutes);
   
   // Register auto-process receipt routes (development mode)
   if (process.env.NODE_ENV === 'development') {
@@ -123,8 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/gallery', galleryRoutes);
   
   // Register NFT catalog routes
-  app.post('/api/nfts', getNFTs);
-  app.post('/api/select-nft', selectNFT);
+  // Register NFT routes (including minting)
+  app.use('/api/nfts', nftsRoutes);
   
   // Register NFT Purchase Bot routes
   app.use('/api/nft-bot', nftPurchaseBotRoutes);

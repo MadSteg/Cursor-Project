@@ -1,230 +1,138 @@
-import { Request, Response } from 'express';
+import express from 'express';
+import { ethers } from 'ethers';
+import ERC1155_ABI from '../abi/BlockReceiptCollection.json';
+import { logger } from '../utils/logger';
 
-// NFT metadata interface
-interface NFTMetadata {
-  id: string;
-  name: string;
-  image: string;
-  description: string;
-  tier: 'BASIC' | 'STANDARD' | 'PREMIUM' | 'LUXURY';
-  categories: string[];
-  attributes: {
-    [key: string]: string | number;
-  };
+const router = express.Router();
+
+// Sample NFT ids for the pool
+const NFT_POOL_IDS = {
+  STANDARD: 1,
+  PREMIUM: 2,
+  LUXURY: 3,
+  ULTRA: 4
+};
+
+/**
+ * @route POST /api/nfts/mint
+ * @desc Mint a new NFT receipt to user's wallet
+ * @access Private
+ */
+router.post('/mint', async (req, res) => {
+  const { walletAddress, nftId, receiptData } = req.body;
+  
+  if (!walletAddress) {
+    return res.status(400).json({
+      success: false,
+      message: 'Wallet address is required'
+    });
+  }
+
+  // Validate wallet address format
+  if (!ethers.utils.isAddress(walletAddress)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid wallet address format'
+    });
+  }
+
+  // Use the requested NFT ID or default to standard
+  const tokenId = nftId || NFT_POOL_IDS.STANDARD;
+
+  try {
+    // Save task to track status and return task ID immediately
+    const taskId = `mint-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Return task ID immediately
+    res.status(202).json({
+      success: true,
+      message: 'NFT minting initiated',
+      taskId: taskId
+    });
+
+    // Start minting process in background
+    processMintTask(taskId, walletAddress, tokenId, receiptData);
+    
+  } catch (error) {
+    logger.error('Error initiating mint process:', error);
+    
+    // Since we already responded, log the error but don't send another response
+    // This error handling is for the initial request only
+  }
+});
+
+/**
+ * @route GET /api/nfts/task/:taskId
+ * @desc Check status of minting task
+ * @access Private
+ */
+router.get('/task/:taskId', async (req, res) => {
+  const { taskId } = req.params;
+  
+  // In a production system, this would check a database for task status
+  // For this MVP, we'll just return a mock response
+  // This would be enhanced to actually check a Task status table in the database
+  
+  res.json({
+    success: true,
+    taskId,
+    status: 'processing', // or 'completed', 'failed'
+    message: 'NFT minting in progress'
+  });
+});
+
+/**
+ * Process the mint task in the background
+ */
+async function processMintTask(taskId: string, walletAddress: string, tokenId: number, receiptData: any) {
+  try {
+    // Check required environment variables
+    if (!process.env.CONTRACT_ADDRESS) {
+      throw new Error('CONTRACT_ADDRESS not set in environment');
+    }
+    
+    if (!process.env.POLYGON_RPC_URL) {
+      throw new Error('POLYGON_RPC_URL not set in environment');
+    }
+    
+    if (!process.env.PRIVATE_KEY) {
+      throw new Error('PRIVATE_KEY not set in environment');
+    }
+
+    // Connect to the blockchain
+    const provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_RPC_URL);
+    
+    // Create a wallet using the private key
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+    
+    // Connect to the smart contract
+    const contract = new ethers.Contract(
+      process.env.CONTRACT_ADDRESS,
+      ERC1155_ABI,
+      wallet
+    );
+
+    // Log the minting attempt
+    logger.info(`Minting NFT ID ${tokenId} to ${walletAddress}`);
+    
+    // Call the mint function on the contract
+    const tx = await contract.mint(walletAddress, tokenId);
+    
+    // Wait for the transaction to be mined
+    const receipt = await tx.wait();
+    
+    logger.info(`NFT minted successfully: ${receipt.transactionHash}`);
+    
+    // Update transaction status in DB (would be implemented in production)
+    // updateTaskStatus(taskId, 'completed', { txHash: receipt.transactionHash });
+    
+    // Store receipt data in a database or IPFS if needed
+    // In a production system, this would link the receipt data to the NFT
+    
+  } catch (error) {
+    logger.error(`NFT minting failed for task ${taskId}:`, error);
+    // updateTaskStatus(taskId, 'failed', { error: error.message });
+  }
 }
 
-// Collection of NFTs
-const NFT_COLLECTION: NFTMetadata[] = [
-  {
-    id: 'receipt-warrior',
-    name: 'Receipt Warrior',
-    image: '/nft-images/receipt-warrior.svg',
-    description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
-    tier: 'PREMIUM',
-    categories: ['entertainment', 'gaming', 'sports'],
-    attributes: {
-      rarity: 'Epic',
-      power: 72,
-      defense: 68,
-      speed: 65
-    }
-  },
-  {
-    id: 'crypto-receipt',
-    name: 'Crypto Receipt',
-    image: '/nft-images/crypto-receipt.svg',
-    description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
-    tier: 'LUXURY',
-    categories: ['tech', 'finance', 'cryptocurrency'],
-    attributes: {
-      rarity: 'Legendary',
-      encryption: 92,
-      decentralization: 88,
-      volatility: 75
-    }
-  },
-  {
-    id: 'fashion-receipt',
-    name: 'Fashion Couture Receipt',
-    image: '/nft-images/fashion-receipt.svg',
-    description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
-    tier: 'PREMIUM',
-    categories: ['fashion', 'clothing', 'accessories', 'retail'],
-    attributes: {
-      rarity: 'Rare',
-      style: 85,
-      trendiness: 79,
-      exclusivity: 70
-    }
-  },
-  {
-    id: 'grocery-hero',
-    name: 'Grocery Hero',
-    image: '/nft-images/grocery-hero.svg',
-    description: 'A super grocery receipt that saves the day by tracking all your essentials.',
-    tier: 'STANDARD',
-    categories: ['groceries', 'food', 'household'],
-    attributes: {
-      rarity: 'Uncommon',
-      nutrition: 65,
-      value: 60,
-      sustainability: 70
-    }
-  },
-  {
-    id: 'restaurant-receipt',
-    name: 'Dining Dazzler',
-    image: '/nft-images/restaurant-receipt.svg',
-    description: 'A culinary companion that preserves your gastronomic adventures in pixel perfection.',
-    tier: 'PREMIUM',
-    categories: ['restaurant', 'dining', 'food', 'entertainment'],
-    attributes: {
-      rarity: 'Rare',
-      taste: 88,
-      presentation: 90,
-      atmosphere: 85
-    }
-  },
-  {
-    id: 'tech-receipt',
-    name: 'Tech Titan Receipt',
-    image: '/nft-images/tech-receipt.svg',
-    description: 'The digital guardian of your tech purchases with circuit-board styling.',
-    tier: 'LUXURY',
-    categories: ['electronics', 'tech', 'gadgets', 'computers'],
-    attributes: {
-      rarity: 'Epic',
-      processing: 95,
-      innovation: 92,
-      durability: 85
-    }
-  },
-  {
-    id: 'travel-receipt',
-    name: 'Journey Journal',
-    image: '/nft-images/travel-receipt.svg',
-    description: 'Captures your travel expenses with adventurous pixel art styling.',
-    tier: 'STANDARD',
-    categories: ['travel', 'transportation', 'hotels', 'tourism'],
-    attributes: {
-      rarity: 'Uncommon',
-      adventure: 80,
-      discovery: 75,
-      memory: 85
-    }
-  },
-  {
-    id: 'beauty-receipt',
-    name: 'Beauty Buzz Receipt',
-    image: '/nft-images/beauty-receipt.svg',
-    description: 'Glamorous pixel art receipt for your beauty and personal care purchases.',
-    tier: 'STANDARD',
-    categories: ['beauty', 'cosmetics', 'personal care', 'salon'],
-    attributes: {
-      rarity: 'Uncommon',
-      glamour: 78,
-      style: 82,
-      transformation: 75
-    }
-  }
-];
-
-// Helper function to find relevant NFTs based on receipt data
-const findRelevantNFTs = (categories: string[] = [], tier: string = ''): NFTMetadata[] => {
-  // If no categories or tier provided, return all NFTs
-  if (categories.length === 0 && !tier) {
-    return NFT_COLLECTION;
-  }
-
-  // Filter NFTs based on categories and tier
-  return NFT_COLLECTION.filter(nft => {
-    // Match by tier if provided
-    const tierMatch = !tier || nft.tier === tier.toUpperCase();
-    
-    // If no categories provided, just use tier match
-    if (categories.length === 0) {
-      return tierMatch;
-    }
-    
-    // Check if any categories match
-    const categoryMatch = nft.categories.some(nftCategory => 
-      categories.some(category => 
-        nftCategory.toLowerCase().includes(category.toLowerCase()) || 
-        category.toLowerCase().includes(nftCategory.toLowerCase())
-      )
-    );
-    
-    return tierMatch && categoryMatch;
-  });
-};
-
-// Handler for fetching NFTs
-export const getNFTs = async (req: Request, res: Response) => {
-  try {
-    const { categories = [], tier = '', receiptData = null } = req.body;
-    
-    // Get relevant NFTs based on receipt data
-    const relevantNFTs = findRelevantNFTs(categories, tier);
-    
-    // If we don't have any relevant NFTs, just return all NFTs
-    const nftsToReturn = relevantNFTs.length > 0 ? relevantNFTs : NFT_COLLECTION;
-    
-    // Random wait for simulation purposes (100-500ms)
-    const waitTime = Math.floor(Math.random() * 400) + 100;
-    await new Promise(resolve => setTimeout(resolve, waitTime));
-    
-    res.json({ 
-      success: true, 
-      nfts: nftsToReturn,
-      count: nftsToReturn.length
-    });
-  } catch (error) {
-    console.error('Error in getNFTs:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch NFTs',
-      error: (error as Error).message 
-    });
-  }
-};
-
-// Handler for selecting an NFT for a receipt
-export const selectNFT = async (req: Request, res: Response) => {
-  try {
-    const { selectedNft, receiptData } = req.body;
-    
-    if (!selectedNft || !receiptData) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields: selectedNft or receiptData'
-      });
-    }
-    
-    // Here we would normally handle blockchain interaction to mint the NFT
-    // For now we'll just simulate the minting process with a delay
-    
-    // Random wait time between 1-2 seconds to simulate blockchain transaction
-    const waitTime = Math.floor(Math.random() * 1000) + 1000;
-    await new Promise(resolve => setTimeout(resolve, waitTime));
-    
-    // Simulated blockchain transaction hash
-    const txHash = `0x${Array.from({length: 64}, () => 
-      Math.floor(Math.random() * 16).toString(16)).join('')}`;
-    
-    res.json({
-      success: true,
-      message: 'NFT minted successfully',
-      txHash,
-      receiptId: receiptData.id || 'unknown',
-      nftId: selectedNft.id,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error in selectNFT:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to mint NFT',
-      error: (error as Error).message
-    });
-  }
-};
+export default router;
