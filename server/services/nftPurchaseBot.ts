@@ -4,13 +4,15 @@
  * Handles automated NFT purchases from marketplaces when users upload receipts,
  * as well as fallback minting from our own collection when marketplace purchases fail.
  * 
- * Updated to support external NFT procurement from emerging artists via marketplace APIs.
+ * Updated to support NFT selection from internal pool and external marketplaces.
  */
 
 import { ethers } from 'ethers';
 import fs from 'fs';
 import path from 'path';
 import { marketplaceService, MarketplaceNFT } from './marketplaceService';
+import { nftPoolRepository } from '../repositories/nftPoolRepository';
+import { NftPool } from '../../shared/schema';
 
 // Wallet tracker to prevent abuse (in-memory, replace with DB in production)
 interface ClaimRecord {
@@ -153,143 +155,187 @@ function recordNFTClaim(walletAddress: string): void {
 console.log('Initialized NFT claim records');
 
 /**
- * Find a relevant NFT based on category
+ * Find a relevant NFT from the pool based on category and tier
+ * @param category The category to match
+ * @param tier The tier of NFT to find (basic, premium, luxury)
+ * @returns Promise resolving to NftPool object or null if none found
  */
-function findRelevantNFT(category: string = ''): any {
-  const categoryMap: Record<string, string> = {
-    'electronics': 'nft-004',
-    'tech': 'nft-004',
-    'fashion': 'nft-003',
-    'clothing': 'nft-003',
-    'food': 'nft-005',
-    'restaurant': 'nft-005',
-    'crypto': 'nft-002',
-    'finance': 'nft-002'
-  };
-  
-  // Look for matches in our collection based on category
-  const lowerCategory = category.toLowerCase();
-  const nftId = Object.keys(categoryMap).find(key => lowerCategory.includes(key));
-  
-  if (nftId) {
-    return mockNFTCollection.find(nft => nft.id === categoryMap[nftId]) || mockNFTCollection[0];
+async function findRelevantNFT(category: string = '', tier: string = 'basic'): Promise<NftPool | null> {
+  try {
+    // Normalize category and tier
+    const lowerCategory = category.toLowerCase();
+    const normalizedTier = ['basic', 'premium', 'luxury'].includes(tier) ? tier : 'basic';
+    
+    // Get a set of random NFTs from the specified tier
+    const nftOptions = await nftPoolRepository.getRandomNftsByTier(normalizedTier, 5);
+    
+    if (!nftOptions || nftOptions.length === 0) {
+      console.warn(`No NFTs found in tier: ${normalizedTier}, using basic tier as fallback`);
+      
+      // Fall back to basic tier if the specified tier has no options
+      if (normalizedTier !== 'basic') {
+        return findRelevantNFT(category, 'basic');
+      }
+      
+      return null;
+    }
+    
+    // Try to find an NFT that matches the category
+    if (lowerCategory) {
+      // Find an NFT where one of its categories matches our category
+      const matchingNFT = nftOptions.find(nft => 
+        nft.categories.some(cat => lowerCategory.includes(cat.toLowerCase()))
+      );
+      
+      if (matchingNFT) {
+        console.log(`Found category matching NFT: ${matchingNFT.name} for category ${lowerCategory}`);
+        return matchingNFT;
+      }
+    }
+    
+    // If no category match, just return a random one from the available options
+    const randomIndex = Math.floor(Math.random() * nftOptions.length);
+    console.log(`Using random NFT: ${nftOptions[randomIndex].name} from tier ${normalizedTier}`);
+    return nftOptions[randomIndex];
+  } catch (error) {
+    console.error('Error finding relevant NFT:', error);
+    return null;
   }
-  
-  // Default to NFT-001 (Receipt Warrior)
-  return mockNFTCollection.find(nft => nft.id === 'nft-001') || mockNFTCollection[0];
 }
 
 /**
- * Purchase an NFT from a marketplace and transfer to user
- * Updated to purchase from external marketplaces
+ * Purchase an NFT from the pool based on user selection, or fallback to random selection
+ * @param walletAddress The wallet address to transfer the NFT to
+ * @param receiptId The ID of the uploaded receipt
+ * @param receiptData The parsed receipt data
+ * @param selectedNftId Optional ID of the user-selected NFT from the pool
  */
 export async function purchaseAndTransferNFT(
   walletAddress: string,
   receiptId: string,
-  receiptData: any
+  receiptData: any,
+  selectedNftId?: string
 ): Promise<NFTPurchaseResult> {
   try {
-    console.log(`Attempting to purchase NFT for wallet ${walletAddress} based on receipt ${receiptId}`);
+    console.log(`Attempting to acquire NFT for wallet ${walletAddress} based on receipt ${receiptId}`);
     
-    // Determine receipt category and budget based on total
+    // Determine receipt category and tier based on total
     const receiptTotal = receiptData.total || 0;
     const category = marketplaceService.categorizeReceipt(receiptData);
-    const { tier, budget } = marketplaceService.determineNFTBudget(receiptTotal);
+    const { tier } = marketplaceService.determineNFTBudget(receiptTotal);
     
-    console.log(`Determined category: ${category}, tier: ${tier}, budget: $${budget}`);
+    console.log(`Receipt info - Category: ${category}, Tier: ${tier}, Total: $${receiptTotal}`);
     
-    // Fetch NFTs from marketplace based on budget and category
-    const nftOptions = await marketplaceService.fetchMarketplaceNFTs({
-      maxPrice: budget,
-      category,
-      includeUnverified: true,
-      sort: 'recent',
-      filters: ['lowVolume', 'indieArtist'],
-      limit: 10
-    });
+    let selectedNFT = null;
     
-    // If no NFTs found, throw error to trigger fallback
-    if (!nftOptions.length) {
-      throw new Error("No affordable NFTs found under budget");
+    // If user selected a specific NFT from the pool, use that
+    if (selectedNftId) {
+      console.log(`User selected NFT with ID: ${selectedNftId}`);
+      selectedNFT = await nftPoolRepository.getNftById(selectedNftId);
+      
+      if (!selectedNFT) {
+        console.warn(`Selected NFT ${selectedNftId} not found, falling back to auto-selection`);
+      }
     }
     
-    // Select a random NFT from the options
-    const selectedNFT = nftOptions[Math.floor(Math.random() * nftOptions.length)];
-    console.log(`Selected NFT: ${selectedNFT.name} by ${selectedNFT.creatorName || 'unknown'}`);
-    
-    // Purchase the NFT and transfer to recipient
-    const purchaseResult = await marketplaceService.purchaseMarketplaceNFT(selectedNFT, walletAddress);
-    
-    if (!purchaseResult.success) {
-      throw new Error(purchaseResult.error || "Failed to purchase NFT");
+    // If no NFT was selected or the selected one wasn't found, find a relevant one
+    if (!selectedNFT) {
+      console.log(`Finding relevant NFT based on category ${category} and tier ${tier}`);
+      selectedNFT = await findRelevantNFT(category, tier);
+      
+      if (!selectedNFT) {
+        throw new Error("No suitable NFT found in our collection");
+      }
     }
+    
+    console.log(`Selected NFT: ${selectedNFT.name} (ID: ${selectedNFT.nftId})`);
+    
+    // Simulate blockchain transaction with a random hash
+    const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
+    
+    // Simulate minting delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Record the NFT claim
     recordNFTClaim(walletAddress);
     
+    // Disable the NFT in the pool so it won't be selected again
+    await nftPoolRepository.disableNft(selectedNFT.nftId);
+    
     // Return success response with NFT details
     return {
       success: true,
-      tokenId: purchaseResult.tokenId || selectedNFT.tokenId,
-      contractAddress: purchaseResult.contractAddress || selectedNFT.contractAddress,
-      name: purchaseResult.name || selectedNFT.name,
-      imageUrl: purchaseResult.imageUrl || selectedNFT.imageUrl,
-      marketplace: purchaseResult.marketplace || selectedNFT.marketplace,
-      price: purchaseResult.price || selectedNFT.price,
-      txHash: purchaseResult.txHash || `0x${Math.random().toString(16).substring(2, 42)}`,
-      creator: selectedNFT.creator,
-      creatorName: selectedNFT.creatorName,
-      tier
+      tokenId: `${Date.now()}-${selectedNFT.nftId}`, // Generate a unique token ID
+      contractAddress,
+      name: selectedNFT.name,
+      imageUrl: selectedNFT.image,
+      marketplace: 'BlockReceipt',
+      price: 0,
+      txHash,
+      creator: 'BlockReceipt',
+      creatorName: 'BlockReceipt Artist',
+      tier: selectedNFT.tier
     };
   } catch (error: any) {
-    console.error(`Error purchasing NFT for ${walletAddress}:`, error);
+    console.error(`Error acquiring NFT for ${walletAddress}:`, error);
     
     return {
       success: false,
-      error: error.message || 'Failed to purchase NFT'
+      error: error.message || 'Failed to acquire NFT'
     };
   }
 }
 
 /**
- * Mint a fallback NFT from our own collection
+ * Mint a fallback NFT from our pool
+ * Used when the primary selection flow fails
  */
 export async function mintFallbackNFT(
   walletAddress: string,
-  name: string,
-  description: string
+  receiptCategory: string = '',
+  customName: string = ''
 ): Promise<NFTPurchaseResult> {
   try {
-    console.log(`Minting fallback NFT for wallet ${walletAddress}`);
+    console.log(`Minting fallback NFT for wallet ${walletAddress} with category ${receiptCategory}`);
     
-    // Use basic tier for fallback NFTs
+    // Always use basic tier for fallback NFTs
     const tier = 'basic';
     
-    // Use a default NFT from our collection for fallback
-    const selectedNFT = mockNFTCollection[0];
+    // Get a fallback NFT from the pool
+    const fallbackNFT = await findRelevantNFT(receiptCategory, tier);
     
-    // Generate a random token ID for simulation
-    const tokenId = generateTokenId();
+    if (!fallbackNFT) {
+      throw new Error("No fallback NFTs available in the pool");
+    }
+    
+    // Generate a unique token ID
+    const tokenId = `${Date.now()}-${fallbackNFT.nftId}`;
     
     // Simulate blockchain delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Record the NFT claim
     recordNFTClaim(walletAddress);
+    
+    // Disable the NFT in the pool
+    await nftPoolRepository.disableNft(fallbackNFT.nftId);
+    
+    // Generate tx hash for the minting operation
+    const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
     
     // Return success response with NFT details
     return {
       success: true,
       tokenId,
       contractAddress,
-      name: `${name || selectedNFT.name} (Custom)`,
-      imageUrl: selectedNFT.image,
+      name: customName ? `${customName} (${fallbackNFT.name})` : fallbackNFT.name,
+      imageUrl: fallbackNFT.image,
       marketplace: 'BlockReceipt',
       price: 0,
-      txHash: `0x${Math.random().toString(16).substring(2, 42)}`,
+      txHash,
       creator: 'BlockReceipt',
       creatorName: 'BlockReceipt Artist',
-      tier
+      tier: fallbackNFT.tier
     };
   } catch (error: any) {
     console.error(`Error minting fallback NFT for ${walletAddress}:`, error);
@@ -313,5 +359,6 @@ export const nftPurchaseBot = {
   isUserEligible,
   purchaseAndTransferNFT,
   mintFallbackNFT,
-  getNFTClaimStatus
+  getNFTClaimStatus,
+  findRelevantNFT
 };
