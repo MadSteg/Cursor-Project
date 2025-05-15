@@ -65,7 +65,8 @@ function Router() {
         
         {/* Core Receipt Features */}
         <Route path="/scan-receipt" component={ScanReceipt} />
-        <Route path="/upload-receipt" component={UploadReceiptPage} />
+        <Route path="/mint-blockreceipt" component={UploadReceiptPage} />
+        <Route path="/upload-receipt" component={UploadReceiptPage} /> {/* Keep for backward compatibility */}
         <Route path="/receipt-gallery" component={ReceiptGalleryPage} />
         <Route path="/receipt-gallery/:address" component={ReceiptGalleryPage} />
         <Route path="/verify-receipt" component={VerifyReceipt} />

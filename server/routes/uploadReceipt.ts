@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 // Create multer upload handler - moved out of route for stability
 const uploadMiddleware = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: (_req, file, cb) => {
     // Accept only images and PDFs
     const allowedTypes = /jpeg|jpg|png|gif|pdf/;

@@ -62,9 +62,9 @@ const Header: React.FC = () => {
             {/* Removed Hot Wallet link from here - moved to right side */}
             
             {/* Mint BlockReceipt - Primary Feature */}
-            <Link href="/upload-receipt">
-              <span className={`text-sm font-medium ${currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <FileImage className="h-4 w-4 mr-1.5" /> Mint BlockReceipt
+            <Link href="/mint-blockreceipt">
+              <span className={`text-sm font-medium ${currentLocation === "/mint-blockreceipt" || currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <FileImage className="h-4 w-4 mr-1.5" /> Mint a BlockReceipt
               </span>
             </Link>
             

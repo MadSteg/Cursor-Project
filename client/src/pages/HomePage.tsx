@@ -79,9 +79,9 @@ const HomePage = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center"
               variants={itemVariants}
             >
-              <Link href="/mint">
+              <Link href="/mint-blockreceipt">
                 <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                  <Receipt className="mr-2 h-5 w-5" /> Mint BlockReceipt
+                  <Receipt className="mr-2 h-5 w-5" /> Mint a BlockReceipt
                 </Button>
               </Link>
               <Link href="/about">
@@ -301,7 +301,7 @@ const HomePage = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            <Link href="/mint">
+            <Link href="/mint-blockreceipt">
               <Button size="lg" className="bg-white text-indigo-700 hover:bg-indigo-50">
                 Mint Your First BlockReceipt <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
