@@ -28,12 +28,12 @@ import ocrTestRoutes from "./routes/ocr-test";
 import uploadReceiptRoutes from "./routes/uploadReceipt";
 // Import the NFT options routes
 import nftOptionsRoutes from "./routes/nftOptions";
+// Import the gallery routes for NFT display
+import galleryRoutes from "./routes/gallery";
 // Import the NFT catalog routes
 import { getNFTs, selectNFT } from "./routes/nfts";
 // Import the NFT Purchase Bot routes
 import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
-// Import the NFT Gallery routes
-import galleryRoutes from "./routes/gallery";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -94,6 +94,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register NFT options routes
   app.use('/api', nftOptionsRoutes);
+  
+  // Register NFT gallery routes
+  app.use('/api/gallery', galleryRoutes);
   
   // Register NFT catalog routes
   app.post('/api/nfts', getNFTs);
