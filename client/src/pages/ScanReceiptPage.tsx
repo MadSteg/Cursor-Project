@@ -324,13 +324,63 @@ const ScanReceiptPage = () => {
     }
   };
   
+  // Check if wallet is connected
+  if (!walletAddress) {
+    return (
+      <div className="container mx-auto py-6 max-w-4xl">
+        <div className="space-y-2 mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">Scan Receipt</h1>
+          <p className="text-muted-foreground">
+            Connect your wallet to create blockchain-verified digital receipts
+          </p>
+        </div>
+        
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Wallet className="mr-2 h-5 w-5 text-primary" />
+              Wallet Connection Required
+            </CardTitle>
+            <CardDescription>
+              You must connect your blockchain wallet before uploading receipts. Your NFT receipt will be issued directly to your connected wallet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-10">
+            <div className="mb-6 text-center">
+              <div className="mx-auto bg-primary/10 rounded-full w-20 h-20 flex items-center justify-center mb-4">
+                <Wallet className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Connect Your Wallet</h3>
+              <p className="text-muted-foreground max-w-md mb-6">
+                BlockReceipt issues NFTs directly to your blockchain wallet address. Connect your wallet to start creating verifiable digital receipts.
+              </p>
+            </div>
+            
+            <WalletButton 
+              className="w-full max-w-xs" 
+              onWalletConnected={(address) => {
+                toast({
+                  title: "Wallet Connected",
+                  description: `Connected to ${address.substring(0, 6)}...${address.substring(address.length - 4)}`,
+                });
+              }}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
   return (
     <div className="container mx-auto py-6 max-w-4xl">
-      <div className="space-y-2 mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Scan Receipt</h1>
-        <p className="text-muted-foreground">
-          Upload or take a photo of your receipt to create a blockchain-verified digital copy
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Scan Receipt</h1>
+          <p className="text-muted-foreground">
+            Upload or take a photo of your receipt to create a blockchain-verified digital copy
+          </p>
+        </div>
+        <WalletButton />
       </div>
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full mb-6">
