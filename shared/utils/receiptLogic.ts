@@ -131,28 +131,28 @@ export function determineReceiptTier(total: number): TierInfo {
     return {
       id: 'LUXURY',
       title: RECEIPT_TIERS.LUXURY.title,
-      description: 'Exclusive NFT with premium features and highest encryption',
-      price: 5.00 // Price to mint this tier NFT
+      description: 'Exclusive BlockReceipt with premium features and highest encryption',
+      price: 5.00 // Price to mint this tier BlockReceipt
     };
   } else if (total >= RECEIPT_TIERS.PREMIUM.min) {
     return {
       id: 'PREMIUM',
       title: RECEIPT_TIERS.PREMIUM.title,
-      description: 'Enhanced NFT with premium features and advanced encryption',
+      description: 'Enhanced BlockReceipt with premium features and advanced encryption',
       price: 2.99
     };
   } else if (total >= RECEIPT_TIERS.STANDARD.min) {
     return {
       id: 'STANDARD',
       title: RECEIPT_TIERS.STANDARD.title,
-      description: 'Standard NFT with basic features and encryption',
+      description: 'Standard BlockReceipt with basic features and encryption',
       price: 0.99
     };
   } else {
     return {
       id: 'BASIC',
       title: RECEIPT_TIERS.BASIC.title,
-      description: 'Basic NFT with minimal features',
+      description: 'Basic BlockReceipt with minimal features',
       price: 0.00
     };
   }
@@ -177,9 +177,9 @@ export function prepareReceiptForStorage(receiptData: ReceiptData) {
     // They can be encrypted separately with more strict access controls
     tierInfo: determineReceiptTier(receiptData.total),
     createdAt: new Date().toISOString(),
-    // For NFT metadata
+    // For BlockReceipt metadata
     metadata: {
-      name: `${receiptData.merchantName} Receipt`,
+      name: `${receiptData.merchantName} BlockReceipt`,
       description: `Purchase from ${receiptData.merchantName} on ${receiptData.date}`,
       image: null // To be generated later
     }
