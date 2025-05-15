@@ -1,6 +1,5 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { AutoProcessUploader } from '@/components/receipts/AutoProcessUploader';
 
 /**
@@ -20,10 +19,12 @@ export default function AutoProcessReceiptPage() {
       </Helmet>
 
       <div className="container py-8 max-w-7xl">
-        <PageHeader 
-          title="Auto-Process Receipt" 
-          description="Upload and automatically process receipts without requiring a wallet connection. For testing purposes only."
-        />
+        <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Auto-Process Receipt</h1>
+        <p className="text-muted-foreground mt-2">
+          Upload and automatically process receipts without requiring a wallet connection. For testing purposes only.
+        </p>
+      </div>
 
         <div className="py-6">
           <AutoProcessUploader />

@@ -26,7 +26,7 @@ export function AutoProcessUploader() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [receiptData, setReceiptData] = useState<any>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [_, navigate] = useLocation();
 
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
