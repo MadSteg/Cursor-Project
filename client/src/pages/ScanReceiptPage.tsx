@@ -379,6 +379,10 @@ const ScanReceiptPage = () => {
           <p className="text-muted-foreground">
             Upload or take a photo of your receipt to create a blockchain-verified digital copy
           </p>
+          <div className="mt-2 flex items-center text-xs text-muted-foreground">
+            <Wallet className="h-3 w-3 mr-1" />
+            <span>Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
+          </div>
         </div>
         <WalletButton />
       </div>
