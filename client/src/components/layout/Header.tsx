@@ -20,10 +20,12 @@ import {
   FileImage,
   Upload
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header: React.FC = () => {
   const [, setLocation] = useLocation();
   const [currentLocation] = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <header className="bg-white shadow-sm">
@@ -65,12 +67,14 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Receipt Gallery */}
-            <Link href="/receipt-gallery">
-              <span className={`text-sm font-medium ${currentLocation === "/receipt-gallery" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Receipt className="h-4 w-4 mr-1.5" /> Receipt Gallery
-              </span>
-            </Link>
+            {/* BlockReceipts - Only visible when authenticated */}
+            {isAuthenticated && (
+              <Link href="/receipt-gallery">
+                <span className={`text-sm font-medium ${currentLocation === "/receipt-gallery" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                  <Receipt className="h-4 w-4 mr-1.5" /> BlockReceipts
+                </span>
+              </Link>
+            )}
             
           </div>
           
@@ -108,11 +112,14 @@ const Header: React.FC = () => {
                         <FileImage className="h-5 w-5" /> Mint BlockReceipt
                       </span>
                     </Link>
-                    <Link href="/receipt-gallery">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Receipt className="h-5 w-5" /> Receipt Gallery
-                      </span>
-                    </Link>
+                    {/* BlockReceipts - Only visible when authenticated */}
+                    {isAuthenticated && (
+                      <Link href="/receipt-gallery">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Receipt className="h-5 w-5" /> BlockReceipts
+                        </span>
+                      </Link>
+                    )}
                   </div>
                   
                   {/* Other */}
