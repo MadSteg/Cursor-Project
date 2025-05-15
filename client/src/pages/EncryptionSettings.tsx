@@ -24,8 +24,11 @@ import {
 
 export default function EncryptionSettings() {
   const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
-  const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState(1);
+  
+  // Use proper authentication and wallet connection hooks
+  const { isAuthenticated, isLoading } = useAuth();
+  const { active: isWalletConnected } = useWeb3();
   
   // Check if services are initialized
   useEffect(() => {
@@ -40,17 +43,9 @@ export default function EncryptionSettings() {
       }
     }
     
-    // Check if wallet is connected
-    async function checkWalletStatus() {
-      // This would be replaced with actual wallet connection check
-      const walletConnected = localStorage.getItem('walletConnected') === 'true';
-      setIsWalletConnected(walletConnected);
-    }
-    
     checkEncryptionStatus();
-    checkWalletStatus();
     
-    // Set up animation interval
+    // Set up animation interval for the steps visualization
     const interval = setInterval(() => {
       setActiveStep(prev => prev >= 4 ? 1 : prev + 1);
     }, 3000);
@@ -247,7 +242,7 @@ export default function EncryptionSettings() {
         </div>
         
         {/* Advanced Encryption Keys - Only visible when authenticated */}
-        {isWalletConnected && (
+        {isAuthenticated ? (
           <div className="grid grid-cols-1 gap-6">
             <Card>
               <CardHeader className="pb-3">
@@ -272,6 +267,36 @@ export default function EncryptionSettings() {
                     <SharedReceiptManager />
                   </TabsContent>
                 </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-blue-600" />
+                  <span>Advanced Settings Restricted</span>
+                </CardTitle>
+                <CardDescription>
+                  You need to sign in to access advanced encryption settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-4 text-center">
+                <div className="p-6 bg-slate-50 rounded-lg border mb-4">
+                  <Lock className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Authentication Required</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    You must be signed in to access advanced encryption settings and manage your shared receipts
+                  </p>
+                  <Button 
+                    variant="default" 
+                    className="bg-gradient-to-r from-purple-600 to-blue-500"
+                    onClick={() => window.location.href = '/sign-in'}
+                  >
+                    Sign In Now
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
