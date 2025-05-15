@@ -91,17 +91,31 @@ export default function NFTTaskStatus({ taskId, walletAddress, receiptId, onComp
   useEffect(() => {
     fetchTaskStatus();
     
-    // Poll every 5 seconds for updates if task is pending or processing
+    // Poll every 3 seconds for updates if task is pending or processing
     const interval = setInterval(() => {
       if (task && (task.status === 'pending' || task.status === 'processing')) {
         fetchTaskStatus();
       }
-    }, 5000);
+    }, 3000);
     
     return () => {
       clearInterval(interval);
     };
   }, [taskId, receiptId, task?.status]);
+  
+  // Update progress periodically for better UX
+  useEffect(() => {
+    if (task && task.status === 'processing') {
+      const progressInterval = setInterval(() => {
+        // Increment progress for visual feedback during processing
+        setProgress(prev => Math.min(prev + 5, 90));
+      }, 2000);
+      
+      return () => {
+        clearInterval(progressInterval);
+      };
+    }
+  }, [task?.status]);
   
   // Status badge component
   const StatusBadge = ({ status }: { status: string }) => {
@@ -149,17 +163,19 @@ export default function NFTTaskStatus({ taskId, walletAddress, receiptId, onComp
   // Show task status
   return (
     <Card className="mb-4 border shadow-sm">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl flex items-center">
-            <Gift className="mr-2 text-indigo-500" />
-            NFT Gift Status
-          </CardTitle>
+          <div>
+            <CardTitle className="text-xl flex items-center">
+              <Gift className="mr-2 text-indigo-500" />
+              NFT Gift Status
+            </CardTitle>
+            <CardDescription className="mt-1">
+              #{task.id.substring(0, 10)}... • {new Date(task.createdAt).toLocaleTimeString()}
+            </CardDescription>
+          </div>
           <StatusBadge status={task.status} />
         </div>
-        <CardDescription>
-          Task #{task.id} • {new Date(task.createdAt).toLocaleString()}
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-4">

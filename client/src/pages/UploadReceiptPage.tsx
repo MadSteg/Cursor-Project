@@ -510,7 +510,7 @@ export default function UploadReceiptPage() {
                     {receiptData.nftGift.status === 'processing' && receiptData.nftGift.taskId ? (
                       <NFTTaskStatus 
                         taskId={receiptData.nftGift.taskId}
-                        walletAddress={connected ? wallet?.address || '' : ''}
+                        walletAddress={address || ''}
                         onComplete={(result) => {
                           // Update the NFT gift status when the task completes
                           if (receiptData && receiptData.nftGift) {

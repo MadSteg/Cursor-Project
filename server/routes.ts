@@ -36,6 +36,8 @@ import { getNFTs, selectNFT } from "./routes/nfts";
 import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
 // Import the task queue routes
 import taskRoutes from "./routes/tasks";
+// Import test routes for the task queue
+import testQueueRoutes from "./routes/test-queue";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -112,6 +114,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Task Queue routes
   app.use('/api', taskRoutes);
+  
+  // Register Test Queue routes (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    app.use('/api/test', testQueueRoutes);
+    console.log('[express] Task queue test endpoints enabled in development mode');
+  }
   
 
   
