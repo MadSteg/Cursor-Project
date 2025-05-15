@@ -18,9 +18,41 @@ import {
 } from "@/components/ui/dialog";
 import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt, Database, CreditCard } from "lucide-react";
 import { format } from "date-fns";
-import { type FullReceipt } from "@shared/schema";
 import { getReceiptPaymentInfo } from "@/lib/payments";
 import TaskStatusMessage from "@/components/nft/TaskStatusMessage";
+
+// Define the Receipt type
+interface FullReceipt {
+  id: number;
+  merchantName: string;
+  date: Date;
+  total: string;
+  subtotal: string;
+  tax: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: string;
+  }>;
+  merchant: {
+    name: string;
+    address?: string;
+    phone?: string;
+  };
+  category: {
+    name: string;
+    color: string;
+  };
+  paymentComplete?: boolean;
+  blockchain?: {
+    tokenId?: string;
+    verified?: boolean;
+    network?: string;
+    transactionHash?: string;
+    blockNumber?: number;
+    receiptHash?: string;
+  };
+}
 
 const ReceiptDetail: React.FC = () => {
   const { id } = useParams();
@@ -204,7 +236,7 @@ const ReceiptDetail: React.FC = () => {
             </div>
             
             <div className="border-t border-dashed border-gray-300 pt-3 mb-3">
-              {receipt.items.map((item, index) => (
+              {receipt.items.map((item: {name: string; quantity: number; price: string}, index: number) => (
                 <div key={index} className="flex justify-between text-xs mb-2">
                   <span>{item.name} {item.quantity > 1 ? `(${item.quantity})` : ''}</span>
                   <span>${parseFloat(item.price).toFixed(2)}</span>
