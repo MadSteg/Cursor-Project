@@ -1,134 +1,154 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useWeb3Wallet } from '../../hooks/useWeb3Wallet';
-import { 
-  Wallet, 
-  LogOut, 
-  ExternalLink,
-  Copy,
-  Check
-} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
+import { Wallet, AlertTriangle, ChevronDown, Check } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useState } from 'react';
+import { Spinner } from '@/components/ui/spinner';
+import { Badge } from '@/components/ui/badge';
 
 interface ConnectWalletButtonProps {
-  size?: 'sm' | 'default' | 'lg';
+  variant?: 'default' | 'outline' | 'destructive' | 'secondary' | 'link' | 'ghost';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  showBalance?: boolean;
+  showNetwork?: boolean;
   className?: string;
 }
 
-const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ 
+/**
+ * A button component that allows users to connect their MetaMask wallet
+ * and switch to the Polygon Amoy network if needed.
+ */
+export default function ConnectWalletButton({
+  variant = 'default',
   size = 'default',
-  className = ''
-}) => {
-  const { address, isConnected, connect, disconnect, shortDisplayAddress, isMockWallet } = useWeb3Wallet();
+  showBalance = false,
+  showNetwork = false,
+  className = '',
+}: ConnectWalletButtonProps) {
+  const { walletInfo, loading, connectWallet, disconnectWallet, switchToPolygonAmoy } = useWeb3Wallet();
   const { toast } = useToast();
-  const [copied, setCopied] = useState(false);
 
-  const handleConnect = async () => {
+  // Convert address to short display format (0x1234...5678)
+  const shortAddress = walletInfo.address 
+    ? `${walletInfo.address.substring(0, 6)}...${walletInfo.address.substring(38)}`
+    : '';
+
+  const handleNetworkSwitch = async () => {
     try {
-      await connect();
-      if (process.env.NODE_ENV === 'development') {
-        toast({
-          title: 'Development Mode',
-          description: 'Connected with test wallet in development mode',
-        });
-      }
+      await switchToPolygonAmoy();
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      console.error('Failed to switch network:', error);
       toast({
-        title: 'Connection Failed',
-        description: 'Could not connect to your wallet. Please try again.',
-        variant: 'destructive',
+        title: 'Network Switch Failed',
+        description: 'Could not switch to Polygon Amoy network',
+        variant: 'destructive'
       });
     }
   };
 
-  const copyAddress = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
-      setCopied(true);
-      toast({
-        title: 'Address Copied',
-        description: 'Wallet address copied to clipboard',
-      });
-      
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    }
-  };
-
-  const viewOnExplorer = () => {
-    if (address) {
-      // Polygon Amoy explorer
-      window.open(`https://amoy.polygonscan.com/address/${address}`, '_blank');
-    }
-  };
-
-  if (isConnected && address) {
+  // Not connected - show connect button
+  if (!walletInfo.connected) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size={size} 
-            className={`flex items-center gap-2 px-3 ${className} ${isMockWallet ? 'border-amber-400 dark:border-amber-500' : ''}`}
-          >
-            <Wallet className={`h-4 w-4 ${isMockWallet ? 'text-amber-500' : ''}`} />
-            <span className="font-medium">{shortDisplayAddress}</span>
-            {isMockWallet && <span className="text-xs bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-800 dark:text-amber-200">TEST</span>}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>
-            {isMockWallet ? 'Test Wallet Connected' : 'Wallet Connected'}
-            {isMockWallet && (
-              <span className="block text-xs text-amber-600 dark:text-amber-400 mt-1">
-                (Development Mode)
-              </span>
-            )}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={copyAddress}>
-            {copied ? (
-              <Check className="mr-2 h-4 w-4 text-green-500" />
-            ) : (
-              <Copy className="mr-2 h-4 w-4" />
-            )}
-            Copy Address
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={viewOnExplorer}>
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View on Explorer
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={disconnect}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Disconnect
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button
+        variant={variant}
+        size={size}
+        onClick={connectWallet}
+        disabled={loading}
+        className={className}
+      >
+        {loading ? (
+          <>
+            <Spinner className="mr-2 h-4 w-4" />
+            Connecting...
+          </>
+        ) : (
+          <>
+            <Wallet className="mr-2 h-4 w-4" />
+            Connect Wallet
+          </>
+        )}
+      </Button>
     );
   }
 
-  return (
-    <Button 
-      onClick={handleConnect} 
-      size={size} 
-      className={`flex items-center gap-2 ${className}`}
-    >
-      <Wallet className="h-4 w-4" />
-      Connect Wallet
-    </Button>
-  );
-};
+  // Connected but wrong network - show switch button
+  if (!walletInfo.isCorrectNetwork) {
+    return (
+      <Button
+        variant="destructive"
+        size={size}
+        onClick={handleNetworkSwitch}
+        className={className}
+      >
+        <AlertTriangle className="mr-2 h-4 w-4" />
+        Switch to Polygon Amoy
+      </Button>
+    );
+  }
 
-export default ConnectWalletButton;
+  // Connected and correct network - show address with dropdown
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant={variant}
+          size={size}
+          className={`flex items-center ${className}`}
+        >
+          <Wallet className="mr-2 h-4 w-4" />
+          <span>{shortAddress}</span>
+          
+          {showBalance && walletInfo.balance && (
+            <Badge variant="outline" className="ml-2">
+              {walletInfo.balance} MATIC
+            </Badge>
+          )}
+          
+          {showNetwork && (
+            <Badge variant="secondary" className="ml-2">
+              <Check className="h-3 w-3 mr-1" />
+              Polygon Amoy
+            </Badge>
+          )}
+          
+          <ChevronDown className="ml-2 h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => {
+            navigator.clipboard.writeText(walletInfo.address);
+            toast({
+              title: 'Address Copied',
+              description: 'Wallet address copied to clipboard',
+              variant: 'default'
+            });
+          }}
+        >
+          Copy Address
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem
+          onClick={() => {
+            window.open(`https://amoy.polygonscan.com/address/${walletInfo.address}`, '_blank');
+          }}
+        >
+          View on Explorer
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem
+          onClick={disconnectWallet}
+          className="text-destructive"
+        >
+          Disconnect
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

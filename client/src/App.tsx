@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Web3Provider } from "@/contexts/Web3Context";
 
 // Core pages
 import NotFound from "@/pages/not-found";
@@ -40,6 +41,7 @@ import EncryptedCheckout from "@/pages/EncryptedCheckout";
 // Settings & Admin
 import EncryptionSettings from "@/pages/EncryptionSettings";
 import SignInPage from "@/pages/SignInPage";
+import WalletPage from "@/pages/WalletPage";
 import Admin from "@/pages/Admin";
 import ThemePreview from "@/pages/ThemePreview";
 
@@ -94,7 +96,8 @@ function Router() {
         {/* Authentication & Settings */}
         <Route path="/sign-in" component={SignInPage} />
         <Route path="/encryption-settings" component={EncryptionSettings} />
-        <Route path="/wallet-settings" component={SignInPage} />
+        <Route path="/wallet" component={WalletPage} />
+        <Route path="/wallet-settings" component={WalletPage} />
         <Route path="/admin" component={Admin} />
         <Route path="/theme-preview" component={ThemePreview} />
         
@@ -112,10 +115,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <Web3Provider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </Web3Provider>
     </QueryClientProvider>
   );
 }
