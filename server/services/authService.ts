@@ -1,205 +1,255 @@
 /**
  * Authentication Service
  * 
- * Handles user authentication, registration, and wallet generation
+ * This service provides authentication and user management functions
+ * including email/password auth and wallet-based Web3 authentication
  */
-import bcrypt from 'bcrypt';
-import { ethers } from 'ethers';
-import { db } from '../db';
-import { users, userWallets } from '@shared/schema';
-import { tacoService } from './tacoService';
-import { eq } from 'drizzle-orm';
+import { db } from "../db";
+import { users, type User, type InsertUser } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { ethers } from "ethers";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { TacoService } from "./tacoService";
+import { WalletService } from "./walletService";
 
-/**
- * Register a new user with optional wallet generation
- */
-export async function registerUser({ 
-  email, 
-  password, 
-  wantsWallet, 
-  tacoPublicKey 
-}: {
-  email: string;
-  password: string;
-  wantsWallet: boolean;
-  tacoPublicKey?: string;
-}) {
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+export class AuthService {
+  private tacoService: TacoService;
+  private walletService: WalletService;
+  private nonceMap: Map<string, string> = new Map();
   
-  // Create the user
-  const [user] = await db.insert(users)
-    .values({ email, password: hashedPassword })
-    .returning();
-  
-  let walletAddress = null;
-  
-  // Generate wallet if requested
-  if (wantsWallet && tacoPublicKey) {
-    // Create a random wallet
-    const wallet = ethers.Wallet.createRandom();
-    
-    // Encrypt the private key with TACo
-    const encryptedPrivateKey = await tacoService.encryptPrivateKeyWithTACo(
-      tacoPublicKey, 
-      wallet.privateKey
-    );
-    
-    // Store wallet info
-    const [userWallet] = await db.insert(userWallets)
-      .values({
-        userId: user.id,
-        address: wallet.address,
-        encryptedPrivateKey
-      })
-      .returning();
-    
-    walletAddress = userWallet.address;
+  constructor(tacoService: TacoService, walletService: WalletService) {
+    this.tacoService = tacoService;
+    this.walletService = walletService;
   }
   
-  return { 
-    user, 
-    walletAddress,
-    privateKey: wantsWallet ? 'ENCRYPTED_WITH_TACO' : null 
-  };
-}
-
-/**
- * Login with email and password
- */
-export async function loginWithEmail(email: string, password: string) {
-  // Find the user
-  const [user] = await db.select()
-    .from(users)
-    .where(eq(users.email, email));
-  
-  if (!user) {
-    throw new Error('User not found');
+  /**
+   * Create a new user with email/password authentication
+   */
+  async createUser(userData: InsertUser, wantsWallet: boolean = false, tacoPublicKey?: string): Promise<User> {
+    try {
+      // Hash the password
+      const hashedPassword = await this.hashPassword(userData.password);
+      
+      // Create the user data
+      const userToInsert = {
+        ...userData,
+        password: hashedPassword,
+        walletAddress: null, // Will be updated if a wallet is created
+      };
+      
+      // Insert the user
+      const [user] = await db
+        .insert(users)
+        .values(userToInsert)
+        .returning();
+      
+      if (!user) {
+        throw new Error("Failed to create user");
+      }
+      
+      // Generate a wallet if needed
+      if (wantsWallet) {
+        const wallet = await this.walletService.generateWallet();
+        
+        // Update the user with the wallet address
+        const [updatedUser] = await db
+          .update(users)
+          .set({ walletAddress: wallet.address })
+          .where(eq(users.id, user.id))
+          .returning();
+        
+        if (!updatedUser) {
+          throw new Error("Failed to update user with wallet address");
+        }
+        
+        // Encrypt and store the wallet private key if a TACo public key is provided
+        if (tacoPublicKey) {
+          await this.tacoService.encryptPrivateKeyWithTACo(
+            user.id,
+            wallet.privateKey,
+            tacoPublicKey
+          );
+        }
+        
+        return updatedUser;
+      }
+      
+      return user;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw new Error("Failed to create user account");
+    }
   }
   
-  // Check password
-  const passwordValid = await bcrypt.compare(password, user.password);
-  
-  if (!passwordValid) {
-    throw new Error('Invalid password');
+  /**
+   * Verify user credentials
+   */
+  async verifyCredentials(email: string, password: string): Promise<User | null> {
+    try {
+      // Find the user by email
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email));
+      
+      if (!user) {
+        return null;
+      }
+      
+      // Compare passwords
+      const passwordMatch = await bcrypt.compare(password, user.password || "");
+      
+      if (!passwordMatch) {
+        return null;
+      }
+      
+      return user;
+    } catch (error) {
+      console.error("Error verifying credentials:", error);
+      throw new Error("Authentication error");
+    }
   }
   
-  // Get the wallet for the user
-  const walletAddress = await attachWalletToSession(user.id);
-  
-  return { 
-    user, 
-    walletAddress 
-  };
-}
-
-/**
- * Link a wallet to a user account
- */
-export async function linkWalletToUser(
-  userId: number, 
-  walletAddress: string, 
-  encryptedPrivateKey?: string
-) {
-  const [existingWallet] = await db.select()
-    .from(userWallets)
-    .where(eq(userWallets.userId, userId));
-  
-  if (existingWallet) {
-    throw new Error('User already has a wallet linked');
+  /**
+   * Generate a new nonce for Web3 authentication
+   */
+  async generateNonce(walletAddress: string): Promise<string> {
+    try {
+      // Generate a random nonce
+      const nonce = crypto.randomBytes(32).toString('hex');
+      
+      // Store the nonce in the map
+      this.nonceMap.set(walletAddress.toLowerCase(), nonce);
+      
+      return nonce;
+    } catch (error) {
+      console.error("Error generating nonce:", error);
+      throw new Error("Failed to generate nonce");
+    }
   }
   
-  const [userWallet] = await db.insert(userWallets)
-    .values({
-      userId,
-      address: walletAddress,
-      encryptedPrivateKey
-    })
-    .returning();
-  
-  return userWallet;
-}
-
-/**
- * Get the user's wallet address and attach to session
- */
-export async function attachWalletToSession(userId: number) {
-  const [wallet] = await db.select()
-    .from(userWallets)
-    .where(eq(userWallets.userId, userId));
-  
-  return wallet?.address || null;
-}
-
-/**
- * Verify Web3 wallet signature for login
- */
-export function verifySignature(walletAddress: string, signature: string, nonce: string) {
-  const msg = `Log into BlockReceipt: ${nonce}`;
-  const recovered = ethers.utils.verifyMessage(msg, signature);
-  
-  return recovered.toLowerCase() === walletAddress.toLowerCase();
-}
-
-/**
- * Login with Web3 wallet
- */
-export async function loginWithWeb3(walletAddress: string, signature: string, nonce: string) {
-  // Verify the signature
-  const isValid = verifySignature(walletAddress, signature, nonce);
-  
-  if (!isValid) {
-    throw new Error('Invalid signature');
+  /**
+   * Verify a Web3 signature
+   */
+  async verifySignature(walletAddress: string, signature: string, nonce: string): Promise<User | null> {
+    try {
+      const storedNonce = this.nonceMap.get(walletAddress.toLowerCase());
+      
+      if (!storedNonce || storedNonce !== nonce) {
+        return null;
+      }
+      
+      // Construct the message that was signed
+      const message = `Sign this message to verify your ownership of wallet address ${walletAddress}. Nonce: ${nonce}`;
+      
+      // Verify the signature
+      const signerAddress = ethers.utils.verifyMessage(message, signature);
+      
+      // Check if the signer matches the expected wallet address
+      if (signerAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+        return null;
+      }
+      
+      // Clear the nonce
+      this.nonceMap.delete(walletAddress.toLowerCase());
+      
+      // Find or create a user with this wallet address
+      let user = await this.findUserByWalletAddress(walletAddress);
+      
+      if (!user) {
+        // Create a new user with this wallet address
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            username: `wallet_${walletAddress.substring(0, 8)}`,
+            email: `${walletAddress.toLowerCase()}@blockreceipt.ai`,
+            password: null,
+            walletAddress: walletAddress,
+          })
+          .returning();
+        
+        if (!newUser) {
+          throw new Error("Failed to create user for wallet");
+        }
+        
+        user = newUser;
+      }
+      
+      // Update the wallet's last used timestamp
+      await this.walletService.updateLastUsed(walletAddress);
+      
+      return user;
+    } catch (error) {
+      console.error("Error verifying signature:", error);
+      throw new Error("Failed to verify signature");
+    }
   }
   
-  // Find or create user with this wallet
-  let user = await getUserByWalletAddress(walletAddress);
-  
-  if (!user) {
-    // Create a new user account linked to this wallet
-    const [newUser] = await db.insert(users)
-      .values({
-        email: `${walletAddress.substring(0, 8)}@wallet.blockreceipt.ai`, // Generate email
-        password: await bcrypt.hash(Math.random().toString(36), 10) // Random password
-      })
-      .returning();
-    
-    // Link wallet to user
-    await linkWalletToUser(newUser.id, walletAddress);
-    
-    user = newUser;
+  /**
+   * Link a wallet address to an existing user account
+   */
+  async linkWalletToUser(userId: number, walletAddress: string): Promise<User> {
+    try {
+      // Find the user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      
+      if (!user) {
+        throw new Error("User not found");
+      }
+      
+      // Update the user with the wallet address
+      const [updatedUser] = await db
+        .update(users)
+        .set({ walletAddress })
+        .where(eq(users.id, userId))
+        .returning();
+      
+      if (!updatedUser) {
+        throw new Error("Failed to update user with wallet address");
+      }
+      
+      return updatedUser;
+    } catch (error) {
+      console.error("Error linking wallet to user:", error);
+      throw new Error("Failed to link wallet to user");
+    }
   }
   
-  return {
-    user,
-    walletAddress
-  };
-}
-
-/**
- * Get user by wallet address
- */
-async function getUserByWalletAddress(walletAddress: string) {
-  const [wallet] = await db.select()
-    .from(userWallets)
-    .where(eq(userWallets.address, walletAddress));
-  
-  if (!wallet) {
-    return null;
+  /**
+   * Find a user by wallet address
+   */
+  private async findUserByWalletAddress(walletAddress: string): Promise<User | null> {
+    try {
+      // Normalize the address
+      const checksum = ethers.utils.getAddress(walletAddress);
+      
+      // Find the user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.walletAddress, checksum));
+      
+      return user || null;
+    } catch (error) {
+      console.error("Error finding user by wallet address:", error);
+      throw new Error("Failed to find user by wallet address");
+    }
   }
   
-  const [user] = await db.select()
-    .from(users)
-    .where(eq(users.id, wallet.userId));
-  
-  return user;
+  /**
+   * Hash a password
+   */
+  private async hashPassword(password: string): Promise<string> {
+    try {
+      const saltRounds = 10;
+      return await bcrypt.hash(password, saltRounds);
+    } catch (error) {
+      console.error("Error hashing password:", error);
+      throw new Error("Failed to hash password");
+    }
+  }
 }
-
-export const authService = {
-  registerUser,
-  loginWithEmail,
-  loginWithWeb3,
-  linkWalletToUser,
-  attachWalletToSession,
-  verifySignature,
-};

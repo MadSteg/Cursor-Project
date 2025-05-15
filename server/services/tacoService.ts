@@ -25,7 +25,7 @@ export interface TacoEncryptionResult {
   policyPublicKey: string;
 }
 
-class TacoService {
+export class TacoService {
   private provider: any;
   private initialized: boolean = false;
 
@@ -170,6 +170,34 @@ class TacoService {
     } catch (error) {
       console.error("Error encrypting with TACo:", error);
       throw new Error("Failed to encrypt with TACo");
+    }
+  }
+  
+  /**
+   * Encrypt a wallet's private key using TACo threshold encryption
+   * This allows for secure storage of user wallet private keys
+   * @param userId User ID who owns the wallet
+   * @param privateKey The wallet private key to encrypt
+   * @param publicKey The TACo public key for encryption
+   * @returns The encryption result with capsule and ciphertext
+   */
+  async encryptPrivateKeyWithTACo(
+    userId: number,
+    privateKey: string,
+    publicKey: string
+  ): Promise<TacoEncryptionResult> {
+    try {
+      // Encrypt the private key using TACo
+      const encryptionResult = await this.encryptWithTACo(publicKey, privateKey);
+      
+      // In production, this would create an encryption condition that only 
+      // allows the owner to decrypt, potentially with a time-based condition
+      console.log(`Encrypted wallet private key for user ${userId}`);
+      
+      return encryptionResult;
+    } catch (error) {
+      console.error("Error encrypting wallet private key with TACo:", error);
+      throw new Error("Failed to encrypt wallet private key");
     }
   }
   

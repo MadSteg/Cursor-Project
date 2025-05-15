@@ -1,164 +1,119 @@
 /**
  * Wallet Service
  * 
- * This service provides functionality for creating and managing blockchain wallets.
- * It supports hot wallet generation with TACo encryption for enhanced security.
+ * This service handles blockchain wallet operations for the application.
+ * It provides functionality to generate, store, and manage user wallets.
  */
-import { ethers } from 'ethers';
-import { tacoService, TacoEncryptionResult } from './tacoService';
-import { db } from '../db';
-import { users } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { db } from "../db";
+import { eq } from "drizzle-orm";
+import { ethers, Wallet } from "ethers";
+import { userWallets, type UserWallet } from "@shared/schema";
 
-class WalletService {
+export class WalletService {
   /**
-   * Generate a new Ethereum wallet (keypair)
+   * Generate a new Ethereum wallet
+   * @returns A new wallet with address and private key
    */
-  generateWallet(): { address: string; privateKey: string } {
-    // Create a new random wallet
-    const wallet = ethers.Wallet.createRandom();
-    
-    return {
-      address: wallet.address,
-      privateKey: wallet.privateKey
-    };
-  }
-  
-  /**
-   * Generate and encrypt a new wallet for a user
-   * @param userId The user ID
-   * @param tacoPublicKey The user's TACo public key for encryption
-   */
-  async generateEncryptedWallet(userId: number, tacoPublicKey: string): Promise<string> {
+  async generateWallet(): Promise<{ address: string; privateKey: string }> {
     try {
-      // First check if the user already has a wallet
-      const existingWallet = await tacoService.getUserWallet(userId);
-      if (existingWallet) {
-        return existingWallet.address;
-      }
+      // Generate a random wallet
+      const wallet = ethers.Wallet.createRandom();
       
-      // Generate a new wallet
-      const wallet = this.generateWallet();
-      
-      // Encrypt the private key using TACo
-      const encryptedWallet = await tacoService.encryptWithTACo(
-        tacoPublicKey,
-        wallet.privateKey
-      );
-      
-      // Store the encrypted wallet
-      await tacoService.storeEncryptedWallet(
-        userId,
-        wallet.address,
-        encryptedWallet
-      );
-      
-      // Return the wallet address (public part)
-      return wallet.address;
-    } catch (error) {
-      console.error("Error generating encrypted wallet:", error);
-      throw new Error("Failed to generate encrypted wallet");
-    }
-  }
-  
-  /**
-   * Generate an encrypted wallet during user registration
-   * @param userId The user ID
-   */
-  async generateWalletForNewUser(userId: number): Promise<{ address: string; tacoKey: string; }> {
-    try {
-      // First, generate a TACo key pair for the user
-      const key = await tacoService.generateKeyPair(userId, "Default Key");
-      
-      // Now generate an encrypted wallet using that key
-      const address = await this.generateEncryptedWallet(userId, key.publicKey);
+      // Format the address to checksum format
+      const address = ethers.utils.getAddress(wallet.address);
       
       return {
         address,
-        tacoKey: key.publicKey
+        privateKey: wallet.privateKey,
       };
     } catch (error) {
-      console.error("Error creating wallet for new user:", error);
-      throw new Error("Failed to create wallet for new user");
+      console.error("Error generating wallet:", error);
+      throw new Error("Failed to generate wallet");
     }
   }
   
   /**
-   * Recover a wallet's private key using the user's authentication
-   * @param userId The user ID
-   * @param recipientPrivateKey The recipient's TACo private key
+   * Get a user's wallet by user ID
+   * @param userId The user ID to look up
+   * @returns The user's wallet or null if not found
    */
-  async recoverWalletPrivateKey(userId: number, recipientPrivateKey: string): Promise<string> {
+  async getUserWallet(userId: number): Promise<UserWallet | null> {
     try {
-      // Get the user's encrypted wallet
-      const wallet = await tacoService.getUserWallet(userId);
-      if (!wallet) {
-        throw new Error("User has no encrypted wallet");
-      }
+      const [wallet] = await db
+        .select()
+        .from(userWallets)
+        .where(eq(userWallets.userId, userId));
       
-      // Decrypt the wallet private key
-      const privateKey = await tacoService.decryptWalletPrivateKey(
-        wallet,
-        recipientPrivateKey
-      );
-      
-      // Update the last usage timestamp
-      await tacoService.updateWalletUsage(wallet.id);
-      
-      return privateKey;
+      return wallet || null;
     } catch (error) {
-      console.error("Error recovering wallet private key:", error);
-      throw new Error("Failed to recover wallet private key");
+      console.error("Error getting user wallet:", error);
+      throw new Error("Failed to get user wallet");
     }
   }
   
   /**
-   * Get a user ID from a wallet address
-   * @param address The wallet address
+   * Get a wallet by its address
+   * @param address The wallet address to look up
+   * @returns The wallet or null if not found
    */
-  async getUserIdFromWalletAddress(address: string): Promise<number | null> {
+  async getWalletByAddress(address: string): Promise<UserWallet | null> {
     try {
-      const wallet = await tacoService.getWalletByAddress(address);
-      return wallet ? wallet.userId : null;
+      // Normalize the address
+      const checksum = ethers.utils.getAddress(address);
+      
+      const [wallet] = await db
+        .select()
+        .from(userWallets)
+        .where(eq(userWallets.address, checksum));
+      
+      return wallet || null;
     } catch (error) {
-      console.error("Error getting user ID from wallet address:", error);
-      return null;
+      console.error("Error getting wallet by address:", error);
+      throw new Error("Failed to get wallet by address");
     }
   }
   
   /**
-   * Check if a wallet exists and return user info if it does
+   * Get a wallet's balance
    * @param address The wallet address to check
+   * @param rpcUrl Optional RPC URL to use
+   * @returns The balance in wei as a string
    */
-  async getWalletUserInfo(address: string): Promise<{ userId: number; username: string } | null> {
+  async getWalletBalance(address: string, rpcUrl?: string): Promise<string> {
     try {
-      // Get the wallet by address
-      const wallet = await tacoService.getWalletByAddress(address);
-      if (!wallet) {
-        return null;
-      }
+      // Use default RPC URL if not provided
+      const provider = rpcUrl 
+        ? new ethers.providers.JsonRpcProvider(rpcUrl)
+        : ethers.getDefaultProvider();
       
-      // Get the user info
-      const [user] = await db.select({
-        id: users.id,
-        username: users.username
-      })
-      .from(users)
-      .where(eq(users.id, wallet.userId));
+      // Get the balance
+      const balance = await provider.getBalance(address);
       
-      if (!user) {
-        return null;
-      }
-      
-      return {
-        userId: user.id,
-        username: user.username
-      };
+      // Return the balance as a string
+      return balance.toString();
     } catch (error) {
-      console.error("Error getting wallet user info:", error);
-      return null;
+      console.error("Error getting wallet balance:", error);
+      throw new Error("Failed to get wallet balance");
+    }
+  }
+  
+  /**
+   * Update the last used timestamp for a wallet
+   * @param address The wallet address to update
+   */
+  async updateLastUsed(address: string): Promise<void> {
+    try {
+      // Normalize the address
+      const checksum = ethers.utils.getAddress(address);
+      
+      // Update the timestamp
+      await db
+        .update(userWallets)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(userWallets.address, checksum));
+    } catch (error) {
+      console.error("Error updating wallet last used timestamp:", error);
+      throw new Error("Failed to update wallet timestamp");
     }
   }
 }
-
-export const walletService = new WalletService();

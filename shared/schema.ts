@@ -68,6 +68,7 @@ export const insertReceiptSchema = createInsertSchema(userReceipts).omit({
 // Types for the insert schemas
 export type InsertOcrCache = z.infer<typeof insertOcrCacheSchema>;
 export type InsertReceipt = z.infer<typeof insertReceiptSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
 // Users Table
 export const users = pgTable('users', {
@@ -76,6 +77,9 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   password: text('password').notNull(),
   fullName: text('full_name'),
+  walletAddress: text('wallet_address').unique(), // For web3 wallet login
+  nonce: text('nonce'), // For web3 signature verification
+  lastLogin: timestamp('last_login'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -172,6 +176,13 @@ export const itemCollections = pgTable('item_collections', {
 });
 
 // Create the insert schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLogin: true,
+});
+
 export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
   id: true,
   userId: true,

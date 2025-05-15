@@ -1,25 +1,23 @@
 /**
  * Authentication Routes
+ * 
+ * Routes for user authentication, including:
+ * - Email/password login
+ * - User registration
+ * - Web3 wallet authentication
+ * - Session management
  */
-import { Router } from 'express';
-import { z } from 'zod';
-import { authService } from '../services/authService';
+import { Router, Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import { insertUserSchema } from "@shared/schema";
+import { AuthService } from "../services/authService";
+import { TacoService } from "../services/tacoService";
+import { WalletService } from "../services/walletService";
 
-const router = Router();
-
-// User signup schema
-const signupSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  fullName: z.string().optional(),
-  wantsWallet: z.boolean().default(false),
+// Extend insertUserSchema for signup with wallet creation
+const signupSchema = insertUserSchema.extend({
+  wantsWallet: z.boolean().optional().default(false),
   tacoPublicKey: z.string().optional(),
-});
-
-// Login schema
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
 });
 
 // Web3 login schema
@@ -29,192 +27,226 @@ const web3LoginSchema = z.object({
   nonce: z.string(),
 });
 
-// Signup route
-router.post('/signup', async (req, res) => {
-  try {
-    const { email, password, fullName, wantsWallet, tacoPublicKey } = signupSchema.parse(req.body);
-    
-    const result = await authService.registerUser({
-      email,
-      password,
-      wantsWallet,
-      tacoPublicKey,
+// Create express router
+export const authRouter = Router();
+export default authRouter;
+
+// Initialize services
+const tacoService = new TacoService();
+const walletService = new WalletService();
+const authService = new AuthService(tacoService, walletService);
+
+// Check authentication status
+authRouter.get("/status", (req: Request, res: Response) => {
+  if (req.session.userId) {
+    return res.json({
+      authenticated: true,
+      userId: req.session.userId,
+      walletAddress: req.session.walletAddress,
     });
+  }
+  
+  return res.json({
+    authenticated: false,
+  });
+});
+
+// User signup
+authRouter.post("/signup", async (req: Request, res: Response) => {
+  try {
+    // Validate request body
+    const validationResult = signupSchema.safeParse(req.body);
     
-    // Set user in session
-    if (req.session) {
-      req.session.userId = result.user.id;
-      req.session.walletAddress = result.walletAddress;
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid request data",
+        details: validationResult.error.format(),
+      });
     }
     
-    // Return success without sensitive info
-    res.status(201).json({
+    const userData = validationResult.data;
+    
+    // Create the user
+    const user = await authService.createUser(
+      userData,
+      userData.wantsWallet,
+      userData.tacoPublicKey
+    );
+    
+    // Set session data
+    req.session.userId = user.id;
+    req.session.walletAddress = user.walletAddress;
+    
+    // Get wallet if one was created
+    let wallet = null;
+    if (userData.wantsWallet) {
+      wallet = await walletService.getUserWallet(user.id);
+    }
+    
+    // Return success with user data (excluding password)
+    return res.json({
       success: true,
       user: {
-        id: result.user.id,
-        email: result.user.email,
-        fullName: result.user.fullName,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        walletAddress: user.walletAddress,
       },
-      wallet: result.walletAddress ? {
-        address: result.walletAddress,
+      wallet: wallet ? {
+        address: wallet.address,
       } : null,
     });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: error.errors,
-      });
-    } else {
-      console.error('Signup error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to create account',
-      });
-    }
+  } catch (error: any) {
+    console.error("Signup error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed to create user account",
+    });
   }
 });
 
-// Login route
-router.post('/login', async (req, res) => {
+// User login
+authRouter.post("/login", async (req: Request, res: Response) => {
   try {
-    const { email, password } = loginSchema.parse(req.body);
+    // Validate request body
+    const { email, password } = req.body;
     
-    const result = await authService.loginWithEmail(email, password);
-    
-    // Set user in session
-    if (req.session) {
-      req.session.userId = result.user.id;
-      req.session.walletAddress = result.walletAddress;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Email and password are required",
+      });
     }
     
-    // Return success without sensitive info
-    res.json({
+    // Verify credentials
+    const user = await authService.verifyCredentials(email, password);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid email or password",
+      });
+    }
+    
+    // Set session data
+    req.session.userId = user.id;
+    req.session.walletAddress = user.walletAddress;
+    
+    // Return success with user data (excluding password)
+    return res.json({
       success: true,
       user: {
-        id: result.user.id,
-        email: result.user.email,
-        fullName: result.user.fullName,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        walletAddress: user.walletAddress,
       },
-      wallet: result.walletAddress ? {
-        address: result.walletAddress,
-      } : null,
     });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
+  } catch (error: any) {
+    console.error("Login error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Login failed",
+    });
+  }
+});
+
+// Get nonce for Web3 authentication
+authRouter.get("/nonce/:walletAddress", async (req: Request, res: Response) => {
+  try {
+    const { walletAddress } = req.params;
+    
+    if (!walletAddress) {
+      return res.status(400).json({
         success: false,
-        error: 'Validation error',
-        details: error.errors,
-      });
-    } else {
-      console.error('Login error:', error);
-      res.status(401).json({
-        success: false,
-        error: 'Authentication failed',
+        error: "Wallet address is required",
       });
     }
+    
+    // Generate nonce
+    const nonce = await authService.generateNonce(walletAddress);
+    
+    // Create message to sign
+    const message = `Sign this message to verify your ownership of wallet address ${walletAddress}. Nonce: ${nonce}`;
+    
+    return res.json({
+      success: true,
+      nonce,
+      message,
+    });
+  } catch (error: any) {
+    console.error("Nonce generation error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed to generate nonce",
+    });
   }
 });
 
 // Web3 wallet login
-router.post('/web3-login', async (req, res) => {
+authRouter.post("/web3-login", async (req: Request, res: Response) => {
   try {
-    const { walletAddress, signature, nonce } = web3LoginSchema.parse(req.body);
+    // Validate request body
+    const validationResult = web3LoginSchema.safeParse(req.body);
     
-    const result = await authService.loginWithWeb3(walletAddress, signature, nonce);
-    
-    // Set user in session
-    if (req.session) {
-      req.session.userId = result.user.id;
-      req.session.walletAddress = result.walletAddress;
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid request data",
+        details: validationResult.error.format(),
+      });
     }
     
-    // Return success without sensitive info
-    res.json({
+    const { walletAddress, signature, nonce } = validationResult.data;
+    
+    // Verify signature
+    const user = await authService.verifySignature(walletAddress, signature, nonce);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: "Signature verification failed",
+      });
+    }
+    
+    // Set session data
+    req.session.userId = user.id;
+    req.session.walletAddress = user.walletAddress;
+    
+    // Return success with user data
+    return res.json({
       success: true,
       user: {
-        id: result.user.id,
-        email: result.user.email,
-        fullName: result.user.fullName,
-      },
-      wallet: {
-        address: result.walletAddress,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        walletAddress: user.walletAddress,
       },
     });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: error.errors,
-      });
-    } else {
-      console.error('Web3 login error:', error);
-      res.status(401).json({
-        success: false,
-        error: 'Authentication failed',
-      });
-    }
+  } catch (error: any) {
+    console.error("Web3 login error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Web3 authentication failed",
+    });
   }
 });
 
-// Get authentication nonce for Web3 wallet signing
-router.get('/nonce/:address', (req, res) => {
-  // In a production environment, this would generate a unique nonce and store it
-  // For simplicity, we're using a fixed message with a timestamp
-  const timestamp = new Date().getTime();
-  const nonce = `${timestamp}`;
-  
-  res.json({
-    success: true,
-    nonce,
-    message: `Log into BlockReceipt: ${nonce}`,
+// Logout
+authRouter.post("/logout", (req: Request, res: Response) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to log out",
+      });
+    }
+    
+    return res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
   });
 });
-
-// Logout route
-router.post('/logout', (req, res) => {
-  if (req.session) {
-    req.session.destroy(err => {
-      if (err) {
-        console.error('Logout error:', err);
-        res.status(500).json({
-          success: false,
-          error: 'Failed to logout',
-        });
-      } else {
-        res.json({
-          success: true,
-          message: 'Logged out successfully',
-        });
-      }
-    });
-  } else {
-    res.json({
-      success: true,
-      message: 'Already logged out',
-    });
-  }
-});
-
-// Get current user info
-router.get('/me', (req, res) => {
-  if (req.session?.userId) {
-    res.json({
-      success: true,
-      user: {
-        id: req.session.userId,
-        walletAddress: req.session.walletAddress || null,
-      },
-    });
-  } else {
-    res.status(401).json({
-      success: false,
-      error: 'Not authenticated',
-    });
-  }
-});
-
-export default router;
