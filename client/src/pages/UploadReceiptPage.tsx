@@ -590,7 +590,7 @@ export default function UploadReceiptPage() {
         
         <TabsContent value="review" className="mt-6">
           {receiptData && !showNftPicker && !isUploading && (
-            <>
+            <div>
               {nftMintingStatus !== 'idle' && <UploadSuccessMessage />}
             
               <Card>
@@ -652,40 +652,66 @@ export default function UploadReceiptPage() {
                   </div>
                 </div>
                 
-                {/* NFT Gift Status Display */}
-                {receiptData.nftGift && (
-                  <div className="mb-4">
-                    {receiptData.nftGift.status === 'processing' && receiptData.nftGift.taskId ? (
+                {/* NFT Status Display Section */}
+                <div className="mb-4">
+                  {taskId && nftMintingStatus === 'processing' && (
+                    <div className="mt-6 mb-4">
+                      <h3 className="text-lg font-semibold mb-2">BlockReceipt NFT Status</h3>
                       <NFTTaskStatus 
-                        taskId={receiptData.nftGift.taskId}
+                        taskId={taskId}
                         walletAddress={address || ''}
+                        receiptId={receiptData.fileId}
                         onComplete={(result) => {
-                          // Update the NFT gift status when the task completes
-                          if (receiptData && receiptData.nftGift) {
-                            setReceiptData({
-                              ...receiptData,
-                              nftGift: {
-                                ...receiptData.nftGift,
-                                status: 'completed',
-                                nft: {
-                                  tokenId: result.tokenId || 'unknown',
-                                  contract: result.contractAddress || '',
-                                  name: result.name || 'BlockReceipt Gift NFT',
-                                  image: result.imageUrl || '/nft-images/receipt-default.svg',
-                                  marketplace: result.marketplace || 'OpenSea',
-                                  price: result.price || 0.00
-                                },
-                                txHash: result.txHash
-                              }
+                          // Update the NFT status when the task completes
+                          setNftMintingStatus('completed');
+                          if (result && result.tokenId) {
+                            setNftTokenId(result.tokenId);
+                            
+                            // Show success message
+                            toast({
+                              title: '✅ Your NFT has been minted!',
+                              description: `Token ID: ${result.tokenId}`,
+                              variant: 'default',
+                              duration: 5000,
                             });
+                            
+                            // If we have encrypted metadata, show it
+                            fetchEncryptedMetadata(result.tokenId);
                           }
+                            
+                          // Refresh NFT gallery
+                          fetchNFTGallery(address || '');
                         }}
                       />
-                    ) : (
-                      <NFTGiftStatus nftGift={receiptData.nftGift} />
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                  
+                  {/* Show original nftGift status when no taskId */}
+                  {!taskId && receiptData.nftGift && (
+                    <NFTGiftStatus nftGift={receiptData.nftGift} />
+                  )}
+                  
+                  {/* Show metadata when available */}
+                  {nftTokenId && encryptedMetadata && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                      <h3 className="text-sm font-medium mb-2 text-blue-800">Encrypted Receipt Metadata</h3>
+                      <div className="text-xs text-blue-700">
+                        <p>TokenID: {nftTokenId}</p>
+                        <p className="mt-1">Your receipt data is securely encrypted with Threshold encryption.</p>
+                        <div className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-xs text-blue-700 border-blue-300 hover:bg-blue-100"
+                          >
+                            <Lock className="h-3 w-3 mr-1" />
+                            View Encrypted Metadata
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Encryption Notice */}
                 <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 mb-4">
