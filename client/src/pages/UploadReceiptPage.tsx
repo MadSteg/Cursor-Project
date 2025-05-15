@@ -98,6 +98,9 @@ export default function UploadReceiptPage() {
   const [error, setError] = useState<string | null>(null);
   const [showNftPicker, setShowNftPicker] = useState(false);
   const [selectedNft, setSelectedNft] = useState<any>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [nftTokenId, setNftTokenId] = useState<string | null>(null);
+  const [nftMintingStatus, setNftMintingStatus] = useState<string>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -176,12 +179,28 @@ export default function UploadReceiptPage() {
       setUploadProgress(100);
       setReceiptData(responseData.data);
       setActiveTab('review');
+      
+      // Store taskId if provided in the response
+      if (responseData.data.nftGift && responseData.data.nftGift.taskId) {
+        setTaskId(responseData.data.nftGift.taskId);
+        setNftMintingStatus('processing');
+      }
 
       toast({
         title: 'Receipt Uploaded Successfully',
         description: `We've processed your receipt from ${responseData.data.merchantName}.`,
         variant: 'default',
       });
+      
+      // Show immediate feedback about NFT minting process
+      setTimeout(() => {
+        toast({
+          title: '✅ Receipt Processing Started',
+          description: 'Your NFT is being minted – we'll update you when it's ready.',
+          variant: 'default',
+          duration: 5000,
+        });
+      }, 1000);
     } catch (err: any) {
       console.error('Error uploading receipt:', err);
       
@@ -310,6 +329,84 @@ export default function UploadReceiptPage() {
       return () => clearTimeout(timer);
     }
   }, [receiptData, activeTab, showNftPicker]);
+  
+  // Task polling for NFT minting status
+  useEffect(() => {  
+    if (!taskId) return;
+    
+    setNftMintingStatus('processing');
+    console.log(`Polling for task status: ${taskId}`);
+    
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/task/${taskId}/status`);
+        const data = await response.json();
+        
+        console.log("Task status response:", data);
+        
+        if (data.success && data.data) {
+          const taskData = data.data;
+          
+          if (taskData.status === 'completed') {
+            setNftMintingStatus('completed');
+            
+            // If we have NFT data, save the token ID
+            if (taskData.result && taskData.result.tokenId) {
+              setNftTokenId(taskData.result.tokenId);
+              
+              // Show success message
+              toast({
+                title: '✅ Your NFT has been minted!',
+                description: `Token ID: ${taskData.result.tokenId}`,
+                variant: 'default',
+                duration: 5000,
+              });
+              
+              // Refresh the gallery (in a real app, this would trigger a global state update)
+              fetchNFTGallery(address || '');
+            }
+            
+            // Task is complete, no need to keep polling
+            clearInterval(interval);
+          } else if (taskData.status === 'failed') {
+            setNftMintingStatus('failed');
+            
+            // Show error message
+            toast({
+              title: '❌ NFT Minting Failed',
+              description: taskData.error || 'An error occurred during NFT minting',
+              variant: 'destructive',
+              duration: 7000,
+            });
+            
+            // Task failed, no need to keep polling
+            clearInterval(interval);
+          }
+        }
+      } catch (err) {
+        console.error("Error polling task status:", err);
+      }
+    }, 5000); // poll every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [taskId, address]);
+  
+  // Function to fetch NFT gallery data after a successful mint
+  const fetchNFTGallery = async (walletAddress: string) => {
+    if (!walletAddress) return;
+    
+    try {
+      const response = await fetch(`/api/gallery/${walletAddress}`);
+      const data = await response.json();
+      
+      if (data.success && data.nfts) {
+        console.log("Updated NFT gallery data:", data.nfts);
+        // In a real app, this would update a global state or context
+      }
+    } catch (err) {
+      console.error("Error fetching NFT gallery:", err);
+    }
+  };
 
   const resetUpload = () => {
     setReceiptData(null);
