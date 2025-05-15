@@ -22,25 +22,25 @@ const tierColors = {
 const tierDetails = {
   BASIC: { 
     title: 'Basic', 
-    description: 'Basic NFT with minimal features', 
+    description: 'Basic BlockReceipt with minimal features', 
     color: 'gray',
     price: 'Free'
   },
   STANDARD: { 
     title: 'Standard', 
-    description: 'Standard NFT with basic features and encryption', 
+    description: 'Standard BlockReceipt with basic features and encryption', 
     color: 'blue',
     price: '$0.99'
   },
   PREMIUM: { 
     title: 'Premium', 
-    description: 'Enhanced NFT with premium features and advanced encryption', 
+    description: 'Enhanced BlockReceipt with premium features and advanced encryption', 
     color: 'purple',
     price: '$2.99'
   },
   LUXURY: { 
     title: 'Luxury', 
-    description: 'Exclusive NFT with premium features and highest encryption', 
+    description: 'Exclusive BlockReceipt with premium features and highest encryption', 
     color: 'amber',
     price: '$5.00'
   }
@@ -409,14 +409,14 @@ export default function UploadReceiptPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-lg">
-                        {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.title || 'Basic'} Tier NFT
+                        {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.title || 'Basic'} Tier BlockReceipt
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.description || 'Basic NFT with minimal features'}
+                        {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.description || 'Basic BlockReceipt with minimal features'}
                       </p>
                       <div className="mt-4">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm">NFT Minting Price</span>
+                          <span className="text-sm">Minting Price</span>
                           <span className="font-medium">
                             {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.price || 'Free'}
                           </span>
@@ -441,7 +441,7 @@ export default function UploadReceiptPage() {
                   >
                     {isUploading ? (
                       <>
-                        <span className="opacity-0">Mint NFT Receipt</span>
+                        <span className="opacity-0">Mint BlockReceipt</span>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           <span className="ml-2 text-xs">{Math.round(uploadProgress)}%</span>
@@ -450,7 +450,7 @@ export default function UploadReceiptPage() {
                     ) : (
                       <>
                         <CheckCircle className="mr-2 h-4 w-4" />
-                        Mint NFT Receipt
+                        Mint BlockReceipt
                       </>
                     )}
                   </Button>
