@@ -13,8 +13,9 @@ export default function ReceiptGalleryPage() {
   const { isAuthenticated, isLoading, walletAddress } = useAuth();
   const [viewingAddress, setViewingAddress] = useState<string | undefined>(undefined);
   
-  const isConnected = !!walletInfo?.address; // Check if wallet is connected
-  const connectedAddress = walletInfo?.address; // Get connected wallet address
+  // Determine if the wallet is connected and get the connected address
+  const isConnected = walletInfo?.connected || false;
+  const connectedAddress = walletInfo?.address;
   
   // Redirect if not authenticated
   useEffect(() => {

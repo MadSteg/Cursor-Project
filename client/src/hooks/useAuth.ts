@@ -28,7 +28,7 @@ export function useAuth(): AuthState {
   // Set default values if data is undefined
   const isAuthenticated = data?.authenticated || false;
   const userId = data?.userId;
-  const walletAddress = data?.walletAddress || web3Context.account;
+  const walletAddress = data?.walletAddress || web3Context.account || undefined;
   
   // Auto-connect to wallet if user is authenticated and has a wallet address
   useEffect(() => {

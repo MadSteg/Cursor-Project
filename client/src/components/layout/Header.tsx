@@ -80,12 +80,24 @@ const Header: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             
-            <Link href="/sign-in">
-              <Button variant="outline" size="sm" className="flex items-center">
-                <Wallet className="h-4 w-4 mr-1.5" /> 
-                <span>Login/Signup</span>
+            {isAuthenticated ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center"
+                onClick={() => setLocation("/sign-out")}
+              >
+                <User className="h-4 w-4 mr-1.5" /> 
+                <span>Sign Out</span>
               </Button>
-            </Link>
+            ) : (
+              <Link href="/sign-in">
+                <Button variant="outline" size="sm" className="flex items-center">
+                  <Wallet className="h-4 w-4 mr-1.5" /> 
+                  <span>Login/Signup</span>
+                </Button>
+              </Link>
+            )}
             
             <Sheet>
               <SheetTrigger asChild>
@@ -135,11 +147,20 @@ const Header: React.FC = () => {
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <Link href="/sign-in">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <User className="h-5 w-5" /> Login/Signup
-                      </span>
-                    </Link>
+                    {isAuthenticated ? (
+                      <div 
+                        className="flex items-center gap-2 text-base font-medium cursor-pointer"
+                        onClick={() => setLocation("/sign-out")}
+                      >
+                        <User className="h-5 w-5" /> Sign Out
+                      </div>
+                    ) : (
+                      <Link href="/sign-in">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <User className="h-5 w-5" /> Login/Signup
+                        </span>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </SheetContent>
