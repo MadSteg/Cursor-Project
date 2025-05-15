@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ReceiptTier } from '@/lib/receiptOcr';
 import {
   Receipt,
   FileText,
@@ -14,11 +13,7 @@ import {
   Sparkles,
   CreditCard,
   Wallet,
-  ArrowRight,
-  Crown,
-  Star,
-  Diamond,
-  FileImage
+  ArrowRight
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -53,54 +48,6 @@ const HomePage = () => {
       }
     }
   };
-
-  // Collection of NFT receipt examples with tier-specific styling
-  const tierExamples = [
-    {
-      tier: ReceiptTier.STANDARD,
-      merchant: "Daily Coffee",
-      total: "$4.75",
-      date: "May 12, 2025",
-      bgGradient: "from-slate-50 to-slate-200",
-      border: "border-slate-300",
-      textColor: "text-slate-800",
-      icon: <Receipt className="h-6 w-6 text-slate-600" />,
-      imageSrc: "/standard-nft.svg"
-    },
-    {
-      tier: ReceiptTier.PREMIUM,
-      merchant: "Urban Outfitters",
-      total: "$87.50",
-      date: "May 10, 2025",
-      bgGradient: "from-blue-50 to-indigo-100",
-      border: "border-indigo-300",
-      textColor: "text-indigo-800",
-      icon: <Star className="h-6 w-6 text-indigo-600" />,
-      imageSrc: "/premium-nft.svg"
-    },
-    {
-      tier: ReceiptTier.LUXURY,
-      merchant: "Apple Store",
-      total: "$549.99",
-      date: "May 7, 2025",
-      bgGradient: "from-purple-50 to-purple-200",
-      border: "border-purple-300",
-      textColor: "text-purple-800",
-      icon: <Crown className="h-6 w-6 text-purple-600" />,
-      imageSrc: "/luxury-nft.svg"
-    },
-    {
-      tier: ReceiptTier.ULTRA,
-      merchant: "Tesla",
-      total: "$1,249.00",
-      date: "May 5, 2025",
-      bgGradient: "from-amber-50 to-amber-200",
-      border: "border-amber-400",
-      textColor: "text-amber-800",
-      icon: <Diamond className="h-6 w-6 text-amber-600" />,
-      imageSrc: "/ultra-nft.svg"
-    }
-  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -144,73 +91,6 @@ const HomePage = () => {
               </Link>
             </motion.div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Tiered NFT Receipt Showcase */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="text-center mb-16"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUpVariants}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Tiered NFT Receipts
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              The more you spend, the more exclusive your BlockReceipt NFT becomes, with special artwork and benefits.
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {tierExamples.map((example, index) => (
-              <motion.div
-                key={example.tier}
-                className="flex flex-col"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={{
-                  hidden: { opacity: 0, y: 50 },
-                  visible: { 
-                    opacity: 1, 
-                    y: 0,
-                    transition: {
-                      delay: index * 0.1,
-                      duration: 0.5
-                    }
-                  }
-                }}
-              >
-                <Card 
-                  className={`flex-1 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br ${example.bgGradient} border ${example.border}`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className={`px-3 py-1 rounded-full text-sm font-medium ${example.textColor} bg-white/60`}>
-                        {example.tier}
-                      </div>
-                      {example.icon}
-                    </div>
-                    
-                    <div className="aspect-square rounded-lg mb-4 bg-white/60 flex items-center justify-center overflow-hidden">
-                      {/* NFT preview image would go here */}
-                      <Sparkles className={`h-16 w-16 ${example.textColor} opacity-60`} />
-                    </div>
-                    
-                    <div className={`text-left ${example.textColor}`}>
-                      <p className="text-sm font-medium">{example.merchant}</p>
-                      <p className="text-lg font-bold">{example.total}</p>
-                      <p className="text-xs opacity-70">{example.date}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
