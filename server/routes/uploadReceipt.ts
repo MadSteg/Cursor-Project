@@ -200,18 +200,22 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
               console.log('Creating NFT purchase task in the task queue...');
               
               // Pass encrypted metadata to the task if available
+              const encryptedMetadataInfo = encryptedData ? {
+                policyId: encryptedData.policyPublicKey,
+                capsuleId: encryptedData.capsule,
+                ciphertext: encryptedData.ciphertext
+              } : undefined;
+              
               const purchaseTask = createNFTPurchaseTask(
                 walletAddress, 
                 receiptId, 
                 receiptData,
-                encryptedData ? {
-                  policyId: encryptedData.policyPublicKey,
-                  capsuleId: encryptedData.capsule,
-                  ciphertext: encryptedData.ciphertext
-                } : undefined
+                encryptedMetadataInfo
               );
               
-              console.log(`NFT purchase task ${purchaseTask.id} created for wallet ${walletAddress}`);
+              // Store a reference to the task ID
+              const taskId = purchaseTask.id;
+              console.log(`NFT purchase task ${taskId} created for wallet ${walletAddress}`);
               
               // Update NFT gift status to processing
               nftGiftStatus = {
@@ -259,7 +263,7 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
       }
       
       // Add NFT gift status to the receipt data
-      receiptData.nftGift = nftGiftStatus;
+      responseData.nftGift = nftGiftStatus;
       
       // Prepare final response with encrypted metadata if available
       if (encryptedData) {
@@ -269,6 +273,7 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
           capsuleId: encryptedData.capsule || '', 
           policyId: encryptedData.policyPublicKey || '',
           nftTokenId: nftGiftStatus.nft?.tokenId || null, // Link encryption to NFT
+          taskId: nftGiftStatus.taskId || null, // Add task ID for tracking
           encryptionStatus: 'success'
         };
         
@@ -276,9 +281,15 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
         responseData.isEncrypted = true;
         
         console.log('Receipt metadata encrypted with TACo and added to response');
+        
+        // Log the taskId for tracking
+        if (nftGiftStatus.taskId) {
+          console.log(`NFT task ID ${nftGiftStatus.taskId} included in response for tracking`);
+        }
       } else {
         responseData.encryptedMetadata = {
           isEncrypted: false,
+          taskId: nftGiftStatus.taskId || null, // Still include task ID even if encryption failed
           encryptionStatus: 'failed or skipped'
         };
         console.warn('TACo encryption failed - returning unencrypted receipt data');

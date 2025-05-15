@@ -212,25 +212,59 @@ async function processTask(taskId: string): Promise<void> {
         
         const { encryptedMetadata, tokenId } = task.data;
         
-        // Store the encrypted data with token ID and wallet association
-        const metadataString = JSON.stringify(encryptedMetadata);
+        if (!encryptedMetadata || !tokenId) {
+          updateTaskStatus(taskId, 'failed', { 
+            error: 'Missing required data (encryptedMetadata or tokenId)',
+            result: { encryptionStatus: 'failed' } 
+          });
+          break;
+        }
+        
+        // Extract TACo metadata
+        const { policyId, capsuleId, ciphertext } = encryptedMetadata;
+        
+        if (!policyId || !capsuleId || !ciphertext) {
+          updateTaskStatus(taskId, 'failed', { 
+            error: 'Invalid encryption metadata (missing policyId, capsuleId, or ciphertext)',
+            result: { encryptionStatus: 'failed' } 
+          });
+          break;
+        }
+        
+        // Prepare complete metadata package with TACo encryption details
+        const tacoMetadata = {
+          policyPublicKey: policyId,
+          capsule: capsuleId,
+          ciphertext: ciphertext,
+          tokenId: tokenId,
+          receiptId: task.receiptId,
+          encryptedAt: new Date().toISOString()
+        };
+        
+        // Create preview data with non-sensitive information
         const previewData = {
           receiptId: task.receiptId,
+          tokenId: tokenId,
+          walletAddress: task.walletAddress,
           timestamp: new Date().toISOString(),
           status: 'encrypted'
         };
         
-        // Store the metadata in the database
+        // Store the complete metadata (including TACo details) in the database
         const metadataStored = await metadataService.storeEncryptedMetadata(
           tokenId,
           task.walletAddress,
-          metadataString,
+          JSON.stringify(tacoMetadata),
           previewData
         );
         
         if (metadataStored) {
-          console.log(`Successfully stored encrypted metadata for receipt ${task.receiptId} with tokenId ${tokenId}`);
-          console.log(`Encryption details: Policy key: ${encryptedMetadata.policyId}, Capsule: ${encryptedMetadata.capsuleId}`);
+          console.log(`✅ Successfully stored encrypted metadata for receipt ${task.receiptId} with tokenId ${tokenId}`);
+          console.log(`TACo encryption details:
+            Policy key: ${policyId.substring(0, 15)}...
+            Capsule: ${capsuleId.substring(0, 15)}...
+            Ciphertext: ${ciphertext.substring(0, 30)}...
+          `);
           
           updateTaskStatus(taskId, 'completed', { 
             result: { 
@@ -240,6 +274,7 @@ async function processTask(taskId: string): Promise<void> {
             } 
           });
         } else {
+          console.error(`❌ Failed to store encrypted metadata for receipt ${task.receiptId} with tokenId ${tokenId}`);
           updateTaskStatus(taskId, 'failed', { 
             error: 'Failed to store encrypted metadata',
             result: { 
