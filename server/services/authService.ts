@@ -31,11 +31,13 @@ export class AuthService {
       // Hash the password
       const hashedPassword = await this.hashPassword(userData.password);
       
-      // Create the user data
+      // Create the user data - note we need to map to the correct column names
       const userToInsert = {
-        ...userData,
-        password: hashedPassword,
-        walletAddress: null, // Will be updated if a wallet is created
+        email: userData.email,
+        username: userData.username,
+        full_name: userData.fullName,
+        password_hash: hashedPassword,
+        wallet_address: null, // Will be updated if a wallet is created
       };
       
       // Insert the user
@@ -97,8 +99,8 @@ export class AuthService {
         return null;
       }
       
-      // Compare passwords
-      const passwordMatch = await bcrypt.compare(password, user.password || "");
+      // Compare passwords - use password_hash column
+      const passwordMatch = await bcrypt.compare(password, user.password_hash || "");
       
       if (!passwordMatch) {
         return null;

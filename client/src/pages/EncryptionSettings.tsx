@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import ConnectWalletButton from "@/components/blockchain/ConnectWalletButton";
 import AdvancedEncryptionManager from "@/components/encryption/AdvancedEncryptionManager";
 import SharedReceiptManager from "@/components/encryption/SharedReceiptManager";
+import { useAuth } from "@/hooks/useAuth";
+import { useWeb3 } from "@/contexts/Web3Context";
 import { 
   Shield, AlertCircle, LockKeyhole, Settings, Share2, 
   Receipt, CreditCard, Bitcoin, ArrowRight, Key, Wallet, 
