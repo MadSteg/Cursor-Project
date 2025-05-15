@@ -12,9 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight, Tag, DollarSign, Landmark, ShoppingBag, Loader2, Coins } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
-  uploadReceiptImage,
   processReceiptImage,
-  processReceiptBase64,
   determineReceiptTier
 } from "@/lib/receiptOcr";
 import { ReceiptData, ReceiptTier } from "@/types";
@@ -189,7 +187,7 @@ const ScanReceiptPage = () => {
       
       // Process with OCR
       setProgress(50);
-      const data = await processReceiptBase64(base64Data);
+      const data = await processReceiptImage(base64Data);
       setProgress(90);
       
       // Set receipt data
