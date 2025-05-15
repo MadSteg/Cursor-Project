@@ -102,6 +102,15 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
         message: string;
         eligible: boolean;
         error?: string;
+        nft?: {
+          tokenId: string;
+          contract: string;
+          name: string;
+          image: string;
+          marketplace: string;
+          price: number;
+        };
+        txHash?: string;
       }
       
       // Prepare response data
