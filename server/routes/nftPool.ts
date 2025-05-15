@@ -1,121 +1,93 @@
-import express, { Request, Response } from 'express';
-import { nftPoolRepository } from '../repositories/nftPoolRepository';
-import { nftPurchaseBot } from '../services/nftPurchaseBot';
-import { marketplaceService } from '../services/marketplaceService';
+/**
+ * NFT Pool Routes
+ * 
+ * Provides endpoints for accessing the NFT pool collection
+ * These routes are mounted at /api/nfts
+ */
 
-const router = express.Router();
+import { Router, Request, Response } from 'express';
+import { nftPoolRepository } from '../repositories/nftPoolRepository';
+
+const router = Router();
 
 /**
  * Get random NFTs from the pool by receipt tier
- * GET /api/nfts/pool?receiptTier=premium
+ * GET /api/nfts/pool?tier=premium&count=5
  */
 router.get('/pool', async (req: Request, res: Response) => {
   try {
-    const { receiptTier = 'basic', count = '5' } = req.query;
-    
-    // Convert tier to our database format (lowercase)
-    const tier = String(receiptTier).toLowerCase();
-    const numCount = parseInt(String(count), 10) || 5;
+    const tier = (req.query.tier as string) || 'basic';
+    const count = parseInt(req.query.count as string) || 5;
     
     // Validate tier
     if (!['basic', 'premium', 'luxury'].includes(tier)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid receipt tier. Must be one of: basic, premium, luxury'
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid tier. Must be one of: basic, premium, luxury' 
       });
     }
     
-    // Get random NFTs for the tier
-    const nfts = await nftPoolRepository.getRandomNftsByTier(tier, numCount);
+    // Get random NFTs for the specified tier
+    const nfts = await nftPoolRepository.getRandomNftsByTier(tier, count);
     
-    // If we don't have enough NFTs in the database, fetch some from simulation
-    if (nfts.length < numCount) {
-      console.log(`Not enough NFTs in pool for tier ${tier}, using simulation data`);
-      
-      // Determine budget based on tier
-      const tierBudgetMap = {
-        'basic': 0.03,
-        'premium': 0.08,
-        'luxury': 0.10
-      };
-      
-      const budget = tierBudgetMap[tier as keyof typeof tierBudgetMap];
-      
-      // Get simulated NFTs
-      const simulatedNfts = await marketplaceService.fetchMarketplaceNFTs({
-        maxPrice: budget,
-        limit: numCount - nfts.length
-      });
-      
-      // Convert marketplace NFTs to our format
-      const convertedNfts = simulatedNfts.map(nft => ({
-        id: 0, // Will be assigned by DB
-        nftId: nft.id,
-        name: nft.name,
-        image: nft.imageUrl,
-        description: nft.description,
-        tier: tier,
-        metadataUri: nft.url || `ipfs://metadata/${nft.id}`,
-        categories: ['simulated'],
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }));
-      
-      // Return combined NFTs
-      return res.status(200).json({
-        success: true,
-        tier: tier,
-        nfts: [...nfts, ...convertedNfts].slice(0, numCount)
-      });
-    }
-    
-    return res.status(200).json({
+    return res.json({
       success: true,
-      tier: tier,
-      nfts: nfts
+      nfts,
+      count: nfts.length,
+      tier
     });
-  } catch (error: any) {
-    console.error('Error getting NFT pool:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve NFTs from pool',
-      error: error.message || 'Unknown error'
+  } catch (error) {
+    console.error('Error fetching NFTs from pool:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch NFTs from pool' 
     });
   }
 });
 
 /**
- * Mint an NFT from the pool to a user
- * POST /api/nfts/mint
- * Body: { walletAddress, nftId }
+ * Get NFT details by ID
+ * GET /api/nfts/details/:nftId
  */
-router.post('/mint', async (req: Request, res: Response) => {
+router.get('/details/:nftId', async (req: Request, res: Response) => {
   try {
-    const { walletAddress, nftId } = req.body;
+    const { nftId } = req.params;
     
-    // Validate required fields
-    if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid wallet address' 
-      });
-    }
+    const nft = await nftPoolRepository.getNftById(nftId);
     
-    if (!nftId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'NFT ID is required' 
-      });
-    }
-    
-    // Check if user is eligible for an NFT
-    const isEligible = await nftPurchaseBot.isUserEligible(walletAddress);
-    
-    if (!isEligible) {
-      return res.status(403).json({
+    if (!nft) {
+      return res.status(404).json({
         success: false,
-        message: 'User has already claimed an NFT recently'
+        message: 'NFT not found'
+      });
+    }
+    
+    return res.json({
+      success: true,
+      nft
+    });
+  } catch (error) {
+    console.error('Error fetching NFT details:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch NFT details'
+    });
+  }
+});
+
+/**
+ * Select an NFT from the pool
+ * POST /api/nfts/select
+ * Body: { nftId, walletAddress }
+ */
+router.post('/select', async (req: Request, res: Response) => {
+  try {
+    const { nftId, walletAddress } = req.body;
+    
+    if (!nftId || !walletAddress) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: nftId, walletAddress'
       });
     }
     
@@ -125,135 +97,46 @@ router.post('/mint', async (req: Request, res: Response) => {
     if (!nft) {
       return res.status(404).json({
         success: false,
-        message: 'NFT not found in pool'
+        message: 'NFT not found'
       });
     }
     
-    if (!nft.enabled) {
-      return res.status(400).json({
-        success: false,
-        message: 'This NFT is no longer available'
-      });
-    }
+    // Disable the NFT in the pool so it can't be selected again
+    await nftPoolRepository.disableNft(nftId);
     
-    // Purchase and transfer NFT to user (or mint a new one)
-    // If it's a simulated NFT (starting with 'sim-'), use marketplace purchase
-    if (nftId.startsWith('sim-')) {
-      // Get the NFT from marketplace service
-      const marketplaceNfts = await marketplaceService.fetchMarketplaceNFTs({
-        maxPrice: 0.10,
-        limit: 10
-      });
-      
-      const marketplaceNft = marketplaceNfts.find(n => n.id === nftId);
-      
-      if (!marketplaceNft) {
-        return res.status(404).json({
-          success: false,
-          message: 'Marketplace NFT not found'
-        });
-      }
-      
-      // Purchase the NFT
-      const purchaseResult = await marketplaceService.purchaseMarketplaceNFT(
-        marketplaceNft,
-        walletAddress
-      );
-      
-      if (!purchaseResult.success) {
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to purchase NFT',
-          error: purchaseResult.error
-        });
-      }
-      
-      // Return success
-      return res.status(200).json({
-        success: true,
-        message: 'NFT purchased and transferred successfully',
-        nft: nft,
-        transaction: purchaseResult
-      });
-    } else {
-      // It's an internal NFT, mint it directly
-      const mintResult = await nftPurchaseBot.mintFallbackNFT(
-        walletAddress,
-        nft.name,
-        nft.description
-      );
-      
-      if (!mintResult.success) {
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to mint NFT',
-          error: mintResult.error
-        });
-      }
-      
-      // Disable the NFT in the pool so it can't be minted again
-      await nftPoolRepository.disableNft(nftId);
-      
-      // Return success
-      return res.status(200).json({
-        success: true,
-        message: 'NFT minted successfully',
-        nft: nft,
-        transaction: mintResult
-      });
-    }
-  } catch (error: any) {
-    console.error('Error minting NFT:', error);
+    // Return success response - the actual NFT minting will happen in the NFT Purchase Bot service
+    return res.json({
+      success: true,
+      message: 'NFT selected successfully',
+      nft,
+      walletAddress
+    });
+  } catch (error) {
+    console.error('Error selecting NFT:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to mint NFT',
-      error: error.message || 'Unknown error'
+      message: 'Failed to select NFT'
     });
   }
 });
 
 /**
- * Add NFT to the pool (admin only)
- * POST /api/nfts/add
- * Body: { nftData }
+ * Get available NFT counts by tier
+ * GET /api/nfts/counts
  */
-router.post('/add', async (req: Request, res: Response) => {
+router.get('/counts', async (req: Request, res: Response) => {
   try {
-    const { nftData } = req.body;
+    const counts = await nftPoolRepository.getNftCounts();
     
-    // Validate required fields
-    if (!nftData || !nftData.nftId || !nftData.name || !nftData.image || 
-        !nftData.description || !nftData.tier || !nftData.metadataUri) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid NFT data. All fields are required.'
-      });
-    }
-    
-    // Check if NFT with this ID already exists
-    const existingNft = await nftPoolRepository.getNftById(nftData.nftId);
-    
-    if (existingNft) {
-      return res.status(409).json({
-        success: false,
-        message: 'An NFT with this ID already exists'
-      });
-    }
-    
-    // Add NFT to pool
-    const nft = await nftPoolRepository.addNftToPool(nftData);
-    
-    return res.status(201).json({
+    return res.json({
       success: true,
-      message: 'NFT added to pool successfully',
-      nft: nft
+      counts
     });
-  } catch (error: any) {
-    console.error('Error adding NFT to pool:', error);
+  } catch (error) {
+    console.error('Error fetching NFT counts:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to add NFT to pool',
-      error: error.message || 'Unknown error'
+      message: 'Failed to fetch NFT counts'
     });
   }
 });
