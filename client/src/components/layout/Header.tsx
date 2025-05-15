@@ -86,10 +86,10 @@ const Header: React.FC = () => {
               <ConnectWalletButton size="sm" />
             </div>
             
-            <Link href="/wallet-settings">
-              <Button variant="ghost" size="sm" className="flex items-center">
+            <Link href="/sign-in">
+              <Button variant="outline" size="sm" className="flex items-center">
                 <Wallet className="h-4 w-4 mr-1.5" /> 
-                <span>Sign In</span>
+                <span>Login/Signup</span>
               </Button>
             </Link>
             
@@ -143,7 +143,14 @@ const Header: React.FC = () => {
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <ConnectWalletButton />
+                    <Link href="/sign-in">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <User className="h-5 w-5" /> Login/Signup
+                      </span>
+                    </Link>
+                    <div className="mt-4">
+                      <ConnectWalletButton />
+                    </div>
                   </div>
                 </div>
               </SheetContent>

@@ -91,7 +91,8 @@ function Router() {
         <Route path="/crypto-checkout" component={CryptoCheckout} />
         <Route path="/encrypted-checkout" component={EncryptedCheckout} />
         
-        {/* Settings & Admin */}
+        {/* Authentication & Settings */}
+        <Route path="/sign-in" component={SignInPage} />
         <Route path="/encryption-settings" component={EncryptionSettings} />
         <Route path="/wallet-settings" component={SignInPage} />
         <Route path="/admin" component={Admin} />
