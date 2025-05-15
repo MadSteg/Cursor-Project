@@ -1,217 +1,354 @@
+/**
+ * Hook for interacting with Web3 wallet
+ * 
+ * This hook provides a simplified interface for connecting to Ethereum wallets.
+ * In development mode, it will use a mock wallet.
+ */
 import { useState, useEffect, useCallback } from 'react';
+import { useToast } from './use-toast';
 
-declare global {
-  interface Window {
-    ethereum: any;
-  }
+interface WalletState {
+  isConnected: boolean;
+  address: string | null;
+  chainId: number | null;
+  error: string | null;
 }
 
-// Default test wallet for development
-const TEST_WALLET_ADDRESS = '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC';
-const AMOY_CHAIN_ID = 80002;
-
-// Flag to determine if we're in development mode
-const isDevelopment = process.env.NODE_ENV === 'development';
-
 export function useWeb3Wallet() {
-  const [address, setAddress] = useState<string | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [chainId, setChainId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [useMockWallet, setUseMockWallet] = useState(false);
+  const [state, setState] = useState<WalletState>({
+    isConnected: false,
+    address: null,
+    chainId: null,
+    error: null,
+  });
+  const { toast } = useToast();
 
-  // Initialize - check if already connected
+  // Initialize wallet on component mount
   useEffect(() => {
-    const checkConnection = async () => {
-      setIsLoading(true);
+    const checkForWallet = async () => {
       try {
-        if (window.ethereum) {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts && accounts.length > 0) {
-            setAddress(accounts[0]);
-            setIsConnected(true);
-            
-            // Get the current chain ID
-            const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-            setChainId(parseInt(chainIdHex, 16));
-          }
+        // In development, use a mock wallet
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Using mock wallet for development:", "0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC");
+          setState({
+            isConnected: true,
+            address: "0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC",
+            chainId: 80002, // Polygon Amoy
+            error: null,
+          });
+          return;
         }
-      } catch (err: any) {
-        console.error('Failed to check wallet connection:', err);
-        setError('Failed to check wallet connection');
-      } finally {
-        setIsLoading(false);
+
+        // Check if window.ethereum is available (MetaMask or similar)
+        if (!window.ethereum) {
+          setState(prev => ({
+            ...prev,
+            error: "No Ethereum wallet found. Please install MetaMask.",
+          }));
+          return;
+        }
+
+        // Check if already connected
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) {
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+          setState({
+            isConnected: true,
+            address: accounts[0],
+            chainId: parseInt(chainId, 16),
+            error: null,
+          });
+        }
+      } catch (error) {
+        console.error("Error checking for wallet:", error);
+        setState(prev => ({
+          ...prev,
+          error: "Error connecting to wallet",
+        }));
       }
     };
 
-    checkConnection();
-  }, []);
+    checkForWallet();
 
-  // Listen for account and chain changes
-  useEffect(() => {
-    if (!window.ethereum) return;
-
-    const handleAccountsChanged = (accounts: string[]) => {
-      if (accounts.length === 0) {
-        // User disconnected their wallet
-        setAddress(null);
-        setIsConnected(false);
-      } else {
-        // User switched accounts
-        setAddress(accounts[0]);
-        setIsConnected(true);
-      }
-    };
-
-    const handleChainChanged = (chainIdHex: string) => {
-      setChainId(parseInt(chainIdHex, 16));
-    };
-
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
+    // Set up event listeners for wallet changes
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+    }
 
     return () => {
-      if (window.ethereum.removeListener) {
+      if (window.ethereum) {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
   }, []);
 
-  // Function to connect wallet
-  const connect = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  // Handle account changes
+  const handleAccountsChanged = (accounts: string[]) => {
+    if (accounts.length === 0) {
+      // User disconnected their wallet
+      setState({
+        isConnected: false,
+        address: null,
+        chainId: null,
+        error: null,
+      });
+      toast({
+        title: "Wallet Disconnected",
+        description: "Your wallet has been disconnected.",
+      });
+    } else {
+      // User switched accounts
+      setState(prev => ({
+        ...prev,
+        isConnected: true,
+        address: accounts[0],
+      }));
+      toast({
+        title: "Account Changed",
+        description: `Now connected to: ${formatAddress(accounts[0])}`,
+      });
+    }
+  };
 
+  // Handle network changes
+  const handleChainChanged = (chainIdHex: string) => {
+    const newChainId = parseInt(chainIdHex, 16);
+    setState(prev => ({
+      ...prev,
+      chainId: newChainId,
+    }));
+    
+    toast({
+      title: "Network Changed",
+      description: `Network switched to ${getNetworkName(newChainId)}`,
+    });
+  };
+
+  // Connect wallet
+  const connect = useCallback(async () => {
     try {
-      // For development mode, offer a mock wallet option
-      if (isDevelopment && (!window.ethereum || useMockWallet)) {
-        console.log('Using mock wallet for development:', TEST_WALLET_ADDRESS);
-        setAddress(TEST_WALLET_ADDRESS);
-        setIsConnected(true);
-        setChainId(AMOY_CHAIN_ID);
-        setUseMockWallet(true);
-        return TEST_WALLET_ADDRESS;
+      // In development, connect to mock wallet
+      if (process.env.NODE_ENV === 'development') {
+        setState({
+          isConnected: true,
+          address: "0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC",
+          chainId: 80002, // Polygon Amoy
+          error: null,
+        });
+        toast({
+          title: "Connected",
+          description: "Connected to mock wallet for development",
+        });
+        return "0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC";
       }
-      
+
       if (!window.ethereum) {
-        throw new Error('No ethereum wallet detected. Try using the Test Wallet option.');
+        const error = "No Ethereum wallet found. Please install MetaMask.";
+        setState(prev => ({ ...prev, error }));
+        toast({
+          title: "Wallet Not Found",
+          description: error,
+          variant: "destructive",
+        });
+        throw new Error(error);
       }
 
       const accounts = await window.ethereum.request({ 
         method: 'eth_requestAccounts' 
       });
       
-      if (accounts && accounts.length > 0) {
-        setAddress(accounts[0]);
-        setIsConnected(true);
-        
-        // Get the current chain ID
-        const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-        setChainId(parseInt(chainIdHex, 16));
-        
-        return accounts[0];
-      } else {
-        throw new Error('No accounts returned from wallet');
-      }
-    } catch (err: any) {
-      console.error('Failed to connect wallet:', err);
+      const chainIdHex = await window.ethereum.request({ 
+        method: 'eth_chainId' 
+      });
       
-      if (isDevelopment) {
-        // Fallback to mock wallet in development mode
-        console.log('Falling back to mock wallet for development:', TEST_WALLET_ADDRESS);
-        setAddress(TEST_WALLET_ADDRESS);
-        setIsConnected(true);
-        setChainId(AMOY_CHAIN_ID);
-        setUseMockWallet(true);
-        return TEST_WALLET_ADDRESS;
-      } else {
-        setError(err.message || 'Failed to connect wallet');
-        return null;
-      }
-    } finally {
-      setIsLoading(false);
+      const chainId = parseInt(chainIdHex, 16);
+      
+      setState({
+        isConnected: true,
+        address: accounts[0],
+        chainId,
+        error: null,
+      });
+      
+      toast({
+        title: "Connected",
+        description: `Connected to ${formatAddress(accounts[0])}`,
+      });
+      
+      return accounts[0];
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Error connecting to wallet";
+        
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+      }));
+      
+      toast({
+        title: "Connection Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      throw error;
     }
-  }, [useMockWallet]);
+  }, [toast]);
 
-  // Function to disconnect wallet (note: MetaMask doesn't support programmatic disconnect)
-  const disconnect = useCallback(() => {
-    setAddress(null);
-    setIsConnected(false);
-    setChainId(null);
-    setUseMockWallet(false);
-  }, []);
-
-  // Function to switch networks
-  const switchNetwork = useCallback(async (networkId: number) => {
-    setIsLoading(true);
-    setError(null);
-
+  // Switch to specified network
+  const switchNetwork = useCallback(async (chainId: number) => {
     try {
-      // For mock wallet mode, just update the chain ID
-      if (useMockWallet) {
-        console.log('Mock wallet: Switching to network ID', networkId);
-        setChainId(networkId);
-        return true;
+      // In development, just update the state
+      if (process.env.NODE_ENV === 'development') {
+        setState(prev => ({
+          ...prev,
+          chainId,
+        }));
+        toast({
+          title: "Network Switched",
+          description: `Switched to ${getNetworkName(chainId)} in development mode`,
+        });
+        return;
       }
 
       if (!window.ethereum) {
-        throw new Error('No ethereum wallet detected');
+        throw new Error("No Ethereum wallet found");
       }
 
-      // Request switch to the desired network
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${networkId.toString(16)}` }],
-      });
-
-      const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-      setChainId(parseInt(chainIdHex, 16));
-      
-      return true;
-    } catch (err: any) {
-      // If the error code is 4902, the chain hasn't been added to MetaMask
-      if (err.code === 4902) {
-        setError('Please add this network to your wallet first');
-      } else {
-        console.error('Failed to switch network:', err);
-        
-        if (isDevelopment) {
-          // In development, simulate a successful network switch
-          console.log('Mock wallet: Simulating switch to network ID', networkId);
-          setChainId(networkId);
-          return true;
+      try {
+        // Try to switch to the network
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${chainId.toString(16)}` }],
+        });
+      } catch (switchError: any) {
+        // Network doesn't exist in wallet, so try to add it
+        if (switchError.code === 4902) {
+          await addNetwork(chainId);
         } else {
-          setError(err.message || 'Failed to switch network');
+          throw switchError;
         }
       }
-      return false;
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Error switching network:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Error switching network";
+        
+      toast({
+        title: "Network Switch Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      throw error;
     }
-  }, [useMockWallet]);
+  }, [toast]);
 
-  // Format address for display (0x1234...5678)
-  const shortAddress = useCallback((addr: string | null) => {
-    if (!addr) return '';
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
-  }, []);
+  // Add network configuration to wallet
+  const addNetwork = async (chainId: number) => {
+    const networkParams = getNetworkParams(chainId);
+    
+    if (!networkParams) {
+      throw new Error(`Configuration for network ID ${chainId} not found`);
+    }
+    
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [networkParams],
+    });
+  };
 
-  // For ease of use, combine shortAddress with current address
-  const shortDisplayAddress = address ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : '';
+  // Disconnect wallet (for UI purposes)
+  const disconnect = useCallback(() => {
+    setState({
+      isConnected: false,
+      address: null,
+      chainId: null,
+      error: null,
+    });
+    
+    toast({
+      title: "Disconnected",
+      description: "Your wallet has been disconnected from this site",
+    });
+  }, [toast]);
+
+  // Format address for display
+  const formatAddress = (address: string): string => {
+    return address ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : '';
+  };
 
   return {
-    address,
-    isConnected,
-    chainId,
-    isLoading,
-    error,
-    isMockWallet: useMockWallet,
+    isConnected: state.isConnected,
+    address: state.address,
+    chainId: state.chainId,
+    error: state.error,
     connect,
     disconnect,
     switchNetwork,
-    shortAddress,
-    shortDisplayAddress
+    shortDisplayAddress: state.address ? formatAddress(state.address) : '',
+    networkName: state.chainId ? getNetworkName(state.chainId) : null,
   };
+}
+
+// Helper function to get network name from chain ID
+function getNetworkName(chainId: number): string {
+  const networks: Record<number, string> = {
+    1: 'Ethereum Mainnet',
+    3: 'Ropsten',
+    4: 'Rinkeby',
+    5: 'Goerli',
+    42: 'Kovan',
+    56: 'Binance Smart Chain',
+    137: 'Polygon',
+    80001: 'Polygon Mumbai',
+    80002: 'Polygon Amoy',
+    42161: 'Arbitrum One',
+    421613: 'Arbitrum Goerli',
+  };
+  
+  return networks[chainId] || `Network ${chainId}`;
+}
+
+// Helper function to get network parameters for adding to wallet
+function getNetworkParams(chainId: number): any {
+  const networkParams: Record<number, any> = {
+    80002: {
+      chainId: '0x138C2',
+      chainName: 'Polygon Amoy Testnet',
+      nativeCurrency: {
+        name: 'MATIC',
+        symbol: 'MATIC',
+        decimals: 18,
+      },
+      rpcUrls: ['https://polygon-amoy.g.alchemy.com/v2/aW44pWE6n-X1AhiLXaJQPu3POOrIlArr'],
+      blockExplorerUrls: ['https://www.oklink.com/amoy'],
+    },
+    80001: {
+      chainId: '0x13881',
+      chainName: 'Polygon Mumbai Testnet',
+      nativeCurrency: {
+        name: 'MATIC',
+        symbol: 'MATIC',
+        decimals: 18,
+      },
+      rpcUrls: ['https://rpc-mumbai.maticvigil.com'],
+      blockExplorerUrls: ['https://mumbai.polygonscan.com'],
+    },
+    // Add more networks as needed
+  };
+  
+  return networkParams[chainId] || null;
+}
+
+// Extend window with ethereum property
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
 }

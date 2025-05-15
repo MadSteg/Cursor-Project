@@ -3,134 +3,163 @@
  */
 import { useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
+import { useWeb3Wallet } from './useWeb3Wallet';
+import { useToast } from './use-toast';
+
+interface Wallet {
+  address: string;
+  privateKey: string;
+  publicKey?: string;
+}
 
 interface UseHotWalletOptions {
   autoGenerate?: boolean;
 }
 
 export function useHotWallet(options: UseHotWalletOptions = {}) {
-  const { autoGenerate = false } = options;
-  
-  const [hotWalletAddress, setHotWalletAddress] = useState<string | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [tacoKey, setTacoKey] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
+  const { isConnected, address: connectedAddress } = useWeb3Wallet();
   const { toast } = useToast();
-  const { address: connectedWalletAddress, isConnected } = useWeb3Wallet();
-  
-  // Check for existing hot wallet on component mount
-  useEffect(() => {
-    const checkForHotWallet = async () => {
-      try {
-        // In a real implementation, this would call an API endpoint
-        // For now, we'll use local storage as a mock
-        const savedWallet = localStorage.getItem('hotWalletAddress');
-        const savedTacoKey = localStorage.getItem('tacoPublicKey');
+
+  // Helper function to get the current wallet
+  const fetchWallet = async () => {
+    try {
+      setIsLoading(true);
+      
+      // In development, return a mock wallet for testing
+      if (process.env.NODE_ENV === 'development') {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        if (savedWallet && savedTacoKey) {
-          setHotWalletAddress(savedWallet);
-          setTacoKey(savedTacoKey);
-        } else if (autoGenerate && !isGenerating) {
-          // Auto-generate a wallet if one doesn't exist
+        // Mock wallet data
+        return {
+          address: '0xD8c7d4e0D8E44Ec8A78FF65F7a405e6621520E9E',
+          privateKey: '0x86de521f02f7e0f456574b1a0d2cc0bf5ee4a2024fe2e064b1e2fd10be6a2b45',
+          encrypted: true
+        };
+      }
+      
+      const response = await apiRequest('GET', '/api/wallet/current');
+      const data = await response.json();
+      
+      if (data.wallet) {
+        return data.wallet;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load wallet on initial mount
+  useEffect(() => {
+    const loadWallet = async () => {
+      if (isConnected) {
+        const walletData = await fetchWallet();
+        setWallet(walletData);
+        
+        // Auto-generate a wallet if requested and none exists
+        if (options.autoGenerate && !walletData) {
           generateWallet();
         }
-      } catch (err) {
-        console.error('Error checking for hot wallet:', err);
-        setError('Failed to check for existing hot wallet');
+      } else {
+        setWallet(null);
+        setIsLoading(false);
       }
     };
     
-    checkForHotWallet();
-  }, [autoGenerate]);
-  
+    loadWallet();
+  }, [isConnected, options.autoGenerate]);
+
   // Generate a new hot wallet
   const generateWallet = async () => {
+    if (!isConnected) {
+      toast({
+        title: 'Wallet Connection Required',
+        description: 'Please connect your Web3 wallet first',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     try {
       setIsGenerating(true);
-      setError(null);
       
-      // Call the wallet generation API
+      if (process.env.NODE_ENV === 'development') {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Mock new wallet
+        const mockWallet = {
+          address: '0xD8c7d4e0D8E44Ec8A78FF65F7a405e6621520E9E',
+          privateKey: '0x86de521f02f7e0f456574b1a0d2cc0bf5ee4a2024fe2e064b1e2fd10be6a2b45',
+          encrypted: true
+        };
+        
+        setWallet(mockWallet);
+        return mockWallet;
+      }
+      
       const response = await apiRequest('POST', '/api/wallet/generate-for-new-user', {
-        userId: 1, // In a real app, this would be the current user's ID
+        walletAddress: connectedAddress
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate wallet');
+      }
       
       const data = await response.json();
-      
-      if (data.success) {
-        setHotWalletAddress(data.walletAddress);
-        setTacoKey(data.tacoKey);
-        
-        // Store in local storage as a mock persistence layer
-        localStorage.setItem('hotWalletAddress', data.walletAddress);
-        localStorage.setItem('tacoPublicKey', data.tacoKey);
-        
-        toast({
-          title: 'Hot Wallet Generated',
-          description: `Your secure hot wallet has been created: ${data.walletAddress.slice(0, 8)}...${data.walletAddress.slice(-6)}`,
-        });
-      } else {
-        throw new Error(data.error || 'Failed to generate wallet');
-      }
-    } catch (err: any) {
-      console.error('Error generating hot wallet:', err);
-      setError(err.message || 'Failed to generate hot wallet');
-      
-      toast({
-        title: 'Wallet Generation Failed',
-        description: err.message || 'An error occurred while generating your hot wallet',
-        variant: 'destructive',
-      });
+      setWallet(data.wallet);
+      return data.wallet;
+    } catch (error) {
+      console.error('Error generating hot wallet:', error);
+      throw error;
     } finally {
       setIsGenerating(false);
     }
   };
-  
-  // Recover a wallet's private key
-  const recoverWalletPrivateKey = async (tacoPrivateKey: string) => {
+
+  // Export wallet to file
+  const exportWallet = () => {
+    if (!wallet) return;
+    
     try {
-      setError(null);
+      const dataStr = JSON.stringify(wallet);
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
       
-      // Call the private key recovery API
-      const response = await apiRequest('POST', '/api/wallet/recover', {
-        recipientPrivateKey: tacoPrivateKey,
-      });
+      const exportFileDefaultName = `blockreceiptai-wallet-${new Date().toISOString().slice(0, 10)}.json`;
       
-      const data = await response.json();
-      
-      if (data.success) {
-        toast({
-          title: 'Private Key Recovered',
-          description: 'Your wallet private key has been successfully recovered.',
-        });
-        
-        return data.privateKey;
-      } else {
-        throw new Error(data.error || 'Failed to recover private key');
-      }
-    } catch (err: any) {
-      console.error('Error recovering private key:', err);
-      setError(err.message || 'Failed to recover private key');
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
       
       toast({
-        title: 'Recovery Failed',
-        description: err.message || 'An error occurred while recovering your private key',
-        variant: 'destructive',
+        title: 'Wallet Exported',
+        description: 'Your wallet has been exported to a file'
       });
-      
-      return null;
+    } catch (error) {
+      console.error('Error exporting wallet:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'Could not export wallet',
+        variant: 'destructive'
+      });
     }
   };
-  
+
   return {
-    hotWalletAddress,
-    tacoKey,
+    wallet,
+    isLoading,
     isGenerating,
-    error,
     generateWallet,
-    recoverWalletPrivateKey,
-    hasHotWallet: !!hotWalletAddress
+    exportWallet
   };
 }
