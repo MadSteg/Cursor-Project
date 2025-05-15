@@ -106,11 +106,54 @@ export default function UploadReceiptPage() {
         });
       }, 300);
 
+      console.log('Uploading file:', file.name, file.type, file.size);
+      
       // Make the actual API call to upload and process the receipt
-      const response = await fetch('/api/upload-receipt', {
-        method: 'POST',
-        body: formData,
+      // Using XMLHttpRequest for better file upload handling and progress tracking
+      const xhr = new XMLHttpRequest();
+      
+      // Create a promise to handle the XHR response
+      const uploadPromise = new Promise<any>((resolve, reject) => {
+        xhr.open('POST', '/api/upload-receipt', true);
+        
+        // Track upload progress
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.min(90, (event.loaded / event.total) * 100);
+            setUploadProgress(percentComplete);
+          }
+        };
+        
+        // Handle response
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (err) {
+              reject(new Error('Invalid server response'));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.message || `Error: ${xhr.status}`));
+            } catch (err) {
+              reject(new Error(`Request failed with status ${xhr.status}`));
+            }
+          }
+        };
+        
+        // Handle network errors
+        xhr.onerror = () => {
+          reject(new Error('Network error occurred'));
+        };
+        
+        // Send the form data
+        xhr.send(formData);
       });
+      
+      // Wait for the upload to complete
+      const resultData = await uploadPromise;
       
       // Clear the interval when response received
       if (progressInterval) {
@@ -118,13 +161,7 @@ export default function UploadReceiptPage() {
         progressInterval = null;
       }
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to process receipt');
-      }
-      
-      const resultData = await response.json();
-      
+      // Check if the upload was successful
       if (!resultData.success) {
         throw new Error(resultData.message || 'Failed to process receipt');
       }
@@ -453,108 +490,43 @@ export default function UploadReceiptPage() {
                   </div>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <Label className="text-lg font-medium">Total Amount</Label>
-                  <p className="text-xl font-bold">${receiptData.total.toFixed(2)}</p>
-                </div>
-                
-                <Separator />
-                
-                <div className="bg-primary/5 p-4 rounded-lg">
-                  <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 flex items-center justify-center rounded-full ${
-                      tierColors[receiptData.tier?.id as keyof typeof tierColors] || 'bg-gray-100'
-                    }`}>
-                      <Receipt className="h-6 w-6" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-lg">
-                        {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.title || 'Basic'} Tier BlockReceipt
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.description || 'Basic BlockReceipt with minimal features'}
-                      </p>
-                      <div className="mt-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Minting Price</span>
-                          <span className="font-medium">
-                            {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.price || 'Free'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                <div className="bg-muted p-4 rounded-md flex justify-between items-center">
+                  <div>
+                    <Label className="text-sm font-medium">Total Amount</Label>
+                    <p className="text-2xl font-bold">${receiptData.total.toFixed(2)}</p>
                   </div>
-                </div>
-                
-                <div className="flex justify-between items-center pt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={resetUpload}
-                    disabled={isUploading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={mintReceiptNFT}
-                    disabled={isUploading}
-                    className="relative"
-                  >
-                    {isUploading ? (
-                      <>
-                        <span className="opacity-0">Mint BlockReceipt</span>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span className="ml-2 text-xs">{Math.round(uploadProgress)}%</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Mint BlockReceipt
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* NFT Art Selection */}
-          {showNftPicker && receiptData && (
-            <Card>
-              <CardContent className="pt-6">
-                <NFTArtPicker 
-                  receiptData={receiptData}
-                  onSelect={handleNFTSelected}
-                  onCancel={handleCancelNFTSelection}
-                />
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Loading State */}
-          {isUploading && receiptData && (
-            <Card>
-              <CardContent className="py-10">
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-full max-w-md">
-                    <h3 className="text-lg font-medium text-center mb-4">
-                      {uploadProgress < 50 ? 'Preparing Your BlockReceipt' : 'Minting Your BlockReceipt'}
-                    </h3>
-                    <Progress value={uploadProgress} className="h-2 w-full mb-2" />
-                    <p className="text-sm text-center text-muted-foreground">
-                      {uploadProgress < 30
-                        ? 'Preparing your blockchain receipt...'
-                        : uploadProgress < 70
-                        ? 'Creating your unique NFT...'
-                        : uploadProgress < 95
-                        ? 'Finalizing blockchain transaction...'
-                        : 'Almost done!'}
+                  
+                  <div className="text-right">
+                    <Label className="text-sm text-muted-foreground">BlockReceipt Tier</Label>
+                    <p className={`text-lg font-medium text-${tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.color || 'gray'}-700`}>
+                      {receiptData.tier?.title || 'Basic'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.price || 'Free'}
                     </p>
                   </div>
                 </div>
+                
+                <div className="flex justify-center pt-4">
+                  <Button 
+                    className="w-full max-w-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    size="lg"
+                    onClick={mintReceiptNFT}
+                  >
+                    <CheckCircle className="mr-2 h-5 w-5" />
+                    Mint as BlockReceipt NFT
+                  </Button>
+                </div>
               </CardContent>
             </Card>
+          )}
+          
+          {showNftPicker && receiptData && (
+            <NFTArtPicker 
+              receiptData={receiptData}
+              onSelect={handleNFTSelected}
+              onCancel={handleCancelNFTSelection}
+            />
           )}
         </TabsContent>
       </Tabs>

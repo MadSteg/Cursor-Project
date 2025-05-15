@@ -11,6 +11,7 @@ interface NFTOption {
   image: string;
   preview: string;
   description: string;
+  tags?: string[]; // Add tags property
 }
 
 interface NFTArtPickerProps {
