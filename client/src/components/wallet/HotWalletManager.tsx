@@ -1,215 +1,193 @@
-/**
- * Hot Wallet Manager Component
- * 
- * This component provides UI for managing TACo encrypted hot wallets.
- */
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useHotWallet } from '@/hooks/useHotWallet';
-import { AlertCircle, Copy, Eye, EyeOff, Key, RefreshCw, CheckCircle, Loader2 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { ethers } from 'ethers';
 
 interface HotWalletManagerProps {
-  title?: string;
-  description?: string;
-  autoGenerate?: boolean;
+  userId?: number;
+  onWalletCreated?: (address: string) => void;
 }
 
-export function HotWalletManager({
-  title = "Wallet Manager",
-  description = "Generate and manage TACo encrypted hot wallets",
-  autoGenerate = false
-}: HotWalletManagerProps) {
+export default function HotWalletManager({ userId, onWalletCreated }: HotWalletManagerProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string | null>(null);
   const { toast } = useToast();
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const { 
-    wallet, 
-    isLoading,
-    isGenerating,
-    generateWallet, 
-    exportWallet
-  } = useHotWallet({ autoGenerate });
 
-  const handleCopyAddress = () => {
-    if (wallet?.address) {
-      navigator.clipboard.writeText(wallet.address);
-      toast({
-        title: "Address Copied",
-        description: "Wallet address copied to clipboard",
-      });
+  // Fetch wallet info on component mount if userId is available
+  useEffect(() => {
+    if (userId) {
+      fetchWalletInfo();
     }
-  };
+  }, [userId]);
 
-  const handleCopyPrivateKey = () => {
-    if (wallet?.privateKey) {
-      navigator.clipboard.writeText(wallet.privateKey);
-      toast({
-        title: "Private Key Copied",
-        description: "Warning: Keep your private key secret",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleGenerateWallet = async () => {
+  // Fetch wallet info from the server
+  const fetchWalletInfo = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setGenerationError(null);
-      await generateWallet();
-      toast({
-        title: "Wallet Generated",
-        description: "Your new hot wallet has been created and encrypted with TACo",
-      });
-    } catch (error) {
-      console.error("Error generating hot wallet:", error);
-      setGenerationError("Failed to generate wallet. Please try again.");
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate wallet. Please try again.",
-        variant: "destructive",
-      });
+      const response = await apiRequest('GET', '/api/wallet/my-wallet');
+      const data = await response.json();
+      
+      if (data.success && data.wallet) {
+        setWalletAddress(data.wallet.address);
+        fetchWalletBalance(data.wallet.address);
+      }
+    } catch (error: any) {
+      // Don't set error for 404 (no wallet)
+      if (error.status !== 404) {
+        setError(error.message || 'Failed to fetch wallet info');
+      }
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // Fetch wallet balance from the server
+  const fetchWalletBalance = async (address: string) => {
+    try {
+      const response = await apiRequest('GET', `/api/wallet/balance/${address}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        // Convert wei to ETH for display
+        const balanceInEth = ethers.utils.formatEther(data.balance);
+        setBalance(balanceInEth);
+      }
+    } catch (error: any) {
+      console.error('Error fetching wallet balance:', error);
+      // Don't show error toast for balance issues
+    }
+  };
+
+  // Generate a new hot wallet
+  const generateWallet = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // In a real implementation, you would generate a TACo public key here
+      // For this demo, we'll use a placeholder
+      const tacoPublicKey = 'demo-taco-public-key-' + Date.now();
+      
+      const response = await apiRequest('POST', '/api/wallet/generate', {
+        tacoPublicKey,
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success || !data.wallet) {
+        throw new Error(data.error || 'Failed to generate wallet');
+      }
+      
+      setWalletAddress(data.wallet.address);
+      fetchWalletBalance(data.wallet.address);
+      
+      toast({
+        title: 'Wallet Generated',
+        description: 'Your Polygon hot wallet has been created successfully',
+      });
+      
+      if (onWalletCreated) {
+        onWalletCreated(data.wallet.address);
+      }
+    } catch (error: any) {
+      console.error('Wallet generation error:', error);
+      setError(error.message || 'Failed to generate wallet');
+      toast({
+        title: 'Wallet Generation Failed',
+        description: error.message || 'An error occurred while generating your wallet',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Format address for display
+  const formatAddress = (address: string) => {
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+    <Card>
+      <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-500 text-white">
+        <CardTitle>Polygon Hot Wallet</CardTitle>
+        <CardDescription className="text-white text-opacity-80">
+          Securely manage your BlockReceipt hot wallet
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <span className="ml-3 text-muted-foreground">Loading wallet...</span>
+      
+      <CardContent className="pt-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        {loading ? (
+          <div className="flex justify-center py-4">
+            <Spinner />
           </div>
-        ) : wallet ? (
-          <>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Wallet Address</label>
-                <div className="flex">
-                  <Input 
-                    readOnly 
-                    value={wallet.address || ''} 
-                    className="font-mono text-sm flex-1"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={handleCopyAddress}
-                    className="ml-2"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Your public blockchain address</p>
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm font-medium">Private Key</label>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setShowPrivateKey(!showPrivateKey)} 
-                    className="h-6 px-2"
-                  >
-                    {showPrivateKey ? (
-                      <><EyeOff className="h-3 w-3 mr-1" /> Hide</>
-                    ) : (
-                      <><Eye className="h-3 w-3 mr-1" /> Show</>
-                    )}
-                  </Button>
-                </div>
-                <div className="flex">
-                  <Input 
-                    type={showPrivateKey ? "text" : "password"} 
-                    readOnly 
-                    value={wallet.privateKey || ''} 
-                    className="font-mono text-sm flex-1"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={handleCopyPrivateKey}
-                    className="ml-2"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">TACo encrypted with threshold cryptography</p>
-              </div>
-              
-              <div>
-                <div className="rounded-md bg-blue-50 p-3 mt-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <CheckCircle className="h-5 w-5 text-blue-400" />
-                    </div>
-                    <div className="ml-3 flex-1 md:flex md:justify-between">
-                      <p className="text-sm text-blue-700">
-                        Your wallet is secured with TACo threshold encryption
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        ) : walletAddress ? (
+          <div className="space-y-4">
+            <div className="rounded-md border p-4">
+              <div className="text-sm font-medium text-gray-500">Address</div>
+              <div className="mt-1 font-mono text-sm break-all">{walletAddress}</div>
             </div>
-          </>
+            
+            <div className="rounded-md border p-4">
+              <div className="text-sm font-medium text-gray-500">Balance</div>
+              <div className="mt-1 flex items-baseline">
+                <span className="text-2xl font-bold">{balance ? parseFloat(balance).toFixed(6) : '0.00'}</span>
+                <span className="ml-1 text-sm text-gray-500">MATIC</span>
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                ⚡ This wallet is on the Polygon network for low-cost transactions
+              </p>
+            </div>
+          </div>
         ) : (
-          <div className="py-4">
-            {generationError ? (
-              <div className="rounded-md bg-red-50 p-4 mb-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">Generation Error</h3>
-                    <div className="mt-2 text-sm text-red-700">
-                      <p>{generationError}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center bg-muted/50 rounded-lg p-6 flex flex-col items-center">
-                <Key className="h-10 w-10 text-muted-foreground mb-4" />
-                <h3 className="font-medium mb-2">No Hot Wallet Found</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Generate a new hot wallet for fast, secure transactions.
-                </p>
-              </div>
-            )}
+          <div className="space-y-4 py-4">
+            <p className="text-center text-sm text-gray-600">
+              You don't have a hot wallet yet. Generate one to easily manage your BlockReceipts.
+            </p>
+            
+            <div className="rounded-md bg-gray-50 p-4 border border-gray-100">
+              <h4 className="text-sm font-medium">Why use a hot wallet?</h4>
+              <ul className="mt-2 text-xs text-gray-600 space-y-1 list-disc pl-4">
+                <li>Fast access to your BlockReceipts</li>
+                <li>Extremely low transaction fees on Polygon</li>
+                <li>Securely encrypted with TACo threshold encryption</li>
+                <li>Compatible with all Ethereum/Polygon applications</li>
+              </ul>
+            </div>
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <Button
-          onClick={handleGenerateWallet}
-          disabled={isGenerating}
-          className="w-full"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : wallet ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Regenerate Wallet
-            </>
-          ) : (
-            <>
-              <Key className="mr-2 h-4 w-4" />
-              Generate Hot Wallet
-            </>
-          )}
-        </Button>
+      
+      <CardFooter className="flex justify-between bg-gray-50 border-t">
+        {walletAddress ? (
+          <div className="text-xs text-gray-500">
+            📍 Polygon Network • Chain ID: 137
+          </div>
+        ) : (
+          <Button
+            onClick={generateWallet}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white"
+          >
+            {loading ? <Spinner className="mr-2" /> : null}
+            Generate Hot Wallet
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

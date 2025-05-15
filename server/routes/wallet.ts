@@ -3,183 +3,183 @@
  * 
  * Routes for wallet management and TACo encrypted wallet operations
  */
-import { Router, Request, Response, NextFunction } from "express";
-import { z } from "zod";
-import { AuthService } from "../services/authService";
-import { TacoService } from "../services/tacoService";
-import { WalletService } from "../services/walletService";
+import { Router, Request, Response, NextFunction } from 'express';
+// No need for RequestWithUser type, using type assertions instead
+import { ethers } from 'ethers';
+import { WalletService } from '../services/walletService';
+import { tacoService } from '../services/tacoService';
 
-export const walletRouter = Router();
+const walletRouter = Router();
+const walletService = new WalletService();
 
-// Authentication middleware
+// Export as default to match other route files
+export default walletRouter;
+
+/**
+ * Middleware to ensure the user is authenticated
+ */
 const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.session.userId) {
+  if (!(req as any).isAuthenticated()) {
     return res.status(401).json({
       success: false,
-      error: "Authentication required",
+      error: 'Authentication required'
     });
   }
-  
   next();
 };
 
-// Initialize services
-const tacoService = new TacoService();
-const walletService = new WalletService();
-const authService = new AuthService(tacoService, walletService);
-
-// Get user wallet
+/**
+ * Get the current user's wallet
+ * GET /api/wallet/my-wallet
+ */
 walletRouter.get("/my-wallet", requireAuth, async (req: Request, res: Response) => {
   try {
-    const userId = req.session.userId as number;
-    
-    // Get the wallet
+    const userId = req.user!.id;
     const wallet = await walletService.getUserWallet(userId);
     
     if (!wallet) {
       return res.status(404).json({
         success: false,
-        error: "Wallet not found",
+        error: 'No wallet found for this user'
       });
     }
     
-    // Return wallet info (excluding private key)
     return res.json({
       success: true,
       wallet: {
         address: wallet.address,
-      },
+        createdAt: wallet.createdAt,
+        lastUsedAt: wallet.lastUsedAt
+      }
     });
   } catch (error: any) {
-    console.error("Error getting wallet:", error);
+    console.error('Error fetching wallet:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || "Failed to get wallet",
+      error: 'Failed to retrieve wallet'
     });
   }
 });
 
-// Generate a new wallet
+/**
+ * Generate a new wallet for the current user
+ * POST /api/wallet/generate
+ */
 walletRouter.post("/generate", requireAuth, async (req: Request, res: Response) => {
   try {
-    const userId = req.session.userId as number;
+    const userId = req.user!.id;
+    const { tacoPublicKey } = req.body;
+    
+    // Check if user already has a wallet
+    const existingWallet = await walletService.getUserWallet(userId);
+    if (existingWallet) {
+      return res.status(400).json({
+        success: false,
+        error: 'User already has a wallet'
+      });
+    }
+    
+    // Generate a new wallet
+    const { address, privateKey } = await walletService.generateWallet();
+    
+    // Encrypt the private key using TACo
+    const encryptedPrivateKey = await tacoService.encryptPrivateKey(privateKey, tacoPublicKey, userId);
+    
+    // Store the wallet
+    await walletService.storeWallet(userId, address, encryptedPrivateKey);
+    
+    return res.json({
+      success: true,
+      wallet: {
+        address
+      }
+    });
+  } catch (error: any) {
+    console.error('Error generating wallet:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate wallet'
+    });
+  }
+});
+
+/**
+ * Get wallet balance
+ * GET /api/wallet/balance/:address
+ */
+walletRouter.get("/balance/:address", async (req: Request, res: Response) => {
+  try {
+    const { address } = req.params;
+    
+    // Validate the address
+    if (!ethers.utils.isAddress(address)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid wallet address'
+      });
+    }
+    
+    // Get balance (default to Polygon network)
+    const balance = await walletService.getWalletBalance(address, 'polygon');
+    
+    return res.json({
+      success: true,
+      balance,
+      network: 'polygon'
+    });
+  } catch (error: any) {
+    console.error('Error fetching wallet balance:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve balance'
+    });
+  }
+});
+
+/**
+ * Decrypt the user's private key using TACo
+ * POST /api/wallet/decrypt-private-key
+ */
+walletRouter.post("/decrypt-private-key", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
     const { tacoPublicKey } = req.body;
     
     if (!tacoPublicKey) {
       return res.status(400).json({
         success: false,
-        error: "TACo public key is required for wallet generation",
+        error: 'TACo public key is required'
       });
     }
     
-    // Check if user already has a wallet
-    const existingWallet = await walletService.getUserWallet(userId);
-    
-    if (existingWallet) {
-      return res.status(400).json({
-        success: false,
-        error: "User already has a wallet",
-      });
-    }
-    
-    // Generate a new wallet
-    const wallet = await walletService.generateWallet();
-    
-    // Encrypt and store the wallet private key
-    await tacoService.encryptPrivateKeyWithTACo(
-      userId,
-      wallet.privateKey,
-      tacoPublicKey
-    );
-    
-    // Link the wallet to the user
-    await authService.linkWalletToUser(userId, wallet.address);
-    
-    // Return wallet info (excluding private key)
-    return res.json({
-      success: true,
-      wallet: {
-        address: wallet.address,
-      },
-    });
-  } catch (error: any) {
-    console.error("Error generating wallet:", error);
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Failed to generate wallet",
-    });
-  }
-});
-
-// Get wallet balance
-walletRouter.get("/balance/:address", async (req: Request, res: Response) => {
-  try {
-    const { address } = req.params;
-    
-    if (!address) {
-      return res.status(400).json({
-        success: false,
-        error: "Wallet address is required",
-      });
-    }
-    
-    // Get the balance
-    const balance = await walletService.getWalletBalance(address);
-    
-    return res.json({
-      success: true,
-      balance,
-    });
-  } catch (error: any) {
-    console.error("Error getting wallet balance:", error);
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Failed to get wallet balance",
-    });
-  }
-});
-
-// Retrieve encrypted wallet private key
-walletRouter.post("/decrypt-private-key", requireAuth, async (req: Request, res: Response) => {
-  try {
-    const userId = req.session.userId as number;
-    const { tacoPrivateKey } = req.body;
-    
-    if (!tacoPrivateKey) {
-      return res.status(400).json({
-        success: false,
-        error: "TACo private key is required to decrypt wallet",
-      });
-    }
-    
-    // Get the wallet
+    // Get user's wallet
     const wallet = await walletService.getUserWallet(userId);
-    
-    if (!wallet) {
+    if (!wallet || !wallet.encryptedPrivateKey) {
       return res.status(404).json({
         success: false,
-        error: "Wallet not found",
+        error: 'No wallet or encrypted private key found'
       });
     }
     
     // Decrypt the private key
-    const privateKey = await tacoService.decryptWalletPrivateKey(
-      wallet,
-      tacoPrivateKey
+    const privateKey = await tacoService.decryptPrivateKey(
+      wallet.encryptedPrivateKey, 
+      tacoPublicKey,
+      userId
     );
     
-    // Return the private key
+    // Update last used timestamp
+    await walletService.updateLastUsed(wallet.address);
+    
     return res.json({
       success: true,
-      privateKey,
+      privateKey: privateKey
     });
   } catch (error: any) {
-    console.error("Error decrypting wallet:", error);
+    console.error('Error decrypting private key:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || "Failed to decrypt wallet",
+      error: error.message || 'Failed to decrypt private key'
     });
   }
 });
-
-export default walletRouter;

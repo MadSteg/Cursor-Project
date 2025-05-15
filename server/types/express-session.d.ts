@@ -1,16 +1,16 @@
-/**
- * Type definitions for express-session
- * 
- * This file extends the Express.Session interface to include our custom user session data.
- */
-import 'express-session';
+import { Request } from 'express';
+import { User } from '@shared/schema';
 
 declare module 'express-session' {
   interface SessionData {
-    /** The authenticated user's ID */
-    userId?: number;
-    
-    /** The authenticated user's wallet address (if they have one) */
-    walletAddress?: string;
+    passport?: {
+      user: number;
+    };
   }
+}
+
+export interface RequestWithUser extends Request {
+  user?: User;
+  isAuthenticated(): boolean;
+  logout(callback: (err: any) => void): void;
 }
