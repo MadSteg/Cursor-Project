@@ -26,6 +26,8 @@ import ocrTestRoutes from "./routes/ocr-test";
 // Receipt upload routes
 // Import the uploadReceipt routes
 import uploadReceiptRoutes from "./routes/uploadReceipt";
+// Import the NFT options routes
+import nftOptionsRoutes from "./routes/nftOptions";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes

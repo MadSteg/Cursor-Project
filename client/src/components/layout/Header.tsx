@@ -57,17 +57,10 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Scan Receipt */}
-            <Link href="/scan-receipt">
-              <span className={`text-sm font-medium ${currentLocation === "/scan-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Scan className="h-4 w-4 mr-1.5" /> Scan Receipt
-              </span>
-            </Link>
-            
             {/* Mint BlockReceipt - Primary Feature */}
             <Link href="/upload-receipt">
               <span className={`text-sm font-medium ${currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Upload className="h-4 w-4 mr-1.5" /> Mint BlockReceipt
+                <FileImage className="h-4 w-4 mr-1.5" /> Mint BlockReceipt
               </span>
             </Link>
           </div>
@@ -101,14 +94,9 @@ const Header: React.FC = () => {
                         <Shield className="h-5 w-5" /> Security
                       </span>
                     </Link>
-                    <Link href="/scan-receipt">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Scan className="h-5 w-5" /> Scan Receipt
-                      </span>
-                    </Link>
                     <Link href="/upload-receipt">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Upload className="h-5 w-5" /> Mint BlockReceipt
+                        <FileImage className="h-5 w-5" /> Mint BlockReceipt
                       </span>
                     </Link>
                   </div>

@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle } from 'lucide-react';
+import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -300,13 +300,13 @@ export default function UploadReceiptPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="bg-primary/5 p-4 rounded-full">
-                        <Camera className="h-8 w-8 text-primary" />
+                      <div className="bg-primary/10 p-6 rounded-full mb-2">
+                        <FileImage className="h-12 w-12 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="text-lg font-medium">Drag & drop your receipt here</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          or click to browse files (JPG, PNG, PDF accepted)
+                      <div className="text-center">
+                        <h3 className="text-xl font-medium">Upload Your Receipt Image Here</h3>
+                        <p className="text-sm text-muted-foreground mt-2 mb-4">
+                          Take a photo or scan of your receipt to create a BlockReceipt
                         </p>
                       </div>
                       <input
@@ -316,14 +316,21 @@ export default function UploadReceiptPage() {
                         className="hidden"
                         onChange={handleFileChange}
                       />
-                      <Button 
-                        variant="default" 
-                        className="mt-2"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        Select Receipt
-                      </Button>
+                      <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
+                        <Button 
+                          variant="default" 
+                          size="lg"
+                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <FileImage className="mr-2 h-5 w-5" />
+                          Choose Receipt Image
+                        </Button>
+                        <p className="text-xs text-center text-muted-foreground">
+                          JPG, PNG, PDF files accepted
+                        </p>
+                      </div>
                     </>
                   )}
                 </div>
