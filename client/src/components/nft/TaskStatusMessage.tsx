@@ -1,138 +1,205 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react';
+import { Loader2, CheckCircle2, XCircle, AlertCircle, Clock } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Loader2, Clock } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { queryClient } from '@/lib/queryClient';
 
-interface TaskStatusMessageProps {
-  taskId?: string;
-  status?: 'idle' | 'processing' | 'completed' | 'failed';
-  tokenId?: string;
+interface TaskStatus {
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress?: number;
+  result?: any;
   error?: string;
 }
 
-export default function TaskStatusMessage({ taskId, status: initialStatus, tokenId, error: initialError }: TaskStatusMessageProps) {
-  const [status, setStatus] = useState(initialStatus || 'idle');
-  const [error, setError] = useState(initialError);
-  const [progress, setProgress] = useState(0);
-  const [resultTokenId, setResultTokenId] = useState(tokenId);
+interface TaskStatusMessageProps {
+  taskId: string;
+  pollingInterval?: number;
+}
+
+/**
+ * TaskStatusMessage Component
+ * 
+ * Displays the current status of a background task with appropriate visuals
+ * and automatically polls for updates.
+ */
+const TaskStatusMessage: React.FC<TaskStatusMessageProps> = ({ 
+  taskId, 
+  pollingInterval = 3000 
+}) => {
+  const [status, setStatus] = useState<TaskStatus | null>(null);
+  const [polling, setPolling] = useState<boolean>(true);
   
-  // Poll for task status if taskId is provided
+  // Effect to poll for task status
   useEffect(() => {
-    if (!taskId) return;
+    if (!taskId || !polling) return;
     
-    let intervalId: NodeJS.Timeout;
-    
-    const checkStatus = async () => {
+    const pollStatus = async () => {
       try {
         const response = await fetch(`/api/task/${taskId}/status`);
         const data = await response.json();
         
         if (data.success) {
-          setProgress(data.progress || 0);
+          setStatus({
+            status: data.status,
+            progress: data.progress,
+            result: data.result,
+            error: data.error
+          });
           
-          if (data.status === 'completed') {
-            setStatus('completed');
-            if (data.result?.tokenId) {
-              setResultTokenId(data.result.tokenId);
-            }
-            // Clear interval once completed
-            clearInterval(intervalId);
-          } else if (data.status === 'failed') {
-            setStatus('failed');
-            setError(data.error || 'Task failed');
-            // Clear interval on failure
-            clearInterval(intervalId);
-          } else {
-            setStatus('processing');
+          // Stop polling if task is completed or failed
+          if (data.status === 'completed' || data.status === 'failed') {
+            setPolling(false);
           }
         } else {
           console.error('Error fetching task status:', data.message);
+          setStatus({
+            status: 'failed',
+            error: data.message || 'Failed to fetch task status'
+          });
+          setPolling(false);
         }
-      } catch (err) {
-        console.error('Error checking task status:', err);
+      } catch (error) {
+        console.error('Error polling task status:', error);
+        setStatus({
+          status: 'failed',
+          error: 'Network error while checking task status'
+        });
+        // Continue polling in case of network errors
       }
     };
     
-    // Check immediately, then set interval
-    checkStatus();
-    intervalId = setInterval(checkStatus, 3000);
+    // Poll immediately
+    pollStatus();
     
+    // Setup polling interval
+    const interval = setInterval(pollStatus, pollingInterval);
+    
+    // Cleanup
     return () => {
-      clearInterval(intervalId);
+      clearInterval(interval);
     };
-  }, [taskId]);
+  }, [taskId, polling, pollingInterval]);
   
-  if (status === 'idle') {
-    return null;
+  // Manually refresh status
+  const refreshStatus = () => {
+    // Invalidate cache for this task
+    queryClient.invalidateQueries({ queryKey: [`/api/task/${taskId}/status`] });
+    setPolling(true);
+  };
+  
+  if (!status) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 gap-3">
+        <div className="bg-blue-100 p-3 rounded-full">
+          <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+        </div>
+        <h4 className="font-medium">Checking status...</h4>
+        <p className="text-sm text-gray-500">
+          Connecting to task processor
+        </p>
+      </div>
+    );
   }
   
-  return (
-    <div className="mb-6">
-      {status === 'processing' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">
-                <Badge className="bg-blue-500 text-white">Processing</Badge> Your NFT is being minted
-              </h3>
-              <div className="mt-2 mb-1 text-sm text-blue-700">
-                <p>This process takes about 15 seconds to complete.</p>
-              </div>
-              <Progress value={progress} className="h-1.5 max-w-sm" />
-            </div>
+  // Determine display based on status
+  switch (status.status) {
+    case 'pending':
+      return (
+        <div className="flex flex-col items-center justify-center p-4 gap-3">
+          <div className="bg-yellow-100 p-3 rounded-full">
+            <Clock className="h-6 w-6 text-yellow-600" />
           </div>
+          <h4 className="font-medium">Pending</h4>
+          <p className="text-sm text-gray-500">
+            Your receipt NFT is waiting to be processed
+          </p>
+          <Progress value={0} className="w-full h-2 mt-2" />
         </div>
-      )}
+      );
       
-      {status === 'completed' && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-green-800">
-                <Badge className="bg-green-500 text-white">Complete</Badge> NFT Successfully Minted
-              </h3>
-              <div className="mt-2 text-sm text-green-700">
-                <p>Your receipt has been permanently stored on the blockchain.</p>
-                {resultTokenId && (
-                  <p className="mt-1 font-semibold">
-                    Token ID: {resultTokenId}
-                  </p>
-                )}
-              </div>
-            </div>
+    case 'processing':
+      return (
+        <div className="flex flex-col items-center justify-center p-4 gap-3">
+          <div className="bg-blue-100 p-3 rounded-full">
+            <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
           </div>
+          <h4 className="font-medium">Processing</h4>
+          <p className="text-sm text-gray-500">
+            Creating your NFT receipt on the blockchain
+          </p>
+          <Progress 
+            value={status.progress || 50} 
+            className="w-full h-2 mt-2" 
+          />
         </div>
-      )}
+      );
       
-      {status === 'failed' && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                <Badge className="bg-red-500 text-white">Failed</Badge> NFT Minting Issue
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>There was a problem creating your NFT.</p>
-                {error && (
-                  <p className="mt-1 text-xs">
-                    Error: {error}
-                  </p>
-                )}
+    case 'completed':
+      return (
+        <div className="flex flex-col items-center justify-center p-4 gap-3">
+          <div className="bg-green-100 p-3 rounded-full">
+            <CheckCircle2 className="h-6 w-6 text-green-600" />
+          </div>
+          <h4 className="font-medium">Complete</h4>
+          <p className="text-sm text-gray-500">
+            Your NFT receipt has been created successfully
+          </p>
+          <div className="text-xs text-gray-500 mt-2 w-full overflow-hidden">
+            {status.result?.transactionHash && (
+              <div className="truncate">
+                <span className="font-medium">Tx:</span> {status.result.transactionHash}
               </div>
-            </div>
+            )}
+            {status.result?.tokenId && (
+              <div>
+                <span className="font-medium">Token ID:</span> {status.result.tokenId}
+              </div>
+            )}
           </div>
         </div>
-      )}
-    </div>
-  );
-}
+      );
+      
+    case 'failed':
+      return (
+        <div className="flex flex-col items-center justify-center p-4 gap-3">
+          <div className="bg-red-100 p-3 rounded-full">
+            <XCircle className="h-6 w-6 text-red-600" />
+          </div>
+          <h4 className="font-medium">Failed</h4>
+          <Alert variant="destructive" className="mt-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {status.error || 'An unknown error occurred'}
+            </AlertDescription>
+          </Alert>
+          <button 
+            onClick={refreshStatus}
+            className="text-sm text-blue-600 hover:text-blue-800 mt-2"
+          >
+            Retry
+          </button>
+        </div>
+      );
+      
+    default:
+      return (
+        <div className="flex flex-col items-center justify-center p-4 gap-3">
+          <div className="bg-gray-100 p-3 rounded-full">
+            <AlertCircle className="h-6 w-6 text-gray-600" />
+          </div>
+          <h4 className="font-medium">Unknown Status</h4>
+          <p className="text-sm text-gray-500">
+            The status of your NFT receipt is unknown
+          </p>
+          <button 
+            onClick={refreshStatus}
+            className="text-sm text-blue-600 hover:text-blue-800 mt-2"
+          >
+            Check Again
+          </button>
+        </div>
+      );
+  }
+};
+
+export default TaskStatusMessage;

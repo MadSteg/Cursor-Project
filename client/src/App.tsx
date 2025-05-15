@@ -20,6 +20,7 @@ import VerifyReceipt from "@/pages/VerifyReceipt";
 import UploadReceiptPage from "@/pages/UploadReceiptPage";
 import ReceiptGalleryPage from "@/pages/ReceiptGalleryPage";
 import MerchantDashboard from "@/pages/MerchantDashboard";
+import ImprovedReceiptPage from "@/pages/ImprovedReceiptPage";
 
 // Analytics & Inventory (now integrated with NFT Wallet)
 import Analytics from "@/pages/Analytics";
@@ -66,12 +67,13 @@ function Router() {
         
         {/* Core Receipt Features */}
         <Route path="/scan-receipt" component={ScanReceipt} />
-        <Route path="/mint-blockreceipt" component={UploadReceiptPage} />
-        <Route path="/upload-receipt" component={UploadReceiptPage} /> {/* Keep for backward compatibility */}
+        <Route path="/mint-blockreceipt" component={ImprovedReceiptPage} />
+        <Route path="/upload-receipt" component={ImprovedReceiptPage} /> {/* Keep for backward compatibility */}
         <Route path="/receipt-gallery" component={ReceiptGalleryPage} />
         <Route path="/receipt-gallery/:address" component={ReceiptGalleryPage} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
+        <Route path="/new-receipt" component={ImprovedReceiptPage} /> {/* New improved receipt uploader */}
         
         {/* NFT Receipt Features - Commented out as requested, but kept for future development */}
         {/* <Route path="/nft-wallet" component={UserNFTWallet} /> */}

@@ -28,7 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskStatusMessage from '../nft/TaskStatusMessage';
-import { determineReceiptTier } from '@/lib/receiptOcr';
+import { determineReceiptTier, type ReceiptTier } from '@/lib/receiptOcr';
 
 interface ReceiptItem {
   name: string;
@@ -339,31 +339,30 @@ export function ImprovedReceiptUploader() {
   const renderTierBadge = (total: number) => {
     const tier = determineReceiptTier(total);
     
-    switch (tier) {
-      case 'ULTRA':
-        return (
-          <Badge className="bg-gradient-to-r from-purple-600 to-indigo-500 hover:bg-gradient-to-r hover:from-purple-700 hover:to-indigo-600">
-            Ultra
-          </Badge>
-        );
-      case 'LUXURY':
-        return (
-          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600">
-            Luxury
-          </Badge>
-        );
-      case 'PREMIUM':
-        return (
-          <Badge className="bg-blue-600 hover:bg-blue-700">
-            Premium
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">
-            Standard
-          </Badge>
-        );
+    if (tier === 'ULTRA') {
+      return (
+        <Badge className="bg-gradient-to-r from-purple-600 to-indigo-500 hover:bg-gradient-to-r hover:from-purple-700 hover:to-indigo-600">
+          Ultra
+        </Badge>
+      );
+    } else if (tier === 'LUXURY') {
+      return (
+        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600">
+          Luxury
+        </Badge>
+      );
+    } else if (tier === 'PREMIUM') {
+      return (
+        <Badge className="bg-blue-600 hover:bg-blue-700">
+          Premium
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline">
+          Standard
+        </Badge>
+      );
     }
   };
 

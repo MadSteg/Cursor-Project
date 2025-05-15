@@ -1,189 +1,94 @@
 /**
- * Receipt OCR Library
+ * Receipt OCR and Processing Utilities
  * 
- * Provides utilities for receipt OCR processing and data classification
+ * Functions for processing receipt data, determining NFT tiers, 
+ * and other related helper functions.
  */
-import axios from 'axios';
+
+// Define the possible tiers for receipt NFTs
+export type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
 
 /**
- * Receipt tier levels based on total amount
- */
-export enum ReceiptTier {
-  STANDARD = 'Standard',
-  PREMIUM = 'Premium',
-  LUXURY = 'Luxury',
-  ULTRA = 'Ultra'
-}
-
-/**
- * Basic extracted receipt data structure
- */
-export interface ExtractedReceiptData {
-  merchantName: string;
-  date: string;
-  total: number;
-  subtotal?: number;
-  tax?: number;
-  tip?: number;
-  items: ReceiptItem[];
-  category?: string;
-  paymentMethod?: string;
-  currencyCode?: string;
-}
-
-/**
- * Receipt item structure
- */
-export interface ReceiptItem {
-  name: string;
-  quantity: number;
-  price: number;
-  total: number;
-}
-
-/**
- * OCR receipt data with additional metadata
- */
-export interface ReceiptData extends ExtractedReceiptData {
-  id?: string;
-  userId?: string;
-  createdAt?: string;
-  merchantDetails?: {
-    name: string;
-    address?: string;
-    phone?: string;
-    website?: string;
-    email?: string;
-  };
-  transactionDetails?: {
-    id?: string;
-    date: string;
-    time?: string;
-    subtotal: number;
-    tax: number;
-    tip?: number;
-    total: number;
-    paymentMethod?: string;
-    cardLast4?: string;
-  };
-  receiptType?: string;
-  encryptionStatus?: 'encrypted' | 'unencrypted';
-  metadataEncryptionKey?: string;
-  hasSharedAccess?: boolean;
-  accessGrantedTo?: string[];
-}
-
-/**
- * Upload a receipt image and get extracted data
+ * Determines the receipt tier based on the total amount
  * 
- * @param imageBase64 Base64 encoded image
- * @returns Promise with extracted receipt data
- */
-export async function uploadReceiptImage(imageBase64: string): Promise<ReceiptData> {
-  try {
-    const response = await axios.post('/api/ocr/process', {
-      image: imageBase64
-    });
-    
-    if (response.data.success && response.data.data) {
-      return response.data.data;
-    } else {
-      throw new Error(response.data.error || 'Failed to extract receipt data');
-    }
-  } catch (error) {
-    console.error('Receipt upload error:', error);
-    throw error;
-  }
-}
-
-/**
- * Determine the receipt tier based on the total amount
- * 
- * @param total Total receipt amount
- * @returns Receipt tier
+ * @param total - The total amount from the receipt
+ * @returns The tier category (STANDARD, PREMIUM, LUXURY, or ULTRA)
  */
 export function determineReceiptTier(total: number): ReceiptTier {
-  if (total >= 300) {
-    return ReceiptTier.ULTRA;
-  } else if (total >= 100) {
-    return ReceiptTier.LUXURY;
-  } else if (total >= 20) {
-    return ReceiptTier.PREMIUM;
+  if (total >= 500) {
+    return 'ULTRA';
+  } else if (total >= 200) {
+    return 'LUXURY';
+  } else if (total >= 50) {
+    return 'PREMIUM';
   } else {
-    return ReceiptTier.STANDARD;
+    return 'STANDARD';
   }
 }
 
 /**
- * Format a currency amount based on the currency code
+ * Determines the eligible NFT categories based on receipt data
  * 
- * @param amount Amount to format
- * @param currencyCode Currency code (default: USD)
- * @returns Formatted currency string
+ * @param merchantName - The merchant name from receipt
+ * @param total - The total amount
+ * @param items - The line items from the receipt
+ * @returns Array of category tags
  */
-export function formatCurrency(amount: number, currencyCode = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currencyCode,
-  }).format(amount);
-}
-
-/**
- * Convert a file to base64 encoding
- * 
- * @param file File to convert
- * @returns Promise with base64 string
- */
-export function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const base64String = reader.result as string;
-      // Remove the data:image/*;base64, prefix
-      const base64 = base64String.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-}
-
-/**
- * Process a receipt image from a file
- * 
- * @param file Image file
- * @returns Promise with receipt data
- */
-export async function processReceiptImage(file: File): Promise<ReceiptData> {
-  try {
-    const base64 = await fileToBase64(file);
-    return await uploadReceiptImage(base64);
-  } catch (error) {
-    console.error('Process receipt image error:', error);
-    throw error;
+export function determineReceiptCategories(
+  merchantName: string,
+  total: number,
+  items: any[]
+): string[] {
+  const categories = new Set<string>();
+  
+  // Check merchant name for categories
+  const merchantNameLower = merchantName.toLowerCase();
+  
+  if (merchantNameLower.includes('restaurant') || 
+      merchantNameLower.includes('cafe') || 
+      merchantNameLower.includes('bar') ||
+      merchantNameLower.includes('grill')) {
+    categories.add('food');
+    categories.add('dining');
   }
-}
-
-/**
- * Process a receipt image from base64 string
- * 
- * @param base64 Base64 encoded image
- * @returns Promise with receipt data
- */
-export async function processReceiptBase64(base64: string): Promise<ReceiptData> {
-  try {
-    return await uploadReceiptImage(base64);
-  } catch (error) {
-    console.error('Process receipt base64 error:', error);
-    throw error;
+  
+  if (merchantNameLower.includes('market') || 
+      merchantNameLower.includes('grocery') || 
+      merchantNameLower.includes('supermarket')) {
+    categories.add('grocery');
   }
+  
+  if (merchantNameLower.includes('electronics') || 
+      merchantNameLower.includes('tech') || 
+      merchantNameLower.includes('digital') ||
+      merchantNameLower.includes('computer')) {
+    categories.add('electronics');
+    categories.add('tech');
+  }
+  
+  if (merchantNameLower.includes('apparel') || 
+      merchantNameLower.includes('clothing') || 
+      merchantNameLower.includes('fashion') ||
+      merchantNameLower.includes('wear')) {
+    categories.add('fashion');
+    categories.add('clothing');
+  }
+  
+  // Check based on total amount
+  if (total >= 500) {
+    categories.add('luxury');
+  }
+  
+  // Add some default categories if none were determined
+  if (categories.size === 0) {
+    categories.add('receipt');
+    categories.add('general');
+  }
+  
+  return Array.from(categories);
 }
 
 export default {
-  uploadReceiptImage,
   determineReceiptTier,
-  formatCurrency,
-  fileToBase64,
-  processReceiptImage,
-  processReceiptBase64
+  determineReceiptCategories
 };
