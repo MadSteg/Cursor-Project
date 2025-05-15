@@ -3,26 +3,26 @@ import { Helmet } from 'react-helmet';
 import { AutoProcessUploader } from '@/components/receipts/AutoProcessUploader';
 
 /**
- * Auto Process Receipt Page
+ * Auto Scan Receipt Page
  * This page is for testing and development only and uses the server-side
- * auto-processing flow that doesn't require a wallet connection.
+ * auto-scanning flow that doesn't require a wallet connection.
  */
 export default function AutoProcessReceiptPage() {
   return (
     <>
       <Helmet>
-        <title>Auto-Process Receipt | BlockReceipt.ai</title>
+        <title>Auto-Scan Receipt | BlockReceipt.ai</title>
         <meta 
           name="description" 
-          content="Upload and automatically process receipts without requiring a wallet connection" 
+          content="Upload and automatically scan receipts without requiring a wallet connection" 
         />
       </Helmet>
 
       <div className="container py-8 max-w-7xl">
         <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Auto-Process Receipt</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Auto-Scan Receipt</h1>
         <p className="text-muted-foreground mt-2">
-          Upload and automatically process receipts without requiring a wallet connection. For testing purposes only.
+          Upload and automatically scan receipts without requiring a wallet connection. For testing purposes only.
         </p>
       </div>
 

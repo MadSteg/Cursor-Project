@@ -15,8 +15,8 @@ import { FileImage, Loader2, Upload, FileX } from 'lucide-react';
 import TaskStatusMessage from '@/components/nft/TaskStatusMessage';
 
 /**
- * Auto Process Receipt Uploader Component
- * This component allows users to upload and automatically process receipts
+ * Auto Scan Receipt Uploader Component
+ * This component allows users to upload and automatically scan receipts
  * without requiring wallet connection.
  */
 export function AutoProcessUploader() {
