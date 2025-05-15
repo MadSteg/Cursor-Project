@@ -275,6 +275,21 @@ export const encryptedMetadataAccess = pgTable('encrypted_metadata_access', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// NFT Pool Table
+export const nftPool = pgTable('nft_pool', {
+  id: serial('id').primaryKey(),
+  nftId: text('nft_id').notNull().unique(),
+  name: text('name').notNull(),
+  image: text('image').notNull(), // URL to image
+  description: text('description').notNull(),
+  tier: text('tier').notNull(), // "basic", "premium", "luxury"
+  metadataUri: text('metadata_uri').notNull(), // IPFS URI for metadata
+  categories: text('categories').array().notNull(),
+  enabled: boolean('enabled').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // NFT Transfers Table
 export const nftTransfers = pgTable('nft_transfers', {
   id: serial('id').primaryKey(),
@@ -330,9 +345,18 @@ export const insertNftOwnershipSchema = createInsertSchema(nftOwnership).omit({
   lastVerifiedAt: true,
 });
 
+// Create insert schema for nft pool
+export const insertNftPoolSchema = createInsertSchema(nftPool).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type EncryptedMetadata = typeof encryptedMetadata.$inferSelect;
 export type EncryptedMetadataAccess = typeof encryptedMetadataAccess.$inferSelect;
 export type NftTransfer = typeof nftTransfers.$inferSelect;
 export type NftOwnership = typeof nftOwnership.$inferSelect;
+export type NftPool = typeof nftPool.$inferSelect;
 export type InsertNftOwnership = z.infer<typeof insertNftOwnershipSchema>;
+export type InsertNftPool = z.infer<typeof insertNftPoolSchema>;

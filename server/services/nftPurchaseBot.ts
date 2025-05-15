@@ -265,16 +265,14 @@ export async function purchaseAndTransferNFT(
  */
 export async function mintFallbackNFT(
   walletAddress: string,
-  receiptId: string,
-  receiptData: any
+  name: string,
+  description: string
 ): Promise<NFTPurchaseResult> {
   try {
-    console.log(`Minting fallback NFT for wallet ${walletAddress} based on receipt ${receiptId}`);
+    console.log(`Minting fallback NFT for wallet ${walletAddress}`);
     
-    // Determine receipt category and tier
-    const receiptTotal = receiptData.total || 0;
-    const category = marketplaceService.categorizeReceipt(receiptData);
-    const { tier } = marketplaceService.determineNFTBudget(receiptTotal);
+    // Use basic tier for fallback NFTs
+    const tier = 'basic';
     
     // Find a relevant NFT from our mock collection
     const selectedNFT = findRelevantNFT(receiptData);

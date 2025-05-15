@@ -38,6 +38,8 @@ import galleryRoutes from "./routes/gallery";
 import { getNFTs, selectNFT } from "./routes/nfts";
 // Import the NFT Purchase Bot routes
 import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
+// Import the NFT Pool routes
+import nftPoolRoutes from "./routes/nftPool";
 // Import the task queue routes
 import taskRoutes from "./routes/tasks";
 // Import test routes for the task queue
@@ -122,6 +124,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register NFT Purchase Bot routes
   app.use('/api/nft-bot', nftPurchaseBotRoutes);
+  
+  // Register NFT Pool routes
+  app.use('/api/nfts', nftPoolRoutes);
   
   // Register Task Queue routes
   app.use('/api', taskRoutes);
