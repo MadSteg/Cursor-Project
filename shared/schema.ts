@@ -281,7 +281,28 @@ export type InsertEncryptedMetadata = z.infer<typeof insertEncryptedMetadataSche
 export type InsertEncryptedMetadataAccess = z.infer<typeof insertEncryptedMetadataAccessSchema>;
 export type InsertNftTransfer = z.infer<typeof insertNftTransferSchema>;
 
+// NFT Ownership Table
+export const nftOwnership = pgTable('nft_ownership', {
+  id: serial('id').primaryKey(),
+  tokenId: text('token_id').notNull(),
+  ownerAddress: text('owner_address').notNull(),
+  contractAddress: text('contract_address').notNull(),
+  tokenType: text('token_type').default('ERC1155'), // ERC721, ERC1155
+  chainId: integer('chain_id').notNull(),
+  metadata: json('metadata'),
+  acquiredAt: timestamp('acquired_at').defaultNow().notNull(),
+  lastVerifiedAt: timestamp('last_verified_at').defaultNow().notNull(),
+});
+
+// Create insert schema for NFT ownership
+export const insertNftOwnershipSchema = createInsertSchema(nftOwnership).omit({
+  id: true,
+  lastVerifiedAt: true,
+});
+
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type EncryptedMetadata = typeof encryptedMetadata.$inferSelect;
 export type EncryptedMetadataAccess = typeof encryptedMetadataAccess.$inferSelect;
 export type NftTransfer = typeof nftTransfers.$inferSelect;
+export type NftOwnership = typeof nftOwnership.$inferSelect;
+export type InsertNftOwnership = z.infer<typeof insertNftOwnershipSchema>;

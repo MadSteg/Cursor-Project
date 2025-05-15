@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { metadataService } from '../services/metadataService';
 import { tacoService } from '../services/tacoService';
 import { blockchainService } from '../services/blockchainService';
+import { galleryService } from '../services/galleryService';
 
 const router = Router();
 

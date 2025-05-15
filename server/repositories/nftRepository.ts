@@ -1,109 +1,142 @@
 import { db } from '../db';
-import { encryptedMetadata, insertEncryptedMetadataSchema, InsertEncryptedMetadata } from '../../shared/schema';
-import { and, eq } from 'drizzle-orm';
+import { 
+  encryptedMetadata,
+  InsertEncryptedMetadata,
+  nftOwnership,
+  InsertNftOwnership
+} from '../../shared/schema';
+import { eq } from 'drizzle-orm';
 
 /**
- * Repository for NFT metadata storage and access
- * Handles the persistence of encrypted metadata for NFT receipts
+ * Repository for handling NFT data and encrypted metadata
  */
-export class NFTRepository {
+class NFTRepository {
   /**
-   * Store encrypted metadata for an NFT receipt
-   * @param data The encrypted metadata to store
+   * Store encrypted metadata for an NFT
+   * @param metadataRecord The metadata record to store
    * @returns The stored metadata record
    */
-  async storeEncryptedMetadata(data: InsertEncryptedMetadata) {
+  async storeEncryptedMetadata(metadataRecord: InsertEncryptedMetadata) {
     try {
-      // Validate data with our schema
-      const validatedData = insertEncryptedMetadataSchema.parse(data);
+      if (!db) throw new Error('Database not initialized');
       
-      // Insert encrypted metadata into the database
-      const [record] = await db.insert(encryptedMetadata)
-        .values(validatedData)
-        .returning();
+      // Check if a record with this tokenId already exists
+      const existingRecord = await this.getMetadataByTokenId(metadataRecord.tokenId);
       
-      console.log(`Stored encrypted metadata for token ${data.tokenId}`);
-      return record;
+      if (existingRecord) {
+        // Update the existing record
+        const [updated] = await db
+          .update(encryptedMetadata)
+          .set({
+            encryptedData: metadataRecord.encryptedData,
+            dataHash: metadataRecord.dataHash,
+            ownerAddress: metadataRecord.ownerAddress,
+            unencryptedPreview: metadataRecord.unencryptedPreview,
+            updatedAt: new Date()
+          })
+          .where(eq(encryptedMetadata.tokenId, metadataRecord.tokenId))
+          .returning();
+        return updated;
+      } else {
+        // Insert a new record
+        const [inserted] = await db
+          .insert(encryptedMetadata)
+          .values(metadataRecord)
+          .returning();
+        return inserted;
+      }
     } catch (error: any) {
-      console.error('Error storing encrypted metadata:', error);
-      throw new Error(`Failed to store encrypted metadata: ${error.message}`);
+      console.error('NFT Repository - Error storing encrypted metadata:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get encrypted metadata for an NFT by token ID
-   * @param tokenId The NFT token ID
-   * @returns The encrypted metadata record if found
+   * Get encrypted metadata for a token ID
+   * @param tokenId The token ID
+   * @returns The metadata record or null if not found
    */
   async getMetadataByTokenId(tokenId: string) {
     try {
-      const [record] = await db.select()
+      if (!db) throw new Error('Database not initialized');
+      
+      const [record] = await db
+        .select()
         .from(encryptedMetadata)
         .where(eq(encryptedMetadata.tokenId, tokenId));
       
-      return record;
+      return record || null;
     } catch (error: any) {
-      console.error(`Error retrieving metadata for token ${tokenId}:`, error);
-      throw new Error(`Failed to retrieve metadata: ${error.message}`);
+      console.error(`NFT Repository - Error getting metadata for token ${tokenId}:`, error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get all encrypted metadata records for a wallet address
+   * Get all encrypted metadata for a wallet address
    * @param ownerAddress The wallet address
-   * @returns Array of encrypted metadata records
+   * @returns Array of metadata records
    */
   async getMetadataByOwner(ownerAddress: string) {
     try {
-      const records = await db.select()
+      if (!db) throw new Error('Database not initialized');
+      
+      const records = await db
+        .select()
         .from(encryptedMetadata)
         .where(eq(encryptedMetadata.ownerAddress, ownerAddress));
       
       return records;
     } catch (error: any) {
-      console.error(`Error retrieving metadata for owner ${ownerAddress}:`, error);
-      throw new Error(`Failed to retrieve owner's metadata: ${error.message}`);
+      console.error(`NFT Repository - Error getting metadata for wallet ${ownerAddress}:`, error);
+      throw error;
     }
   }
-
+  
   /**
-   * Update the owner of an NFT's encrypted metadata
-   * @param tokenId The NFT token ID
-   * @param newOwnerAddress The new owner's wallet address
+   * Update the owner of an NFT's metadata
+   * @param tokenId The token ID
+   * @param newOwnerAddress The new owner's address
    * @returns The updated metadata record
    */
   async updateMetadataOwner(tokenId: string, newOwnerAddress: string) {
     try {
-      const [record] = await db.update(encryptedMetadata)
-        .set({ 
+      if (!db) throw new Error('Database not initialized');
+      
+      const [updated] = await db
+        .update(encryptedMetadata)
+        .set({
           ownerAddress: newOwnerAddress,
           updatedAt: new Date()
         })
         .where(eq(encryptedMetadata.tokenId, tokenId))
         .returning();
       
-      return record;
+      return updated;
     } catch (error: any) {
-      console.error(`Error updating metadata owner for token ${tokenId}:`, error);
-      throw new Error(`Failed to update metadata owner: ${error.message}`);
+      console.error(`NFT Repository - Error updating owner for token ${tokenId}:`, error);
+      throw error;
     }
   }
-
+  
   /**
-   * Delete encrypted metadata for an NFT
-   * @param tokenId The NFT token ID
-   * @returns Boolean indicating success
+   * Record NFT ownership in the database
+   * @param ownershipRecord The ownership record
+   * @returns The stored ownership record
    */
-  async deleteMetadata(tokenId: string) {
+  async recordNFTOwnership(ownershipRecord: InsertNftOwnership) {
     try {
-      const result = await db.delete(encryptedMetadata)
-        .where(eq(encryptedMetadata.tokenId, tokenId))
+      if (!db) throw new Error('Database not initialized');
+      
+      const [inserted] = await db
+        .insert(nftOwnership)
+        .values(ownershipRecord)
         .returning();
       
-      return result.length > 0;
+      return inserted;
     } catch (error: any) {
-      console.error(`Error deleting metadata for token ${tokenId}:`, error);
-      throw new Error(`Failed to delete metadata: ${error.message}`);
+      console.error('NFT Repository - Error recording NFT ownership:', error);
+      throw error;
     }
   }
 }
