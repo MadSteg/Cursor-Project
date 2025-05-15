@@ -10,14 +10,6 @@ import { ethers } from 'ethers';
 // Dynamic import for WalletConnect to avoid polyfill issues
 let WalletConnectProvider: any = null;
 
-// Type definition for window.ethereum
-interface EthereumProvider {
-  request: (args: { method: string; params?: any[] }) => Promise<any>;
-  on: (eventName: string, callback: any) => void;
-  removeListener: (eventName: string, callback: any) => void;
-  isMetaMask?: boolean;
-}
-
 export function useWalletConnect() {
   const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);

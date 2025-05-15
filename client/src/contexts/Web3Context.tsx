@@ -49,10 +49,8 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
 
   // Function to get the provider
   const getProvider = async (): Promise<ethers.providers.Web3Provider | null> => {
-    // @ts-ignore
     if (window.ethereum) {
       try {
-        // @ts-ignore
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         return provider;
       } catch (err) {
@@ -117,9 +115,7 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
   
   // Setup ethereum event listeners
   useEffect(() => {
-    // @ts-ignore
     if (window.ethereum) {
-      // @ts-ignore
       window.ethereum.on('accountsChanged', (accounts: string[]) => {
         if (accounts.length > 0) {
           setAccount(accounts[0]);
@@ -130,13 +126,11 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
         }
       });
 
-      // @ts-ignore
       window.ethereum.on('chainChanged', (chainIdHex: string) => {
         const newChainId = parseInt(chainIdHex, 16);
         setChainId(newChainId);
       });
 
-      // @ts-ignore
       window.ethereum.on('disconnect', () => {
         setActive(false);
         setAccount(null);
@@ -144,14 +138,10 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
     }
 
     return () => {
-      // @ts-ignore
       if (window.ethereum) {
-        // @ts-ignore
-        window.ethereum.removeAllListeners('accountsChanged');
-        // @ts-ignore
-        window.ethereum.removeAllListeners('chainChanged');
-        // @ts-ignore
-        window.ethereum.removeAllListeners('disconnect');
+        window.ethereum.removeListener('accountsChanged', () => {});
+        window.ethereum.removeListener('chainChanged', () => {});
+        window.ethereum.removeListener('disconnect', () => {});
       }
     };
   }, []);
@@ -184,7 +174,6 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
   const connect = async () => {
     try {
       // Check if ethereum is defined in window
-      // @ts-ignore
       const ethereum = window.ethereum;
       
       if (!ethereum) {
@@ -296,7 +285,6 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
   // Switch to Polygon Amoy
   const switchToPolygonAmoy = async () => {
     try {
-      // @ts-ignore
       const ethereum = window.ethereum;
       
       if (!ethereum || !ethereum.request) {
