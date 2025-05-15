@@ -6,7 +6,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage, Wallet } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage, Wallet, Lock } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import NFTArtPicker from '@/components/receipts/NFTArtPicker';
@@ -421,10 +422,14 @@ export default function UploadReceiptPage() {
                           disabled={isUploading}
                         >
                           <FileImage className="mr-2 h-5 w-5" />
-                          Choose Receipt Image
+                          Select Receipt to Immortalize
                         </Button>
                         <p className="text-xs text-center text-muted-foreground">
                           JPG, PNG, PDF files accepted
+                        </p>
+                        <p className="text-xs text-center text-muted-foreground mt-1">
+                          <span className="inline-block px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] mr-1">PRIVACY</span>
+                          Receipt details are encrypted with Threshold TACo technology
                         </p>
                       </div>
                     </>
@@ -503,6 +508,26 @@ export default function UploadReceiptPage() {
                     <NFTGiftStatus nftGift={receiptData.nftGift} />
                   </div>
                 )}
+                
+                {/* Encryption Notice */}
+                <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 mb-4">
+                  <div className="flex items-start">
+                    <Lock className="h-4 w-4 text-blue-600 mt-0.5 mr-2" />
+                    <div>
+                      <h4 className="text-sm font-medium text-slate-900">Receipt Data Protection</h4>
+                      <p className="text-xs text-slate-600 mt-1">
+                        When minted, this receipt's line items will be encrypted with Threshold TACo 
+                        technology. Only you will have access to unlock the details in your NFT wallet.
+                      </p>
+                      <div className="flex items-center mt-2">
+                        <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                          PRIVATE
+                        </Badge>
+                        <span className="text-[10px] text-slate-500 ml-2">Powered by TACo proxy re-encryption</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
                 <div className="pt-4">
                   <Button 
