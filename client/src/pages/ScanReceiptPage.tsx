@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useDropzone } from 'react-dropzone';
@@ -9,13 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight, Tag, DollarSign, Landmark, ShoppingBag, Loader2, Coins } from 'lucide-react';
+import { AlertCircle, CheckCircle2, UploadCloud, Camera, ReceiptIcon, ArrowRight, Tag, DollarSign, Landmark, ShoppingBag, Loader2, Coins, Wallet } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   processReceiptImage,
   determineReceiptTier
 } from "@/lib/receiptOcr";
 import { ReceiptData, ReceiptTier } from "@/types";
+import { useWalletConnect } from '@/hooks/useWalletConnect';
+import WalletButton from '@/components/blockchain/WalletButton';
 
 // Components
 const UploadInstruction = ({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) => (
@@ -38,6 +40,7 @@ const ScanReceiptPage = () => {
   const [receiptImage, setReceiptImage] = useState<string | null>(null);
   const [receiptTier, setReceiptTier] = useState<ReceiptTier | null>(null);
   const [, setLocation] = useLocation();
+  const { walletAddress, connectMetaMask, connectWalletConnect } = useWalletConnect();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
