@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ethers } from 'ethers';
+import * as ethers from 'ethers';
 import { db } from '../db';
 import * as dotenv from 'dotenv';
 
@@ -57,6 +57,27 @@ interface OpenSeaNFT {
   }
 }
 
+interface ReservoirNFT {
+  token: {
+    tokenId: string;
+    contract: string;
+    name: string;
+    image: string;
+    collection: {
+      name: string;
+    }
+  },
+  market: {
+    floorAsk: {
+      price: {
+        amount: {
+          native: number;
+        }
+      }
+    }
+  }
+}
+
 interface NFTPurchaseResult {
   success: boolean;
   txHash?: string;
@@ -80,9 +101,10 @@ interface UserClaimRecord {
 }
 
 class NFTPurchaseBot {
-  private provider: ethers.JsonRpcProvider;
-  private wallet: ethers.Wallet;
+  private provider: ethers.JsonRpcProvider | null = null;
+  private wallet: ethers.Wallet | null = null;
   private openSeaApiKey: string;
+  private reservoirApiKey: string;
   private maxNftPriceUsd: number = 0.10; // $0.10 maximum
   private claimCooldownHours: number = 24; // 1 claim per day
   private userClaims: Map<string, UserClaimRecord> = new Map();
@@ -93,22 +115,29 @@ class NFTPurchaseBot {
   constructor() {
     // Read environment variables
     this.openSeaApiKey = process.env.OPENSEA_API_KEY || '';
+    this.reservoirApiKey = process.env.RESERVOIR_API_KEY || '';
     const backendPrivateKey = process.env.NFT_BOT_PRIVATE_KEY || '';
     this.rpcUrl = process.env.POLYGON_MAINNET_RPC_URL || 'https://polygon-rpc.com';
     this.chainId = 137; // Polygon Mainnet
     this.isPolygonMainnet = process.env.NFT_BOT_NETWORK === 'polygon-mainnet';
     
-    // Initialize blockchain connection
-    this.provider = new ethers.JsonRpcProvider(this.rpcUrl);
-    
-    // Initialize wallet from private key
-    if (backendPrivateKey) {
-      this.wallet = new ethers.Wallet(backendPrivateKey, this.provider);
-      console.log(`NFT Bot wallet initialized: ${this.wallet.address}`);
-    } else {
-      // If no private key, create a random wallet for testing (will not have funds!)
-      this.wallet = ethers.Wallet.createRandom().connect(this.provider);
-      console.warn('NFT Bot using random wallet for testing only. No actual purchases will work!');
+    try {
+      // Initialize blockchain connection
+      this.provider = new ethers.JsonRpcProvider(this.rpcUrl);
+      
+      // Initialize wallet from private key
+      if (backendPrivateKey) {
+        this.wallet = new ethers.Wallet(backendPrivateKey, this.provider);
+        console.log(`NFT Bot wallet initialized: ${this.wallet.address}`);
+      } else {
+        // If no private key, create a random wallet for testing (will not have funds!)
+        this.wallet = ethers.Wallet.createRandom().connect(this.provider);
+        console.warn('NFT Bot using random wallet for testing only. No actual purchases will work!');
+      }
+    } catch (error) {
+      console.error('Failed to initialize NFT bot provider/wallet:', error);
+      this.provider = null;
+      this.wallet = null;
     }
     
     // Load existing claims from database (in a production system)
@@ -202,7 +231,7 @@ class NFTPurchaseBot {
    * @param keywords Optional keywords to filter NFTs (from receipt data)
    * @returns Array of affordable NFTs
    */
-  private async findAffordableNFTs(keywords: string[] = []): Promise<OpenSeaNFT[]> {
+  private async findAffordableNFTsOpenSea(keywords: string[] = []): Promise<OpenSeaNFT[]> {
     if (!this.openSeaApiKey) {
       throw new Error('OpenSea API key not configured');
     }
@@ -244,12 +273,98 @@ class NFTPurchaseBot {
   }
   
   /**
-   * Purchase an NFT from OpenSea
+   * Find affordable NFTs on Reservoir
+   * @param keywords Optional keywords to filter NFTs (from receipt data)
+   * @returns Array of affordable NFTs
    */
-  private async purchaseNFT(nft: OpenSeaNFT): Promise<NFTPurchaseResult> {
+  private async findAffordableNFTsReservoir(keywords: string[] = []): Promise<ReservoirNFT[]> {
+    // Calculate max price in USD
+    const maticPrice = await this.getMaticUsdPrice();
+    const maxPriceMatic = this.maxNftPriceUsd / maticPrice;
+    
+    try {
+      // Query Reservoir API for affordable NFTs on Polygon
+      const response = await axios.get('https://api.reservoir.tools/tokens/v5', {
+        headers: {
+          'x-api-key': this.reservoirApiKey || ''
+        },
+        params: {
+          limit: 20,
+          sortBy: 'floorAskPrice',
+          normalizeRoyalties: true,
+          chains: 'polygon',
+          maxFloorAskPrice: maxPriceMatic.toFixed(8),
+          includeTopBid: false,
+          displayCurrency: '0x0000000000000000000000000000000000000000' // ETH
+        }
+      });
+      
+      // Filter and map the tokens
+      const affordableNFTs = response.data.tokens.filter((nft: ReservoirNFT) => {
+        if (!nft.market?.floorAsk?.price?.amount?.native) return false;
+        
+        // Additional filtering if keywords are provided
+        if (keywords.length > 0) {
+          const nftText = `${nft.token.name || ''} ${nft.token.collection?.name || ''}`.toLowerCase();
+          return keywords.some(keyword => nftText.includes(keyword.toLowerCase()));
+        }
+        return true;
+      });
+      
+      console.log(`Found ${affordableNFTs.length} affordable NFTs on Reservoir`);
+      return affordableNFTs;
+    } catch (error: any) {
+      console.error('Error fetching NFTs from Reservoir:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Find affordable NFTs from multiple marketplaces
+   */
+  private async findAffordableNFTs(keywords: string[] = []): Promise<any[]> {
+    // Try Reservoir first (preferred)
+    const reservoirNFTs = await this.findAffordableNFTsReservoir(keywords);
+    if (reservoirNFTs.length > 0) {
+      return reservoirNFTs.map(nft => ({
+        source: 'reservoir',
+        data: nft,
+        identifier: nft.token.tokenId,
+        contract: nft.token.contract,
+        token_standard: 'ERC721', // Reservoir doesn't always specify, assume ERC721
+        name: nft.token.name,
+        image_url: nft.token.image,
+        price: {
+          current: {
+            value: nft.market?.floorAsk?.price?.amount?.native || 0
+          }
+        }
+      }));
+    }
+    
+    // Fall back to OpenSea if needed
+    const openSeaNFTs = await this.findAffordableNFTsOpenSea(keywords);
+    return openSeaNFTs.map(nft => ({
+      source: 'opensea',
+      data: nft,
+      ...nft
+    }));
+  }
+  
+  /**
+   * Purchase an NFT from a marketplace
+   */
+  private async purchaseNFT(nft: any): Promise<NFTPurchaseResult> {
+    if (!this.wallet || !this.provider) {
+      return {
+        success: false,
+        error: 'Wallet or provider not initialized'
+      };
+    }
+    
     try {
       // Check wallet balance first
-      const balance = await this.wallet.provider.getBalance(this.wallet.address);
+      const balance = await this.provider.getBalance(this.wallet.address);
       const balanceEth = parseFloat(ethers.formatEther(balance));
       const ethUsdPrice = await this.getEthUsdPrice();
       
@@ -267,7 +382,7 @@ class NFTPurchaseBot {
       }
       
       // In a real implementation, we would:
-      // 1. Create a buy order on OpenSea
+      // 1. Create a buy order on the marketplace
       // 2. Sign and submit the transaction
       // 3. Wait for transaction confirmation
       
@@ -285,7 +400,7 @@ class NFTPurchaseBot {
           contract: nft.contract,
           name: nft.name || 'Unnamed NFT',
           image: nft.image_url || '',
-          marketplace: 'OpenSea',
+          marketplace: nft.source === 'reservoir' ? 'Reservoir' : 'OpenSea',
           price: nft.price?.current?.value || 0
         }
       };
@@ -307,6 +422,13 @@ class NFTPurchaseBot {
     userWalletAddress: string,
     tokenStandard: string = 'ERC721'
   ): Promise<NFTPurchaseResult> {
+    if (!this.wallet || !this.provider) {
+      return {
+        success: false,
+        error: 'Wallet or provider not initialized'
+      };
+    }
+    
     try {
       // Select the appropriate ABI based on token standard
       const abi = tokenStandard === 'ERC1155' ? ERC1155_ABI : ERC721_ABI;
@@ -481,6 +603,13 @@ class NFTPurchaseBot {
     receiptId: string,
     receiptData: any
   ): Promise<NFTPurchaseResult> {
+    if (!this.wallet || !this.provider) {
+      return {
+        success: false,
+        error: 'Wallet or provider not initialized'
+      };
+    }
+    
     try {
       // Check eligibility first
       const isEligible = await this.isUserEligible(userWalletAddress);
@@ -491,26 +620,82 @@ class NFTPurchaseBot {
         };
       }
       
+      const contractAddress = process.env.RECEIPT_NFT_CONTRACT_ADDRESS;
+      if (!contractAddress) {
+        return {
+          success: false,
+          error: 'NFT contract address not configured'
+        };
+      }
+      
+      // Get a unique NFT design based on receipt data
+      let nftImage = '/nft-images/receipt-warrior.svg';
+      let nftName = 'Receipt Warrior';
+      
+      // Select NFT theme based on receipt data
+      if (receiptData.merchantName) {
+        const merchantName = receiptData.merchantName.toLowerCase();
+        if (merchantName.includes('food') || merchantName.includes('restaurant')) {
+          nftImage = '/nft-images/food-receipt.svg';
+          nftName = 'Food Receipt NFT';
+        } else if (merchantName.includes('tech') || merchantName.includes('electronics')) {
+          nftImage = '/nft-images/tech-receipt.svg';
+          nftName = 'Tech Receipt NFT';
+        } else if (merchantName.includes('clothing') || merchantName.includes('fashion')) {
+          nftImage = '/nft-images/fashion-receipt.svg';
+          nftName = 'Fashion Receipt NFT';
+        }
+      }
+      
+      // Generate a random token ID
+      const tokenId = Date.now().toString();
+      
+      // Simplified metadata
+      const metadata = {
+        name: `${nftName} #${tokenId}`,
+        description: `A unique BlockReceipt NFT generated from a receipt at ${receiptData.merchantName || 'unknown merchant'}`,
+        image: nftImage,
+        attributes: [
+          {
+            trait_type: 'Merchant',
+            value: receiptData.merchantName || 'Unknown'
+          },
+          {
+            trait_type: 'Date',
+            value: receiptData.date || new Date().toISOString()
+          },
+          {
+            trait_type: 'Amount',
+            value: receiptData.total || 0
+          }
+        ]
+      };
+      
+      // In a real implementation, we would:
+      // 1. Upload metadata to IPFS
+      // 2. Use the contract to mint a new NFT with the metadata URI
+      
       // For now, simulate a successful minting
       const mockTxHash = `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      const tokenId = Date.now().toString();
       
       // Record the successful claim
       this.recordClaim(
         userWalletAddress,
         tokenId,
-        process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '',
+        contractAddress,
         receiptId
       );
+      
+      console.log(`Minted fallback NFT for ${userWalletAddress}`, metadata);
       
       return {
         success: true,
         txHash: mockTxHash,
         nft: {
           tokenId,
-          contract: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '',
-          name: `BlockReceipt #${tokenId}`,
-          image: `/nft-images/receipt-warrior.svg`,
+          contract: contractAddress,
+          name: metadata.name,
+          image: metadata.image,
           marketplace: 'BlockReceipt',
           price: 0
         }

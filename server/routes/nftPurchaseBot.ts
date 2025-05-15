@@ -140,12 +140,12 @@ router.get('/transaction/:txHash', async (req: Request, res: Response) => {
       success: true,
       transaction: mockTransaction
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error getting transaction info:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to get transaction info',
-      error: error.message
+      error: error.message || 'Unknown error'
     });
   }
 });
