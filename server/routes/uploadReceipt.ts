@@ -6,6 +6,8 @@ import { extractReceiptData, determineReceiptTier, type TierInfo } from '../../s
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
 import { encryptLineItems, determineItemCategory } from '../utils/encryptLineItems';
 import { createNFTPurchaseTask } from '../services/taskQueue';
+import { metadataService } from '../services/metadataService';
+import { tacoService } from '../services/tacoService';
 
 const router = express.Router();
 
@@ -199,13 +201,41 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
               // Create a task to purchase an NFT in the background
               console.log('Creating NFT purchase task in the task queue...');
               
-              // Pass encrypted metadata to the task if available
+              // Store encrypted metadata if available, format it for passing to task
               const encryptedMetadataInfo = encryptedData ? {
-                policyId: encryptedData.policyPublicKey,
-                capsuleId: encryptedData.capsule,
-                ciphertext: encryptedData.ciphertext
+                capsule: encryptedData.capsule,
+                ciphertext: encryptedData.ciphertext,
+                policyPublicKey: encryptedData.policyPublicKey
               } : undefined;
               
+              // Store metadata persistently if available
+              if (encryptedData && encryptedMetadataInfo) {
+                try {
+                  // Note: tokenId will be updated later when the NFT is minted
+                  const tempTokenId = `pending-${receiptId}`;
+                  const metadataStored = await metadataService.storeEncryptedMetadata(
+                    tempTokenId,
+                    walletAddress,
+                    encryptedData.ciphertext || '', // Ensure string value
+                    {
+                      merchantName: receiptData.merchantName,
+                      date: receiptData.date,
+                      total: receiptData.total
+                    }
+                  );
+                  
+                  if (metadataStored) {
+                    console.log(`Encrypted metadata stored successfully for receipt ${receiptId}`);
+                  } else {
+                    console.error(`Failed to store encrypted metadata for receipt ${receiptId}`);
+                  }
+                } catch (metadataError) {
+                  console.error(`Error storing encrypted metadata: ${metadataError}`);
+                  // Continue with the flow even if metadata storage fails
+                }
+              }
+              
+              // Create a task to purchase NFT and complete the lifecycle
               const purchaseTask = createNFTPurchaseTask(
                 walletAddress, 
                 receiptId, 
@@ -328,6 +358,46 @@ router.get('/receipt/:fileId', (req: Request, res: Response) => {
     return res.status(500).json({ 
       success: false, 
       message: 'Failed to retrieve receipt', 
+      error: error.message || 'Unknown error'
+    });
+  }
+});
+
+// Route for checking task status (for NFT minting polling)
+router.get('/task/:taskId/status', async (req: Request, res: Response) => {
+  try {
+    const { taskId } = req.params;
+    
+    if (!taskId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Task ID is required'
+      });
+    }
+    
+    // Import getTaskStatus from task queue service
+    const { getTaskStatus } = await import('../services/taskQueue');
+    
+    // Get task status
+    const taskStatus = await getTaskStatus(taskId);
+    
+    if (!taskStatus) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found'
+      });
+    }
+    
+    // Return task status
+    return res.status(200).json({
+      success: true,
+      data: taskStatus
+    });
+  } catch (error: any) {
+    console.error('Error getting task status:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get task status',
       error: error.message || 'Unknown error'
     });
   }
