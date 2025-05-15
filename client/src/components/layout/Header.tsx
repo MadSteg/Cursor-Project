@@ -57,6 +57,13 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
+            {/* Hot Wallet Settings */}
+            <Link href="/wallet-settings">
+              <span className={`text-sm font-medium ${currentLocation === "/wallet-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Wallet className="h-4 w-4 mr-1.5" /> Hot Wallet
+              </span>
+            </Link>
+            
             {/* Mint BlockReceipt - Primary Feature */}
             <Link href="/upload-receipt">
               <span className={`text-sm font-medium ${currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>

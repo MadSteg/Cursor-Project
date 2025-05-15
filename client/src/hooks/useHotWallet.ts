@@ -19,7 +19,7 @@ export function useHotWallet(options: UseHotWalletOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   
   const { toast } = useToast();
-  const { walletAddress: connectedWalletAddress, isConnected } = useWeb3Wallet();
+  const { address: connectedWalletAddress, isConnected } = useWeb3Wallet();
   
   // Check for existing hot wallet on component mount
   useEffect(() => {

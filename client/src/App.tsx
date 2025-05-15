@@ -39,6 +39,7 @@ import EncryptedCheckout from "@/pages/EncryptedCheckout";
 
 // Settings & Admin
 import EncryptionSettings from "@/pages/EncryptionSettings";
+import HotWalletSettingsPage from "@/pages/HotWalletSettingsPage";
 import Admin from "@/pages/Admin";
 import ThemePreview from "@/pages/ThemePreview";
 
@@ -92,6 +93,7 @@ function Router() {
         
         {/* Settings & Admin */}
         <Route path="/encryption-settings" component={EncryptionSettings} />
+        <Route path="/wallet-settings" component={HotWalletSettingsPage} />
         <Route path="/admin" component={Admin} />
         <Route path="/theme-preview" component={ThemePreview} />
         
