@@ -12,6 +12,7 @@ import { useRef, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import NFTArtPicker from '@/components/receipts/NFTArtPicker';
 import NFTGiftStatus from '@/components/nft/NFTGiftStatus';
+import NFTTaskStatus from '@/components/nft/NFTTaskStatus';
 import { useWeb3Wallet } from '../hooks/useWeb3Wallet';
 
 // Define the tier colors for visualization
@@ -64,6 +65,7 @@ interface NFTGiftInfo {
     price: number;
   };
   txHash?: string;
+  taskId?: string; // Added for task queue integration
 }
 
 interface ReceiptData {
@@ -505,7 +507,35 @@ export default function UploadReceiptPage() {
                 {/* NFT Gift Status Display */}
                 {receiptData.nftGift && (
                   <div className="mb-4">
-                    <NFTGiftStatus nftGift={receiptData.nftGift} />
+                    {receiptData.nftGift.status === 'processing' && receiptData.nftGift.taskId ? (
+                      <NFTTaskStatus 
+                        taskId={receiptData.nftGift.taskId}
+                        walletAddress={connected ? wallet?.address || '' : ''}
+                        onComplete={(result) => {
+                          // Update the NFT gift status when the task completes
+                          if (receiptData && receiptData.nftGift) {
+                            setReceiptData({
+                              ...receiptData,
+                              nftGift: {
+                                ...receiptData.nftGift,
+                                status: 'completed',
+                                nft: {
+                                  tokenId: result.tokenId || 'unknown',
+                                  contract: result.contractAddress || '',
+                                  name: result.name || 'BlockReceipt Gift NFT',
+                                  image: result.imageUrl || '/nft-images/receipt-default.svg',
+                                  marketplace: result.marketplace || 'OpenSea',
+                                  price: result.price || 0.00
+                                },
+                                txHash: result.txHash
+                              }
+                            });
+                          }
+                        }}
+                      />
+                    ) : (
+                      <NFTGiftStatus nftGift={receiptData.nftGift} />
+                    )}
                   </div>
                 )}
                 
