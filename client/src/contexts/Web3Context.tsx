@@ -183,28 +183,63 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
   // Connect wallet
   const connect = async () => {
     try {
+      // Check if ethereum is defined in window
       // @ts-ignore
-      if (!window.ethereum) {
+      const ethereum = window.ethereum;
+      
+      if (!ethereum) {
+        // More detailed error message when MetaMask is not found
         toast({
-          title: 'MetaMask Not Found',
-          description: 'Please install MetaMask to connect your wallet',
+          title: 'Web3 Wallet Not Detected',
+          description: 'Please install MetaMask or another Web3 wallet extension to connect.',
           variant: 'destructive'
         });
-        return;
+        throw new Error('No Web3 wallet extension detected');
       }
 
-      const provider = await getProvider();
+      // Verify we can actually interact with the provider
+      if (!ethereum.request) {
+        toast({
+          title: 'Invalid Provider',
+          description: 'Your browser has a Web3 object but it doesn\'t appear to be a valid provider.',
+          variant: 'destructive'
+        });
+        throw new Error('Invalid ethereum provider');
+      }
+
+      // Create ethers provider
+      const provider = new ethers.providers.Web3Provider(ethereum);
       if (!provider) {
-        throw new Error('Failed to get provider');
+        throw new Error('Failed to create Web3 provider');
       }
 
       setLibrary(provider);
 
-      // Request accounts from MetaMask
-      // @ts-ignore
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      // Request accounts (this will prompt the MetaMask popup)
+      let accounts;
+      try {
+        accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      } catch (requestError: any) {
+        // Handle specific request errors
+        if (requestError.code === 4001) {
+          // User rejected the request
+          toast({
+            title: 'Connection Rejected',
+            description: 'You declined the connection request. Please try again and approve the connection.',
+            variant: 'destructive'
+          });
+          throw new Error('User rejected the request');
+        } else {
+          toast({
+            title: 'Connection Error',
+            description: requestError.message || 'Failed to request accounts from your wallet',
+            variant: 'destructive'
+          });
+          throw requestError;
+        }
+      }
       
-      if (accounts.length > 0) {
+      if (accounts && accounts.length > 0) {
         setAccount(accounts[0]);
         setActive(true);
         
@@ -216,20 +251,32 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
         
         toast({
           title: 'Wallet Connected',
-          description: 'Your wallet has been successfully connected',
+          description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
           variant: 'default'
         });
       } else {
+        toast({
+          title: 'No Accounts Found',
+          description: 'Please unlock your wallet and try again',
+          variant: 'destructive'
+        });
         throw new Error('No accounts found');
       }
-    } catch (err) {
-      console.error('Failed to connect wallet', err);
+    } catch (err: any) {
+      console.error('Failed to connect wallet:', err);
+      setError(err);
       
-      toast({
-        title: 'Connection Failed',
-        description: 'Please make sure MetaMask is installed and unlocked',
-        variant: 'destructive'
-      });
+      // Don't show a toast message here as we already show specific toasts for different errors
+      if (!err.message.includes('User rejected') && 
+          !err.message.includes('No Web3 wallet') && 
+          !err.message.includes('Invalid ethereum provider') &&
+          !err.message.includes('No accounts found')) {
+        toast({
+          title: 'Connection Failed',
+          description: 'Please make sure your wallet is installed and unlocked',
+          variant: 'destructive'
+        });
+      }
     }
   };
   
@@ -248,60 +295,100 @@ export function Web3ContextProvider({ children }: { children: React.ReactNode })
   
   // Switch to Polygon Amoy
   const switchToPolygonAmoy = async () => {
-    // @ts-ignore
-    if (!window.ethereum || !window.ethereum.request) {
-      toast({
-        title: 'Provider Error',
-        description: 'No provider available',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
     try {
-      // Try to switch to Polygon Amoy
       // @ts-ignore
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${POLYGON_AMOY_CHAIN_ID.toString(16)}` }],
-      });
-    } catch (switchError: any) {
-      // This error code means the chain has not been added to MetaMask
-      if (switchError.code === 4902) {
-        try {
-          // @ts-ignore
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: `0x${POLYGON_AMOY_CHAIN_ID.toString(16)}`,
-                chainName: 'Polygon Amoy Testnet',
-                nativeCurrency: {
-                  name: 'MATIC',
-                  symbol: 'MATIC',
-                  decimals: 18,
-                },
-                rpcUrls: ['https://polygon-amoy.g.alchemy.com/v2/aW44pWE6n-X1AhiLXaJQPu3POOrIlArr'],
-                blockExplorerUrls: ['https://amoy.polygonscan.com/'],
-              },
-            ],
-          });
-        } catch (addError) {
-          console.error('Failed to add Polygon Amoy network to MetaMask', addError);
+      const ethereum = window.ethereum;
+      
+      if (!ethereum || !ethereum.request) {
+        toast({
+          title: 'Web3 Wallet Not Found',
+          description: 'Please install a Web3 wallet like MetaMask to switch networks',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      try {
+        // Try to switch to Polygon Amoy
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${POLYGON_AMOY_CHAIN_ID.toString(16)}` }],
+        });
+        
+        toast({
+          title: 'Network Switched',
+          description: 'Successfully connected to Polygon Amoy',
+          variant: 'default'
+        });
+      } catch (switchError: any) {
+        // If the chain hasn't been added to MetaMask (error 4902), add it
+        if (switchError.code === 4902) {
           toast({
-            title: 'Network Addition Failed',
-            description: 'Failed to add Polygon Amoy network to your wallet',
+            title: 'Adding Polygon Amoy Network',
+            description: 'This network isn\'t in your wallet yet. Adding it now...',
+            variant: 'default'
+          });
+          
+          try {
+            await ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: `0x${POLYGON_AMOY_CHAIN_ID.toString(16)}`,
+                  chainName: 'Polygon Amoy Testnet',
+                  nativeCurrency: {
+                    name: 'MATIC',
+                    symbol: 'MATIC',
+                    decimals: 18,
+                  },
+                  rpcUrls: ['https://polygon-amoy.g.alchemy.com/v2/aW44pWE6n-X1AhiLXaJQPu3POOrIlArr'],
+                  blockExplorerUrls: ['https://amoy.polygonscan.com/'],
+                },
+              ],
+            });
+            
+            toast({
+              title: 'Network Added',
+              description: 'Polygon Amoy has been added to your wallet',
+              variant: 'default'
+            });
+          } catch (addError: any) {
+            console.error('Failed to add Polygon Amoy network:', addError);
+            
+            let errorMessage = 'Failed to add Polygon Amoy network to your wallet';
+            if (addError.code === 4001) {
+              errorMessage = 'You declined to add the Polygon Amoy network. Please try again.';
+            }
+            
+            toast({
+              title: 'Network Addition Failed',
+              description: errorMessage,
+              variant: 'destructive'
+            });
+          }
+        } else if (switchError.code === 4001) {
+          // User rejected the request
+          toast({
+            title: 'Network Switch Cancelled',
+            description: 'You declined to switch networks. Please try again.',
+            variant: 'destructive'
+          });
+        } else {
+          console.error('Failed to switch to Polygon Amoy network:', switchError);
+          toast({
+            title: 'Network Switch Failed',
+            description: switchError.message || 'Failed to switch to Polygon Amoy network',
             variant: 'destructive'
           });
         }
-      } else {
-        console.error('Failed to switch to Polygon Amoy network', switchError);
-        toast({
-          title: 'Network Switch Failed',
-          description: 'Failed to switch to Polygon Amoy network',
-          variant: 'destructive'
-        });
       }
+    } catch (error: any) {
+      console.error('Polygon Amoy connection error:', error);
+      toast({
+        title: 'Connection Error',
+        description: 'Failed to connect to Polygon Amoy. Please check your wallet or try again later.',
+        variant: 'destructive'
+      });
     }
   };
   
