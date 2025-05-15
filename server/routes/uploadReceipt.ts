@@ -5,6 +5,7 @@ import fs from 'fs';
 import { extractReceiptData, determineReceiptTier, type TierInfo } from '../../shared/utils/receiptLogic';
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
 import { encryptLineItems, determineItemCategory } from '../utils/encryptLineItems';
+import { createNFTPurchaseTask } from '../services/taskQueue';
 
 const router = express.Router();
 
@@ -158,6 +159,7 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
           price: number;
         };
         txHash?: string;
+        taskId?: string; // Added for task queue integration
       }
       
       // Prepare response data
@@ -194,80 +196,30 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
             const receiptId = `receipt-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
             
             try {
-              // Try to purchase an NFT from marketplace
-              console.log('Calling NFT purchase bot to find and purchase an NFT...');
-              const nftResult = await nftPurchaseBot.purchaseAndTransferNFT(walletAddress, receiptId, receiptData);
+              // Create a task to purchase an NFT in the background
+              console.log('Creating NFT purchase task in the task queue...');
               
-              // Check if NFT was purchased successfully
-              if (nftResult && nftResult.success) {
-                console.log(`Successfully purchased and transferred NFT to ${walletAddress}:`, nftResult);
-                
-                // Update NFT gift status with successful purchase
-                nftGiftStatus = {
-                  status: 'completed',
-                  message: 'Your NFT gift has been sent to your wallet!',
-                  eligible: true,
-                  nft: {
-                    tokenId: nftResult.tokenId || 'unknown',
-                    contract: nftResult.contractAddress || '',
-                    name: nftResult.name || 'BlockReceipt Gift NFT',
-                    image: nftResult.imageUrl || '/nft-images/receipt-default.svg',
-                    marketplace: nftResult.marketplace || 'OpenSea',
-                    price: nftResult.price || 0.00
-                  },
-                  txHash: nftResult.txHash
-                };
-                
-                // Save the NFT transaction to database (would be implemented here)
-                // Associate the NFT with the encrypted receipt data
-                
-              } else {
-                // Purchase failed, try fallback minting
-                console.log(`Marketplace purchase failed. Trying fallback NFT minting...`);
-                
-                // Set status to processing while trying fallback
-                nftGiftStatus = {
-                  status: 'processing',
-                  message: 'Minting a custom BlockReceipt NFT for you...',
-                  eligible: true
-                };
-                
-                // Try fallback minting
-                const fallbackResult = await nftPurchaseBot.mintFallbackNFT(walletAddress, receiptId, receiptData);
-                
-                if (fallbackResult && fallbackResult.success) {
-                  console.log(`Successfully minted fallback NFT for ${walletAddress}:`, fallbackResult);
-                  
-                  // Update NFT gift status with successful mint
-                  nftGiftStatus = {
-                    status: 'completed',
-                    message: 'Your custom BlockReceipt NFT has been minted!',
-                    eligible: true,
-                    nft: {
-                      tokenId: fallbackResult.tokenId || 'unknown',
-                      contract: fallbackResult.contractAddress || process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '',
-                      name: fallbackResult.name || 'Custom BlockReceipt NFT',
-                      image: fallbackResult.imageUrl || '/nft-images/receipt-custom.svg',
-                      marketplace: 'BlockReceipt',
-                      price: 0.00
-                    },
-                    txHash: fallbackResult.txHash
-                  };
-                  
-                  // Save the NFT transaction to database (would be implemented here)
-                  // Associate the NFT with the encrypted receipt data
-                  
-                } else {
-                  // Both purchase and fallback minting failed
-                  console.error(`Both marketplace and fallback minting failed for ${walletAddress}`);
-                  nftGiftStatus = {
-                    status: 'failed',
-                    message: 'We encountered an issue with your NFT gift. Please try again later.',
-                    eligible: true,
-                    error: 'NFT creation process failed'
-                  };
-                }
-              }
+              // Pass encrypted metadata to the task if available
+              const purchaseTask = createNFTPurchaseTask(
+                walletAddress, 
+                receiptId, 
+                receiptData,
+                encryptedData ? {
+                  policyId: encryptedData.policyPublicKey,
+                  capsuleId: encryptedData.capsule,
+                  ciphertext: encryptedData.ciphertext
+                } : undefined
+              );
+              
+              console.log(`NFT purchase task ${purchaseTask.id} created for wallet ${walletAddress}`);
+              
+              // Update NFT gift status to processing
+              nftGiftStatus = {
+                status: 'processing',
+                message: 'Your NFT gift is being processed and will be sent to your wallet shortly.',
+                eligible: true,
+                taskId: purchaseTask.id
+              };
             } catch (nftError: any) {
               console.error(`Error in NFT gift process for ${walletAddress}:`, nftError);
               nftGiftStatus = {
