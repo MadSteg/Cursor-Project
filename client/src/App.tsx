@@ -60,6 +60,7 @@ function Router() {
         <Route path="/scan-receipt" component={ScanReceipt} />
         <Route path="/upload-receipt" component={UploadReceiptPage} />
         <Route path="/receipt-gallery" component={ReceiptGalleryPage} />
+        <Route path="/receipt-gallery/:address" component={ReceiptGalleryPage} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
         <Route path="/nft-catalog" component={NFTCatalogPage} />

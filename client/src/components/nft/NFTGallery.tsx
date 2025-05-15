@@ -46,11 +46,11 @@ export function NFTGallery({ walletAddress }: NFTGalleryProps) {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [, setLocation] = useLocation();
-  const { wallet, isConnected } = useWeb3Wallet();
+  const { address, isConnected } = useWeb3Wallet();
   const { toast } = useToast();
   
   // Determine which wallet address to use
-  const targetAddress = walletAddress || (isConnected ? wallet?.address : null);
+  const targetAddress = walletAddress || (isConnected ? address : null);
   
   useEffect(() => {
     async function fetchNFTs() {
@@ -195,7 +195,7 @@ export function NFTGallery({ walletAddress }: NFTGalleryProps) {
                     {formatDate(nft.createdAt)}
                   </CardDescription>
                 </div>
-                <Badge variant={nft.metadataLocked ? "destructive" : "success"} className="flex items-center gap-1">
+                <Badge variant={nft.metadataLocked ? "destructive" : "outline"} className="flex items-center gap-1">
                   {nft.metadataLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                   {nft.lockStatus}
                 </Badge>
