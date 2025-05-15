@@ -26,8 +26,8 @@ const NFTArtPicker: React.FC<NFTArtPickerProps> = ({ receiptData, onSelect, onCa
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Extract tags from receipt data
-  const tags = receiptData?.items?.map((item: any) => item.name.split(' ')[0].toLowerCase()) || [];
+  // Extract tags from receipt data - create unique list
+  const tags = Array.from(new Set(receiptData?.items?.map((item: any) => item.name.split(' ')[0].toLowerCase()))) || [];
   
   useEffect(() => {
     const fetchNFTOptions = async () => {
