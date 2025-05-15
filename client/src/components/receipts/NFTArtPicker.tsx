@@ -27,7 +27,7 @@ const NFTArtPicker: React.FC<NFTArtPickerProps> = ({ receiptData, onSelect, onCa
   const { toast } = useToast();
 
   // Extract tags from receipt data - create unique list
-  const tags = Array.from(new Set(receiptData?.items?.map((item: any) => item.name.split(' ')[0].toLowerCase()))) || [];
+  const tags: string[] = Array.from(new Set(receiptData?.items?.map((item: any) => item.name.split(' ')[0].toLowerCase()))) || [];
   
   useEffect(() => {
     const fetchNFTOptions = async () => {
@@ -117,10 +117,10 @@ const NFTArtPicker: React.FC<NFTArtPickerProps> = ({ receiptData, onSelect, onCa
           <div className="mt-4 p-4 rounded-md bg-slate-50 border border-slate-200">
             <h4 className="text-sm font-medium mb-2">Receipt Categories</h4>
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag: string, index: number) => (
+              {tags.map((tag, index) => (
                 <span 
                   key={index} 
-                  className={`px-2 py-1 text-xs rounded-full bg-${getColorForIndex(index)}/20 text-${getColorForIndex(index)}/80 border border-${getColorForIndex(index)}/30`}
+                  className={`px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 border border-blue-200`}
                 >
                   {tag}
                 </span>

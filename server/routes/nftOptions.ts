@@ -58,6 +58,12 @@ router.post('/select-nft', (req, res) => {
     // Use user's wallet address for minting
     const walletAddress = '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC';
     
+    // Generate a consistent token ID based on the timestamp and a random number
+    const tokenId = Date.now().toString().substring(6) + Math.floor(Math.random() * 1000).toString();
+    
+    // Mock transaction hash that would come from the blockchain
+    const txHash = '0x7c9e6b6a88c9e9e9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d';
+    
     // In a real implementation, this would call the blockchain service to mint
     // For testing purposes, we'll create a successful mock response
     res.json({
@@ -65,9 +71,17 @@ router.post('/select-nft', (req, res) => {
       message: 'NFT minted to ' + walletAddress,
       mintStatus: 'completed',
       expectedDelivery: new Date(Date.now() + 10000).toISOString(), // 10 seconds from now
-      txHash: '0x7c9e6b6a88c9e9e9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d', // Mock transaction hash
+      txHash: txHash,
       walletAddress: walletAddress,
-      tokenId: Math.floor(Math.random() * 1000000).toString()
+      tokenId: tokenId,
+      nftMetadata: {
+        name: selectedNft.name,
+        description: selectedNft.description,
+        merchant: receiptData.merchantName,
+        date: receiptData.date,
+        total: receiptData.total,
+        tier: receiptData.tier.id
+      }
     });
   } catch (error: any) {
     console.error('Error selecting NFT:', error);
