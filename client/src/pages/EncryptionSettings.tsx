@@ -130,7 +130,7 @@ export default function EncryptionSettings() {
                       <Receipt className={`h-12 w-12 ${activeStep === 1 ? 'text-blue-500' : 'text-gray-400'}`} />
                     </div>
                     <p className="text-sm text-gray-500">
-                      When you make a purchase, a digital receipt is created with all your purchase details.
+                      When you upload a receipt, a digital NFT receipt is created with all your purchase details.
                     </p>
                   </CardContent>
                 </Card>
@@ -244,20 +244,20 @@ export default function EncryptionSettings() {
           </Card>
         </div>
         
-        {/* Advanced Encryption Keys - Only visible when wallet is connected */}
-        <div className="grid grid-cols-1 gap-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-blue-600" />
-                <span>Advanced Encryption Settings</span>
-              </CardTitle>
-              <CardDescription>
-                Manage your encryption keys and control how your receipts are shared
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-4">
-              {isWalletConnected ? (
+        {/* Advanced Encryption Keys - Only visible when authenticated */}
+        {isWalletConnected && (
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Key className="h-5 w-5 text-blue-600" />
+                  <span>Advanced Encryption Settings</span>
+                </CardTitle>
+                <CardDescription>
+                  Manage your encryption keys and control how your receipts are shared
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-4">
                 <Tabs defaultValue="keys" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="keys">Encryption Keys</TabsTrigger>
@@ -270,21 +270,10 @@ export default function EncryptionSettings() {
                     <SharedReceiptManager />
                   </TabsContent>
                 </Tabs>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                    <Wallet className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">Connect Your Wallet</h3>
-                  <p className="text-gray-500 max-w-md mx-auto mb-6">
-                    To access advanced encryption features and manage your keys, please connect your Web3 wallet.
-                  </p>
-                  <ConnectWalletButton />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
     </>
   );

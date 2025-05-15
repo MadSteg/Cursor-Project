@@ -144,6 +144,11 @@ export default function SignInPage() {
     setWalletError(null);
     
     try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum === 'undefined') {
+        throw new Error('No Ethereum wallet extension detected. Please install MetaMask or use email sign-in instead.');
+      }
+      
       // Connect using our Web3 context
       await connectWeb3();
       
@@ -161,38 +166,57 @@ export default function SignInPage() {
         throw new Error(nonceData.error || 'Failed to get authentication nonce');
       }
       
-      // For signing the message we need to get a provider directly
-      // because we need to use the signer
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const signature = await signer.signMessage(nonceData.message);
-      
-      // Verify signature on server
-      const authResponse = await apiRequest('POST', '/api/auth/web3-login', {
-        walletAddress,
-        signature,
-        nonce: nonceData.nonce,
-      });
-      
-      const authData = await authResponse.json();
-      
-      if (!authData.success) {
-        throw new Error(authData.error || 'Web3 authentication failed');
+      try {
+        // For signing the message we need to get a provider directly
+        // because we need to use the signer
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const signature = await signer.signMessage(nonceData.message);
+        
+        // Verify signature on server
+        const authResponse = await apiRequest('POST', '/api/auth/web3-login', {
+          walletAddress,
+          signature,
+          nonce: nonceData.nonce,
+        });
+        
+        const authData = await authResponse.json();
+        
+        if (!authData.success) {
+          throw new Error(authData.error || 'Web3 authentication failed');
+        }
+        
+        toast({
+          title: 'Wallet Connected',
+          description: `Successfully authenticated with wallet ${walletAddress.substring(0, 8)}...`,
+        });
+        
+        // Redirect to home page after successful wallet connection
+        setLocation('/');
+      } catch (signingError: any) {
+        console.error('Message signing error:', signingError);
+        throw new Error(signingError.message || 'Failed to sign authentication message');
       }
-      
-      toast({
-        title: 'Wallet Connected',
-        description: `Successfully authenticated with wallet ${walletAddress.substring(0, 8)}...`,
-      });
-      
-      // Redirect to home page after successful wallet connection
-      setLocation('/');
     } catch (error: any) {
       console.error('Wallet connection error:', error);
-      setWalletError(error.message || 'Failed to connect wallet');
+      
+      // Provide more helpful error messages
+      let errorMessage = error.message || 'Failed to connect wallet';
+      
+      if (errorMessage.includes('already processing')) {
+        errorMessage = 'MetaMask is busy. Please check the MetaMask extension and try again.';
+      } else if (errorMessage.includes('User rejected')) {
+        errorMessage = 'You rejected the connection request. Please try again and approve the connection.';
+      } else if (errorMessage.includes('not installed')) {
+        errorMessage = 'MetaMask is not installed. Please install the MetaMask browser extension or use email sign-in instead.';
+        // Suggest switching to email login
+        setActiveTab('login');
+      }
+      
+      setWalletError(errorMessage);
       toast({
         title: 'Wallet Connection Failed',
-        description: error.message || 'An error occurred while connecting your wallet',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -361,6 +385,19 @@ export default function SignInPage() {
                 >
                   {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
                 </Button>
+                
+                <Alert className="mt-2">
+                  <AlertTitle>About Web3 Wallets</AlertTitle>
+                  <AlertDescription className="text-xs">
+                    <p className="mb-2">
+                      To use this feature, you need a browser extension like MetaMask installed.
+                    </p>
+                    <p>
+                      No MetaMask? You can always <button type="button" className="text-blue-600 underline" onClick={() => setActiveTab('login')}>log in with email</button> or 
+                      {' '}<button type="button" className="text-blue-600 underline" onClick={() => setActiveTab('signup')}>create an account</button> and we'll provide a hot wallet.
+                    </p>
+                  </AlertDescription>
+                </Alert>
                 
                 <p className="text-xs text-gray-500 mt-2">
                   📍 Your NFT receipts are minted on the Polygon network for low gas costs.
