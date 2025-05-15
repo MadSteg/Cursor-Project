@@ -411,6 +411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mount NFT Pool routes
+  app.use('/api/nfts', nftPoolRoutes);
+
   // Create HTTP server
   const httpServer = createServer(app);
 
