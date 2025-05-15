@@ -3,7 +3,7 @@
  * 
  * This page allows users to manage their TACo encrypted hot wallets.
  */
-import { HotWalletManager } from '@/components/wallet/HotWalletManager';
+import HotWalletManager from '@/components/wallet/HotWalletManager';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useWeb3Wallet } from '@/hooks/useWeb3Wallet';
