@@ -186,6 +186,25 @@ export const insertInventoryCollectionSchema = createInsertSchema(inventoryColle
   updatedAt: true,
 });
 
+// User Wallets Table (for hot wallets generated at signup)
+export const userWallets = pgTable('user_wallets', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id).unique(),
+  address: text('wallet_address').notNull().unique(),
+  capsule: text('capsule').notNull(),
+  ciphertext: text('ciphertext').notNull(),
+  policyPublicKey: text('policy_public_key').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  lastUsedAt: timestamp('last_used_at'),
+});
+
+// Schema for inserting user wallets
+export const insertUserWalletSchema = createInsertSchema(userWallets).omit({
+  id: true,
+  createdAt: true,
+  lastUsedAt: true,
+});
+
 // Types for the tables
 export type OcrCache = typeof ocrResultCache.$inferSelect;
 export type Receipt = typeof userReceipts.$inferSelect;
@@ -197,6 +216,8 @@ export type SharedReceipt = typeof sharedReceipts.$inferSelect;
 export type InventoryItem = typeof inventoryItems.$inferSelect;
 export type InventoryCollection = typeof inventoryCollections.$inferSelect;
 export type ItemCollection = typeof itemCollections.$inferSelect;
+export type UserWallet = typeof userWallets.$inferSelect;
+export type InsertUserWallet = z.infer<typeof insertUserWalletSchema>;
 
 // API Keys Table
 export const apiKeys = pgTable('api_keys', {
