@@ -60,6 +60,7 @@ function Router() {
         <Route path="/upload-receipt" component={UploadReceiptPage} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
+        <Route path="/nft-catalog" component={NFTCatalogPage} />
         
         {/* NFT Receipt Features - Commented out as requested, but kept for future development */}
         {/* <Route path="/nft-wallet" component={UserNFTWallet} /> */}

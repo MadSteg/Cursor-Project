@@ -3,10 +3,22 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NFTMetadata } from '../../../shared/metadata/nft-collection';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+
+// Define the NFTMetadata interface locally to avoid path issues
+interface NFTMetadata {
+  id: string;
+  name: string;
+  image: string;
+  description: string;
+  tier: 'BASIC' | 'STANDARD' | 'PREMIUM' | 'LUXURY';
+  categories: string[];
+  attributes: {
+    [key: string]: string | number;
+  };
+}
 
 interface NFTCatalogProps {
   receiptData?: any;
@@ -44,7 +56,9 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
           return name.toLowerCase().split(' ').filter((word: string) => word.length > 3);
         });
         
-        categories = [...new Set([...defaultCategories, ...itemKeywords])];
+        // Create a Set for unique categories and convert back to array
+        const uniqueCategories = new Set<string>([...defaultCategories, ...itemKeywords]);
+        categories = Array.from(uniqueCategories);
       }
       
       // Determine tier from receipt data if available
@@ -67,15 +81,99 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
       if (data.success) {
         setNfts(data.nfts);
       } else {
-        // Use local data fallback
-        const { NFT_COLLECTION } = await import('../../../shared/metadata/nft-collection');
-        setNfts(NFT_COLLECTION);
+        // Use local data fallback - hardcoded for simplicity
+        setNfts([
+          {
+            id: 'receipt-warrior',
+            name: 'Receipt Warrior',
+            image: '/nft-images/receipt-warrior.svg',
+            description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
+            tier: 'PREMIUM',
+            categories: ['entertainment', 'gaming', 'sports'],
+            attributes: {
+              rarity: 'Epic',
+              power: 72,
+              defense: 68,
+              speed: 65
+            }
+          },
+          {
+            id: 'crypto-receipt',
+            name: 'Crypto Receipt',
+            image: '/nft-images/crypto-receipt.svg',
+            description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
+            tier: 'LUXURY',
+            categories: ['tech', 'finance', 'cryptocurrency'],
+            attributes: {
+              rarity: 'Legendary',
+              encryption: 92,
+              decentralization: 88,
+              volatility: 75
+            }
+          },
+          {
+            id: 'fashion-receipt',
+            name: 'Fashion Couture Receipt',
+            image: '/nft-images/fashion-receipt.svg',
+            description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
+            tier: 'PREMIUM',
+            categories: ['fashion', 'clothing', 'accessories', 'retail'],
+            attributes: {
+              rarity: 'Rare',
+              style: 85,
+              trendiness: 79,
+              exclusivity: 70
+            }
+          },
+          {
+            id: 'grocery-hero',
+            name: 'Grocery Hero',
+            image: '/nft-images/grocery-hero.svg',
+            description: 'A super grocery receipt that saves the day by tracking all your essentials.',
+            tier: 'STANDARD',
+            categories: ['groceries', 'food', 'household'],
+            attributes: {
+              rarity: 'Uncommon',
+              nutrition: 65,
+              value: 60,
+              sustainability: 70
+            }
+          }
+        ]);
       }
     } catch (error) {
       console.error('Error fetching NFTs:', error);
       // Use local data fallback
-      const { NFT_COLLECTION } = await import('../../../shared/metadata/nft-collection');
-      setNfts(NFT_COLLECTION);
+      setNfts([
+        {
+          id: 'receipt-warrior-fallback',
+          name: 'Receipt Warrior',
+          image: '/nft-images/receipt-warrior.svg',
+          description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
+          tier: 'PREMIUM',
+          categories: ['entertainment', 'gaming', 'sports'],
+          attributes: {
+            rarity: 'Epic',
+            power: 72,
+            defense: 68,
+            speed: 65
+          }
+        },
+        {
+          id: 'crypto-receipt-fallback',
+          name: 'Crypto Receipt',
+          image: '/nft-images/crypto-receipt.svg',
+          description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
+          tier: 'LUXURY',
+          categories: ['tech', 'finance', 'cryptocurrency'],
+          attributes: {
+            rarity: 'Legendary',
+            encryption: 92,
+            decentralization: 88,
+            volatility: 75
+          }
+        }
+      ]);
     } finally {
       setLoading(false);
     }

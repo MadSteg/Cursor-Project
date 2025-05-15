@@ -28,8 +28,9 @@ import ocrTestRoutes from "./routes/ocr-test";
 import uploadReceiptRoutes from "./routes/uploadReceipt";
 // Import the NFT options routes
 import nftOptionsRoutes from "./routes/nftOptions";
-// Import the NFT collection routes
-import nftsRoutes from "./routes/nfts";
+// Import the NFT catalog routes
+import { getNFTs, selectNFT } from "./routes/nfts";
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -90,8 +91,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register NFT options routes
   app.use('/api', nftOptionsRoutes);
   
-  // Register NFT collection routes
-  app.use('/api', nftsRoutes);
+  // Register NFT catalog routes
+  app.post('/api/nfts', getNFTs);
+  app.post('/api/select-nft', selectNFT);
+  
+
   
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
