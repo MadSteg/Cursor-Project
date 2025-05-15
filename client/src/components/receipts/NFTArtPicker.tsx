@@ -35,27 +35,70 @@ const NFTArtPicker: React.FC<NFTArtPickerProps> = ({ receiptData, onSelect, onCa
       setError(null);
       
       try {
-        const response = await apiRequest('POST', '/api/nft-options', {
-          tags,
-          merchantName: receiptData?.merchantName || '',
-          items: receiptData?.items || [],
-          tier: receiptData?.tier?.id || 'BASIC'
+        // First try to use the NFT catalog API for a unified approach
+        const response = await apiRequest('POST', '/api/nfts', {
+          categories: tags,
+          tier: receiptData?.tier?.id || 'BASIC',
+          receiptData
         });
         
         const result = await response.json();
         
-        if (result.success) {
-          // Use placeholder images for development
-          const placeholderOptions = result.options.map((option: NFTOption, index: number) => ({
-            ...option,
-            // Use a mix of different placeholder images
-            image: `https://via.placeholder.com/300x300/${getColorForIndex(index)}/ffffff?text=${encodeURIComponent(option.name.split(' ')[0])}`,
-            preview: `https://via.placeholder.com/150x150/${getColorForIndex(index)}/ffffff?text=${encodeURIComponent(option.name.split(' ')[0])}`
+        if (result.success && result.nfts && result.nfts.length > 0) {
+          // Map the NFT catalog response to the format needed by NFTArtPicker
+          const nftOptions = result.nfts.map((nft: any) => ({
+            id: nft.id,
+            name: nft.name,
+            image: nft.image,
+            preview: nft.image, // Use the same image for preview
+            description: nft.description
           }));
           
-          setOptions(placeholderOptions);
+          setOptions(nftOptions);
         } else {
-          throw new Error(result.message || 'Failed to fetch NFT options');
+          // Fallback to the nft-options endpoint if the catalog approach fails
+          const backupResponse = await apiRequest('POST', '/api/nft-options', {
+            tags,
+            merchantName: receiptData?.merchantName || '',
+            items: receiptData?.items || [],
+            tier: receiptData?.tier?.id || 'BASIC'
+          });
+          
+          const backupResult = await backupResponse.json();
+          
+          if (backupResult.success) {
+            // Replace placeholder URLs with actual NFT images
+            const nftOptions = backupResult.options.map((option: NFTOption) => {
+              // Map options to use actual NFT images based on categories
+              let imageUrl = `/nft-images/receipt-warrior.svg`; // Default
+              
+              if (option.tags.includes('food') || option.tags.includes('restaurant')) {
+                imageUrl = `/nft-images/restaurant-receipt.svg`;
+              } else if (option.tags.includes('tech') || option.tags.includes('electronics')) {
+                imageUrl = `/nft-images/tech-receipt.svg`;
+              } else if (option.tags.includes('fashion') || option.tags.includes('clothing')) {
+                imageUrl = `/nft-images/fashion-receipt.svg`;
+              } else if (option.tags.includes('grocery')) {
+                imageUrl = `/nft-images/grocery-hero.svg`;
+              } else if (option.tags.includes('travel')) {
+                imageUrl = `/nft-images/travel-receipt.svg`;
+              } else if (option.tags.includes('beauty') || option.tags.includes('cosmetics')) {
+                imageUrl = `/nft-images/beauty-receipt.svg`;
+              } else if (option.tags.includes('crypto') || option.tags.includes('finance')) {
+                imageUrl = `/nft-images/crypto-receipt.svg`;
+              }
+              
+              return {
+                ...option,
+                image: imageUrl,
+                preview: imageUrl
+              };
+            });
+            
+            setOptions(nftOptions);
+          } else {
+            throw new Error(backupResult.message || 'Failed to fetch NFT options');
+          }
         }
       } catch (err: any) {
         setError(err.message || 'An error occurred while fetching NFT options');
