@@ -79,6 +79,7 @@ export default function UploadReceiptPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Enhanced file upload handler with better error handling
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -89,111 +90,54 @@ export default function UploadReceiptPage() {
     setError(null);
     setReceiptData(null);
 
-    // Create a FormData object to send the file
+    console.log(`Uploading file: ${file.name} (${file.size} bytes, type: ${file.type})`);
+
+    // Create FormData for multipart upload
     const formData = new FormData();
-    
-    // Log file details before appending to formData
-    console.log('File to upload:', { 
-      name: file.name, 
-      type: file.type, 
-      size: file.size,
-      lastModified: new Date(file.lastModified).toISOString()
-    });
-    
     formData.append('receipt', file);
-    
-    // Simulate progress with interval reference for UI feedback
-    let progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        const increment = Math.random() * 10;
-        return Math.min(prev + increment, 90);
-      });
+
+    // Progress simulation interval
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => Math.min(prev + Math.random() * 5, 90));
     }, 300);
 
     try {
-      console.log('Uploading file:', file.name, file.type, file.size);
-      
-      // Try first with fetch API
-      console.log('Uploading with fetch API');
-      let resultData;
-      
-      try {
-        const response = await fetch('/api/upload-receipt', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        console.log('Fetch response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Fetch error response:', errorText);
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-        
-        resultData = await response.json();
-        console.log('Fetch response data:', resultData);
-      } 
-      catch (fetchError) {
-        console.error('Fetch upload failed, trying XMLHttpRequest as fallback', fetchError);
-        
-        // If fetch fails, try XMLHttpRequest as fallback
-        resultData = await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', '/api/upload-receipt', true);
-          
-          xhr.onloadstart = () => console.log('XHR: Load started');
-          xhr.onload = () => {
-            console.log('XHR onload fired, status:', xhr.status);
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response);
-              } catch (err) {
-                reject(new Error('Invalid server response'));
-              }
-            } else {
-              reject(new Error(`Request failed with status ${xhr.status}`));
-            }
-          };
-          
-          xhr.onerror = () => reject(new Error('Network error occurred'));
-          xhr.send(formData);
-        });
-      }
-      
-      // Clear the progress simulation interval
+      // Use fetch API for the upload
+      const response = await fetch('/api/upload-receipt', {
+        method: 'POST',
+        body: formData, // Browser automatically sets correct Content-Type with boundary
+      });
+
+      console.log(`Server responded with status: ${response.status}`);
+
+      // Parse response data
+      const responseData = await response.json();
+
+      // Clear progress interval
       clearInterval(progressInterval);
-      
-      console.log('Upload complete, checking result:', resultData);
-      
-      // Check if the upload was successful
-      if (!resultData || !resultData.success) {
-        throw new Error((resultData?.message) || 'Failed to process receipt');
+
+      if (!response.ok || !responseData.success) {
+        throw new Error(responseData.message || `Upload failed with status ${response.status}`);
       }
-      
-      const receiptResult = resultData.data;
-      console.log('Receipt data processed successfully:', receiptResult);
-      
+
+      // Success path
       setUploadProgress(100);
-      setReceiptData(receiptResult);
+      setReceiptData(responseData.data);
       setActiveTab('review');
-      
+
       toast({
         title: 'Receipt Uploaded Successfully',
-        description: `We've processed your receipt from ${receiptResult.merchantName}.`,
+        description: `We've processed your receipt from ${responseData.data.merchantName}.`,
         variant: 'default',
       });
     } catch (err: any) {
-      console.error('Error processing receipt:', err);
+      console.error('Error uploading receipt:', err);
       
-      // Make sure interval is cleared on error
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
+      // Clear interval
+      clearInterval(progressInterval);
       
-      setError(err.message || 'An error occurred while uploading the receipt');
+      // Show error
+      setError(err.message || 'Failed to upload receipt');
       setUploadProgress(0);
       
       toast({
@@ -248,18 +192,11 @@ export default function UploadReceiptPage() {
     setShowNftPicker(false);
     
     // For progress simulation
-    let progressInterval: NodeJS.Timeout | null = null;
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => Math.min(prev + Math.random() * 5, 95));
+    }, 500);
     
     try {
-      // Simulate progress
-      progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          const increment = Math.random() * 5;
-          const newProgress = Math.min(prev + increment, 95);
-          return newProgress;
-        });
-      }, 500);
-      
       // Send the receipt data and selected NFT for minting
       const response = await apiRequest('POST', '/api/select-nft', {
         selectedNft: nft,
@@ -272,10 +209,7 @@ export default function UploadReceiptPage() {
         throw new Error(result.message || 'Failed to mint BlockReceipt');
       }
       
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
+      clearInterval(progressInterval);
       
       setUploadProgress(100);
       
@@ -298,10 +232,7 @@ export default function UploadReceiptPage() {
       
       // Navigate to the wallet page (would do this in a real implementation)
     } catch (err: any) {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
+      clearInterval(progressInterval);
       
       setError(err.message || 'Failed to mint BlockReceipt');
       
@@ -470,59 +401,44 @@ export default function UploadReceiptPage() {
                 
                 <div>
                   <Label className="text-sm text-muted-foreground mb-2 block">Items</Label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {receiptData.items.length > 0 ? (
-                      receiptData.items.map((item, index) => (
-                        <div key={index} className="flex justify-between text-sm">
-                          <span>{item.name}</span>
-                          <span className="font-medium">${item.price.toFixed(2)}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No items could be extracted</p>
-                    )}
-                  </div>
+                  <ul className="space-y-2">
+                    {receiptData.items?.map((item, index) => (
+                      <li key={index} className="flex justify-between">
+                        <span>{item.name}</span>
+                        <span className="font-medium">${item.price.toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 
                 <Separator />
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm text-muted-foreground">Subtotal</Label>
-                    <p className="text-lg">${receiptData.subtotal.toFixed(2)}</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>${receiptData.subtotal.toFixed(2)}</span>
                   </div>
-                  <div>
-                    <Label className="text-sm text-muted-foreground">Tax</Label>
-                    <p className="text-lg">${receiptData.tax.toFixed(2)}</p>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax</span>
+                    <span>${receiptData.tax.toFixed(2)}</span>
                   </div>
-                </div>
-                
-                <div className="bg-muted p-4 rounded-md flex justify-between items-center">
-                  <div>
-                    <Label className="text-sm font-medium">Total Amount</Label>
-                    <p className="text-2xl font-bold">${receiptData.total.toFixed(2)}</p>
-                  </div>
-                  
-                  <div className="text-right">
-                    <Label className="text-sm text-muted-foreground">BlockReceipt Tier</Label>
-                    <p className={`text-lg font-medium text-${tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.color || 'gray'}-700`}>
-                      {receiptData.tier?.title || 'Basic'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {tierDetails[receiptData.tier?.id as keyof typeof tierDetails]?.price || 'Free'}
-                    </p>
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>${receiptData.total.toFixed(2)}</span>
                   </div>
                 </div>
                 
-                <div className="flex justify-center pt-4">
+                <div className="pt-4">
                   <Button 
-                    className="w-full max-w-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                     size="lg"
                     onClick={mintReceiptNFT}
                   >
-                    <CheckCircle className="mr-2 h-5 w-5" />
                     Mint as BlockReceipt NFT
                   </Button>
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Create a permanent, encrypted blockchain receipt
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -539,4 +455,4 @@ export default function UploadReceiptPage() {
       </Tabs>
     </div>
   );
-}
+};
