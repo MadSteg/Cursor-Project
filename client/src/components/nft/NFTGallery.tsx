@@ -15,19 +15,13 @@ interface NFTGalleryProps {
 
 interface NFT {
   tokenId: string;
-  contractAddress: string;
-  name: string;
+  contractAddress?: string;
+  name?: string;
   imageUrl: string;
   isLocked: boolean;
-  receiptPreview: {
-    merchantName: string;
-    date: string;
-    total: number;
-  };
-  encryptionStatus: {
-    isEncrypted: boolean;
-    canDecrypt: boolean;
-  };
+  hasMetadata: boolean;
+  preview?: any;
+  createdAt?: string;
   ownerAddress: string;
 }
 
@@ -185,13 +179,13 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
             <div className="relative">
               <img 
                 src={nft.imageUrl} 
-                alt={nft.name} 
+                alt={nft.name || `NFT ${nft.tokenId}`} 
                 className="w-full h-40 object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
                 }}
               />
-              {nft.encryptionStatus.isEncrypted && (
+              {nft.hasMetadata && (
                 <div className="absolute top-2 right-2">
                   <Badge variant="secondary" className="flex items-center gap-1 bg-black/70 text-white">
                     {nft.isLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
@@ -201,17 +195,22 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
               )}
             </div>
             <CardHeader className="py-3">
-              <CardTitle className="text-lg">{nft.name}</CardTitle>
-              <CardDescription>{nft.receiptPreview.merchantName}</CardDescription>
+              <CardTitle className="text-lg">{nft.name || `BlockReceipt #${nft.tokenId.slice(0, 6)}`}</CardTitle>
+              <CardDescription>
+                {nft.preview?.merchantName || (nft.preview?.merchant) || 'Receipt NFT'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="py-0">
-              <p className="text-sm">${nft.receiptPreview.total.toFixed(2)}</p>
+              <p className="text-sm">
+                ${nft.preview?.total ? parseFloat(nft.preview.total).toFixed(2) : '0.00'}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {new Date(nft.receiptPreview.date).toLocaleDateString()}
+                {nft.preview?.date ? new Date(nft.preview.date).toLocaleDateString() : 
+                 nft.createdAt ? new Date(nft.createdAt).toLocaleDateString() : 'Unknown date'}
               </p>
             </CardContent>
             <CardFooter className="pt-3 pb-3">
-              {nft.encryptionStatus.isEncrypted && nft.isLocked && (
+              {nft.hasMetadata && nft.isLocked && (
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -226,7 +225,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
                     'Unlocking...' : 'Unlock Receipt Data'}
                 </Button>
               )}
-              {nft.encryptionStatus.isEncrypted && !nft.isLocked && (
+              {nft.hasMetadata && !nft.isLocked && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -237,7 +236,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
                   Already Unlocked
                 </Button>
               )}
-              {!nft.encryptionStatus.isEncrypted && (
+              {!nft.hasMetadata && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -258,7 +257,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
           <CardHeader>
             <CardTitle>Receipt Details</CardTitle>
             <CardDescription>
-              {selectedNft.encryptionStatus.isEncrypted 
+              {selectedNft.hasMetadata 
                 ? 'This receipt has encrypted line items protected with TACo' 
                 : 'Receipt information'}
             </CardDescription>
@@ -268,7 +267,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
               <div className="md:w-1/3">
                 <img 
                   src={selectedNft.imageUrl} 
-                  alt={selectedNft.name} 
+                  alt={selectedNft.name || `NFT ${selectedNft.tokenId}`} 
                   className="w-full h-auto rounded-md"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
@@ -279,23 +278,33 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
                     <span className="text-sm text-muted-foreground">Token ID:</span>
                     <span className="text-sm font-mono">{selectedNft.tokenId.substring(0, 10)}...</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Contract:</span>
-                    <span className="text-sm font-mono">
-                      {selectedNft.contractAddress.substring(0, 6)}...
-                      {selectedNft.contractAddress.substring(selectedNft.contractAddress.length - 4)}
-                    </span>
-                  </div>
+                  {selectedNft.contractAddress && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Contract:</span>
+                      <span className="text-sm font-mono">
+                        {selectedNft.contractAddress.substring(0, 6)}...
+                        {selectedNft.contractAddress.substring(selectedNft.contractAddress.length - 4)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               
               <div className="md:w-2/3">
-                <h3 className="text-xl font-semibold">{selectedNft.name}</h3>
-                <p className="text-lg mt-2">{selectedNft.receiptPreview.merchantName}</p>
+                <h3 className="text-xl font-semibold">{selectedNft.name || `BlockReceipt #${selectedNft.tokenId.slice(0, 6)}`}</h3>
+                <p className="text-lg mt-2">{selectedNft.preview?.merchantName || selectedNft.preview?.merchant || 'Receipt'}</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(selectedNft.receiptPreview.date).toLocaleDateString()}
+                  {selectedNft.preview?.date 
+                    ? new Date(selectedNft.preview.date).toLocaleDateString() 
+                    : selectedNft.createdAt 
+                      ? new Date(selectedNft.createdAt).toLocaleDateString() 
+                      : 'Unknown date'}
                 </p>
-                <p className="text-xl font-bold mt-4">${selectedNft.receiptPreview.total.toFixed(2)}</p>
+                <p className="text-xl font-bold mt-4">
+                  ${selectedNft.preview?.total 
+                    ? parseFloat(selectedNft.preview.total).toFixed(2) 
+                    : '0.00'}
+                </p>
                 
                 {decryptedData ? (
                   <div className="mt-6">
@@ -329,7 +338,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
                     </div>
                   </div>
                 ) : (
-                  selectedNft.encryptionStatus.isEncrypted && selectedNft.isLocked && (
+                  selectedNft.hasMetadata && selectedNft.isLocked && (
                     <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
                       <div className="flex gap-2 items-center">
                         <Lock className="h-5 w-5 text-yellow-500" />
