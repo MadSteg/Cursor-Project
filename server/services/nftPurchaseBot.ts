@@ -153,35 +153,26 @@ function recordNFTClaim(walletAddress: string): void {
 console.log('Initialized NFT claim records');
 
 /**
- * Find a relevant NFT based on receipt data (for fallback minting)
+ * Find a relevant NFT based on category
  */
-function findRelevantNFT(receiptData: any): any {
-  // Get merchant name and categories from receipt
-  const merchant = receiptData.merchantName?.toLowerCase() || '';
-  const items = receiptData.items || [];
+function findRelevantNFT(category: string = ''): any {
+  const categoryMap: Record<string, string> = {
+    'electronics': 'nft-004',
+    'tech': 'nft-004',
+    'fashion': 'nft-003',
+    'clothing': 'nft-003',
+    'food': 'nft-005',
+    'restaurant': 'nft-005',
+    'crypto': 'nft-002',
+    'finance': 'nft-002'
+  };
   
-  // Extract categories from items if available
-  const itemNames = items.map((item: any) => item.name?.toLowerCase() || '');
+  // Look for matches in our collection based on category
+  const lowerCategory = category.toLowerCase();
+  const nftId = Object.keys(categoryMap).find(key => lowerCategory.includes(key));
   
-  // Look for matches in our collection
-  if (merchant.includes('tech') || merchant.includes('electronics') || 
-      itemNames.some((name: string) => name.includes('electronics') || name.includes('computer'))) {
-    return mockNFTCollection.find(nft => nft.id === 'nft-004') || mockNFTCollection[0];
-  }
-  
-  if (merchant.includes('fashion') || merchant.includes('clothing') || 
-      itemNames.some((name: string) => name.includes('shirt') || name.includes('pants'))) {
-    return mockNFTCollection.find(nft => nft.id === 'nft-003') || mockNFTCollection[0];
-  }
-  
-  if (merchant.includes('food') || merchant.includes('restaurant') || 
-      itemNames.some((name: string) => name.includes('food'))) {
-    return mockNFTCollection.find(nft => nft.id === 'nft-005') || mockNFTCollection[0];
-  }
-  
-  if (merchant.includes('crypto') || 
-      itemNames.some((name: string) => name.includes('crypto') || name.includes('token'))) {
-    return mockNFTCollection.find(nft => nft.id === 'nft-002') || mockNFTCollection[0];
+  if (nftId) {
+    return mockNFTCollection.find(nft => nft.id === categoryMap[nftId]) || mockNFTCollection[0];
   }
   
   // Default to NFT-001 (Receipt Warrior)
@@ -274,8 +265,8 @@ export async function mintFallbackNFT(
     // Use basic tier for fallback NFTs
     const tier = 'basic';
     
-    // Find a relevant NFT from our mock collection
-    const selectedNFT = findRelevantNFT(receiptData);
+    // Use a default NFT from our collection for fallback
+    const selectedNFT = mockNFTCollection[0];
     
     // Generate a random token ID for simulation
     const tokenId = generateTokenId();
@@ -291,7 +282,7 @@ export async function mintFallbackNFT(
       success: true,
       tokenId,
       contractAddress,
-      name: `${selectedNFT.name} (Custom)`,
+      name: `${name || selectedNFT.name} (Custom)`,
       imageUrl: selectedNFT.image,
       marketplace: 'BlockReceipt',
       price: 0,
