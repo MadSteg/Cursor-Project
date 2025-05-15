@@ -13,10 +13,25 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { NFTArtItem } from '@/data/nftArtManifest';
-import { ReceiptTier, determineReceiptTier } from '@/lib/receiptOcr';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+
+// Define locally to avoid import issues
+type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
+
+// Local implementation to avoid import issues
+function determineReceiptTier(total: number): ReceiptTier {
+  if (total >= 500) {
+    return 'ULTRA';
+  } else if (total >= 200) {
+    return 'LUXURY';
+  } else if (total >= 50) {
+    return 'PREMIUM';
+  } else {
+    return 'STANDARD';
+  }
+}
 
 // Icons
 import { Lock, Unlock, Eye, Share, Copy, Info, ShieldCheck, ShieldAlert, AlertTriangle, Award } from 'lucide-react';

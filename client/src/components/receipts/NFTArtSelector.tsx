@@ -10,7 +10,9 @@ import {
   getNFTArtItemsByTier, 
   NFTArtItem 
 } from '@/data/nftArtManifest';
-import { ReceiptTier } from '@/lib/receiptOcr';
+
+// Define locally to avoid import issues
+type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
 import { 
   Card, 
   CardContent, 
