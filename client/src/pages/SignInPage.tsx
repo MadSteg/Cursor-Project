@@ -42,6 +42,7 @@ export default function SignInPage() {
   const [walletConnecting, setWalletConnecting] = useState(false);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { connect: connectWeb3, active, account } = useWeb3();
   
   // Initialize form for login
   const loginForm = useForm<LoginFormValues>({
@@ -137,26 +138,20 @@ export default function SignInPage() {
     }
   };
   
-  // Connect wallet using MetaMask or similar Web3 provider
+  // Connect wallet using MetaMask or similar Web3 provider through useWeb3 hook
   const connectWallet = async () => {
     setWalletConnecting(true);
     setWalletError(null);
     
     try {
-      // Check if ethereum object is available (MetaMask)
-      if (!window.ethereum) {
-        throw new Error('No Ethereum wallet detected. Please install MetaMask or another Web3 wallet.');
+      // Connect using our Web3 context
+      await connectWeb3();
+      
+      if (!account) {
+        throw new Error('No wallet address found. Please try again.');
       }
       
-      // Request account access
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const accounts = await provider.send('eth_requestAccounts', []);
-      
-      if (!accounts || accounts.length === 0) {
-        throw new Error('No accounts found. Please unlock your wallet.');
-      }
-      
-      const walletAddress = accounts[0];
+      const walletAddress = account;
       
       // Get authentication nonce from server
       const nonceResponse = await apiRequest('GET', `/api/auth/nonce/${walletAddress}`);
@@ -166,7 +161,9 @@ export default function SignInPage() {
         throw new Error(nonceData.error || 'Failed to get authentication nonce');
       }
       
-      // Sign the message with wallet
+      // For signing the message we need to get a provider directly
+      // because we need to use the signer
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const signature = await signer.signMessage(nonceData.message);
       
