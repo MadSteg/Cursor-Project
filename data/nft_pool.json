@@ -1,85 +1,148 @@
 [
   {
-    "id": "nft-001",
-    "name": "Block Receipt Basic",
-    "description": "A basic digital receipt NFT on the blockchain",
+    "id": "standard-001",
+    "name": "Receipt Guardian",
+    "description": "A digital guardian that protects your financial records",
     "tier": "standard",
-    "image": "https://ipfs.io/ipfs/QmabCde1234567890",
-    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567890/metadata.json",
-    "category": "receipt",
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/receipt-guardian.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc1a",
+    "category": "digital",
     "rarity": "common",
-    "tokenId": 1,
+    "tokenId": 1001,
     "attributes": [
       {
-        "trait_type": "Category",
-        "value": "receipt"
+        "trait_type": "Collection",
+        "value": "BlockReceipt Originals"
       },
       {
         "trait_type": "Tier",
-        "value": "standard"
+        "value": "Standard"
       }
     ]
   },
   {
-    "id": "nft-002",
-    "name": "Block Receipt Premium",
-    "description": "A premium digital receipt NFT on the blockchain",
+    "id": "standard-002",
+    "name": "Purchase Proof",
+    "description": "Undeniable proof of your transaction",
+    "tier": "standard",
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/purchase-proof.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc1b",
+    "category": "finance",
+    "rarity": "common",
+    "tokenId": 1002,
+    "attributes": [
+      {
+        "trait_type": "Collection",
+        "value": "BlockReceipt Originals"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "Standard"
+      }
+    ]
+  },
+  {
+    "id": "standard-003",
+    "name": "Pixel Receipt",
+    "description": "A retro style digital receipt for the modern age",
+    "tier": "standard",
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/pixel-receipt.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc1c",
+    "category": "gaming",
+    "rarity": "common",
+    "tokenId": 1003,
+    "attributes": [
+      {
+        "trait_type": "Collection",
+        "value": "BlockReceipt Originals"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "Standard"
+      }
+    ]
+  },
+  {
+    "id": "premium-001",
+    "name": "Gold Certificate",
+    "description": "A premium digital certificate for your high-value purchases",
     "tier": "premium",
-    "image": "https://ipfs.io/ipfs/QmabCde1234567891",
-    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567891/metadata.json",
-    "category": "receipt",
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/gold-certificate.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc2a",
+    "category": "luxury",
     "rarity": "uncommon",
-    "tokenId": 2,
+    "tokenId": 2001,
     "attributes": [
       {
-        "trait_type": "Category",
-        "value": "receipt"
+        "trait_type": "Collection",
+        "value": "BlockReceipt Premium"
       },
       {
         "trait_type": "Tier",
-        "value": "premium"
+        "value": "Premium"
       }
     ]
   },
   {
-    "id": "nft-003",
-    "name": "Block Receipt Luxury",
-    "description": "A luxury digital receipt NFT on the blockchain",
+    "id": "premium-002",
+    "name": "Silver Certificate",
+    "description": "A sleek silver certificate for your high-value purchases",
+    "tier": "premium",
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/silver-certificate.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc2b",
+    "category": "fashion",
+    "rarity": "uncommon",
+    "tokenId": 2002,
+    "attributes": [
+      {
+        "trait_type": "Collection",
+        "value": "BlockReceipt Premium"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "Premium"
+      }
+    ]
+  },
+  {
+    "id": "luxury-001",
+    "name": "Diamond Certificate",
+    "description": "The pinnacle of digital receipts for your most important purchases",
     "tier": "luxury",
-    "image": "https://ipfs.io/ipfs/QmabCde1234567892",
-    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567892/metadata.json",
-    "category": "receipt",
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/diamond-certificate.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc3a",
+    "category": "jewelry",
     "rarity": "rare",
-    "tokenId": 3,
+    "tokenId": 3001,
     "attributes": [
       {
-        "trait_type": "Category",
-        "value": "receipt"
+        "trait_type": "Collection",
+        "value": "BlockReceipt Luxury"
       },
       {
         "trait_type": "Tier",
-        "value": "luxury"
+        "value": "Luxury"
       }
     ]
   },
   {
-    "id": "nft-004",
-    "name": "Block Receipt Ultra",
-    "description": "An ultra tier digital receipt NFT on the blockchain",
+    "id": "ultra-001",
+    "name": "Cosmic Proof",
+    "description": "Beyond luxury - universal proof of your most special purchases",
     "tier": "ultra",
-    "image": "https://ipfs.io/ipfs/QmabCde1234567893",
-    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567893/metadata.json",
-    "category": "receipt",
-    "rarity": "epic",
-    "tokenId": 4,
+    "image": "https://storage.googleapis.com/blockreceipt/nft-images/cosmic-proof.svg",
+    "metadataUri": "ipfs://QmNfYSJKXPQFv1JTJbQHbcbYwCdGXqFNpE8AdwSXAiTc4a",
+    "category": "collectible",
+    "rarity": "legendary",
+    "tokenId": 4001,
     "attributes": [
       {
-        "trait_type": "Category",
-        "value": "receipt"
+        "trait_type": "Collection",
+        "value": "BlockReceipt Ultra"
       },
       {
         "trait_type": "Tier",
-        "value": "ultra"
+        "value": "Ultra"
       }
     ]
   }
