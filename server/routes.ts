@@ -26,6 +26,8 @@ import ocrTestRoutes from "./routes/ocr-test";
 // Receipt upload routes
 // Import the uploadReceipt routes
 import uploadReceiptRoutes from "./routes/uploadReceipt";
+// Import the auto-process receipt routes
+import autoProcessReceiptRoutes from "./routes/autoProcessReceipt";
 // Import the NFT options routes
 import nftOptionsRoutes from "./routes/nftOptions";
 // User authentication and wallet management routes
@@ -101,6 +103,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register receipt upload routes
   app.use('/api', uploadReceiptRoutes);
+  
+  // Register auto-process receipt routes (development mode)
+  if (process.env.NODE_ENV === 'development') {
+    app.use('/api', autoProcessReceiptRoutes);
+    console.log('[express] Auto-process receipt endpoints enabled in development mode');
+  }
   
   // Register NFT options routes
   app.use('/api', nftOptionsRoutes);
