@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -41,8 +41,30 @@ const upload = multer({
 });
 
 // Route for uploading a receipt
-router.post('/upload-receipt', upload.single('receipt'), async (req, res) => {
+router.post('/upload-receipt', (req: Request, res: Response) => {
+  // Debug logs
+  console.log('Receipt upload request received:');
+  console.log('Headers:', req.headers);
+  console.log('Content-Type:', req.headers['content-type']);
+  console.log('Body type:', typeof req.body);
+  
+  // Continue with multer middleware
+  upload.single('receipt')(req, res, (err) => {
+    if (err) {
+      console.error('Multer error:', err);
+      return res.status(400).json({ success: false, message: `File upload error: ${err.message}` });
+    }
+    
+    // Continue with the handler
+    handleReceiptUpload(req, res);
+  });
+});
+
+// Separated handler function
+async function handleReceiptUpload(req: Request, res: Response) {
   try {
+    console.log('Processing file:', req.file);
+    
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
@@ -71,10 +93,10 @@ router.post('/upload-receipt', upload.single('receipt'), async (req, res) => {
       error: error.message || 'Unknown error'
     });
   }
-});
+}
 
 // Route for getting receipt data by ID
-router.get('/receipt/:fileId', (req, res) => {
+router.get('/receipt/:fileId', (req: Request, res: Response) => {
   try {
     const fileId = req.params.fileId;
     const filePath = path.join(__dirname, '../../uploads', fileId);

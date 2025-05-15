@@ -73,20 +73,22 @@ const NFTArtPicker: React.FC<NFTArtPickerProps> = ({ receiptData, onSelect, onCa
               // Map options to use actual NFT images based on categories
               let imageUrl = `/nft-images/receipt-warrior.svg`; // Default
               
-              if (option.tags.includes('food') || option.tags.includes('restaurant')) {
-                imageUrl = `/nft-images/restaurant-receipt.svg`;
-              } else if (option.tags.includes('tech') || option.tags.includes('electronics')) {
-                imageUrl = `/nft-images/tech-receipt.svg`;
-              } else if (option.tags.includes('fashion') || option.tags.includes('clothing')) {
-                imageUrl = `/nft-images/fashion-receipt.svg`;
-              } else if (option.tags.includes('grocery')) {
-                imageUrl = `/nft-images/grocery-hero.svg`;
-              } else if (option.tags.includes('travel')) {
-                imageUrl = `/nft-images/travel-receipt.svg`;
-              } else if (option.tags.includes('beauty') || option.tags.includes('cosmetics')) {
-                imageUrl = `/nft-images/beauty-receipt.svg`;
-              } else if (option.tags.includes('crypto') || option.tags.includes('finance')) {
-                imageUrl = `/nft-images/crypto-receipt.svg`;
+              if (option.tags && Array.isArray(option.tags)) {
+                if (option.tags.includes('food') || option.tags.includes('restaurant')) {
+                  imageUrl = `/nft-images/restaurant-receipt.svg`;
+                } else if (option.tags.includes('tech') || option.tags.includes('electronics')) {
+                  imageUrl = `/nft-images/tech-receipt.svg`;
+                } else if (option.tags.includes('fashion') || option.tags.includes('clothing')) {
+                  imageUrl = `/nft-images/fashion-receipt.svg`;
+                } else if (option.tags.includes('grocery')) {
+                  imageUrl = `/nft-images/grocery-hero.svg`;
+                } else if (option.tags.includes('travel')) {
+                  imageUrl = `/nft-images/travel-receipt.svg`;
+                } else if (option.tags.includes('beauty') || option.tags.includes('cosmetics')) {
+                  imageUrl = `/nft-images/beauty-receipt.svg`;
+                } else if (option.tags.includes('crypto') || option.tags.includes('finance')) {
+                  imageUrl = `/nft-images/crypto-receipt.svg`;
+                }
               }
               
               return {
