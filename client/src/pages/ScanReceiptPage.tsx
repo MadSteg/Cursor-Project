@@ -15,10 +15,9 @@ import {
   uploadReceiptImage,
   processReceiptImage,
   processReceiptBase64,
-  ReceiptData, 
-  determineReceiptTier, 
-  ReceiptTier 
-} from '@/lib/receiptOcr';
+  determineReceiptTier
+} from "@/lib/receiptOcr";
+import { ReceiptData, ReceiptTier } from "@/types";
 
 // Components
 const UploadInstruction = ({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) => (

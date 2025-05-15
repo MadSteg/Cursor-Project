@@ -23,7 +23,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Info, Check, Crown, Sparkles, Gift, Gamepad2, Music2, Palette, Shapes, Diamond } from 'lucide-react';
-import { NFTArtItem, ReceiptTier, collections } from '@/data/nftArtManifest';
+import { collections } from "@/data/nftArtManifest";
+import { NFTArtItem, ReceiptTier } from "@/types";
 
 interface NFTArtSelectorProps {
   receiptTier: ReceiptTier;

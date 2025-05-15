@@ -4,20 +4,7 @@
  * This file defines the structure and collections of NFT art for receipt tokens.
  */
 
-// Export ReceiptTier as a proper type
-export type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
-
-export type NFTArtItem = {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  collection: string;
-  tier: ReceiptTier;
-  rarity: string;
-  type: 'game' | 'utility' | 'music' | 'art' | 'collectible' | 'sports';
-  price: number;
-}
+import { ReceiptTier, NFTArtItem } from "@/types";
 
 export const collections = [
   {

@@ -5,33 +5,7 @@
  * and other receipt-related helper functions.
  */
 
-import { ReceiptTier } from '@/data/nftArtManifest';
-
-// Define receipt item type
-export interface ReceiptItem {
-  name: string;
-  price: number;
-  quantity: number;
-  category?: string;
-}
-
-// Define the main receipt data type used throughout the application
-export interface ReceiptData {
-  id?: string | number;
-  merchantName: string;
-  date: string;
-  items: ReceiptItem[];
-  subtotal?: number;
-  tax?: number;
-  total: number;
-  category?: string;
-  nftGift?: {
-    status: string;
-    message: string;
-    eligible: boolean;
-    taskId?: string;
-  };
-}
+import { ReceiptTier, ReceiptData, ReceiptItem } from "@/types";
 
 /**
  * Determines the receipt tier based on the total amount
