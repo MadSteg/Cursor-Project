@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
-import { NFTGallery } from "@/components/nft/NFTGallery";
+import NFTGallery from "@/components/nft/NFTGallery";
 import { useWeb3Wallet } from "@/hooks/useWeb3Wallet";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
