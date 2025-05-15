@@ -14,13 +14,13 @@ import { TacoService } from "./tacoService";
 import { WalletService } from "./walletService";
 
 export class AuthService {
-  private tacoService: TacoService;
-  private walletService: WalletService;
+  private tacoService: TacoService | null;
+  private walletService: WalletService | null;
   private nonceMap: Map<string, string> = new Map();
   
-  constructor(tacoService: TacoService, walletService: WalletService) {
-    this.tacoService = tacoService;
-    this.walletService = walletService;
+  constructor(tacoService?: TacoService, walletService?: WalletService) {
+    this.tacoService = tacoService || null;
+    this.walletService = walletService || null;
   }
   
   /**
@@ -51,7 +51,7 @@ export class AuthService {
       }
       
       // Generate a wallet if needed
-      if (wantsWallet) {
+      if (wantsWallet && this.walletService) {
         const wallet = await this.walletService.generateWallet();
         
         // Update the user with the wallet address
@@ -66,7 +66,7 @@ export class AuthService {
         }
         
         // Encrypt and store the wallet private key if a TACo public key is provided
-        if (tacoPublicKey) {
+        if (tacoPublicKey && this.tacoService) {
           await this.tacoService.encryptPrivateKey(
             wallet.privateKey,
             tacoPublicKey,
@@ -179,7 +179,9 @@ export class AuthService {
       }
       
       // Update the wallet's last used timestamp
-      await this.walletService.updateLastUsed(walletAddress);
+      if (this.walletService) {
+        await this.walletService.updateLastUsed(walletAddress);
+      }
       
       return user;
     } catch (error) {
@@ -243,6 +245,13 @@ export class AuthService {
   }
   
   /**
+   * Get a user by wallet address (public method)
+   */
+  async getUserByWalletAddress(walletAddress: string): Promise<User | null> {
+    return this.findUserByWalletAddress(walletAddress);
+  }
+  
+  /**
    * Hash a password
    */
   private async hashPassword(password: string): Promise<string> {
@@ -257,4 +266,57 @@ export class AuthService {
 }
 
 // Create and export an instance of the AuthService
+// Add missing wallet authentication methods to AuthService
+AuthService.prototype.storeWalletNonce = async function(walletAddress: string, nonce: string): Promise<void> {
+  try {
+    // Ensure the address is in checksum format
+    const checksum = ethers.utils.getAddress(walletAddress);
+    
+    // Find the user
+    const user = await this.getUserByWalletAddress(checksum);
+    
+    if (user) {
+      // Update the user's nonce
+      await db
+        .update(users)
+        .set({ nonce: nonce })
+        .where(eq(users.id, user.id));
+    } else {
+      // Create a new user with just the wallet address and nonce
+      // This allows users to authenticate with wallet before providing email
+      await db
+        .insert(users)
+        .values({
+          walletAddress: checksum,
+          nonce: nonce,
+          email: `wallet-${checksum.substring(2, 8)}@placeholder.com`,
+          password: crypto.randomBytes(16).toString('hex'),
+          username: `wallet-${checksum.substring(2, 10)}`,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+    }
+  } catch (error) {
+    console.error("Error storing wallet nonce:", error);
+    throw new Error("Failed to store wallet nonce");
+  }
+};
+
+AuthService.prototype.updateUserAfterWalletLogin = async function(userId: number, newNonce: string): Promise<void> {
+  try {
+    await db
+      .update(users)
+      .set({
+        nonce: newNonce,
+        lastLogin: new Date()
+      })
+      .where(eq(users.id, userId));
+  } catch (error) {
+    console.error("Error updating user after wallet login:", error);
+    throw new Error("Failed to update user after wallet login");
+  }
+};
+
+// Create and export an instance of the AuthService
+// For now, initialize with null dependencies since the server will inject them later
 export const authService = new AuthService();

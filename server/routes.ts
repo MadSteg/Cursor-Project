@@ -41,7 +41,9 @@ import taskRoutes from "./routes/tasks";
 // Import test routes for the task queue
 import testQueueRoutes from "./routes/test-queue";
 // Import hot wallet routes with TACo encryption
-import walletRoutes from "./routes/wallet";
+import walletTacoRoutes from "./routes/wallet";
+// Import wallet authentication routes
+import walletAuthRoutes from "./routes/wallet";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -120,7 +122,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
   
   // Register Hot Wallet routes with TACo encryption
-  app.use('/api/wallet', walletRoutes);
+  app.use('/api/wallet', walletTacoRoutes);
+  
+  // Register wallet authentication routes
+  app.use('/api/wallet-auth', walletAuthRoutes);
   
   // Register Test Queue routes (only in development)
   if (process.env.NODE_ENV === 'development') {
