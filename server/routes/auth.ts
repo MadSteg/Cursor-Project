@@ -25,6 +25,7 @@ const web3LoginSchema = z.object({
   walletAddress: z.string(),
   signature: z.string(),
   nonce: z.string(),
+  devMode: z.boolean().optional(),
 });
 
 // Create express router
@@ -198,10 +199,19 @@ authRouter.post("/web3-login", async (req: Request, res: Response) => {
       });
     }
     
-    const { walletAddress, signature, nonce } = validationResult.data;
+    const { walletAddress, signature, nonce, devMode } = validationResult.data;
     
-    // Verify signature
-    const user = await authService.verifySignature(walletAddress, signature, nonce);
+    let user;
+    
+    // If in dev mode with a special wallet address, bypass signature verification
+    if (devMode && process.env.NODE_ENV === 'development' && 
+        walletAddress === '0x742d35Cc6634C0532925a3b844Bc454e4438f44e') {
+      console.log('[Dev Mode] Bypassing signature verification for development wallet');
+      user = await authService.getUserOrCreateByWalletAddress(walletAddress);
+    } else {
+      // Normal verification flow
+      user = await authService.verifySignature(walletAddress, signature, nonce);
+    }
     
     if (!user) {
       return res.status(401).json({

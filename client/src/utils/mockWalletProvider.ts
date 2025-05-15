@@ -130,3 +130,9 @@ export function simulateWalletDisconnection() {
 export function simulateChainSwitch(chainId: string) {
   notifyListeners('chainChanged', chainId);
 }
+
+// Helper to check if we're currently using the mock wallet
+export function isMockWalletActive(): boolean {
+  return window.ethereum?.isMetaMask === true && 
+         window.ethereum?.selectedAddress === MOCK_ADDRESS;
+}

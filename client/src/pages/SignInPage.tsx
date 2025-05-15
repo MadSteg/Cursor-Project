@@ -160,11 +160,15 @@ export default function SignInPage() {
       // Sign the message with connected wallet
       const signature = await signMessage(nonceData.message);
       
+      console.log(`Authenticating wallet ${address} with signature`, signature.substring(0, 10) + '...');
+      
       // Verify signature on server
       const authResponse = await apiRequest('POST', '/api/auth/web3-login', {
         walletAddress: address,
         signature,
         nonce: nonceData.nonce,
+        // For development mode only - include a flag to bypass verification
+        devMode: import.meta.env.DEV && address === '0x742d35Cc6634C0532925a3b844Bc454e4438f44e'
       });
       
       const authData = await authResponse.json();

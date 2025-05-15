@@ -6,6 +6,7 @@
  */
 import { useState } from 'react';
 import { ethers } from 'ethers';
+import { isMockWalletActive, MOCK_ADDRESS } from '@/utils/mockWalletProvider';
 
 // Dynamic import for WalletConnect to avoid polyfill issues
 let WalletConnectProvider: any = null;
@@ -275,6 +276,14 @@ export function useWalletConnect() {
     }
     
     try {
+      // Check if we're using the development mode mock wallet
+      if (isMockWalletActive()) {
+        console.log('[Dev Mode] Signing message:', message);
+        // This is a mock signature for development mode only
+        return '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1c';
+      }
+      
+      // Otherwise use real signing with the signer
       return await signer.signMessage(message);
     } catch (error: any) {
       console.error("Signature error:", error);
