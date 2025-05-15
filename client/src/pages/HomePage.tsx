@@ -17,7 +17,8 @@ import {
   ArrowRight,
   Crown,
   Star,
-  Diamond
+  Diamond,
+  FileImage
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -117,13 +118,13 @@ const HomePage = () => {
           >
             <motion.div variants={itemVariants}>
               <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
-                Transform Receipts Into Digital Assets
+                Reimagining Receipts for the Digital Age
               </h1>
             </motion.div>
             
             <motion.div variants={itemVariants}>
               <p className="text-xl md:text-2xl text-gray-600 mb-10">
-                BlockReceipt turns everyday purchases into secure, interactive NFTs with privacy controls and powerful analytics.
+                BlockReceipt transforms purchases into secure, interactive NFTs while intelligently categorizing your inventory and spending with built-in privacy controls.
               </p>
             </motion.div>
             
@@ -131,9 +132,9 @@ const HomePage = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center"
               variants={itemVariants}
             >
-              <Link href="/scan-receipt">
+              <Link href="/mint">
                 <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                  <Camera className="mr-2 h-5 w-5" /> Scan Receipt
+                  <Receipt className="mr-2 h-5 w-5" /> Mint BlockReceipt
                 </Button>
               </Link>
               <Link href="/about">
@@ -224,10 +225,10 @@ const HomePage = () => {
             variants={fadeInUpVariants}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Reimagining Receipts for the Digital Age
+              Blockchain-Powered Purchase Management
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              BlockReceipt solves the ancient problem of paper receipts with Web3 technology.
+              BlockReceipt solves the ancient problem of paper receipts with intelligent categorization and Web3 technology.
             </p>
           </motion.div>
           
@@ -382,9 +383,9 @@ const HomePage = () => {
               <div className="bg-gradient-to-br from-green-50 to-green-100 h-20 w-20 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <Wallet className="h-10 w-10 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold mb-3">NFT Collectibility</h3>
+              <h3 className="text-xl font-bold mb-3">Intelligent Inventory Tracking</h3>
               <p className="text-gray-600">
-                Receipts become digital collectibles with real utility tied to game assets, music content, and more.
+                Automatically categorizes purchased items for inventory management and spending analytics while preserving your financial privacy.
               </p>
             </motion.div>
           </div>
@@ -420,9 +421,9 @@ const HomePage = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            <Link href="/scan-receipt">
+            <Link href="/mint">
               <Button size="lg" className="bg-white text-indigo-700 hover:bg-indigo-50">
-                Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
+                Mint Your First BlockReceipt <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </motion.div>
