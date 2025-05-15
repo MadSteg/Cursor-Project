@@ -6,7 +6,15 @@
  */
 import { useState } from 'react';
 import { ethers } from 'ethers';
-import WalletConnectProvider from '@walletconnect/web3-provider';
+
+// Dynamic import for WalletConnect to avoid polyfill issues
+let WalletConnectProvider: any = null;
+try {
+  // We'll initialize this dynamically when needed
+  // to avoid early initialization errors with polyfills
+} catch (error) {
+  console.error("Failed to load WalletConnect:", error);
+}
 
 export function useWalletConnect() {
   const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);

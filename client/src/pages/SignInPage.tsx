@@ -14,6 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { useWalletConnect } from '@/hooks/useWalletConnect';
+import WalletButton from '@/components/blockchain/WalletButton';
 
 // Define form validation schemas
 const loginSchema = z.object({
@@ -38,11 +40,8 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-  const [walletError, setWalletError] = useState<string | null>(null);
-  const [walletConnecting, setWalletConnecting] = useState(false);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const { connect: connectWeb3, active, account } = useWeb3();
   
   // Initialize form for login
   const loginForm = useForm<LoginFormValues>({
@@ -138,89 +137,55 @@ export default function SignInPage() {
     }
   };
   
-  // Connect wallet using MetaMask or similar Web3 provider through useWeb3 hook
-  const connectWallet = async () => {
-    setWalletConnecting(true);
-    setWalletError(null);
-    
+  // Use the useWalletConnect hook
+  const { 
+    walletAddress, 
+    signMessage,
+    connectionError,
+    connecting
+  } = useWalletConnect();
+  
+  // Handle successful wallet connection
+  const handleWalletConnected = async (address: string) => {
     try {
-      // Check if MetaMask is installed
-      if (typeof window.ethereum === 'undefined') {
-        throw new Error('No Ethereum wallet extension detected. Please install MetaMask or use email sign-in instead.');
-      }
-      
-      // Connect using our Web3 context
-      await connectWeb3();
-      
-      if (!account) {
-        throw new Error('No wallet address found. Please try again.');
-      }
-      
-      const walletAddress = account;
-      
       // Get authentication nonce from server
-      const nonceResponse = await apiRequest('GET', `/api/auth/nonce/${walletAddress}`);
+      const nonceResponse = await apiRequest('GET', `/api/auth/nonce/${address}`);
       const nonceData = await nonceResponse.json();
       
       if (!nonceData.success) {
         throw new Error(nonceData.error || 'Failed to get authentication nonce');
       }
       
-      try {
-        // For signing the message we need to get a provider directly
-        // because we need to use the signer
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const signature = await signer.signMessage(nonceData.message);
-        
-        // Verify signature on server
-        const authResponse = await apiRequest('POST', '/api/auth/web3-login', {
-          walletAddress,
-          signature,
-          nonce: nonceData.nonce,
-        });
-        
-        const authData = await authResponse.json();
-        
-        if (!authData.success) {
-          throw new Error(authData.error || 'Web3 authentication failed');
-        }
-        
-        toast({
-          title: 'Wallet Connected',
-          description: `Successfully authenticated with wallet ${walletAddress.substring(0, 8)}...`,
-        });
-        
-        // Redirect to home page after successful wallet connection
-        setLocation('/');
-      } catch (signingError: any) {
-        console.error('Message signing error:', signingError);
-        throw new Error(signingError.message || 'Failed to sign authentication message');
-      }
-    } catch (error: any) {
-      console.error('Wallet connection error:', error);
+      // Sign the message with connected wallet
+      const signature = await signMessage(nonceData.message);
       
-      // Provide more helpful error messages
-      let errorMessage = error.message || 'Failed to connect wallet';
-      
-      if (errorMessage.includes('already processing')) {
-        errorMessage = 'MetaMask is busy. Please check the MetaMask extension and try again.';
-      } else if (errorMessage.includes('User rejected')) {
-        errorMessage = 'You rejected the connection request. Please try again and approve the connection.';
-      } else if (errorMessage.includes('not installed')) {
-        errorMessage = 'MetaMask is not installed. Please install the MetaMask browser extension or use email sign-in instead.';
-        // Suggest switching to email login
-        setActiveTab('login');
-      }
-      
-      setWalletError(errorMessage);
-      toast({
-        title: 'Wallet Connection Failed',
-        description: errorMessage,
-        variant: 'destructive',
+      // Verify signature on server
+      const authResponse = await apiRequest('POST', '/api/auth/web3-login', {
+        walletAddress: address,
+        signature,
+        nonce: nonceData.nonce,
       });
-    } finally {
-      setWalletConnecting(false);
+      
+      const authData = await authResponse.json();
+      
+      if (!authData.success) {
+        throw new Error(authData.error || 'Web3 authentication failed');
+      }
+      
+      toast({
+        title: 'Wallet Connected',
+        description: `Successfully authenticated with wallet ${address.substring(0, 8)}...`,
+      });
+      
+      // Redirect to home page after successful wallet connection
+      setLocation('/');
+    } catch (error: any) {
+      console.error('Authentication error:', error);
+      toast({
+        title: 'Authentication Failed',
+        description: error.message || 'Failed to authenticate wallet',
+        variant: 'destructive'
+      });
     }
   };
   
@@ -371,29 +336,28 @@ export default function SignInPage() {
                   </div>
                 </div>
                 
-                {walletError && (
+                {connectionError && (
                   <Alert variant="destructive">
                     <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{walletError}</AlertDescription>
+                    <AlertDescription>{connectionError}</AlertDescription>
                   </Alert>
                 )}
                 
-                <Button 
-                  onClick={connectWallet} 
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-500"
-                  disabled={walletConnecting}
-                >
-                  {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
-                </Button>
+                <div className="flex justify-center">
+                  <WalletButton 
+                    onWalletConnected={handleWalletConnected}
+                    className="w-full"
+                  />
+                </div>
                 
                 <Alert className="mt-2">
                   <AlertTitle>About Web3 Wallets</AlertTitle>
                   <AlertDescription className="text-xs">
                     <p className="mb-2">
-                      To use this feature, you need a browser extension like MetaMask installed.
+                      Choose between MetaMask or WalletConnect to sign in with your crypto wallet.
                     </p>
                     <p>
-                      No MetaMask? You can always <button type="button" className="text-blue-600 underline" onClick={() => setActiveTab('login')}>log in with email</button> or 
+                      No wallet? You can always <button type="button" className="text-blue-600 underline" onClick={() => setActiveTab('login')}>log in with email</button> or 
                       {' '}<button type="button" className="text-blue-600 underline" onClick={() => setActiveTab('signup')}>create an account</button> and we'll provide a hot wallet.
                     </p>
                   </AlertDescription>

@@ -1,3 +1,6 @@
+// Import polyfills first to ensure global objects are available
+import "./polyfills";
+
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
