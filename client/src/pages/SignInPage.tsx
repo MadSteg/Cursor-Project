@@ -16,6 +16,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useWalletConnect } from '@/hooks/useWalletConnect';
 import WalletButton from '@/components/blockchain/WalletButton';
+import DevModeWalletButton from '@/components/blockchain/DevModeWalletButton';
 
 // Define form validation schemas
 const loginSchema = z.object({
@@ -343,11 +344,21 @@ export default function SignInPage() {
                   </Alert>
                 )}
                 
-                <div className="flex justify-center">
+                <div className="flex flex-col gap-4">
                   <WalletButton 
                     onWalletConnected={handleWalletConnected}
                     className="w-full"
                   />
+                  
+                  {import.meta.env.DEV && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="text-sm font-medium text-center mb-2">Development Options</h4>
+                      <DevModeWalletButton 
+                        onWalletConnected={handleWalletConnected}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <Alert className="mt-2">
