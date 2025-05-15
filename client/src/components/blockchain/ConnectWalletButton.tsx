@@ -28,13 +28,19 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({
   size = 'default',
   className = ''
 }) => {
-  const { address, isConnected, connect, disconnect, shortDisplayAddress } = useWeb3Wallet();
+  const { address, isConnected, connect, disconnect, shortDisplayAddress, isMockWallet } = useWeb3Wallet();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
   const handleConnect = async () => {
     try {
       await connect();
+      if (process.env.NODE_ENV === 'development') {
+        toast({
+          title: 'Development Mode',
+          description: 'Connected with test wallet in development mode',
+        });
+      }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       toast({
@@ -74,14 +80,22 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({
           <Button 
             variant="outline" 
             size={size} 
-            className={`flex items-center gap-2 px-3 ${className}`}
+            className={`flex items-center gap-2 px-3 ${className} ${isMockWallet ? 'border-amber-400 dark:border-amber-500' : ''}`}
           >
-            <Wallet className="h-4 w-4" />
+            <Wallet className={`h-4 w-4 ${isMockWallet ? 'text-amber-500' : ''}`} />
             <span className="font-medium">{shortDisplayAddress}</span>
+            {isMockWallet && <span className="text-xs bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-800 dark:text-amber-200">TEST</span>}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Wallet Connected</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            {isMockWallet ? 'Test Wallet Connected' : 'Wallet Connected'}
+            {isMockWallet && (
+              <span className="block text-xs text-amber-600 dark:text-amber-400 mt-1">
+                (Development Mode)
+              </span>
+            )}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={copyAddress}>
             {copied ? (
