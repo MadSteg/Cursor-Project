@@ -6,22 +6,19 @@ import { extractReceiptData, determineReceiptTier } from '../../shared/utils/rec
 
 const router = express.Router();
 
-// Set up multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = path.extname(file.originalname);
-    cb(null, 'receipt-' + uniqueSuffix + extension);
-  }
-});
+// Create uploads directory if it doesn't exist
+// Use import.meta.url for ES modules instead of __dirname
+const __filename = new URL(import.meta.url).pathname;
+const projectRoot = path.resolve(path.dirname(__filename), '../../');
+const uploadDir = path.join(projectRoot, 'uploads');
+
+console.log('Upload directory path:', uploadDir);
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Set up multer storage configuration - using memory storage for debugging
+const storage = multer.memoryStorage();
 
 // Initialize multer with storage configuration
 const upload = multer({
@@ -43,10 +40,14 @@ const upload = multer({
 // Route for uploading a receipt
 router.post('/upload-receipt', (req: Request, res: Response) => {
   // Debug logs
+  console.log('------------------------------------------------------------');
   console.log('Receipt upload request received:');
-  console.log('Headers:', req.headers);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
   console.log('Content-Type:', req.headers['content-type']);
   console.log('Body type:', typeof req.body);
+  console.log('Files property exists:', req.files !== undefined);
+  console.log('Request body:', req.body);
+  console.log('------------------------------------------------------------');
   
   // Continue with multer middleware
   upload.single('receipt')(req, res, (err) => {
@@ -69,8 +70,19 @@ async function handleReceiptUpload(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
+    // For memory storage, we need to write the file to disk first
+    const fileExtension = path.extname(req.file.originalname) || '.jpg';
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = 'receipt-' + uniqueSuffix + fileExtension;
+    const filePath = path.join(uploadDir, filename);
+    
+    console.log('Saving file to:', filePath);
+    
+    // Write buffer to file
+    await fs.promises.writeFile(filePath, req.file.buffer);
+    
     // Extract data from the uploaded receipt using OCR
-    const receiptData = await extractReceiptData(req.file.path);
+    const receiptData = await extractReceiptData(filePath);
     
     // Determine receipt tier based on the total amount
     const tier = determineReceiptTier(receiptData.total);
@@ -81,8 +93,8 @@ async function handleReceiptUpload(req: Request, res: Response) {
       data: {
         ...receiptData,
         tier,
-        filePath: req.file.path,
-        fileId: path.basename(req.file.path)
+        filePath: filePath,
+        fileId: filename
       }
     });
   } catch (error: any) {
@@ -99,7 +111,7 @@ async function handleReceiptUpload(req: Request, res: Response) {
 router.get('/receipt/:fileId', (req: Request, res: Response) => {
   try {
     const fileId = req.params.fileId;
-    const filePath = path.join(__dirname, '../../uploads', fileId);
+    const filePath = path.join(uploadDir, fileId);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ success: false, message: 'Receipt not found' });

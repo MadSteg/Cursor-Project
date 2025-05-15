@@ -91,82 +91,89 @@ export default function UploadReceiptPage() {
 
     // Create a FormData object to send the file
     const formData = new FormData();
-    formData.append('receipt', file);
-
-    // Simulate progress with interval reference for UI feedback
-    let progressInterval: NodeJS.Timeout | null = null;
     
-    try {
-      // Start progress simulation for better UX
-      progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          const increment = Math.random() * 10;
-          const newProgress = Math.min(prev + increment, 90);
-          return newProgress;
-        });
-      }, 300);
+    // Log file details before appending to formData
+    console.log('File to upload:', { 
+      name: file.name, 
+      type: file.type, 
+      size: file.size,
+      lastModified: new Date(file.lastModified).toISOString()
+    });
+    
+    formData.append('receipt', file);
+    
+    // Simulate progress with interval reference for UI feedback
+    let progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        const increment = Math.random() * 10;
+        return Math.min(prev + increment, 90);
+      });
+    }, 300);
 
+    try {
       console.log('Uploading file:', file.name, file.type, file.size);
       
-      // Make the actual API call to upload and process the receipt
-      // Using XMLHttpRequest for better file upload handling and progress tracking
-      const xhr = new XMLHttpRequest();
+      // Try first with fetch API
+      console.log('Uploading with fetch API');
+      let resultData;
       
-      // Create a promise to handle the XHR response
-      const uploadPromise = new Promise<any>((resolve, reject) => {
-        xhr.open('POST', '/api/upload-receipt', true);
+      try {
+        const response = await fetch('/api/upload-receipt', {
+          method: 'POST',
+          body: formData,
+        });
         
-        // Track upload progress
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = Math.min(90, (event.loaded / event.total) * 100);
-            setUploadProgress(percentComplete);
-          }
-        };
+        console.log('Fetch response status:', response.status);
         
-        // Handle response
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              resolve(response);
-            } catch (err) {
-              reject(new Error('Invalid server response'));
-            }
-          } else {
-            try {
-              const errorData = JSON.parse(xhr.responseText);
-              reject(new Error(errorData.message || `Error: ${xhr.status}`));
-            } catch (err) {
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Fetch error response:', errorText);
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+        
+        resultData = await response.json();
+        console.log('Fetch response data:', resultData);
+      } 
+      catch (fetchError) {
+        console.error('Fetch upload failed, trying XMLHttpRequest as fallback', fetchError);
+        
+        // If fetch fails, try XMLHttpRequest as fallback
+        resultData = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/api/upload-receipt', true);
+          
+          xhr.onloadstart = () => console.log('XHR: Load started');
+          xhr.onload = () => {
+            console.log('XHR onload fired, status:', xhr.status);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch (err) {
+                reject(new Error('Invalid server response'));
+              }
+            } else {
               reject(new Error(`Request failed with status ${xhr.status}`));
             }
-          }
-        };
-        
-        // Handle network errors
-        xhr.onerror = () => {
-          reject(new Error('Network error occurred'));
-        };
-        
-        // Send the form data
-        xhr.send(formData);
-      });
-      
-      // Wait for the upload to complete
-      const resultData = await uploadPromise;
-      
-      // Clear the interval when response received
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
+          };
+          
+          xhr.onerror = () => reject(new Error('Network error occurred'));
+          xhr.send(formData);
+        });
       }
       
+      // Clear the progress simulation interval
+      clearInterval(progressInterval);
+      
+      console.log('Upload complete, checking result:', resultData);
+      
       // Check if the upload was successful
-      if (!resultData.success) {
-        throw new Error(resultData.message || 'Failed to process receipt');
+      if (!resultData || !resultData.success) {
+        throw new Error((resultData?.message) || 'Failed to process receipt');
       }
       
       const receiptResult = resultData.data;
+      console.log('Receipt data processed successfully:', receiptResult);
       
       setUploadProgress(100);
       setReceiptData(receiptResult);
