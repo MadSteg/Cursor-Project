@@ -196,7 +196,7 @@ export default function UploadReceiptPage() {
       setTimeout(() => {
         toast({
           title: '✅ Receipt Processing Started',
-          description: 'Your NFT is being minted – we'll update you when it's ready.',
+          description: "Your NFT is being minted – we'll update you when it's ready.",
           variant: 'default',
           duration: 5000,
         });
@@ -407,16 +407,57 @@ export default function UploadReceiptPage() {
       console.error("Error fetching NFT gallery:", err);
     }
   };
+  
+  // Function to fetch encrypted metadata for a token
+  const [encryptedMetadata, setEncryptedMetadata] = useState<any>(null);
+  
+  const fetchEncryptedMetadata = async (tokenId: string) => {
+    if (!tokenId || !address) return;
+    
+    try {
+      const response = await fetch(`/api/gallery/metadata/${tokenId}`);
+      const data = await response.json();
+      
+      if (data.success && data.data?.ciphertext) {
+        console.log("Retrieved encrypted metadata:", data.data);
+        setEncryptedMetadata(data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching encrypted metadata:", err);
+    }
+  };
 
   const resetUpload = () => {
     setReceiptData(null);
     setError(null);
     setUploadProgress(0);
     setActiveTab('upload');
+    setTaskId(null);
+    setNftTokenId(null);
+    setNftMintingStatus('idle');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+  
+  // Success message component for display after upload
+  const UploadSuccessMessage = () => (
+    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+      <div className="flex items-start">
+        <div className="flex-shrink-0">
+          <CheckCircle className="h-5 w-5 text-green-500" />
+        </div>
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-green-800">
+            ✅ Thanks for uploading your receipt!
+          </h3>
+          <div className="mt-2 text-sm text-green-700">
+            <p>Your NFT is being minted – we'll update you when it's ready.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="container max-w-4xl py-10">
@@ -549,15 +590,18 @@ export default function UploadReceiptPage() {
         
         <TabsContent value="review" className="mt-6">
           {receiptData && !showNftPicker && !isUploading && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Receipt Details</CardTitle>
-                    <CardDescription>
-                      Review your receipt data before minting
-                    </CardDescription>
-                  </div>
+            <>
+              {nftMintingStatus !== 'idle' && <UploadSuccessMessage />}
+            
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Receipt Details</CardTitle>
+                      <CardDescription>
+                        Review your receipt data
+                      </CardDescription>
+                    </div>
                   <div className={`${
                     tierColors[receiptData.tier?.id as keyof typeof tierColors] || 'bg-gray-100'
                   } px-3 py-1 rounded-full text-sm font-medium`}>
