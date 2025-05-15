@@ -7,11 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 
 interface NFTOption {
   id: string;
+  nftId: string;
   name: string;
   image: string;
   preview: string;
   description: string;
-  tags?: string[]; // Add tags property
+  tier: string;
+  categories: string[];
+  metadataUri?: string;
 }
 
 interface NFTArtPickerProps {
