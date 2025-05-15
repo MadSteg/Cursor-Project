@@ -93,11 +93,11 @@ export default function UploadReceiptPage() {
     const formData = new FormData();
     formData.append('receipt', file);
 
-    // Simulate progress with interval reference
+    // Simulate progress with interval reference for UI feedback
     let progressInterval: NodeJS.Timeout | null = null;
     
     try {
-      // Start progress simulation
+      // Start progress simulation for better UX
       progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           const increment = Math.random() * 10;
@@ -106,55 +106,49 @@ export default function UploadReceiptPage() {
         });
       }, 300);
 
-      // For testing, let's use mock data instead of actual API call
-      // This will bypass the server-side upload issues for now
-      setTimeout(() => {
-        // Clear the interval when done
-        if (progressInterval) {
-          clearInterval(progressInterval);
-          progressInterval = null;
-        }
-        
-        const mockData = {
-          merchantName: "Target",
-          date: "05/15/2025",
-          items: [
-            { name: "T-Shirt Large", price: 19.99 },
-            { name: "Jeans Blue 34W", price: 49.99 },
-            { name: "Socks 3-pack", price: 9.99 },
-            { name: "Notebook", price: 5.99 }
-          ],
-          subtotal: 85.96,
-          tax: 6.88,
-          total: 92.84,
-          tier: {
-            id: "STANDARD",
-            title: "Standard",
-            description: "Standard BlockReceipt with basic features and encryption",
-            price: 0.99
-          },
-          filePath: "/uploads/mock-receipt.jpg",
-          fileId: "mock-receipt.jpg"
-        };
-        
-        setUploadProgress(100);
-        setReceiptData(mockData);
-        setActiveTab('review');
-        
-        toast({
-          title: 'Receipt Uploaded Successfully',
-          description: `We've processed your receipt from ${mockData.merchantName}.`,
-          variant: 'default',
-        });
-        
-        setIsUploading(false);
-      }, 2500);
+      // Make the actual API call to upload and process the receipt
+      const response = await fetch('/api/upload-receipt', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      // Clear the interval when response received
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to process receipt');
+      }
+      
+      const resultData = await response.json();
+      
+      if (!resultData.success) {
+        throw new Error(resultData.message || 'Failed to process receipt');
+      }
+      
+      const receiptResult = resultData.data;
+      
+      setUploadProgress(100);
+      setReceiptData(receiptResult);
+      setActiveTab('review');
+      
+      toast({
+        title: 'Receipt Uploaded Successfully',
+        description: `We've processed your receipt from ${receiptResult.merchantName}.`,
+        variant: 'default',
+      });
     } catch (err: any) {
+      console.error('Error processing receipt:', err);
+      
       // Make sure interval is cleared on error
       if (progressInterval) {
         clearInterval(progressInterval);
         progressInterval = null;
       }
+      
       setError(err.message || 'An error occurred while uploading the receipt');
       setUploadProgress(0);
       
@@ -163,6 +157,7 @@ export default function UploadReceiptPage() {
         description: err.message || 'Failed to upload receipt. Please try again.',
         variant: 'destructive',
       });
+    } finally {
       setIsUploading(false);
     }
   };
