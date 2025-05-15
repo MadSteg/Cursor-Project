@@ -85,6 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register receipt upload routes
   app.use('/api', uploadReceiptRoutes);
   
+  // Register NFT options routes
+  app.use('/api', nftOptionsRoutes);
+  
   // Blockchain network status endpoint with multi-provider details
   app.get('/api/blockchain/status', async (req, res) => {
     try {

@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
+import NFTArtPicker from '@/components/receipts/NFTArtPicker';
 
 // Define the tier colors for visualization
 const tierColors = {
@@ -73,6 +74,8 @@ export default function UploadReceiptPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showNftPicker, setShowNftPicker] = useState(false);
+  const [selectedNft, setSelectedNft] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -169,11 +172,27 @@ export default function UploadReceiptPage() {
     }
   };
 
-  const mintReceiptNFT = async () => {
+  const handleStartNFTSelection = () => {
+    if (!receiptData) return;
+    setShowNftPicker(true);
+  };
+  
+  const handleNFTSelected = async (nft: any) => {
+    setSelectedNft(nft);
+    await mintWithSelectedNFT(nft);
+  };
+  
+  const handleCancelNFTSelection = () => {
+    setShowNftPicker(false);
+    setSelectedNft(null);
+  };
+  
+  const mintWithSelectedNFT = async (nft: any) => {
     if (!receiptData) return;
     
     setIsUploading(true);
     setUploadProgress(0);
+    setShowNftPicker(false);
     
     // For progress simulation
     let progressInterval: NodeJS.Timeout | null = null;
@@ -188,9 +207,17 @@ export default function UploadReceiptPage() {
         });
       }, 500);
       
-      // Here we would send the receipt data to a mint NFT endpoint
-      // For now, we'll just simulate the process
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Send the receipt data and selected NFT for minting
+      const response = await apiRequest('POST', '/api/select-nft', {
+        selectedNft: nft,
+        receiptData
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to mint BlockReceipt');
+      }
       
       if (progressInterval) {
         clearInterval(progressInterval);
@@ -201,7 +228,7 @@ export default function UploadReceiptPage() {
       
       toast({
         title: 'BlockReceipt Minted',
-        description: 'Your receipt has been successfully minted as a blockchain-secured BlockReceipt.',
+        description: `Your receipt has been successfully minted as a "${nft.name}" blockchain-secured BlockReceipt.`,
         variant: 'default',
       });
       
@@ -222,6 +249,12 @@ export default function UploadReceiptPage() {
     } finally {
       setIsUploading(false);
     }
+  };
+  
+  // Original function now just shows the NFT picker
+  const mintReceiptNFT = () => {
+    if (!receiptData) return;
+    handleStartNFTSelection();
   };
 
   const resetUpload = () => {
