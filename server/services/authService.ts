@@ -265,8 +265,44 @@ export class AuthService {
   }
 }
 
+
+
 // Create and export an instance of the AuthService
 // Add missing wallet authentication methods to AuthService
+AuthService.prototype.getUserOrCreateByWalletAddress = async function(walletAddress: string): Promise<User | null> {
+  try {
+    // First try to find the existing user
+    let user = await this.findUserByWalletAddress(walletAddress);
+    
+    // If user doesn't exist, create a new one
+    if (!user) {
+      console.log(`[Dev Mode] Creating new user for wallet address: ${walletAddress}`);
+      
+      // Create a new user with this wallet address
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          username: `devwallet_${walletAddress.substring(0, 8)}`,
+          email: `${walletAddress.toLowerCase()}@blockreceipt.dev`,
+          password: null, // No password for dev wallet users
+          walletAddress: walletAddress,
+        })
+        .returning();
+      
+      if (!newUser) {
+        throw new Error("Failed to create development user for wallet");
+      }
+      
+      user = newUser;
+    }
+    
+    return user;
+  } catch (error) {
+    console.error("Error in getUserOrCreateByWalletAddress:", error);
+    throw new Error("Failed to get or create user by wallet address");
+  }
+};
+
 AuthService.prototype.storeWalletNonce = async function(walletAddress: string, nonce: string): Promise<void> {
   try {
     // Ensure the address is in checksum format
