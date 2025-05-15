@@ -7,6 +7,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import useWalletConnect from '@/hooks/useWalletConnect';
 
 // Define the NFTMetadata interface locally
 interface NFTMetadata {
@@ -153,6 +154,9 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
   const [activeTab, setActiveTab] = useState('all');
   const [minting, setMinting] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Get wallet connection information
+  const { walletAddress, isConnected, connectMetaMask } = useWalletConnect();
 
   // Use React Query for fetching NFTs
   const { data: nfts = FALLBACK_NFTS, isLoading } = useQuery({
@@ -189,9 +193,11 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
         throw new Error('No receipt data provided');
       }
       
+      // Include wallet address in the request for proper NFT minting
       const response = await apiRequest('POST', '/api/select-nft', {
         selectedNft: nft,
-        receiptData
+        receiptData,
+        walletAddress: walletAddress || undefined
       });
       
       return response.json();
@@ -230,6 +236,25 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
         description: 'Please upload a receipt before minting an NFT.',
         variant: 'destructive',
       });
+      return;
+    }
+    
+    // Check if wallet is connected
+    if (!isConnected || !walletAddress) {
+      toast({
+        title: 'Wallet Not Connected',
+        description: 'Please connect your wallet first to mint this NFT.',
+        variant: 'destructive',
+      });
+      
+      // Try to connect MetaMask
+      try {
+        await connectMetaMask();
+        // If connection succeeds, we'll try again in the next render
+      } catch (error) {
+        console.error('Failed to connect wallet:', error);
+        return;
+      }
       return;
     }
     
