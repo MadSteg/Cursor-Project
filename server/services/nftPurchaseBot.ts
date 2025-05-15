@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as ethers from 'ethers';
+import { ethers } from 'ethers';
 import { db } from '../db';
 import * as dotenv from 'dotenv';
 
@@ -101,7 +101,7 @@ interface UserClaimRecord {
 }
 
 class NFTPurchaseBot {
-  private provider: ethers.JsonRpcProvider | null = null;
+  private provider: ethers.providers.JsonRpcProvider | null = null;
   private wallet: ethers.Wallet | null = null;
   private openSeaApiKey: string;
   private reservoirApiKey: string;
@@ -123,7 +123,7 @@ class NFTPurchaseBot {
     
     try {
       // Initialize blockchain connection
-      this.provider = new ethers.JsonRpcProvider(this.rpcUrl);
+      this.provider = new ethers.providers.JsonRpcProvider(this.rpcUrl);
       
       // Initialize wallet from private key
       if (backendPrivateKey) {
@@ -365,7 +365,7 @@ class NFTPurchaseBot {
     try {
       // Check wallet balance first
       const balance = await this.provider.getBalance(this.wallet.address);
-      const balanceEth = parseFloat(ethers.formatEther(balance));
+      const balanceEth = parseFloat(ethers.utils.formatEther(balance));
       const ethUsdPrice = await this.getEthUsdPrice();
       
       console.log(`NFT Bot wallet balance: ${balanceEth} ETH ($${balanceEth * ethUsdPrice})`);
@@ -495,11 +495,11 @@ class NFTPurchaseBot {
       const receipt = await tx.wait();
       
       console.log(`NFT transferred to ${userWalletAddress}`);
-      console.log(`Transaction hash: ${receipt.hash}`);
+      console.log(`Transaction hash: ${receipt.transactionHash}`);
       
       return {
         success: true,
-        txHash: receipt.hash
+        txHash: receipt.transactionHash
       };
     } catch (error: any) {
       console.error('Error transferring NFT:', error);

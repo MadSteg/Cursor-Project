@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { extractReceiptData, determineReceiptTier } from '../../shared/utils/receiptLogic';
+import { extractReceiptData, determineReceiptTier, type TierInfo } from '../../shared/utils/receiptLogic';
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
 
 const router = express.Router();
@@ -73,18 +73,31 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
       // Determine receipt tier based on the total amount
       const tier = determineReceiptTier(receiptData.total);
       
+      // Define NFT gift status interface
+      interface NFTGiftStatus {
+        status: string;
+        message: string;
+        eligible: boolean;
+        error?: string;
+      }
+      
       // Prepare response data
-      const responseData = {
+      const responseData: {
+        [key: string]: any;
+        tier: string;
+        filePath: string;
+        fileId: string;
+        nftGift?: NFTGiftStatus;
+      } = {
         ...receiptData,
         tier,
         filePath: req.file.path,
-        fileId: req.file.filename,
-        nftGift: null
+        fileId: req.file.filename
       };
       
       // Check if the receipt qualifies for an NFT gift ($5 or higher for basic tier)
       // Or automatically if premium or higher tier
-      if (tier !== 'Basic' || receiptData.total >= 5.0) {
+      if (tier.toString() !== 'Basic' || receiptData.total >= 5.0) {
         try {
           // Get connected wallet address from request body or use test address
           const walletAddress = req.body.walletAddress || '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC';
