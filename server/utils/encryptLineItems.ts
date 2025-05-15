@@ -53,7 +53,7 @@ export async function encryptLineItems(userPublicKey: string, receipt: any) {
  * @param itemName The name of the item
  * @returns The determined category
  */
-function determineItemCategory(itemName: string): string {
+export function determineItemCategory(itemName: string): string {
   const name = itemName.toLowerCase();
   
   // Food and beverage keywords

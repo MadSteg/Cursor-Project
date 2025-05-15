@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { extractReceiptData, determineReceiptTier, type TierInfo } from '../../shared/utils/receiptLogic';
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
-import { encryptLineItems } from '../utils/encryptLineItems';
+import { encryptLineItems, determineItemCategory } from '../utils/encryptLineItems';
 
 const router = express.Router();
 
@@ -80,21 +80,68 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
       // Extract data from the uploaded receipt using OCR
       const receiptData = await extractReceiptData(req.file.path);
       
-      // Validate receipt data extraction
-      if (!receiptData || !receiptData.items || receiptData.items.length === 0) {
+      // Validate receipt data extraction - critical check for OCR success
+      if (!receiptData) {
         return res.status(400).json({
           success: false,
-          message: "Could not parse line items from receipt. Please try a clearer image."
+          message: "Failed to extract receipt data. Please try a clearer image."
         });
       }
+      
+      // Validate that we have line items - critical for NFT metadata
+      if (!receiptData.items || !Array.isArray(receiptData.items)) {
+        return res.status(400).json({
+          success: false,
+          message: "Receipt items not detected. Please try a different receipt."
+        });
+      }
+      
+      // Check if we have at least one line item
+      if (receiptData.items.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No line items found in receipt. Please try a clearer image."
+        });
+      }
+
+      // Validate basic receipt structure
+      if (!receiptData.merchantName || !receiptData.date || !receiptData.total) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing critical receipt information (merchant, date, or total)."
+        });
+      }
+      
+      // Classify items if not already done by OCR
+      receiptData.items = receiptData.items.map(item => {
+        // Create a new item object with a category field
+        const itemWithCategory = {
+          name: item.name,
+          price: item.price,
+          category: (item as any).category || determineItemCategory(item.name)
+        };
+        return itemWithCategory;
+      });
       
       // Determine receipt tier based on the total amount
       const tier = determineReceiptTier(receiptData.total);
       
-      // Attempt to encrypt the receipt's sensitive metadata using TACo
-      // This uses the wallet address as a simple public key for demo purposes
+      // Web3 signature verification could go here (marked as optional in requirements)
+      // const isSignatureValid = await verifyWalletSignature(walletAddress, signature);
+      
+      console.log(`Receipt validated successfully for ${walletAddress}. Encrypting with TACo...`);
+      
+      // Encrypt the receipt's sensitive metadata using TACo
+      // This uses the wallet address as a public key for demo purposes
       // In a production app, we would use the user's actual blockchain public key
       const encryptedData = await encryptLineItems(walletAddress, receiptData);
+      
+      if (!encryptedData) {
+        console.error('Error encrypting receipt data with TACo');
+        // Continue without encryption rather than failing the whole flow
+      } else {
+        console.log('Receipt data encrypted successfully with TACo');
+      }
       
       // Define NFT gift status interface
       interface NFTGiftStatus {
@@ -127,13 +174,16 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
         fileId: req.file.filename
       };
       
-      // Check if the receipt qualifies for an NFT gift ($5 or higher for basic tier)
-      // Or automatically if premium or higher tier
-      if (tier.title !== 'Basic' || receiptData.total >= 5.0) {
+      let nftGiftStatus: NFTGiftStatus = {
+        status: 'checking',
+        message: 'Checking receipt eligibility...',
+        eligible: false
+      };
+      
+      // Check if receipt qualifies for NFT gift based on tier or total amount
+      // Premium tier or $25+ receipts are eligible (updated threshold)
+      if (tier.title !== 'Basic' || receiptData.total >= 25.0) {
         try {
-          // Get connected wallet address from request body or use test address
-          const walletAddress = req.body.walletAddress || '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC';
-          
           // Check if the user is eligible (hasn't claimed in the last 24h)
           const isEligible = await nftPurchaseBot.isUserEligible(walletAddress);
           
@@ -143,62 +193,146 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
             // Generate a unique receipt ID
             const receiptId = `receipt-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
             
-            // Launch NFT purchase process in background without delaying response
-            // We'll store the result in the database once completed
-            nftPurchaseBot.purchaseAndTransferNFT(walletAddress, receiptId, receiptData)
-              .then(result => {
-                if (result.success) {
-                  console.log(`Successfully purchased and transferred NFT to ${walletAddress}:`, result);
-                  // Here we would update the receipt record with the NFT data
-                } else {
-                  console.log(`Failed to purchase NFT for ${walletAddress}:`, result.error);
-                  // Try fallback minting if marketplace purchase fails
-                  return nftPurchaseBot.mintFallbackNFT(walletAddress, receiptId, receiptData);
-                }
-              })
-              .then(fallbackResult => {
+            try {
+              // Try to purchase an NFT from marketplace
+              console.log('Calling NFT purchase bot to find and purchase an NFT...');
+              const nftResult = await nftPurchaseBot.purchaseAndTransferNFT(walletAddress, receiptId, receiptData);
+              
+              // Check if NFT was purchased successfully
+              if (nftResult && nftResult.success) {
+                console.log(`Successfully purchased and transferred NFT to ${walletAddress}:`, nftResult);
+                
+                // Update NFT gift status with successful purchase
+                nftGiftStatus = {
+                  status: 'completed',
+                  message: 'Your NFT gift has been sent to your wallet!',
+                  eligible: true,
+                  nft: {
+                    tokenId: nftResult.tokenId || 'unknown',
+                    contract: nftResult.contractAddress || '',
+                    name: nftResult.name || 'BlockReceipt Gift NFT',
+                    image: nftResult.imageUrl || '/nft-images/receipt-default.svg',
+                    marketplace: nftResult.marketplace || 'OpenSea',
+                    price: nftResult.price || 0.00
+                  },
+                  txHash: nftResult.txHash
+                };
+                
+                // Save the NFT transaction to database (would be implemented here)
+                // Associate the NFT with the encrypted receipt data
+                
+              } else {
+                // Purchase failed, try fallback minting
+                console.log(`Marketplace purchase failed. Trying fallback NFT minting...`);
+                
+                // Set status to processing while trying fallback
+                nftGiftStatus = {
+                  status: 'processing',
+                  message: 'Minting a custom BlockReceipt NFT for you...',
+                  eligible: true
+                };
+                
+                // Try fallback minting
+                const fallbackResult = await nftPurchaseBot.mintFallbackNFT(walletAddress, receiptId, receiptData);
+                
                 if (fallbackResult && fallbackResult.success) {
                   console.log(`Successfully minted fallback NFT for ${walletAddress}:`, fallbackResult);
-                  // Here we would update the receipt record with the NFT data
+                  
+                  // Update NFT gift status with successful mint
+                  nftGiftStatus = {
+                    status: 'completed',
+                    message: 'Your custom BlockReceipt NFT has been minted!',
+                    eligible: true,
+                    nft: {
+                      tokenId: fallbackResult.tokenId || 'unknown',
+                      contract: fallbackResult.contractAddress || process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '',
+                      name: fallbackResult.name || 'Custom BlockReceipt NFT',
+                      image: fallbackResult.imageUrl || '/nft-images/receipt-custom.svg',
+                      marketplace: 'BlockReceipt',
+                      price: 0.00
+                    },
+                    txHash: fallbackResult.txHash
+                  };
+                  
+                  // Save the NFT transaction to database (would be implemented here)
+                  // Associate the NFT with the encrypted receipt data
+                  
+                } else {
+                  // Both purchase and fallback minting failed
+                  console.error(`Both marketplace and fallback minting failed for ${walletAddress}`);
+                  nftGiftStatus = {
+                    status: 'failed',
+                    message: 'We encountered an issue with your NFT gift. Please try again later.',
+                    eligible: true,
+                    error: 'NFT creation process failed'
+                  };
                 }
-              })
-              .catch(error => {
-                console.error(`Error in NFT gift process for ${walletAddress}:`, error);
-              });
-            
-            // Add NFT gift info to response
-            responseData.nftGift = {
-              status: 'processing',
-              message: 'Your NFT gift is being processed and will be sent to your wallet shortly.',
-              eligible: true
-            };
+              }
+            } catch (nftError: any) {
+              console.error(`Error in NFT gift process for ${walletAddress}:`, nftError);
+              nftGiftStatus = {
+                status: 'error',
+                message: 'There was a technical error processing your NFT gift.',
+                eligible: true,
+                error: nftError.message || 'Unknown error occurred'
+              };
+            }
           } else {
             // User has already claimed an NFT in the last 24 hours
-            responseData.nftGift = {
+            console.log(`User ${walletAddress} has already claimed an NFT in the last 24 hours`);
+            nftGiftStatus = {
               status: 'ineligible',
               message: 'You have already claimed an NFT gift in the last 24 hours.',
               eligible: false
             };
           }
-        } catch (error: any) {
-          console.error('Error with NFT gift process:', error);
-          responseData.nftGift = {
+        } catch (eligibilityError: any) {
+          // Error checking eligibility
+          console.error('Error checking NFT claim eligibility:', eligibilityError);
+          nftGiftStatus = {
             status: 'error',
-            message: 'There was an error processing your NFT gift.',
+            message: 'There was an error checking your NFT gift eligibility.',
             eligible: false,
-            error: error.message
+            error: eligibilityError.message || 'Unknown error in eligibility check'
           };
         }
       } else {
         // Receipt doesn't qualify for NFT gift
-        responseData.nftGift = {
+        console.log(`Receipt total (${receiptData.total}) doesn't qualify for NFT gift. Minimum is $25.`);
+        nftGiftStatus = {
           status: 'ineligible',
-          message: 'This receipt doesn\'t qualify for an NFT gift. Receipts must be $5 or higher.',
+          message: 'This receipt doesn\'t qualify for an NFT gift. Receipts must be $25 or higher.',
           eligible: false
         };
       }
       
-      // Return the parsed receipt data, assigned tier, and NFT gift status
+      // Add NFT gift status to the receipt data
+      receiptData.nftGift = nftGiftStatus;
+      
+      // Prepare final response with encrypted metadata if available
+      if (encryptedData) {
+        // Add encryption details to response
+        responseData.encryptedMetadata = {
+          isEncrypted: true,
+          capsuleId: encryptedData.capsule || '', 
+          policyId: encryptedData.policyPublicKey || '',
+          nftTokenId: nftGiftStatus.nft?.tokenId || null, // Link encryption to NFT
+          encryptionStatus: 'success'
+        };
+        
+        // Mark receipt data as having encrypted items
+        responseData.isEncrypted = true;
+        
+        console.log('Receipt metadata encrypted with TACo and added to response');
+      } else {
+        responseData.encryptedMetadata = {
+          isEncrypted: false,
+          encryptionStatus: 'failed or skipped'
+        };
+        console.warn('TACo encryption failed - returning unencrypted receipt data');
+      }
+      
+      // Return the parsed receipt data with all details
       return res.status(200).json({ 
         success: true,
         data: responseData

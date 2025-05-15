@@ -1,86 +1,57 @@
 import express, { Request, Response } from 'express';
 import { db } from '../db';
+import { ethers } from 'ethers';
 
 const router = express.Router();
 
 /**
- * Get all NFTs owned by a specific wallet address
- * GET /api/gallery/:wallet
+ * Gallery API route: Returns a user's NFT collection with metadata lock status
+ * @path GET /api/gallery/:walletAddress
+ * @param walletAddress - The wallet address to retrieve NFTs for
+ * @returns Array of NFT objects with metadata and lock status
  */
-router.get('/:wallet', async (req: Request, res: Response) => {
+router.get('/:walletAddress', async (req: Request, res: Response) => {
   try {
-    const { wallet } = req.params;
+    const { walletAddress } = req.params;
     
-    if (!wallet || !wallet.match(/^0x[a-fA-F0-9]{40}$/)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid wallet address' 
+    // Validate wallet address format
+    if (!walletAddress || !ethers.utils.isAddress(walletAddress)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid wallet address format'
       });
     }
     
-    // In a production app, we would query our database
-    // For now, we'll use mock data for development
-    const mockNFTs = [
-      {
-        id: 'receipt-1',
-        name: 'BlockReceipt #1',
-        description: 'A BlockReceipt NFT from Starbucks',
-        image: '/nft-images/coffee-receipt.svg',
-        dateCreated: new Date().toISOString(),
-        metadata: {
-          merchant: 'Starbucks',
-          date: '2025-05-15',
-          total: 12.95,
-          encrypted: true
-        },
-        txHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-        chainId: 80002,
-        contract: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '0x1111111111111111111111111111111111111111'
-      },
-      {
-        id: 'receipt-2',
-        name: 'BlockReceipt #2',
-        description: 'A BlockReceipt NFT from Target',
-        image: '/nft-images/shopping-receipt.svg',
-        dateCreated: new Date().toISOString(),
-        metadata: {
-          merchant: 'Target',
-          date: '2025-05-14',
-          total: 87.32,
-          encrypted: true
-        },
-        txHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-        chainId: 80002,
-        contract: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '0x1111111111111111111111111111111111111111'
-      },
-      {
-        id: 'nft-gift-1',
-        name: 'Pixelated Panda #42',
-        description: 'A gift NFT from BlockReceipt.ai',
-        image: 'https://example.com/nft-image.jpg',
-        dateCreated: new Date().toISOString(),
-        metadata: {
-          source: 'BlockReceipt Gift',
-          marketplace: 'OpenSea',
-          price: 0.08
-        },
-        txHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-        chainId: 80002,
-        contract: '0x2222222222222222222222222222222222222222'
-      }
-    ];
+    console.log(`Retrieving NFT gallery for wallet: ${walletAddress}`);
     
-    // Add metadataLocked property to each NFT
-    const withLockStates = mockNFTs.map(nft => ({
-      ...nft,
-      metadataLocked: nft.metadata.encrypted || false
-    }));
+    // Query database for NFTs owned by this wallet
+    // In a real implementation, this would query our database or the blockchain
+    // For now, we'll use a mock implementation
+    
+    // TODO: Replace with actual database query once DB schema is updated
+    // const userNfts = await db.query(`
+    //   SELECT * FROM nfts 
+    //   WHERE owner_address = $1
+    //   ORDER BY created_at DESC
+    // `, [walletAddress]);
+    
+    // Mock data implementation - replace with DB query in production
+    const mockNfts = getMockNftsForWallet(walletAddress);
+    
+    if (!mockNfts || mockNfts.length === 0) {
+      return res.status(200).json({
+        success: true,
+        nfts: [],
+        message: 'No NFTs found for this wallet address'
+      });
+    }
     
     return res.status(200).json({
       success: true,
-      wallet: wallet.toLowerCase(),
-      nfts: withLockStates
+      nfts: mockNfts,
+      walletAddress
     });
+    
   } catch (error: any) {
     console.error('Error retrieving NFT gallery:', error);
     return res.status(500).json({
@@ -92,96 +63,100 @@ router.get('/:wallet', async (req: Request, res: Response) => {
 });
 
 /**
- * Get details for a specific NFT
- * GET /api/gallery/:wallet/:id
+ * Mock function to generate sample NFTs for a wallet
+ * This would be replaced with actual database queries in production
  */
-router.get('/:wallet/:id', async (req: Request, res: Response) => {
-  try {
-    const { wallet, id } = req.params;
+function getMockNftsForWallet(walletAddress: string) {
+  // Generate deterministic NFTs based on wallet address
+  // This ensures the same wallet always sees the same NFTs
+  const walletSeed = parseInt(walletAddress.slice(-4), 16) || 0;
+  const nftCount = (walletSeed % 5) + 1; // 1-5 NFTs
+  
+  const nfts = [];
+  
+  // Receipt categories for variety
+  const categories = ['food', 'electronics', 'clothing', 'groceries', 'entertainment'];
+  
+  // Create mock NFTs
+  for (let i = 0; i < nftCount; i++) {
+    const tokenId = `${walletSeed}${i}`;
+    const isLocked = i % 2 === 0; // Alternate locked/unlocked status
+    const category = categories[i % categories.length];
     
-    if (!wallet || !wallet.match(/^0x[a-fA-F0-9]{40}$/)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid wallet address' 
-      });
-    }
-    
-    if (!id) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'NFT ID is required' 
-      });
-    }
-    
-    // In a production app, we would query our database
-    // For now, we'll use mock data for development
-    const mockNFT = {
-      id,
-      name: `BlockReceipt #${id}`,
-      description: 'A BlockReceipt NFT',
-      image: '/nft-images/receipt-warrior.svg',
-      dateCreated: new Date().toISOString(),
-      metadata: {
-        merchant: 'Example Merchant',
-        date: '2025-05-15',
-        total: 42.99,
-        encrypted: true,
-        items: [
-          { name: 'HIDDEN ITEM', price: 'ENCRYPTED', category: 'ENCRYPTED' }
-        ]
-      },
-      txHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
-      chainId: 80002,
-      contract: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '0x1111111111111111111111111111111111111111',
-      metadataLocked: true
-    };
-    
-    return res.status(200).json({
-      success: true,
-      wallet: wallet.toLowerCase(),
-      nft: mockNFT
-    });
-  } catch (error: any) {
-    console.error('Error retrieving NFT details:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve NFT details',
-      error: error.message || 'Unknown error'
+    nfts.push({
+      id: i + 1,
+      tokenId,
+      contractAddress: process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '0x1234...',
+      name: `BlockReceipt #${tokenId}`,
+      description: `${category.charAt(0).toUpperCase() + category.slice(1)} purchase receipt NFT`,
+      image: `/nft-images/${category}-receipt.svg`,
+      category,
+      createdAt: new Date(Date.now() - i * 86400000).toISOString(), // Sequential dates
+      owner: walletAddress,
+      metadataLocked: isLocked,
+      lockStatus: isLocked ? 'locked' : 'unlocked',
+      encryptionDetails: isLocked ? {
+        hasCapsule: true,
+        policyId: `policy-${tokenId}`,
+        capsuleId: `capsule-${tokenId}`
+      } : null,
+      total: (20 + (i * 15.99)).toFixed(2),
+      items: isLocked ? [] : [
+        {
+          name: `${category} item ${i+1}`,
+          price: (15.99 + i).toFixed(2),
+          quantity: 1,
+          category
+        }
+      ]
     });
   }
-});
+  
+  return nfts;
+}
 
 /**
- * Unlock NFT metadata (simulate TACo decryption)
- * POST /api/gallery/:wallet/:id/unlock
+ * Unlock metadata for a specific NFT by providing decryption policy
+ * @path POST /api/gallery/unlock/:tokenId
  */
-router.post('/:wallet/:id/unlock', async (req: Request, res: Response) => {
+router.post('/unlock/:tokenId', async (req: Request, res: Response) => {
   try {
-    const { wallet, id } = req.params;
+    const { tokenId } = req.params;
+    const { walletAddress } = req.body;
     
-    // In a real implementation, this would perform actual TACo decryption
-    // For now, we'll just simulate the unlocking process
-    const unlockedMetadata = {
-      merchant: 'Example Merchant',
-      date: '2025-05-15',
-      total: 42.99,
-      encrypted: false,
-      items: [
-        { name: 'Product A', price: 12.99, category: 'electronics' },
-        { name: 'Product B', price: 24.99, category: 'household' },
-        { name: 'Product C', price: 5.01, category: 'grocery' }
-      ]
-    };
+    if (!walletAddress || !ethers.utils.isAddress(walletAddress)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid wallet address format'
+      });
+    }
     
+    // In a real implementation, this would:
+    // 1. Verify the wallet owns this token
+    // 2. Use TACo to decrypt the metadata
+    // 3. Return the decrypted data
+    
+    // Mock implementation for now
+    console.log(`Unlocking metadata for token ID ${tokenId} for wallet ${walletAddress}`);
+    
+    // Simulate successful unlock
     return res.status(200).json({
       success: true,
-      wallet: wallet.toLowerCase(),
-      id,
-      metadata: unlockedMetadata,
-      metadataLocked: false
+      tokenId,
+      unlocked: true,
+      metadata: {
+        items: [
+          { name: 'Unlocked item 1', price: '19.99', quantity: 1, category: 'electronics' },
+          { name: 'Unlocked item 2', price: '9.99', quantity: 2, category: 'accessories' }
+        ],
+        total: '39.97',
+        merchantName: 'Decrypted Store',
+        date: new Date().toISOString()
+      }
     });
+    
   } catch (error: any) {
-    console.error('Error unlocking NFT metadata:', error);
+    console.error(`Error unlocking metadata for token:`, error);
     return res.status(500).json({
       success: false,
       message: 'Failed to unlock NFT metadata',
