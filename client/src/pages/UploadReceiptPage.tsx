@@ -100,7 +100,6 @@ export default function UploadReceiptPage() {
 
   // Get wallet info
   const { address, isConnected, connect } = useWeb3Wallet();
-  const { toast } = useToast();
   
   // Enhanced file upload handler with better error handling
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -334,14 +333,33 @@ export default function UploadReceiptPage() {
         </TabsList>
         
         <TabsContent value="upload" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Your Receipt Image</CardTitle>
-              <CardDescription>
-                Upload a photo or scan of your receipt to create a BlockReceipt
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          {!isConnected ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Connect Your Wallet</CardTitle>
+                <CardDescription>A wallet connection is required to mint BlockReceipt NFTs</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <Wallet className="h-16 w-16 text-muted-foreground mb-4" />
+                <p className="text-center mb-6 text-muted-foreground max-w-md">
+                  Connect your Ethereum wallet to upload and store receipts as verifiable NFTs.
+                  Your wallet address is used to securely encrypt your receipt data.
+                </p>
+                <Button onClick={connect} className="gap-2">
+                  <Wallet className="h-4 w-4" />
+                  Connect Wallet
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload Your Receipt Image</CardTitle>
+                <CardDescription>
+                  Upload a photo or scan of your receipt to create a BlockReceipt
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
               <div
                 className={`border-2 border-dashed rounded-lg p-12 text-center ${
                   isUploading ? 'bg-muted/50 border-primary/20' : 'hover:border-primary/50 border-muted'
@@ -415,6 +433,7 @@ export default function UploadReceiptPage() {
               </div>
             </CardContent>
           </Card>
+          )}
         </TabsContent>
         
         <TabsContent value="review" className="mt-6">
