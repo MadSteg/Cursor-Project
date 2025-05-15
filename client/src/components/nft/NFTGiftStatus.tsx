@@ -1,10 +1,17 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, Gift, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Loader2, GiftIcon, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
 
-interface NFTGiftStatusProps {
+interface NFTGiftProps {
   nftGift: {
     status: string;
     message: string;
@@ -19,112 +26,120 @@ interface NFTGiftStatusProps {
       price: number;
     };
     txHash?: string;
-  } | null;
+  };
 }
 
-const NFTGiftStatus: React.FC<NFTGiftStatusProps> = ({ nftGift }) => {
-  if (!nftGift) return null;
-
-  const { status, message, eligible, error, nft, txHash } = nftGift;
-
-  // Function to get the appropriate icon based on status
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'processing':
-        return <Loader2 className="h-10 w-10 animate-spin text-blue-500" />;
-      case 'success':
-        return <CheckCircle className="h-10 w-10 text-green-500" />;
-      case 'error':
-        return <AlertCircle className="h-10 w-10 text-red-500" />;
-      case 'ineligible':
-        return <Gift className="h-10 w-10 text-gray-400" />;
-      default:
-        return <Gift className="h-10 w-10 text-blue-500" />;
-    }
+export default function NFTGiftStatus({ nftGift }: NFTGiftProps) {
+  const statusColors = {
+    pending: "bg-yellow-500",
+    processing: "bg-blue-500",
+    completed: "bg-green-500",
+    failed: "bg-red-500",
+    ineligible: "bg-gray-500"
   };
-
-  // Function to get the Polygon explorer URL for the transaction
+  
+  // Get appropriate color for status badge
+  const getStatusColor = () => {
+    if (nftGift.status === 'pending' || nftGift.status === 'checking') return statusColors.pending;
+    if (nftGift.status === 'processing' || nftGift.status === 'purchasing') return statusColors.processing;
+    if (nftGift.status === 'completed' || nftGift.status === 'success') return statusColors.completed;
+    if (nftGift.status === 'failed' || nftGift.status === 'error') return statusColors.failed;
+    if (nftGift.status === 'ineligible') return statusColors.ineligible;
+    return statusColors.pending;
+  };
+  
+  // Get appropriate icon for status
+  const getStatusIcon = () => {
+    if (nftGift.status === 'pending' || nftGift.status === 'checking' || 
+        nftGift.status === 'processing' || nftGift.status === 'purchasing') {
+      return <Loader2 className="h-4 w-4 animate-spin mr-2" />;
+    }
+    if (nftGift.status === 'completed' || nftGift.status === 'success') {
+      return <CheckCircle2 className="h-4 w-4 mr-2" />;
+    }
+    if (nftGift.status === 'failed' || nftGift.status === 'error' || nftGift.status === 'ineligible') {
+      return <AlertCircle className="h-4 w-4 mr-2" />;
+    }
+    return <GiftIcon className="h-4 w-4 mr-2" />;
+  };
+  
+  // Get block explorer URL for the transaction
   const getExplorerUrl = () => {
-    if (!txHash) return '';
-    return `https://polygonscan.com/tx/${txHash}`;
+    if (!nftGift.txHash) return null;
+    // Polygon (Mumbai and Amoy) explorer URLs
+    return `https://amoy.polygonscan.com/tx/${nftGift.txHash}`;
   };
   
   return (
-    <Card className="mt-4 relative overflow-hidden">
-      {/* Background glow effect for eligible receipts */}
-      {eligible && (
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-blue-500 opacity-75 blur-sm rounded-lg" />
-      )}
-      
-      <div className="relative bg-card rounded-lg">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center">
-            <Gift className="mr-2 h-5 w-5" />
-            NFT Gift
-          </CardTitle>
-          <CardDescription>
-            Automatically find and mint NFTs for every receipt
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <div className="flex items-center space-x-4">
-            <div>
+    <Card className="border-dashed border-2 bg-gradient-to-br from-violet-50 to-indigo-50">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <GiftIcon className="h-5 w-5 mr-2 text-purple-500" />
+            <CardTitle className="text-lg">NFT Gift</CardTitle>
+          </div>
+          <Badge className={`${getStatusColor()} text-white`}>
+            <div className="flex items-center">
               {getStatusIcon()}
+              <span className="capitalize">{nftGift.status}</span>
             </div>
-            
-            <div className="flex-1">
-              <p className="font-medium">{message}</p>
-              
-              {error && (
-                <p className="text-sm text-red-500 mt-1">{error}</p>
-              )}
-              
-              {nft && (
-                <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    {nft.image && (
-                      <img 
-                        src={nft.image.startsWith('http') ? nft.image : `${window.location.origin}${nft.image}`}
-                        alt={nft.name}
-                        className="w-12 h-12 rounded-md object-cover"
-                      />
-                    )}
-                    <div>
-                      <p className="font-medium">{nft.name}</p>
-                      <p className="text-xs text-gray-500">From {nft.marketplace}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {txHash && (
-                <div className="mt-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => window.open(getExplorerUrl(), '_blank')}
-                          className="text-xs flex items-center"
-                        >
-                          View Transaction <ExternalLink className="ml-1 h-3 w-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>View blockchain transaction details</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+          </Badge>
+        </div>
+        <CardDescription>
+          {nftGift.message || "Processing your BlockReceipt NFT gift..."}
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        {nftGift.error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md mb-3 text-sm text-red-700">
+            <div className="flex items-start">
+              <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <p>{nftGift.error}</p>
+            </div>
+          </div>
+        )}
+        
+        {nftGift.nft && (
+          <div className="flex items-center space-x-4">
+            {nftGift.nft.image && (
+              <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md">
+                <img 
+                  src={nftGift.nft.image} 
+                  alt={nftGift.nft.name || "NFT"} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div>
+              <p className="font-medium">{nftGift.nft.name || "Unknown NFT"}</p>
+              <p className="text-sm text-muted-foreground">
+                {nftGift.nft.marketplace ? `From: ${nftGift.nft.marketplace}` : "Custom NFT"}
+              </p>
+              {nftGift.nft.price && (
+                <p className="text-sm">
+                  <span className="text-purple-600 font-medium">${nftGift.nft.price.toFixed(2)} USD value</span>
+                </p>
               )}
             </div>
           </div>
-        </CardContent>
-      </div>
+        )}
+      </CardContent>
+      
+      {nftGift.txHash && (
+        <CardFooter className="pt-0">
+          <a 
+            href={getExplorerUrl() || "#"} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full"
+          >
+            <Button variant="outline" className="w-full text-xs">
+              View Transaction <ExternalLink className="h-3 w-3 ml-1" />
+            </Button>
+          </a>
+        </CardFooter>
+      )}
     </Card>
   );
-};
-
-export default NFTGiftStatus;
+}

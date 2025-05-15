@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { extractReceiptData, determineReceiptTier, type TierInfo } from '../../shared/utils/receiptLogic';
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
+import { encryptLineItems } from '../utils/encryptLineItems';
 
 const router = express.Router();
 
@@ -45,6 +46,15 @@ const uploadMiddleware = multer({
 
 // Route for uploading a receipt
 router.post('/upload-receipt', (req: Request, res: Response) => {
+  // Validate wallet address first
+  const walletAddress = req.body.walletAddress;
+  if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Valid wallet address is required'
+    });
+  }
+
   // Use multer as middleware
   uploadMiddleware(req, res, async (err) => {
     // Handle file upload errors from multer
@@ -70,8 +80,21 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
       // Extract data from the uploaded receipt using OCR
       const receiptData = await extractReceiptData(req.file.path);
       
+      // Validate receipt data extraction
+      if (!receiptData || !receiptData.items || receiptData.items.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Could not parse line items from receipt. Please try a clearer image."
+        });
+      }
+      
       // Determine receipt tier based on the total amount
       const tier = determineReceiptTier(receiptData.total);
+      
+      // Attempt to encrypt the receipt's sensitive metadata using TACo
+      // This uses the wallet address as a simple public key for demo purposes
+      // In a production app, we would use the user's actual blockchain public key
+      const encryptedData = await encryptLineItems(walletAddress, receiptData);
       
       // Define NFT gift status interface
       interface NFTGiftStatus {

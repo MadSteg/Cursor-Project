@@ -32,6 +32,8 @@ import nftOptionsRoutes from "./routes/nftOptions";
 import { getNFTs, selectNFT } from "./routes/nfts";
 // Import the NFT Purchase Bot routes
 import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
+// Import the NFT Gallery routes
+import galleryRoutes from "./routes/gallery";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -99,6 +101,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register NFT Purchase Bot routes
   app.use('/api/nft-bot', nftPurchaseBotRoutes);
+  
+  // Register NFT Gallery routes
+  app.use('/api/gallery', galleryRoutes);
   
 
   

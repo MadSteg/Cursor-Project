@@ -10,6 +10,7 @@ import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage } fr
 import { useRef, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import NFTArtPicker from '@/components/receipts/NFTArtPicker';
+import NFTGiftStatus from '@/components/nft/NFTGiftStatus';
 
 // Define the tier colors for visualization
 const tierColors = {
@@ -47,6 +48,22 @@ const tierDetails = {
   }
 };
 
+interface NFTGiftInfo {
+  status: string;
+  message: string;
+  eligible: boolean;
+  error?: string;
+  nft?: {
+    tokenId: string;
+    contract: string;
+    name: string;
+    image: string;
+    marketplace: string;
+    price: number;
+  };
+  txHash?: string;
+}
+
 interface ReceiptData {
   merchantName: string;
   date: string;
@@ -66,6 +83,7 @@ interface ReceiptData {
   };
   filePath?: string;
   fileId?: string;
+  nftGift?: NFTGiftInfo;
 }
 
 export default function UploadReceiptPage() {
@@ -427,6 +445,13 @@ export default function UploadReceiptPage() {
                     <span>${receiptData.total.toFixed(2)}</span>
                   </div>
                 </div>
+                
+                {/* NFT Gift Status Display */}
+                {receiptData.nftGift && (
+                  <div className="mb-4">
+                    <NFTGiftStatus nftGift={receiptData.nftGift} />
+                  </div>
+                )}
                 
                 <div className="pt-4">
                   <Button 
