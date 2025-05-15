@@ -28,6 +28,8 @@ import ocrTestRoutes from "./routes/ocr-test";
 import uploadReceiptRoutes from "./routes/uploadReceipt";
 // Import the NFT options routes
 import nftOptionsRoutes from "./routes/nftOptions";
+// User authentication and wallet management routes
+import authRoutes from "./routes/auth";
 // Import the gallery routes for NFT display
 import galleryRoutes from "./routes/gallery";
 // Import the NFT catalog routes
@@ -113,6 +115,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Task Queue routes
   app.use('/api', taskRoutes);
+  
+  // Register authentication routes
+  app.use('/api/auth', authRoutes);
   
   // Register Hot Wallet routes with TACo encryption
   app.use('/api/wallet', walletRoutes);

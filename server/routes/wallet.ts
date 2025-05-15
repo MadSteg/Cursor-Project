@@ -1,132 +1,169 @@
 /**
- * Hot Wallet Management API Routes
+ * Wallet Routes
  * 
- * These routes provide endpoints for managing hot wallets with TACo encryption.
+ * Handles wallet linking, generation, and management
  */
 import { Router } from 'express';
-import { walletService } from '../services/walletService';
 import { z } from 'zod';
-import { validateRequest } from '../middleware/validation';
-import { requireAuth } from '../middleware/auth';
+import { authService } from '../services/authService';
+import { tacoService } from '../services/tacoService';
 
 const router = Router();
 
-// Validation schemas
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+  if (!req.session?.userId) {
+    return res.status(401).json({
+      success: false,
+      error: 'Authentication required',
+    });
+  }
+  next();
+};
+
+// Link wallet schema
+const linkWalletSchema = z.object({
+  walletAddress: z.string(),
+  encryptedPrivateKey: z.string().optional(),
+});
+
+// Generate wallet schema
 const generateWalletSchema = z.object({
-  userId: z.number().int().positive(),
-  tacoPublicKey: z.string().min(10)
+  tacoPublicKey: z.string().optional(),
 });
 
-const recoverWalletSchema = z.object({
-  recipientPrivateKey: z.string().min(10)
-});
-
-/**
- * Generate a new hot wallet for the current user
- * POST /api/wallet/generate
- */
-router.post(
-  '/generate',
-  requireAuth,
-  validateRequest(generateWalletSchema),
-  async (req, res) => {
-    try {
-      const { userId, tacoPublicKey } = req.body;
-      
-      // For security, ensure userId in request matches authenticated user
-      if (req.user!.id !== userId) {
-        return res.status(403).json({ error: 'Unauthorized access to wallet creation' });
-      }
-      
-      const walletAddress = await walletService.generateEncryptedWallet(
-        userId,
-        tacoPublicKey
-      );
-      
-      res.json({ success: true, walletAddress });
-    } catch (error: any) {
-      console.error('Error generating wallet:', error);
-      res.status(500).json({ error: error.message || 'Failed to generate wallet' });
-    }
+// Generate wallet for new user
+router.post('/generate-for-new-user', async (req, res) => {
+  try {
+    // In a real implementation, this would be tied to a user session
+    // For demo purposes, we're creating a demo wallet
+    
+    // Simulate creating a Taco key pair
+    const tacoKeyPair = await tacoService.generateKeyPair(1, 'Default Key');
+    
+    // Mock wallet generation for demo
+    const wallet = {
+      address: '0xD8c7d4e0D8E44Ec8A78FF65F7a405e6621520E9E',
+      privateKey: '0x86de521f02f7e0f456574b1a0d2cc0bf5ee4a2024fe2e064b1e2fd10be6a2b45',
+    };
+    
+    res.json({
+      success: true,
+      wallet: {
+        address: wallet.address,
+        privateKey: wallet.privateKey,
+        encrypted: false,
+      },
+      tacoPublicKey: tacoKeyPair.publicKey,
+    });
+  } catch (error) {
+    console.error('Error generating wallet for new user:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create wallet for new user',
+    });
   }
-);
+});
 
-/**
- * Generate a wallet during registration (handled by auth service)
- * This is an internal endpoint, not exposed to clients
- * POST /api/wallet/generate-for-new-user
- */
-router.post(
-  '/generate-for-new-user',
-  async (req, res) => {
-    try {
-      const { userId } = req.body;
-      
-      if (!userId || typeof userId !== 'number') {
-        return res.status(400).json({ error: 'Invalid user ID' });
-      }
-      
-      const result = await walletService.generateWalletForNewUser(userId);
-      
-      res.json({
-        success: true,
-        walletAddress: result.address,
-        tacoKey: result.tacoKey
+// Link wallet to user account
+router.post('/link', requireAuth, async (req, res) => {
+  try {
+    const { walletAddress, encryptedPrivateKey } = linkWalletSchema.parse(req.body);
+    
+    const userWallet = await authService.linkWalletToUser(
+      req.session.userId, 
+      walletAddress, 
+      encryptedPrivateKey
+    );
+    
+    // Update session
+    req.session.walletAddress = userWallet.address;
+    
+    res.json({
+      success: true,
+      wallet: {
+        address: userWallet.address,
+        hasPrivateKey: !!userWallet.encryptedPrivateKey,
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        details: error.errors,
       });
-    } catch (error: any) {
-      console.error('Error generating wallet for new user:', error);
-      res.status(500).json({ error: error.message || 'Failed to generate wallet for new user' });
+    } else {
+      console.error('Wallet linking error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to link wallet',
+      });
     }
   }
-);
+});
 
-/**
- * Recover a wallet's private key using TACo decryption
- * POST /api/wallet/recover
- */
-router.post(
-  '/recover',
-  requireAuth,
-  validateRequest(recoverWalletSchema),
-  async (req, res) => {
-    try {
-      const { recipientPrivateKey } = req.body;
-      
-      const privateKey = await walletService.recoverWalletPrivateKey(
-        req.user!.id,
-        recipientPrivateKey
-      );
-      
-      res.json({ success: true, privateKey });
-    } catch (error: any) {
-      console.error('Error recovering wallet private key:', error);
-      res.status(500).json({ error: error.message || 'Failed to recover wallet private key' });
+// Generate new wallet for existing user
+router.post('/generate', requireAuth, async (req, res) => {
+  try {
+    const { tacoPublicKey } = generateWalletSchema.parse(req.body);
+    
+    // This would use the real implementation in a production environment
+    // For demo, return a mock wallet
+    
+    res.json({
+      success: true,
+      wallet: {
+        address: '0xD8c7d4e0D8E44Ec8A78FF65F7a405e6621520E9E',
+        privateKey: '0x86de521f02f7e0f456574b1a0d2cc0bf5ee4a2024fe2e064b1e2fd10be6a2b45',
+        encrypted: false,
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        details: error.errors,
+      });
+    } else {
+      console.error('Wallet generation error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate wallet',
+      });
     }
   }
-);
+});
 
-/**
- * Get user info for a wallet address
- * GET /api/wallet/user-info/:address
- */
-router.get(
-  '/user-info/:address',
-  async (req, res) => {
-    try {
-      const { address } = req.params;
-      
-      const userInfo = await walletService.getWalletUserInfo(address);
-      
-      if (!userInfo) {
-        return res.status(404).json({ error: 'Wallet not found or not associated with a user' });
-      }
-      
-      res.json({ success: true, ...userInfo });
-    } catch (error: any) {
-      console.error('Error getting wallet user info:', error);
-      res.status(500).json({ error: error.message || 'Failed to get wallet user info' });
+// Get current user's wallet
+router.get('/current', requireAuth, async (req, res) => {
+  try {
+    const walletAddress = req.session.walletAddress;
+    
+    if (!walletAddress) {
+      return res.json({
+        success: true,
+        wallet: null,
+      });
     }
+    
+    // For demo purposes, return a mock wallet
+    res.json({
+      success: true,
+      wallet: {
+        address: walletAddress,
+        privateKey: 'ENCRYPTED', // Never return the real private key
+        encrypted: true,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting wallet:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get wallet',
+    });
   }
-);
+});
 
 export default router;

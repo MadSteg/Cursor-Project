@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeStripeService } from "./services/stripeService";
@@ -12,6 +13,17 @@ const app = express();
 // Increase JSON body size limit to 50MB for receipt image uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+// Configure session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'blockreceipt-development-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

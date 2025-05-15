@@ -72,9 +72,9 @@ export type InsertReceipt = z.infer<typeof insertReceiptSchema>;
 // Users Table
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  username: text('username').notNull().unique(),
+  username: text('username').unique(),
   email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
+  password: text('password').notNull(),
   fullName: text('full_name'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -191,9 +191,7 @@ export const userWallets = pgTable('user_wallets', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').notNull().references(() => users.id).unique(),
   address: text('wallet_address').notNull().unique(),
-  capsule: text('capsule').notNull(),
-  ciphertext: text('ciphertext').notNull(),
-  policyPublicKey: text('policy_public_key').notNull(),
+  encryptedPrivateKey: text('encrypted_private_key'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   lastUsedAt: timestamp('last_used_at'),
 });
