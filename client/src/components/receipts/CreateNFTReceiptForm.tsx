@@ -9,8 +9,20 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { NFTArtItem } from '@/data/nftArtManifest';
-import { determineReceiptTier, ReceiptTier } from '@/lib/receiptOcr';
+import { NFTArtItem, ReceiptTier } from '@/data/nftArtManifest';
+
+// Local implementation to avoid import issues
+function determineReceiptTier(total: number): ReceiptTier {
+  if (total >= 500) {
+    return 'ULTRA';
+  } else if (total >= 200) {
+    return 'LUXURY';
+  } else if (total >= 50) {
+    return 'PREMIUM';
+  } else {
+    return 'STANDARD';
+  }
+}
 import NFTArtSelector from './NFTArtSelector';
 import { 
   Card, 

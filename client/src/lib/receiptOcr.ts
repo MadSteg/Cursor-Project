@@ -5,8 +5,7 @@
  * and other receipt-related helper functions.
  */
 
-// Define the possible tiers for receipt NFTs
-export type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
+import { ReceiptTier } from '@/data/nftArtManifest';
 
 // Define receipt item type
 export interface ReceiptItem {

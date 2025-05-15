@@ -12,13 +12,18 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { NFTArtItem } from '@/data/nftArtManifest';
+import { NFTArtItem, ReceiptTier } from '@/data/nftArtManifest';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
-// Define locally to avoid import issues
-type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
+// Create an enum-like object that can be referenced in the code
+const ReceiptTierEnum = {
+  STANDARD: 'STANDARD' as ReceiptTier,
+  PREMIUM: 'PREMIUM' as ReceiptTier,
+  LUXURY: 'LUXURY' as ReceiptTier,
+  ULTRA: 'ULTRA' as ReceiptTier
+};
 
 // Local implementation to avoid import issues
 function determineReceiptTier(total: number): ReceiptTier {
@@ -123,13 +128,13 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
   // Get tier-based styling
   const getTierStyling = (tier: ReceiptTier) => {
     switch (tier) {
-      case ReceiptTier.STANDARD:
+      case ReceiptTierEnum.STANDARD:
         return 'bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900';
-      case ReceiptTier.PREMIUM:
+      case ReceiptTierEnum.PREMIUM:
         return 'bg-gradient-to-br from-slate-100 to-slate-300 dark:from-slate-700 dark:to-slate-900';
-      case ReceiptTier.LUXURY:
+      case ReceiptTierEnum.LUXURY:
         return 'bg-gradient-to-br from-amber-100 to-amber-300 dark:from-amber-700 dark:to-amber-950';
-      case ReceiptTier.ULTRA:
+      case ReceiptTierEnum.ULTRA:
         return 'bg-gradient-to-br from-violet-100 to-purple-300 dark:from-violet-700 dark:to-purple-950';
       default:
         return 'bg-white dark:bg-gray-800';
@@ -214,9 +219,9 @@ export const EnhancedNFTReceiptCard: React.FC<EnhancedNFTReceiptCardProps> = ({
       {/* Tier Badge */}
       <div className="absolute top-2 right-2">
         <Badge variant={
-          tier === ReceiptTier.STANDARD ? 'default' :
-          tier === ReceiptTier.PREMIUM ? 'secondary' :
-          tier === ReceiptTier.LUXURY ? 'destructive' : 'outline'
+          tier === ReceiptTierEnum.STANDARD ? 'default' :
+          tier === ReceiptTierEnum.PREMIUM ? 'secondary' :
+          tier === ReceiptTierEnum.LUXURY ? 'destructive' : 'outline'
         }>
           {tier} Tier
         </Badge>

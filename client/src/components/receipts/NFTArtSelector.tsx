@@ -6,14 +6,6 @@ import {
   TabsTrigger 
 } from "@/components/ui/tabs";
 import { 
-  NFT_ART_COLLECTIONS, 
-  getNFTArtItemsByTier, 
-  NFTArtItem 
-} from '@/data/nftArtManifest';
-
-// Define locally to avoid import issues
-type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
-import { 
   Card, 
   CardContent, 
   CardFooter, 
@@ -31,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Info, Check, Crown, Sparkles, Gift, Gamepad2, Music2, Palette, Shapes, Diamond } from 'lucide-react';
+import { NFTArtItem, ReceiptTier, collections } from '@/data/nftArtManifest';
 
 interface NFTArtSelectorProps {
   receiptTier: ReceiptTier;
@@ -79,25 +72,25 @@ const getTypeIcon = (type: string) => {
 // Helper function to get tier badge and style
 const getTierBadge = (tier: ReceiptTier) => {
   switch (tier) {
-    case ReceiptTier.STANDARD:
+    case 'STANDARD':
       return (
         <Badge variant="outline" className="gap-1 font-normal px-2">
           Standard
         </Badge>
       );
-    case ReceiptTier.PREMIUM:
+    case 'PREMIUM':
       return (
         <Badge variant="outline" className="gap-1 font-normal text-blue-600 border-blue-200 bg-blue-50 px-2">
           <Crown className="w-3 h-3" /> Premium
         </Badge>
       );
-    case ReceiptTier.LUXURY:
+    case 'LUXURY':
       return (
         <Badge variant="outline" className="gap-1 font-normal text-purple-600 border-purple-200 bg-purple-50 px-2">
           <Crown className="w-3 h-3" /> Luxury
         </Badge>
       );
-    case ReceiptTier.ULTRA:
+    case 'ULTRA':
       return (
         <Badge variant="outline" className="gap-1 font-normal text-amber-600 border-amber-200 bg-amber-50 px-2">
           <Sparkles className="w-3 h-3" /> Ultra
@@ -116,9 +109,63 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelec
   const [activeTab, setActiveTab] = useState<string>('all');
   const [availableNFTs, setAvailableNFTs] = useState<NFTArtItem[]>([]);
   
+  // Local implementation of getNFTArtItemsByTier
+  const getNFTArtItems = (tier: ReceiptTier): NFTArtItem[] => {
+    // Mock data for NFT items - in a real app this would come from an API or database
+    const mockNFTs: NFTArtItem[] = [
+      {
+        id: "nft-1",
+        name: "Receipt Collector",
+        description: "A beautiful NFT for your receipt collection",
+        imageUrl: "https://placehold.co/400x400/png",
+        collection: "block-receipt",
+        tier: "STANDARD",
+        rarity: "common",
+        type: "collectible",
+        price: 0
+      },
+      {
+        id: "nft-2",
+        name: "Premium Purchase",
+        description: "A premium NFT for your valuable receipt",
+        imageUrl: "https://placehold.co/400x400/png",
+        collection: "block-receipt", 
+        tier: "PREMIUM",
+        rarity: "uncommon",
+        type: "art",
+        price: 0
+      },
+      {
+        id: "nft-3",
+        name: "Luxury Memento",
+        description: "A luxury NFT for your high-value purchase",
+        imageUrl: "https://placehold.co/400x400/png",
+        collection: "luxury-brands",
+        tier: "LUXURY",
+        rarity: "rare",
+        type: "utility",
+        price: 0
+      },
+      {
+        id: "nft-4",
+        name: "Ultra Keepsake",
+        description: "An ultra-rare NFT for your exceptional purchase",
+        imageUrl: "https://placehold.co/400x400/png",
+        collection: "luxury-brands",
+        tier: "ULTRA",
+        rarity: "epic",
+        type: "game",
+        price: 0
+      }
+    ];
+
+    // Filter NFTs by tier
+    return mockNFTs.filter(nft => nft.tier === tier);
+  };
+
   // Load available NFTs for the current receipt tier
   useEffect(() => {
-    const nfts = getNFTArtItemsByTier(receiptTier);
+    const nfts = getNFTArtItems(receiptTier);
     setAvailableNFTs(nfts);
     
     // If there are NFTs and none is selected yet, select the first one
@@ -132,10 +179,8 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelec
     ? availableNFTs 
     : availableNFTs.filter(nft => nft.type === activeTab);
   
-  // Map collection types for tabs
-  const collectionTypes = Array.from(
-    new Set(NFT_ART_COLLECTIONS.map(collection => collection.type))
-  ).sort();
+  // Define collection types for tabs
+  const collectionTypes = ['game', 'utility', 'music', 'art', 'collectible', 'sports'];
   
   return (
     <div className="space-y-4">
@@ -210,9 +255,7 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelec
                         </div>
                         <CardHeader className="p-3 pb-1">
                           <CardTitle className="text-base">{nft.name}</CardTitle>
-                          {nft.creator && (
-                            <CardDescription className="text-xs">by {nft.creator}</CardDescription>
-                          )}
+                          <CardDescription className="text-xs">Collection: {nft.collection}</CardDescription>
                         </CardHeader>
                         <CardFooter className="p-3 pt-0">
                           <div className="w-full">

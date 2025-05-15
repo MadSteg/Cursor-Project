@@ -31,8 +31,35 @@ import ConnectWalletButton from '@/components/blockchain/ConnectWalletButton';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { ReceiptType } from '@/components/receipts/EnhancedNFTReceiptCard';
-import type { ReceiptData } from '@/lib/receiptOcr';
+import { ReceiptTier } from '@/data/nftArtManifest';
+
+// For compatibility, support both uppercase and lowercase variants
+type ReceiptType = ReceiptTier | 'standard' | 'premium' | 'luxury' | 'ultra';
+
+// Define receipt data type locally
+interface ReceiptItem {
+  name: string;
+  price: number;
+  quantity: number;
+  category?: string;
+}
+
+interface ReceiptData {
+  id?: string | number;
+  merchantName: string;
+  date: string;
+  items: ReceiptItem[];
+  subtotal?: number;
+  tax?: number;
+  total: number;
+  category?: string;
+  nftGift?: {
+    status: string;
+    message: string;
+    eligible: boolean;
+    taskId?: string;
+  };
+}
 
 type ScanMethod = 'upload' | 'camera' | 'manual';
 type ScanState = 'idle' | 'scanning' | 'processing' | 'completed' | 'error';
