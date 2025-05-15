@@ -1,292 +1,94 @@
-import { db } from '../db';
-import { encryptedMetadata, encryptedMetadataAccess, nftTransfers } from '../../shared/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { nftRepository } from '../repositories/nftRepository';
+import { encryptedMetadata, InsertEncryptedMetadata } from '../../shared/schema';
 import crypto from 'crypto';
 
 /**
- * Service for handling encrypted receipt metadata and access control
+ * Service for managing encrypted metadata
+ * Handles the persistence and retrieval of encrypted NFT receipt data
  */
 export class MetadataService {
   /**
-   * Stores encrypted receipt data with access control
+   * Store encrypted metadata for an NFT
+   * @param tokenId The NFT token ID
+   * @param ownerAddress The wallet address of the NFT owner
+   * @param encryptedData The encrypted data as a string
+   * @param unencryptedPreview Optional unencrypted preview data
    */
   async storeEncryptedMetadata(
     tokenId: string,
+    ownerAddress: string,
     encryptedData: string,
-    unencryptedPreview: any,
-    ownerAddress: string
-  ) {
+    unencryptedPreview?: any
+  ): Promise<boolean> {
     try {
-      // Create a hash of the encrypted data for verification
-      const dataHash = crypto
-        .createHash('sha256')
-        .update(encryptedData)
-        .digest('hex');
-
-      // Store the encrypted metadata
-      await db.insert(encryptedMetadata).values({
+      // Generate a hash of the encrypted data for verification
+      const dataHash = crypto.createHash('sha256').update(encryptedData).digest('hex');
+      
+      // Create the metadata record
+      const metadataRecord: InsertEncryptedMetadata = {
         tokenId,
         encryptedData,
-        unencryptedPreview,
         dataHash,
-        ownerAddress
-      });
-
-      // Grant access to the owner (first owner always has access)
-      await db.insert(encryptedMetadataAccess).values({
-        tokenId,
-        granteeAddress: ownerAddress,
-        isOwner: true,
-        grantedBy: ownerAddress, // Owner grants to self
-        tacoEncryptionId: `taco:${tokenId}:${ownerAddress.slice(0, 8)}` // Mock TACo ID
-      });
-
-      return { success: true, tokenId };
-    } catch (error) {
-      console.error('Error storing encrypted metadata:', error);
-      return { success: false, error: 'Failed to store encrypted metadata' };
-    }
-  }
-
-  /**
-   * Check if an address has access to the metadata for a specific token
-   */
-  async hasMetadataAccess(tokenId: string, walletAddress: string): Promise<boolean> {
-    try {
-      const access = await db
-        .select()
-        .from(encryptedMetadataAccess)
-        .where(
-          and(
-            eq(encryptedMetadataAccess.tokenId, tokenId),
-            eq(encryptedMetadataAccess.granteeAddress, walletAddress),
-            isNull(encryptedMetadataAccess.revokedAt)
-          )
-        );
-
-      return access.length > 0;
-    } catch (error) {
-      console.error('Error checking metadata access:', error);
+        ownerAddress,
+        unencryptedPreview
+      };
+      
+      // Store in the database using the repository
+      await nftRepository.storeEncryptedMetadata(metadataRecord);
+      
+      console.log(`Stored encrypted metadata for token ${tokenId} owned by ${ownerAddress}`);
+      return true;
+    } catch (error: any) {
+      console.error(`Error storing encrypted metadata for token ${tokenId}:`, error);
       return false;
     }
   }
-
+  
   /**
-   * Retrieve metadata for a token with access control
-   * Returns either full metadata or just the public preview based on access rights
+   * Get encrypted metadata for an NFT
+   * @param tokenId The NFT token ID
+   * @returns The encrypted metadata or null if not found
    */
-  async getTokenMetadata(tokenId: string, requestAddress: string) {
+  async getEncryptedMetadata(tokenId: string) {
     try {
-      // Retrieve the metadata record
-      const [metadataRecord] = await db
-        .select()
-        .from(encryptedMetadata)
-        .where(eq(encryptedMetadata.tokenId, tokenId));
-
-      if (!metadataRecord) {
-        return { success: false, error: 'Metadata not found' };
-      }
-
-      // Check if requestor has access - if it's the owner or has been granted access
-      const hasAccess = await this.hasMetadataAccess(tokenId, requestAddress);
-
-      // If requestor has access, return full data
-      if (hasAccess) {
-        return {
-          success: true,
-          data: {
-            tokenId,
-            hasFullAccess: true,
-            metadata: {
-              encrypted: metadataRecord.encryptedData,
-              preview: metadataRecord.unencryptedPreview,
-              dataHash: metadataRecord.dataHash
-            }
-          }
-        };
-      }
-
-      // If requestor doesn't have access, only return the public preview
-      return {
-        success: true,
-        data: {
-          tokenId,
-          hasFullAccess: false,
-          metadata: {
-            preview: metadataRecord.unencryptedPreview
-          }
-        }
-      };
-    } catch (error) {
-      console.error('Error retrieving token metadata:', error);
-      return { success: false, error: 'Failed to retrieve metadata' };
+      const metadata = await nftRepository.getMetadataByTokenId(tokenId);
+      return metadata;
+    } catch (error: any) {
+      console.error(`Error retrieving encrypted metadata for token ${tokenId}:`, error);
+      return null;
     }
   }
-
+  
   /**
-   * Grants access to a specific grantee for a token's metadata
+   * Get all encrypted metadata for a wallet
+   * @param walletAddress The wallet address
+   * @returns Array of encrypted metadata records
    */
-  async grantAccess(tokenId: string, granterAddress: string, granteeAddress: string) {
+  async getEncryptedMetadataByWallet(walletAddress: string) {
     try {
-      // Verify granter has access to grant (must be owner or have delegated rights)
-      const hasAccess = await this.hasMetadataAccess(tokenId, granterAddress);
-      
-      if (!hasAccess) {
-        return { success: false, error: 'No permission to grant access' };
-      }
-
-      // Check if grantee already has access
-      const existingAccess = await db
-        .select()
-        .from(encryptedMetadataAccess)
-        .where(
-          and(
-            eq(encryptedMetadataAccess.tokenId, tokenId),
-            eq(encryptedMetadataAccess.granteeAddress, granteeAddress),
-            isNull(encryptedMetadataAccess.revokedAt)
-          )
-        );
-
-      if (existingAccess.length > 0) {
-        return { success: true, message: 'Access already granted' };
-      }
-
-      // Generate a mock TACo encryption ID
-      const tacoEncryptionId = `taco:${tokenId}:${granteeAddress.slice(0, 8)}`;
-
-      // Grant access by recording it in the database
-      await db.insert(encryptedMetadataAccess).values({
-        tokenId,
-        granteeAddress,
-        isOwner: false,
-        grantedBy: granterAddress,
-        tacoEncryptionId
-      });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error granting access:', error);
-      return { success: false, error: 'Failed to grant access' };
+      const metadataRecords = await nftRepository.getMetadataByOwner(walletAddress);
+      return metadataRecords;
+    } catch (error: any) {
+      console.error(`Error retrieving encrypted metadata for wallet ${walletAddress}:`, error);
+      return [];
     }
   }
-
+  
   /**
-   * Revokes access for a specific grantee
+   * Update the owner of encrypted metadata (used when NFT is transferred)
+   * @param tokenId The NFT token ID
+   * @param newOwnerAddress The new owner's wallet address
+   * @returns Success status
    */
-  async revokeAccess(tokenId: string, revokerAddress: string, granteeAddress: string) {
+  async updateMetadataOwner(tokenId: string, newOwnerAddress: string): Promise<boolean> {
     try {
-      // Verify revoker has permission (must be original granter or owner)
-      const [metadataRecord] = await db
-        .select()
-        .from(encryptedMetadata)
-        .where(eq(encryptedMetadata.tokenId, tokenId));
-
-      if (!metadataRecord) {
-        return { success: false, error: 'Metadata not found' };
-      }
-
-      // Check if revoker is the owner or original granter
-      const accessRecord = await db
-        .select()
-        .from(encryptedMetadataAccess)
-        .where(
-          and(
-            eq(encryptedMetadataAccess.tokenId, tokenId),
-            eq(encryptedMetadataAccess.granteeAddress, granteeAddress),
-            isNull(encryptedMetadataAccess.revokedAt)
-          )
-        );
-
-      if (accessRecord.length === 0) {
-        return { success: false, error: 'No active access record found' };
-      }
-
-      const isOwner = metadataRecord.ownerAddress === revokerAddress;
-      const isGranter = accessRecord[0].grantedBy === revokerAddress;
-
-      if (!isOwner && !isGranter) {
-        return { success: false, error: 'No permission to revoke access' };
-      }
-
-      // Protect owner from accidentally revoking their own access
-      if (granteeAddress === metadataRecord.ownerAddress && accessRecord[0].isOwner) {
-        return { success: false, error: 'Cannot revoke original owner access' };
-      }
-
-      // Revoke access by updating the record
-      await db
-        .update(encryptedMetadataAccess)
-        .set({ revokedAt: new Date() })
-        .where(
-          and(
-            eq(encryptedMetadataAccess.tokenId, tokenId),
-            eq(encryptedMetadataAccess.granteeAddress, granteeAddress),
-            isNull(encryptedMetadataAccess.revokedAt)
-          )
-        );
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error revoking access:', error);
-      return { success: false, error: 'Failed to revoke access' };
-    }
-  }
-
-  /**
-   * Handles NFT transfers by automatically revoking previous owner's access
-   * and granting access to the new owner
-   */
-  async handleTokenTransfer(tokenId: string, fromAddress: string, toAddress: string, txHash: string) {
-    try {
-      // Record the transfer
-      await db.insert(nftTransfers).values({
-        tokenId,
-        fromAddress,
-        toAddress,
-        transferTxHash: txHash
-      });
-
-      // Revoke access for the previous owner and all their delegated accesses
-      const accessesToRevoke = await db
-        .select()
-        .from(encryptedMetadataAccess)
-        .where(
-          and(
-            eq(encryptedMetadataAccess.tokenId, tokenId),
-            isNull(encryptedMetadataAccess.revokedAt)
-          )
-        );
-
-      // Revoke all existing accesses
-      for (const access of accessesToRevoke) {
-        await db
-          .update(encryptedMetadataAccess)
-          .set({ revokedAt: new Date() })
-          .where(eq(encryptedMetadataAccess.id, access.id));
-      }
-
-      // Grant access to the new owner
-      await db.insert(encryptedMetadataAccess).values({
-        tokenId,
-        granteeAddress: toAddress,
-        isOwner: true,
-        grantedBy: toAddress, // New owner is granting themselves
-        tacoEncryptionId: `taco:${tokenId}:${toAddress.slice(0, 8)}` // Mock TACo ID
-      });
-
-      // Update the owner in the metadata record
-      await db
-        .update(encryptedMetadata)
-        .set({ ownerAddress: toAddress })
-        .where(eq(encryptedMetadata.tokenId, tokenId));
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error handling token transfer:', error);
-      return { success: false, error: 'Failed to process token transfer' };
+      const updated = await nftRepository.updateMetadataOwner(tokenId, newOwnerAddress);
+      return !!updated;
+    } catch (error: any) {
+      console.error(`Error updating metadata owner for token ${tokenId}:`, error);
+      return false;
     }
   }
 }
 
-// Export singleton instance
 export const metadataService = new MetadataService();

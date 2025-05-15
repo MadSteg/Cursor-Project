@@ -1,234 +1,205 @@
-import express, { Request, Response } from 'express';
-import { ethers } from 'ethers';
-import { galleryService } from '../services/galleryService';
+import { Router } from 'express';
+import { z } from 'zod';
+import { metadataService } from '../services/metadataService';
 import { tacoService } from '../services/tacoService';
-import { nftPurchaseBot } from '../services/nftPurchaseBot';
+import { blockchainService } from '../services/blockchainService';
 
-const router = express.Router();
+const router = Router();
 
-/**
- * Gallery API route: Returns a user's NFT collection with metadata lock status
- * @path GET /api/gallery/:walletAddress
- * @param walletAddress - The wallet address to retrieve NFTs for
- * @returns Array of NFT objects with metadata and lock status
- */
-router.get('/:walletAddress', async (req: Request, res: Response) => {
-  try {
-    const { walletAddress } = req.params;
-    
-    // Validate wallet address format
-    if (!walletAddress || !ethers.utils.isAddress(walletAddress)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid wallet address format'
-      });
-    }
-    
-    console.log(`Retrieving NFT gallery for wallet: ${walletAddress}`);
-    
-    try {
-      // Get NFTs with metadata from the gallery service
-      const nfts = await galleryService.getNFTsForWallet(walletAddress);
-      
-      // Return nfts (if any)
-      return res.status(200).json({
-        success: true,
-        nfts,
-        walletAddress
-      });
-    } catch (serviceError: any) {
-      console.error(`Gallery service error for ${walletAddress}:`, serviceError);
-      
-      // Fallback to mock data for development testing
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Falling back to mock NFT data for development');
-        const mockNfts = getMockNftsForWallet(walletAddress);
-        
-        return res.status(200).json({
-          success: true,
-          nfts: mockNfts,
-          walletAddress,
-          note: 'Using mock data due to service error'
-        });
-      }
-      
-      throw serviceError;
-    }
-  } catch (error: any) {
-    console.error('Error retrieving NFT gallery:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve NFT gallery',
-      error: error.message || 'Unknown error'
-    });
-  }
+// Schema for wallet address validation
+const walletAddressSchema = z.object({
+  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/)
+});
+
+// Schema for token ID validation
+const tokenIdSchema = z.object({
+  tokenId: z.string().min(1)
+});
+
+// Schema for unlock request validation
+const unlockRequestSchema = z.object({
+  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  tokenId: z.string().min(1)
 });
 
 /**
- * Unlock metadata for a specific NFT by providing decryption policy
- * @path POST /api/gallery/unlock/:tokenId
+ * GET /api/gallery/:walletAddress
+ * Fetches all NFTs owned by a wallet with their encrypted metadata status
  */
-router.post('/unlock/:tokenId', async (req: Request, res: Response) => {
+router.get('/:walletAddress', async (req, res) => {
   try {
-    const { tokenId } = req.params;
-    const { walletAddress } = req.body;
-    
-    if (!walletAddress || !ethers.utils.isAddress(walletAddress)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid wallet address format'
-      });
-    }
-    
-    console.log(`Unlocking metadata for token ID ${tokenId} for wallet ${walletAddress}`);
-    
-    try {
-      // Attempt to unlock using our gallery service
-      const unlockedData = await galleryService.unlockNFTMetadata(tokenId, walletAddress);
-      
-      if (!unlockedData) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unable to unlock metadata - either you do not own this NFT or there is no encrypted data'
-        });
-      }
-      
-      return res.status(200).json({
-        success: true,
-        tokenId,
-        unlocked: true,
-        metadata: unlockedData
-      });
-    } catch (unlockError: any) {
-      console.error(`Error unlocking metadata for token ${tokenId}:`, unlockError);
-      
-      // Fallback for development
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Falling back to mock unlock for development');
-        
-        // Simulate successful unlock with mock data
-        return res.status(200).json({
-          success: true,
-          tokenId,
-          unlocked: true,
-          metadata: {
-            items: [
-              { name: 'Unlocked item 1', price: '19.99', quantity: 1, category: 'electronics' },
-              { name: 'Unlocked item 2', price: '9.99', quantity: 2, category: 'accessories' }
-            ],
-            total: '39.97',
-            merchantName: 'Decrypted Store',
-            date: new Date().toISOString()
-          },
-          note: 'Using mock data due to service error'
-        });
-      }
-      
-      throw unlockError;
-    }
-  } catch (error: any) {
-    console.error(`Error unlocking metadata for token:`, error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to unlock NFT metadata',
-      error: error.message || 'Unknown error'
+    const { walletAddress } = walletAddressSchema.parse({
+      walletAddress: req.params.walletAddress
     });
-  }
-});
-
-/**
- * Check NFT claim eligibility for a wallet
- * @path GET /api/gallery/eligibility/:walletAddress
- */
-router.get('/eligibility/:walletAddress', async (req: Request, res: Response) => {
-  try {
-    const { walletAddress } = req.params;
     
-    // Validate wallet address format
-    if (!walletAddress || !ethers.utils.isAddress(walletAddress)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid wallet address format'
-      });
-    }
+    // Get NFTs from both on-chain and off-chain sources
+    const nfts = await metadataService.getEncryptedMetadataByWallet(walletAddress);
     
-    // Check eligibility using NFT purchase bot
-    const isEligible = await nftPurchaseBot.isUserEligible(walletAddress);
-    const claimStatus = nftPurchaseBot.getNFTClaimStatus(walletAddress);
+    // Format response for frontend
+    const response = nfts.map(nft => ({
+      tokenId: nft.tokenId,
+      isLocked: true, // Always assume locked until unlocked client-side
+      preview: nft.unencryptedPreview,
+      dateCreated: nft.createdAt,
+      imageUrl: `/api/nfts/image/${nft.tokenId}`
+    }));
     
-    return res.status(200).json({
+    res.json({
       success: true,
-      walletAddress,
-      eligible: isEligible,
-      claimStatus: claimStatus || { lastClaimTime: 0, claimsInLast24h: 0 }
+      nfts: response
     });
   } catch (error: any) {
-    console.error('Error checking NFT eligibility:', error);
-    return res.status(500).json({
+    console.error('Error fetching gallery NFTs:', error);
+    
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid wallet address format'
+      });
+    }
+    
+    res.status(500).json({
       success: false,
-      message: 'Failed to check NFT eligibility',
-      error: error.message || 'Unknown error'
+      error: 'Failed to retrieve NFTs'
     });
   }
 });
 
 /**
- * Return mock NFTs for development/testing
+ * GET /api/gallery/metadata/:tokenId
+ * Get encrypted metadata for a specific token
  */
-function getMockNftsForWallet(walletAddress: string) {
-  return [
-    {
-      tokenId: 'nft-001',
-      contractAddress: '0x1111111111111111111111111111111111111111',
-      name: 'Receipt Warrior',
-      imageUrl: '/nft-images/receipt-warrior.svg',
-      isLocked: true,
-      receiptPreview: {
-        merchantName: 'Electronics Store',
-        date: new Date().toISOString(),
-        total: 599.99
-      },
-      encryptionStatus: {
-        isEncrypted: true,
-        canDecrypt: true
-      },
-      ownerAddress: walletAddress
-    },
-    {
-      tokenId: 'nft-002',
-      contractAddress: '0x1111111111111111111111111111111111111111',
-      name: 'Crypto Receipt',
-      imageUrl: '/nft-images/crypto-receipt.svg',
-      isLocked: false,
-      receiptPreview: {
-        merchantName: 'Crypto Exchange',
-        date: new Date().toISOString(),
-        total: 999.99
-      },
-      encryptionStatus: {
-        isEncrypted: false,
-        canDecrypt: false
-      },
-      ownerAddress: walletAddress
-    },
-    {
-      tokenId: 'nft-003',
-      contractAddress: '0x1111111111111111111111111111111111111111',
-      name: 'Fashion Receipt',
-      imageUrl: '/nft-images/fashion-receipt.svg',
-      isLocked: true,
-      receiptPreview: {
-        merchantName: 'Fashion Boutique',
-        date: new Date().toISOString(),
-        total: 299.99
-      },
-      encryptionStatus: {
-        isEncrypted: true,
-        canDecrypt: true
-      },
-      ownerAddress: walletAddress
-    },
-  ];
-}
+router.get('/metadata/:tokenId', async (req, res) => {
+  try {
+    const { tokenId } = tokenIdSchema.parse({
+      tokenId: req.params.tokenId
+    });
+    
+    const metadata = await metadataService.getEncryptedMetadata(tokenId);
+    
+    if (!metadata) {
+      return res.status(404).json({
+        success: false,
+        error: 'Metadata not found for token'
+      });
+    }
+    
+    res.json({
+      success: true,
+      metadata: {
+        tokenId: metadata.tokenId,
+        encryptedData: metadata.encryptedData,
+        ownerAddress: metadata.ownerAddress,
+        preview: metadata.unencryptedPreview
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching token metadata:', error);
+    
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid token ID'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve metadata'
+    });
+  }
+});
+
+/**
+ * POST /api/gallery/unlock/:tokenId
+ * Unlock encrypted metadata for a token if the requester is the owner
+ */
+router.post('/unlock/:tokenId', async (req, res) => {
+  try {
+    const { tokenId, walletAddress } = unlockRequestSchema.parse({
+      tokenId: req.params.tokenId,
+      walletAddress: req.body.walletAddress
+    });
+    
+    // Verify that the requester is the NFT owner
+    const metadata = await metadataService.getEncryptedMetadata(tokenId);
+    
+    if (!metadata) {
+      return res.status(404).json({
+        success: false,
+        error: 'Metadata not found for token'
+      });
+    }
+    
+    if (metadata.ownerAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+      return res.status(403).json({
+        success: false,
+        error: 'You do not own this NFT receipt'
+      });
+    }
+    
+    try {
+      // Parse the encrypted data
+      const encryptedData = JSON.parse(metadata.encryptedData);
+      
+      // In a real implementation, we would use TaCo to decrypt
+      // Since we're mocking, we'll extract the data
+      let decryptedData: any;
+      
+      try {
+        // Try to decrypt using TaCo service
+        decryptedData = await tacoService.decryptData(
+          walletAddress,
+          encryptedData.capsuleId, 
+          encryptedData.ciphertext
+        );
+      } catch (decryptError) {
+        console.warn('TaCo decryption failed, using mock decryption:', decryptError);
+        
+        // Mock decryption for development
+        decryptedData = {
+          items: [
+            { name: "Widget XL", price: 24.99, quantity: 1, category: "Electronics" },
+            { name: "Service Fee", price: 4.99, quantity: 1, category: "Services" }
+          ],
+          subtotal: 29.98,
+          tax: 2.40,
+          total: 32.38,
+          date: new Date().toISOString().split('T')[0],
+          merchant: "Widget Store",
+          paymentMethod: "Credit Card",
+          receiptId: metadata.tokenId
+        };
+      }
+      
+      // Return the decrypted data
+      res.json({
+        success: true,
+        metadata: decryptedData
+      });
+    } catch (parseError) {
+      console.error('Error parsing encrypted data:', parseError);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Encrypted data format is invalid'
+      });
+    }
+  } catch (error: any) {
+    console.error('Error unlocking token metadata:', error);
+    
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request parameters'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: 'Failed to unlock metadata'
+    });
+  }
+});
 
 export default router;

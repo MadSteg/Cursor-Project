@@ -7,6 +7,7 @@
 
 import { nftPurchaseBot } from './nftPurchaseBot';
 import { encryptLineItems } from '../utils/encryptLineItems';
+import { metadataService } from './metadataService';
 
 type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
@@ -206,31 +207,54 @@ async function processTask(taskId: string): Promise<void> {
         break;
         
       case 'metadata_encryption':
-        // Store or update encrypted metadata with token ID
+        // Store or update encrypted metadata with token ID using metadataService
         console.log(`Processing metadata encryption task ${taskId} for wallet ${task.walletAddress}`);
         
-        // In a production system, this would update a database record
-        // with the tokenId and encryption details.
-        // For now, we'll just log the association
-        
         const { encryptedMetadata, tokenId } = task.data;
-        console.log(`Associated encrypted metadata for receipt ${task.receiptId} with tokenId ${tokenId}`);
-        console.log(`Encryption details: Policy key: ${encryptedMetadata.policyId}, Capsule: ${encryptedMetadata.capsuleId}`);
         
-        updateTaskStatus(taskId, 'completed', { 
-          result: { 
-            tokenId,
-            encryptionStatus: 'associated',
-            message: 'Encrypted metadata successfully associated with NFT'
-          } 
-        });
+        // Store the encrypted data with token ID and wallet association
+        const metadataString = JSON.stringify(encryptedMetadata);
+        const previewData = {
+          receiptId: task.receiptId,
+          timestamp: new Date().toISOString(),
+          status: 'encrypted'
+        };
+        
+        // Store the metadata in the database
+        const metadataStored = await metadataService.storeEncryptedMetadata(
+          tokenId,
+          task.walletAddress,
+          metadataString,
+          previewData
+        );
+        
+        if (metadataStored) {
+          console.log(`Successfully stored encrypted metadata for receipt ${task.receiptId} with tokenId ${tokenId}`);
+          console.log(`Encryption details: Policy key: ${encryptedMetadata.policyId}, Capsule: ${encryptedMetadata.capsuleId}`);
+          
+          updateTaskStatus(taskId, 'completed', { 
+            result: { 
+              tokenId,
+              encryptionStatus: 'stored',
+              message: 'Encrypted metadata successfully stored with NFT'
+            } 
+          });
+        } else {
+          updateTaskStatus(taskId, 'failed', { 
+            error: 'Failed to store encrypted metadata',
+            result: { 
+              tokenId,
+              encryptionStatus: 'failed'
+            } 
+          });
+        }
         break;
         
       default:
         updateTaskStatus(taskId, 'failed', { error: `Unknown task type: ${task.type}` });
         break;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error processing task ${taskId} of type ${task.type}:`, error);
     updateTaskStatus(taskId, 'failed', { error: error.message || 'Unknown error' });
   }
