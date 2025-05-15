@@ -373,7 +373,7 @@ export default function UploadReceiptPage() {
         </TabsContent>
         
         <TabsContent value="review" className="mt-6">
-          {receiptData && (
+          {receiptData && !showNftPicker && !isUploading && (
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -494,6 +494,44 @@ export default function UploadReceiptPage() {
                       </>
                     )}
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* NFT Art Selection */}
+          {showNftPicker && receiptData && (
+            <Card>
+              <CardContent className="pt-6">
+                <NFTArtPicker 
+                  receiptData={receiptData}
+                  onSelect={handleNFTSelected}
+                  onCancel={handleCancelNFTSelection}
+                />
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Loading State */}
+          {isUploading && receiptData && (
+            <Card>
+              <CardContent className="py-10">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="w-full max-w-md">
+                    <h3 className="text-lg font-medium text-center mb-4">
+                      {uploadProgress < 50 ? 'Preparing Your BlockReceipt' : 'Minting Your BlockReceipt'}
+                    </h3>
+                    <Progress value={uploadProgress} className="h-2 w-full mb-2" />
+                    <p className="text-sm text-center text-muted-foreground">
+                      {uploadProgress < 30
+                        ? 'Preparing your blockchain receipt...'
+                        : uploadProgress < 70
+                        ? 'Creating your unique NFT...'
+                        : uploadProgress < 95
+                        ? 'Finalizing blockchain transaction...'
+                        : 'Almost done!'}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
