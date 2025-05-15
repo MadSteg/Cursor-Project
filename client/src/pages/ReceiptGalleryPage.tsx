@@ -145,8 +145,13 @@ export default function ReceiptGalleryPage() {
   };
 
   const handleNFTSelected = async (nft: any) => {
+    if (!selectedReceipt) return;
+    
     setIsMinting(true);
     setShowNftPicker(false);
+
+    // Store merchant name for later use
+    const merchantName = selectedReceipt.merchantName;
 
     // Simulate minting
     setTimeout(() => {
@@ -154,7 +159,7 @@ export default function ReceiptGalleryPage() {
       
       toast({
         title: 'BlockReceipt Minted',
-        description: `Your receipt from ${selectedReceipt.merchantName} has been minted as a "${nft.name}" NFT to wallet 0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC.`,
+        description: `Your receipt from ${merchantName} has been minted as a "${nft.name}" NFT to wallet 0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC.`,
         variant: 'default',
         duration: 5000,
       });

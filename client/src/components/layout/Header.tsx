@@ -64,6 +64,13 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
+            {/* Receipt Gallery */}
+            <Link href="/receipt-gallery">
+              <span className={`text-sm font-medium ${currentLocation === "/receipt-gallery" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Receipt className="h-4 w-4 mr-1.5" /> Receipt Gallery
+              </span>
+            </Link>
+            
             {/* NFT Catalog */}
             <Link href="/nft-catalog">
               <span className={`text-sm font-medium ${currentLocation === "/nft-catalog" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
@@ -104,6 +111,11 @@ const Header: React.FC = () => {
                     <Link href="/upload-receipt">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                         <FileImage className="h-5 w-5" /> Mint BlockReceipt
+                      </span>
+                    </Link>
+                    <Link href="/receipt-gallery">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <Receipt className="h-5 w-5" /> Receipt Gallery
                       </span>
                     </Link>
                     <Link href="/nft-catalog">
