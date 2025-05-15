@@ -55,14 +55,19 @@ router.post('/select-nft', (req, res) => {
       });
     }
     
-    // In a real implementation, this would prepare the NFT for minting
-    // For now, we'll just return a success response
+    // Use user's wallet address for minting
+    const walletAddress = '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC';
+    
+    // In a real implementation, this would call the blockchain service to mint
+    // For testing purposes, we'll create a successful mock response
     res.json({
       success: true,
-      message: 'NFT selected for minting',
-      mintStatus: 'pending',
-      expectedDelivery: new Date(Date.now() + 300000).toISOString(), // 5 minutes from now
-      txHash: '0x' + Math.random().toString(16).substring(2, 34) // Mock transaction hash
+      message: 'NFT minted to ' + walletAddress,
+      mintStatus: 'completed',
+      expectedDelivery: new Date(Date.now() + 10000).toISOString(), // 10 seconds from now
+      txHash: '0x7c9e6b6a88c9e9e9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d', // Mock transaction hash
+      walletAddress: walletAddress,
+      tokenId: Math.floor(Math.random() * 1000000).toString()
     });
   } catch (error: any) {
     console.error('Error selecting NFT:', error);

@@ -111,6 +111,26 @@ const NFTArtPicker: React.FC<NFTArtPickerProps> = ({ receiptData, onSelect, onCa
         <p className="text-muted-foreground">
           Select one of these unique digital collectibles for your receipt from {receiptData?.merchantName}
         </p>
+        
+        {/* Show extracted categories */}
+        {tags && tags.length > 0 && (
+          <div className="mt-4 p-4 rounded-md bg-slate-50 border border-slate-200">
+            <h4 className="text-sm font-medium mb-2">Receipt Categories</h4>
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag: string, index: number) => (
+                <span 
+                  key={index} 
+                  className={`px-2 py-1 text-xs rounded-full bg-${getColorForIndex(index)}/20 text-${getColorForIndex(index)}/80 border border-${getColorForIndex(index)}/30`}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              We've automatically categorized your purchase to help with inventory tracking and spending analytics
+            </p>
+          </div>
+        )}
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

@@ -30,12 +30,11 @@ let mockWalletConnection: WalletConnection = {
 
 // Connect wallet function (in production this would use ethers.js or web3.js)
 export async function connectWallet(): Promise<WalletConnection> {
-  // Simulate wallet connection
+  // Simulate wallet connection with the user's actual wallet address
   return new Promise((resolve) => {
     setTimeout(() => {
       mockWalletConnection = {
-        address: '0x' + Array.from({length: 40}, () => 
-          Math.floor(Math.random() * 16).toString(16)).join(''),
+        address: '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC', // User's specified wallet address
         isConnected: true,
         balance: '0.05',
         chainId: 80002 // Polygon Amoy testnet
