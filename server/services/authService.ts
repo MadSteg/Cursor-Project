@@ -255,3 +255,6 @@ export class AuthService {
     }
   }
 }
+
+// Create and export an instance of the AuthService
+export const authService = new AuthService();

@@ -1,0 +1,89 @@
+🔗 BlockReceipt.ai – Robust MetaMask & WalletConnect Integration
+📣 Objective
+This document outlines the necessary frontend and backend code to implement a stable Web3 wallet connection system supporting both MetaMask and WalletConnect. The goal is to streamline user authentication and NFT interactions for both browser-extension and mobile wallet users.
+
+🧠 1. React Wallet Hook (MetaMask & WalletConnect)
+
+import { useState } from 'react';
+import { ethers } from 'ethers';
+import WalletConnectProvider from '@walletconnect/web3-provider';
+
+export function useWalletConnect() {
+ const [provider, setProvider] = useState(null);
+ const [signer, setSigner] = useState(null);
+ const [walletAddress, setWalletAddress] = useState(null);
+
+ const connectMetaMask = async () => {
+   if (window.ethereum) {
+     const instance = new ethers.providers.Web3Provider(window.ethereum);
+     await instance.send("eth_requestAccounts", []);
+     const signer = instance.getSigner();
+     const address = await signer.getAddress();
+     setProvider(instance);
+     setSigner(signer);
+     setWalletAddress(address);
+   } else {
+     alert("MetaMask not found");
+   }
+ };
+
+ const connectWalletConnect = async () => {
+   const wcProvider = new WalletConnectProvider({
+     rpc: {
+       137: "https://polygon-rpc.com"
+     }
+   });
+   await wcProvider.enable();
+   const instance = new ethers.providers.Web3Provider(wcProvider);
+   const signer = instance.getSigner();
+   const address = await signer.getAddress();
+   setProvider(instance);
+   setSigner(signer);
+   setWalletAddress(address);
+ };
+
+ return { connectMetaMask, connectWalletConnect, provider, signer, walletAddress };
+}
+
+🖼️ 2. Connect Wallet UI Button
+
+import { useWalletConnect } from '../hooks/useWalletConnect';
+
+export default function WalletButton() {
+ const { connectMetaMask, connectWalletConnect, walletAddress } = useWalletConnect();
+
+ return (
+   <div className="p-2">
+     {walletAddress ? (
+       <p>Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</p>
+     ) : (
+       <>
+         <button onClick={connectMetaMask}>Connect MetaMask</button>
+         <button onClick={connectWalletConnect}>WalletConnect</button>
+       </>
+     )}
+   </div>
+ );
+}
+
+🔒 3. Backend Signature Verification
+
+import { ethers } from 'ethers';
+
+export function verifyWalletLogin(walletAddress, signature, nonce) {
+ const message = `Login to BlockReceipt with nonce: ${nonce}`;
+ const recovered = ethers.utils.verifyMessage(message, signature);
+ return recovered.toLowerCase() === walletAddress.toLowerCase();
+}
+
+📂 Files to Create/Update
+- `client/hooks/useWalletConnect.js`
+- `client/components/WalletButton.jsx`
+- `server/utils/verifyWallet.ts`
+- Add login nonce tracking to `userSessionService.ts`
+
+✅ Summary Instructions for Replit
+1. Install `ethers` and `@walletconnect/web3-provider` in the frontend
+2. Use the provided React hook and button for wallet login UX
+3. Pass `walletAddress`, `signature`, and `nonce` to backend for verification
+4. Store verified wallet in session for use in receipt uploads and gallery
