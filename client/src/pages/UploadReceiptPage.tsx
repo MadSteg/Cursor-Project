@@ -232,7 +232,7 @@ export default function UploadReceiptPage() {
 
     const checkTaskStatus = async () => {
       try {
-        const response = await fetch(`/api/task-status/${taskId}`);
+        const response = await fetch(`/api/task/${taskId}/status`);
         const data = await response.json();
         
         console.log("Task status update:", data);

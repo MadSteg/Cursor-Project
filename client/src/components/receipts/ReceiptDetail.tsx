@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
@@ -19,26 +19,30 @@ import {
 import { Share, Download, CheckCircle, ShoppingCart, HandPlatter, Shirt, Database, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { type FullReceipt } from "@shared/schema";
-import { BlockchainActions } from "@/components/blockchain/BlockchainActions";
 import { getReceiptPaymentInfo } from "@/lib/payments";
+import TaskStatusMessage from "@/components/nft/TaskStatusMessage";
 
 const ReceiptDetail: React.FC = () => {
   const { id } = useParams();
   const [_, navigate] = useLocation();
-  const [showBlockchainInfo, setShowBlockchainInfo] = React.useState(false);
+  const [showBlockchainInfo, setShowBlockchainInfo] = useState(false);
   const queryClient = useQueryClient();
-  const [paymentStatus, setPaymentStatus] = React.useState<{
+  const [paymentStatus, setPaymentStatus] = useState<{
     isComplete: boolean;
     method?: string;
     id?: string;
   }>({ isComplete: false });
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [nftTokenId, setNftTokenId] = useState<string | null>(null);
+  const [nftMintingStatus, setNftMintingStatus] = useState<'idle' | 'processing' | 'completed' | 'failed'>('idle');
+  const [error, setError] = useState<string | null>(null);
   
   const { data: receipt, isLoading } = useQuery<FullReceipt>({
     queryKey: [`/api/receipts/${id}`],
   });
   
   // Check payment status when receipt data is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (receipt && id) {
       const checkPayment = async () => {
         try {
@@ -55,6 +59,55 @@ const ReceiptDetail: React.FC = () => {
     }
   }, [receipt, id]);
   
+  // Automatically start NFT minting process for the receipt
+  useEffect(() => {
+    if (receipt && receipt.id && receipt.paymentComplete && !receipt.blockchain?.tokenId) {
+      // Start NFT minting process
+      startNftMinting();
+    } else if (receipt?.blockchain?.tokenId) {
+      // Receipt already has a token ID, set completed status
+      setNftTokenId(receipt.blockchain.tokenId);
+      setNftMintingStatus('completed');
+    }
+  }, [receipt]);
+  
+  // Poll for task status updates
+  useEffect(() => {
+    if (!taskId || nftMintingStatus !== 'processing') return;
+
+    const checkTaskStatus = async () => {
+      try {
+        const response = await fetch(`/api/task/${taskId}/status`);
+        const data = await response.json();
+        
+        console.log("Task status update:", data);
+        
+        if (data.status === 'completed' && data.result) {
+          setNftMintingStatus('completed');
+          setNftTokenId(data.result.tokenId);
+          
+          // Refresh receipt data to get latest blockchain info
+          queryClient.invalidateQueries({ queryKey: [`/api/receipts/${id}`] });
+          
+        } else if (data.status === 'failed') {
+          setNftMintingStatus('failed');
+          setError(data.error || 'Failed to create NFT');
+        }
+      } catch (err) {
+        console.error("Error checking task status:", err);
+      }
+    };
+
+    // Initial check
+    checkTaskStatus();
+    
+    // Set up polling interval
+    const interval = setInterval(checkTaskStatus, 5000);
+    
+    // Clean up
+    return () => clearInterval(interval);
+  }, [taskId, nftMintingStatus, id, queryClient]);
+  
   // Navigate to checkout page
   const handlePayNow = () => {
     if (!receipt) return;
@@ -63,9 +116,33 @@ const ReceiptDetail: React.FC = () => {
     navigate(`/checkout?receipt=${id}&amount=${receipt.total}`);
   };
   
-  // Handle blockchain mint success
-  const handleMintSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: [`/api/receipts/${id}`] });
+  // Start NFT minting process
+  const startNftMinting = async () => {
+    if (!id) return;
+    
+    try {
+      setNftMintingStatus('processing');
+      
+      // Call the mint endpoint
+      const response = await fetch(`/api/blockchain/mint/${id}`, {
+        method: 'POST'
+      });
+      
+      const data = await response.json();
+      
+      if (data.taskId) {
+        setTaskId(data.taskId);
+      } else if (data.receipt?.blockchain?.tokenId) {
+        // Immediate success
+        setNftMintingStatus('completed');
+        setNftTokenId(data.receipt.blockchain.tokenId);
+        queryClient.invalidateQueries({ queryKey: [`/api/receipts/${id}`] });
+      }
+    } catch (error) {
+      console.error("Error starting NFT minting:", error);
+      setNftMintingStatus('failed');
+      setError("Failed to start NFT minting process");
+    }
   };
 
   if (isLoading) {
@@ -222,9 +299,46 @@ const ReceiptDetail: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Blockchain Information</DialogTitle>
           </DialogHeader>
-          <BlockchainActions 
-            receiptId={Number(id)}
-          />
+          <div className="py-4">
+            <TaskStatusMessage 
+              status={nftMintingStatus}
+              tokenId={nftTokenId || undefined}
+              error={error || undefined}
+            />
+            
+            {receipt?.blockchain && (
+              <div className="space-y-2 mt-4">
+                <h4 className="font-medium">Network Information</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-muted-foreground">Network</div>
+                  <div>{receipt.blockchain.network || "Polygon Amoy"}</div>
+                  <div className="text-muted-foreground">Token ID</div>
+                  <div>{receipt.blockchain.tokenId || "Not minted yet"}</div>
+                  {receipt.blockchain.transactionHash && (
+                    <>
+                      <div className="text-muted-foreground">Transaction</div>
+                      <div className="truncate">{receipt.blockchain.transactionHash}</div>
+                    </>
+                  )}
+                  {receipt.blockchain.blockNumber && (
+                    <>
+                      <div className="text-muted-foreground">Block #</div>
+                      <div>{receipt.blockchain.blockNumber}</div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {nftMintingStatus === 'idle' && receipt?.paymentComplete && !receipt?.blockchain?.tokenId && (
+              <Button 
+                onClick={startNftMinting}
+                className="w-full mt-4"
+              >
+                Mint Receipt NFT
+              </Button>
+            )}
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowBlockchainInfo(false)}>
               Close
