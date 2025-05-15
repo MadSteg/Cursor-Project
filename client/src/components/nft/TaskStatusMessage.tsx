@@ -12,7 +12,10 @@ interface TaskStatus {
 }
 
 interface TaskStatusMessageProps {
-  taskId: string;
+  taskId?: string;
+  status?: 'idle' | 'processing' | 'completed' | 'failed';
+  tokenId?: string;
+  error?: string;
   pollingInterval?: number;
 }
 
@@ -21,17 +24,40 @@ interface TaskStatusMessageProps {
  * 
  * Displays the current status of a background task with appropriate visuals
  * and automatically polls for updates.
+ * 
+ * The component accepts either:
+ * 1. A taskId to poll for status updates from the server
+ * 2. Direct status values (status, tokenId, error) for immediate display
  */
 const TaskStatusMessage: React.FC<TaskStatusMessageProps> = ({ 
   taskId, 
+  status: directStatus,
+  tokenId: directTokenId,
+  error: directError,
   pollingInterval = 3000 
 }) => {
-  const [status, setStatus] = useState<TaskStatus | null>(null);
-  const [polling, setPolling] = useState<boolean>(true);
+  const [status, setStatus] = useState<TaskStatus | null>(directStatus ? {
+    status: mapStatus(directStatus),
+    result: directTokenId ? { tokenId: directTokenId } : undefined,
+    error: directError
+  } : null);
+  const [polling, setPolling] = useState<boolean>(!!taskId && !directStatus);
   
-  // Effect to poll for task status
+  // Map external status values to internal ones
+  function mapStatus(externalStatus: string): 'pending' | 'processing' | 'completed' | 'failed' {
+    switch (externalStatus) {
+      case 'idle': return 'pending';
+      case 'processing': return 'processing';
+      case 'completed': return 'completed';
+      case 'failed': return 'failed';
+      default: return 'pending';
+    }
+  }
+  
+  // Effect to poll for task status if we have a taskId
   useEffect(() => {
-    if (!taskId || !polling) return;
+    // If we have direct status or no taskId, don't poll
+    if (!taskId || !polling || directStatus) return;
     
     const pollStatus = async () => {
       try {
@@ -78,7 +104,7 @@ const TaskStatusMessage: React.FC<TaskStatusMessageProps> = ({
     return () => {
       clearInterval(interval);
     };
-  }, [taskId, polling, pollingInterval]);
+  }, [taskId, polling, pollingInterval, directStatus]);
   
   // Manually refresh status
   const refreshStatus = () => {

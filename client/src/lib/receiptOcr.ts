@@ -2,11 +2,37 @@
  * Receipt OCR and Processing Utilities
  * 
  * Functions for processing receipt data, determining NFT tiers, 
- * and other related helper functions.
+ * and other receipt-related helper functions.
  */
 
 // Define the possible tiers for receipt NFTs
 export type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
+
+// Define receipt item type
+export interface ReceiptItem {
+  name: string;
+  price: number;
+  quantity: number;
+  category?: string;
+}
+
+// Define the main receipt data type used throughout the application
+export interface ReceiptData {
+  id?: string | number;
+  merchantName: string;
+  date: string;
+  items: ReceiptItem[];
+  subtotal?: number;
+  tax?: number;
+  total: number;
+  category?: string;
+  nftGift?: {
+    status: string;
+    message: string;
+    eligible: boolean;
+    taskId?: string;
+  };
+}
 
 /**
  * Determines the receipt tier based on the total amount
@@ -37,7 +63,7 @@ export function determineReceiptTier(total: number): ReceiptTier {
 export function determineReceiptCategories(
   merchantName: string,
   total: number,
-  items: any[]
+  items: ReceiptItem[]
 ): string[] {
   const categories = new Set<string>();
   
@@ -88,7 +114,48 @@ export function determineReceiptCategories(
   return Array.from(categories);
 }
 
+/**
+ * Processes a receipt image and extracts data
+ * This is a mock implementation for development purposes
+ * 
+ * @param imageData - Base64 encoded image data
+ * @returns ReceiptData object with extracted information
+ */
+export async function processReceiptImage(imageData: string): Promise<ReceiptData> {
+  // This is a mock implementation that would normally call the server API
+  // For development, we return a sample receipt
+  
+  // In production, this would call an API endpoint:
+  // const response = await fetch('/api/ocr/process', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ image: imageData })
+  // });
+  // return await response.json();
+  
+  // Mock data for development
+  return {
+    merchantName: "Acme Supermarket",
+    date: new Date().toISOString().split('T')[0],
+    items: [
+      { name: "Apples", price: 4.99, quantity: 1 },
+      { name: "Bread", price: 3.49, quantity: 1 },
+      { name: "Milk", price: 2.99, quantity: 2 }
+    ],
+    subtotal: 14.46,
+    tax: 1.45,
+    total: 15.91,
+    category: "grocery",
+    nftGift: {
+      status: "eligible",
+      message: "You're eligible for an NFT reward!",
+      eligible: true
+    }
+  };
+}
+
 export default {
   determineReceiptTier,
-  determineReceiptCategories
+  determineReceiptCategories,
+  processReceiptImage
 };
