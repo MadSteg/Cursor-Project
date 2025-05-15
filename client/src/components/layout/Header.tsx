@@ -120,9 +120,9 @@ const Header: React.FC = () => {
                         <Shield className="h-5 w-5" /> Security
                       </span>
                     </Link>
-                    <Link href="/upload-receipt">
+                    <Link href="/mint-blockreceipt">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <FileImage className="h-5 w-5" /> Mint BlockReceipt
+                        <FileImage className="h-5 w-5" /> Mint a BlockReceipt
                       </span>
                     </Link>
                     {/* BlockReceipts - Only visible when authenticated */}
