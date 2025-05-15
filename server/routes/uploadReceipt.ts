@@ -84,7 +84,7 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
       // Prepare response data
       const responseData: {
         [key: string]: any;
-        tier: string;
+        tier: TierInfo;
         filePath: string;
         fileId: string;
         nftGift?: NFTGiftStatus;
@@ -97,7 +97,7 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
       
       // Check if the receipt qualifies for an NFT gift ($5 or higher for basic tier)
       // Or automatically if premium or higher tier
-      if (tier.toString() !== 'Basic' || receiptData.total >= 5.0) {
+      if (tier.title !== 'Basic' || receiptData.total >= 5.0) {
         try {
           // Get connected wallet address from request body or use test address
           const walletAddress = req.body.walletAddress || '0x0CC9bb224dA2cbe7764ab7513D493cB2b3BeA6FC';
@@ -153,6 +153,7 @@ router.post('/upload-receipt', (req: Request, res: Response) => {
           responseData.nftGift = {
             status: 'error',
             message: 'There was an error processing your NFT gift.',
+            eligible: false,
             error: error.message
           };
         }
