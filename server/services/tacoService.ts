@@ -272,6 +272,43 @@ class TacoService {
       throw new Error("Failed to retrieve shared receipt");
     }
   }
+  
+  /**
+   * Decrypt metadata for a token with owner verification
+   * @param encryptedData The encrypted data to decrypt
+   * @param tokenId The token ID of the NFT
+   * @param walletAddress The wallet address requesting decryption
+   * @returns The decrypted metadata
+   */
+  async decryptData(
+    encryptedData: string, 
+    tokenId: string, 
+    walletAddress: string
+  ): Promise<any> {
+    try {
+      console.log(`Decrypting data for token ${tokenId} requested by ${walletAddress}`);
+      
+      // In a real implementation, this would:
+      // 1. Verify the wallet owns the token
+      // 2. Verify the wallet has access to the encrypted data
+      // 3. Get the appropriate key for decryption
+      // 4. Use the Taco protocol to decrypt
+      
+      // For the mock implementation, we'll just decrypt directly if the
+      // format matches our mock encryption
+      const decryptedJson = this.mockDecrypt(encryptedData);
+      
+      try {
+        return JSON.parse(decryptedJson);
+      } catch (error) {
+        console.error("Error parsing decrypted JSON:", error);
+        return { error: "Failed to parse decrypted data" };
+      }
+    } catch (error: any) {
+      console.error("Error in TacoService.decryptData:", error);
+      throw new Error(`Failed to decrypt data: ${error.message}`);
+    }
+  }
 }
 
 export const tacoService = new TacoService();

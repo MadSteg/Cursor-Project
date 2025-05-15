@@ -43,6 +43,66 @@ class BlockchainService implements IBlockchainService {
     return this.mockVerifyReceipt(tokenId, receipt);
   }
 
+  /**
+   * Get all NFTs owned by a wallet address
+   * @param walletAddress The wallet address to check
+   * @returns Array of NFTs owned by this address
+   */
+  async getNFTsForWallet(walletAddress: string): Promise<any[]> {
+    console.log(`Getting NFTs for wallet: ${walletAddress}`);
+    
+    if (this.mockMode) {
+      // In mock mode, return some sample NFTs for testing
+      return [
+        {
+          tokenId: 'receipt-warrior-1',
+          imageUrl: '/nft-images/receipt-warrior.png',
+          ownerAddress: walletAddress,
+          isLocked: true,
+          hasMetadata: true,
+          preview: {
+            merchantName: 'Tech Store',
+            date: new Date().toISOString().split('T')[0],
+            total: 149.99
+          }
+        },
+        {
+          tokenId: 'crypto-receipt-1',
+          imageUrl: '/nft-images/crypto-receipt.png',
+          ownerAddress: walletAddress,
+          isLocked: true,
+          hasMetadata: true,
+          preview: {
+            merchantName: 'Crypto Exchange',
+            date: new Date().toISOString().split('T')[0],
+            total: 199.50
+          }
+        }
+      ];
+    }
+    
+    // In real mode, this would connect to the blockchain
+    return [];
+  }
+
+  /**
+   * Check if a wallet address owns a specific NFT
+   * @param walletAddress The wallet address to check
+   * @param tokenId The token ID to verify ownership
+   * @returns Boolean indicating ownership
+   */
+  async verifyNFTOwnership(walletAddress: string, tokenId: string): Promise<boolean> {
+    console.log(`Verifying ownership of token ${tokenId} for wallet: ${walletAddress}`);
+    
+    if (this.mockMode) {
+      // In mock mode, always return true for testing
+      return true;
+    }
+    
+    // In real mode, this would check on the blockchain
+    return false;
+  }
+
   async getNetworkStatus(): Promise<any> {
     return {
       available: false,
