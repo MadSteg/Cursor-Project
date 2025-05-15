@@ -65,10 +65,10 @@ export class AuthService {
         
         // Encrypt and store the wallet private key if a TACo public key is provided
         if (tacoPublicKey) {
-          await this.tacoService.encryptPrivateKeyWithTACo(
-            user.id,
+          await this.tacoService.encryptPrivateKey(
             wallet.privateKey,
-            tacoPublicKey
+            tacoPublicKey,
+            user.id
           );
         }
         

@@ -34,7 +34,7 @@ const requireAuth = (req: Request, res: Response, next: NextFunction) => {
  */
 walletRouter.get("/my-wallet", requireAuth, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = (req as any).user.id;
     const wallet = await walletService.getUserWallet(userId);
     
     if (!wallet) {
@@ -67,7 +67,7 @@ walletRouter.get("/my-wallet", requireAuth, async (req: Request, res: Response) 
  */
 walletRouter.post("/generate", requireAuth, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = (req as any).user.id;
     const { tacoPublicKey } = req.body;
     
     // Check if user already has a wallet
@@ -142,7 +142,7 @@ walletRouter.get("/balance/:address", async (req: Request, res: Response) => {
  */
 walletRouter.post("/decrypt-private-key", requireAuth, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = (req as any).user.id;
     const { tacoPublicKey } = req.body;
     
     if (!tacoPublicKey) {
