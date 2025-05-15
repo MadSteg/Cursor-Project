@@ -64,17 +64,10 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Upload Receipt - New Feature */}
+            {/* Mint BlockReceipt - Primary Feature */}
             <Link href="/upload-receipt">
               <span className={`text-sm font-medium ${currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Upload className="h-4 w-4 mr-1.5" /> Upload Receipt
-              </span>
-            </Link>
-            
-            {/* NFT Receipts - Primary Feature */}
-            <Link href="/nft-wallet">
-              <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Wallet className="h-4 w-4 mr-1.5" /> NFT Wallet
+                <Upload className="h-4 w-4 mr-1.5" /> Mint BlockReceipt
               </span>
             </Link>
           </div>
@@ -115,21 +108,9 @@ const Header: React.FC = () => {
                     </Link>
                     <Link href="/upload-receipt">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Upload className="h-5 w-5" /> Upload Receipt
+                        <Upload className="h-5 w-5" /> Mint BlockReceipt
                       </span>
                     </Link>
-                  </div>
-                  
-                  {/* NFT Receipt Features */}
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">NFT Receipts</p>
-                    <div className="space-y-4">
-                      <Link href="/nft-wallet">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Wallet className="h-5 w-5" /> NFT Wallet
-                        </span>
-                      </Link>
-                    </div>
                   </div>
                   
                   {/* Other */}

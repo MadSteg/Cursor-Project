@@ -54,20 +54,22 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/about" component={AboutPage} />
         
-        {/* NFT Receipt Features */}
-        <Route path="/nft-wallet" component={UserNFTWallet} />
-        <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
+        {/* Core Receipt Features */}
         <Route path="/scan-receipt" component={ScanReceipt} />
         <Route path="/upload-receipt" component={UploadReceiptPage} />
         <Route path="/verify-receipt" component={VerifyReceipt} />
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
         
-        {/* Routes now accessible via NFT Wallet tabs */}
-        <Route path="/nft-wallet/analytics" component={Analytics} />
-        <Route path="/nft-wallet/inventory" component={Inventory} />
-        <Route path="/nft-wallet/inventory/:id" component={InventoryDetail} />
-        <Route path="/nft-wallet/inventory/:id/edit" component={InventoryUpload} />
-        <Route path="/nft-wallet/inventory-upload" component={InventoryUpload} />
+        {/* NFT Receipt Features - Commented out as requested, but kept for future development */}
+        {/* <Route path="/nft-wallet" component={UserNFTWallet} /> */}
+        {/* <Route path="/nft-receipts/:id" component={NFTReceiptDetail} /> */}
+        
+        {/* Routes now accessible via NFT Wallet tabs - Commented out as requested, but kept for future development */}
+        {/* <Route path="/nft-wallet/analytics" component={Analytics} /> */}
+        {/* <Route path="/nft-wallet/inventory" component={Inventory} /> */}
+        {/* <Route path="/nft-wallet/inventory/:id" component={InventoryDetail} /> */}
+        {/* <Route path="/nft-wallet/inventory/:id/edit" component={InventoryUpload} /> */}
+        {/* <Route path="/nft-wallet/inventory-upload" component={InventoryUpload} /> */}
         
         {/* Traditional Receipts (Legacy) */}
         <Route path="/receipts" component={Receipts} />

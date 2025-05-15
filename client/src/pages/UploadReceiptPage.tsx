@@ -90,9 +90,12 @@ export default function UploadReceiptPage() {
     const formData = new FormData();
     formData.append('receipt', file);
 
+    // Simulate progress with interval reference
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
+      // Start progress simulation
+      progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           const increment = Math.random() * 10;
           const newProgress = Math.min(prev + increment, 90);
@@ -104,12 +107,14 @@ export default function UploadReceiptPage() {
       const response = await apiRequest(
         'POST',
         '/api/upload-receipt',
-        formData,
-        // Use multipart/form-data for file uploads
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        formData
       );
       
-      clearInterval(progressInterval);
+      // Clear the interval when done
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
       
       const result = await response.json();
       
@@ -127,7 +132,11 @@ export default function UploadReceiptPage() {
         throw new Error(result.message || 'Failed to upload receipt');
       }
     } catch (err: any) {
-      clearInterval();
+      // Make sure interval is cleared on error
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
       setError(err.message || 'An error occurred while uploading the receipt');
       setUploadProgress(0);
       
@@ -166,9 +175,12 @@ export default function UploadReceiptPage() {
     setIsUploading(true);
     setUploadProgress(0);
     
+    // For progress simulation
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
       // Simulate progress
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           const increment = Math.random() * 5;
           const newProgress = Math.min(prev + increment, 95);
@@ -180,22 +192,31 @@ export default function UploadReceiptPage() {
       // For now, we'll just simulate the process
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      clearInterval(progressInterval);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
       setUploadProgress(100);
       
       toast({
-        title: 'NFT Receipt Minted',
-        description: 'Your receipt has been successfully minted as an NFT. View it in your wallet.',
+        title: 'BlockReceipt Minted',
+        description: 'Your receipt has been successfully minted as a blockchain-secured BlockReceipt.',
         variant: 'default',
       });
       
       // Navigate to the wallet page (would do this in a real implementation)
     } catch (err: any) {
-      setError(err.message || 'Failed to mint NFT receipt');
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
+      setError(err.message || 'Failed to mint BlockReceipt');
       
       toast({
         title: 'Minting Failed',
-        description: err.message || 'Failed to mint NFT receipt. Please try again.',
+        description: err.message || 'Failed to mint BlockReceipt. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -216,9 +237,9 @@ export default function UploadReceiptPage() {
   return (
     <div className="container max-w-4xl py-10">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Upload Receipt</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Mint BlockReceipt</h1>
         <p className="text-muted-foreground mt-2">
-          Upload your receipts and turn them into secure, private NFTs on the blockchain
+          Transform your receipts into secure, private BlockReceipts on the blockchain
         </p>
       </div>
       
@@ -226,7 +247,7 @@ export default function UploadReceiptPage() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="upload" disabled={isUploading}>
             <LucideFileUp className="mr-2 h-4 w-4" />
-            Upload Receipt
+            Upload Image
           </TabsTrigger>
           <TabsTrigger value="review" disabled={!receiptData}>
             <Receipt className="mr-2 h-4 w-4" />
@@ -237,9 +258,9 @@ export default function UploadReceiptPage() {
         <TabsContent value="upload" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Upload Your Receipt</CardTitle>
+              <CardTitle>Upload Your Receipt Image</CardTitle>
               <CardDescription>
-                Upload a photo or scan of your receipt to create an NFT
+                Upload a photo or scan of your receipt to create a BlockReceipt
               </CardDescription>
             </CardHeader>
             <CardContent>
