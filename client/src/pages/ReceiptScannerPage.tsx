@@ -293,7 +293,7 @@ export default function ReceiptScannerPage() {
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  Process Receipt
+                  Scan Receipt
                 </>
               )}
             </Button>
@@ -363,7 +363,7 @@ export default function ReceiptScannerPage() {
               <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
                 <FileText className="h-12 w-12 mb-4 text-gray-300" />
                 <p>No receipt data yet</p>
-                <p className="text-sm mt-2">Upload a receipt image and click "Process Receipt"</p>
+                <p className="text-sm mt-2">Upload a receipt image and click "Scan Receipt"</p>
               </div>
             )}
           </CardContent>

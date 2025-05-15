@@ -115,8 +115,9 @@ export default function UploadReceiptPage() {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // Check if wallet is connected
-    if (!isConnected || !address) {
+    // Development mode auto-wallet functionality
+    // In production, we'll check if the wallet is connected
+    if (process.env.NODE_ENV !== 'development' && (!isConnected || !address)) {
       toast({
         title: "Wallet Required",
         description: "Please connect your wallet before uploading a receipt",

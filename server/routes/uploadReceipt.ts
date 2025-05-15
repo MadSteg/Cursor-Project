@@ -51,9 +51,14 @@ const uploadMiddleware = multer({
 router.post('/upload-receipt', (req: Request, res: Response) => {
   // Use multer as middleware first
   uploadMiddleware(req, res, async (err) => {
-    // Validate wallet address after file is processed
-    const walletAddress = req.body?.walletAddress;
-    if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+    // In development mode, use a fixed development wallet if none is provided
+    let walletAddress = req.body?.walletAddress;
+    
+    if (process.env.NODE_ENV === 'development' && (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/))) {
+      // Use a deterministic development wallet for consistency
+      walletAddress = '0x123456789012345678901234567890123456DEMO';
+      console.log('Using development wallet address:', walletAddress);
+    } else if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
       return res.status(400).json({ 
         success: false, 
         message: 'Valid wallet address is required'
