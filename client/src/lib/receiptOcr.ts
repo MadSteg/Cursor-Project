@@ -89,42 +89,107 @@ export function determineReceiptCategories(
 
 /**
  * Processes a receipt image and extracts data
- * This is a mock implementation for development purposes
  * 
- * @param imageData - Base64 encoded image data
+ * @param imageData - File object or Base64 encoded image data
  * @returns ReceiptData object with extracted information
  */
-export async function processReceiptImage(imageData: string): Promise<ReceiptData> {
-  // This is a mock implementation that would normally call the server API
-  // For development, we return a sample receipt
-  
-  // In production, this would call an API endpoint:
-  // const response = await fetch('/api/ocr/process', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ image: imageData })
-  // });
-  // return await response.json();
-  
-  // Mock data for development
-  return {
-    merchantName: "Acme Supermarket",
-    date: new Date().toISOString().split('T')[0],
-    items: [
-      { name: "Apples", price: 4.99, quantity: 1 },
-      { name: "Bread", price: 3.49, quantity: 1 },
-      { name: "Milk", price: 2.99, quantity: 2 }
-    ],
-    subtotal: 14.46,
-    tax: 1.45,
-    total: 15.91,
-    category: "grocery",
-    nftGift: {
-      status: "eligible",
-      message: "You're eligible for an NFT reward!",
-      eligible: true
+export async function processReceiptImage(imageData: File | string): Promise<ReceiptData> {
+  try {
+    let base64Data: string;
+    
+    // Handle File objects by converting to base64
+    if (imageData instanceof File) {
+      const reader = new FileReader();
+      base64Data = await new Promise((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Extract the base64 part if it's a data URL
+          const base64 = result.includes('base64,') 
+            ? result.split('base64,')[1] 
+            : result;
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(imageData);
+      });
+    } else {
+      // If it's already a string, use it directly
+      base64Data = imageData.includes('base64,') 
+        ? imageData.split('base64,')[1] 
+        : imageData;
     }
-  };
+    
+    // Call the server API
+    const response = await fetch('/api/ocr/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64Data })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`OCR processing failed: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to process receipt');
+    }
+    
+    // Extract the data from the response
+    const extractedData = result.data;
+    
+    // Convert categories to proper format
+    const categories = Array.isArray(extractedData.category) 
+      ? extractedData.category 
+      : extractedData.category ? [extractedData.category] : [];
+    
+    // Apply additional categories based on merchant name and items
+    const additionalCategories = determineReceiptCategories(
+      extractedData.merchantName || '',
+      extractedData.total || 0,
+      extractedData.items || []
+    );
+    
+    // Return the formatted receipt data
+    return {
+      merchantName: extractedData.merchantName || "Unknown Merchant",
+      date: extractedData.date || new Date().toISOString().split('T')[0],
+      items: (extractedData.items || []).map(item => ({
+        name: item.name || "Unknown Item",
+        price: typeof item.price === 'number' ? item.price : 0,
+        quantity: typeof item.quantity === 'number' ? item.quantity : 1
+      })),
+      subtotal: extractedData.subtotal || 0,
+      tax: extractedData.tax || 0,
+      total: extractedData.total || 0,
+      // Combine categories from both sources
+      category: [...new Set([...categories, ...additionalCategories])].join(','),
+      nftGift: {
+        status: "eligible",
+        message: "You're eligible for an NFT reward!",
+        eligible: true
+      }
+    };
+  } catch (error) {
+    console.error('Receipt processing error:', error);
+    
+    // If API fails, use fallback logic
+    return {
+      merchantName: "Unknown Merchant",
+      date: new Date().toISOString().split('T')[0],
+      items: [],
+      subtotal: 0,
+      tax: 0,
+      total: 0,
+      category: "general",
+      nftGift: {
+        status: "eligible",
+        message: "You're eligible for an NFT reward!",
+        eligible: true
+      }
+    };
+  }
 }
 
 /**
