@@ -107,17 +107,35 @@ export class GalleryService {
         return null;
       }
       
-      // Parse the encrypted data
-      const encryptedData = JSON.parse(metadata.encryptedData);
+      // Try to parse the encrypted data
+      let encryptedData;
+      try {
+        encryptedData = JSON.parse(metadata.encryptedData);
+      } catch (parseError) {
+        console.warn('Error parsing encrypted data JSON, using raw string:', parseError);
+        encryptedData = metadata.encryptedData;
+      }
       
       // Attempt to decrypt using TaCo service
       try {
-        const decryptedData = await tacoService.decryptData(
-          walletAddress,
-          encryptedData.capsuleId,
-          encryptedData.ciphertext
-        );
-        return decryptedData;
+        // If encrypted data is in the expected format with capsuleId, etc.
+        if (encryptedData && typeof encryptedData === 'object' && encryptedData.ciphertext) {
+          // Using the old signature format (backwards compatibility)
+          const decryptedData = await tacoService.decryptData(
+            encryptedData.ciphertext, 
+            tokenId, 
+            walletAddress
+          );
+          return decryptedData;
+        } else {
+          // For simple mock format - just pass the whole encrypted string
+          const decryptedData = await tacoService.decryptData(
+            metadata.encryptedData,
+            tokenId,
+            walletAddress 
+          );
+          return decryptedData;
+        }
       } catch (error) {
         console.error('Failed to decrypt metadata:', error);
         
