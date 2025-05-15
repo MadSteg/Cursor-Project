@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
-// Define the NFTMetadata interface locally to avoid path issues
+// Define the NFTMetadata interface locally
 interface NFTMetadata {
   id: string;
   name: string;
@@ -27,237 +28,200 @@ interface NFTCatalogProps {
   defaultCategories?: string[];
 }
 
+// Fallback NFT data when API fails
+const FALLBACK_NFTS: NFTMetadata[] = [
+  {
+    id: 'receipt-warrior',
+    name: 'Receipt Warrior',
+    image: '/nft-images/receipt-warrior.svg',
+    description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
+    tier: 'PREMIUM',
+    categories: ['entertainment', 'gaming', 'sports'],
+    attributes: {
+      rarity: 'Epic',
+      power: 72,
+      defense: 68,
+      speed: 65
+    }
+  },
+  {
+    id: 'crypto-receipt',
+    name: 'Crypto Receipt',
+    image: '/nft-images/crypto-receipt.svg',
+    description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
+    tier: 'LUXURY',
+    categories: ['tech', 'finance', 'cryptocurrency'],
+    attributes: {
+      rarity: 'Legendary',
+      encryption: 92,
+      decentralization: 88,
+      volatility: 75
+    }
+  },
+  {
+    id: 'fashion-receipt',
+    name: 'Fashion Couture Receipt',
+    image: '/nft-images/fashion-receipt.svg',
+    description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
+    tier: 'PREMIUM',
+    categories: ['fashion', 'clothing', 'accessories', 'retail'],
+    attributes: {
+      rarity: 'Rare',
+      style: 85,
+      trendiness: 79,
+      exclusivity: 70
+    }
+  },
+  {
+    id: 'grocery-hero',
+    name: 'Grocery Hero',
+    image: '/nft-images/grocery-hero.svg',
+    description: 'A super grocery receipt that saves the day by tracking all your essentials.',
+    tier: 'STANDARD',
+    categories: ['groceries', 'food', 'household'],
+    attributes: {
+      rarity: 'Uncommon',
+      nutrition: 65,
+      value: 60,
+      sustainability: 70
+    }
+  },
+  {
+    id: 'restaurant-receipt',
+    name: 'Dining Dazzler',
+    image: '/nft-images/restaurant-receipt.svg',
+    description: 'A culinary companion that preserves your gastronomic adventures in pixel perfection.',
+    tier: 'PREMIUM',
+    categories: ['restaurant', 'dining', 'food', 'entertainment'],
+    attributes: {
+      rarity: 'Rare',
+      taste: 88,
+      presentation: 90,
+      atmosphere: 85
+    }
+  },
+  {
+    id: 'tech-receipt',
+    name: 'Tech Titan Receipt',
+    image: '/nft-images/tech-receipt.svg',
+    description: 'The digital guardian of your tech purchases with circuit-board styling.',
+    tier: 'LUXURY',
+    categories: ['electronics', 'tech', 'gadgets', 'computers'],
+    attributes: {
+      rarity: 'Epic',
+      processing: 95,
+      innovation: 92,
+      durability: 85
+    }
+  },
+  {
+    id: 'travel-receipt',
+    name: 'Journey Journal',
+    image: '/nft-images/travel-receipt.svg',
+    description: 'Captures your travel expenses with adventurous pixel art styling.',
+    tier: 'STANDARD',
+    categories: ['travel', 'transportation', 'hotels', 'tourism'],
+    attributes: {
+      rarity: 'Uncommon',
+      adventure: 80,
+      discovery: 75,
+      memory: 85
+    }
+  },
+  {
+    id: 'beauty-receipt',
+    name: 'Beauty Buzz Receipt',
+    image: '/nft-images/beauty-receipt.svg',
+    description: 'Glamorous pixel art receipt for your beauty and personal care purchases.',
+    tier: 'STANDARD',
+    categories: ['beauty', 'cosmetics', 'personal care', 'salon'],
+    attributes: {
+      rarity: 'Uncommon',
+      glamour: 78,
+      style: 82,
+      transformation: 75
+    }
+  }
+];
+
 const NFTCatalog: React.FC<NFTCatalogProps> = ({ 
   receiptData, 
   onSelectNFT, 
   showMintButton = true,
   defaultCategories = [] 
 }) => {
-  const [nfts, setNfts] = useState<NFTMetadata[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [minting, setMinting] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('all');
+  const [minting, setMinting] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchNFTs();
-  }, [receiptData, defaultCategories]);
-
-  const fetchNFTs = async () => {
-    setLoading(true);
-    try {
-      // Use the server endpoint to get NFTs based on receipt data
-      let categories = defaultCategories;
-      
-      // If receipt data is provided, extract categories from items
-      if (receiptData?.items) {
-        const itemKeywords = receiptData.items.flatMap((item: any) => {
-          const name = item.name || '';
-          return name.toLowerCase().split(' ').filter((word: string) => word.length > 3);
+  // Use React Query for fetching NFTs
+  const { data: nfts = FALLBACK_NFTS, isLoading } = useQuery({
+    queryKey: ['nfts'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('POST', '/api/nfts', {
+          categories: defaultCategories,
+          tier: receiptData?.tier?.id || '',
+          receiptData: receiptData || null
         });
         
-        // Create a Set for unique categories and convert back to array
-        const uniqueCategories = new Set<string>([...defaultCategories, ...itemKeywords]);
-        categories = Array.from(uniqueCategories);
+        const data = await response.json();
+        
+        if (data.success) {
+          return data.nfts;
+        } else {
+          console.warn('API returned error, using fallback data');
+          return FALLBACK_NFTS;
+        }
+      } catch (error) {
+        console.error('Error fetching NFTs:', error);
+        return FALLBACK_NFTS;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+  });
+
+  // Mutation for minting an NFT
+  const mintNFTMutation = useMutation({
+    mutationFn: async (nft: NFTMetadata) => {
+      if (!receiptData) {
+        throw new Error('No receipt data provided');
       }
       
-      // Determine tier from receipt data if available
-      const tier = receiptData?.tier?.id || '';
-      
-      // Use apiRequest from queryClient to handle network errors better
-      const response = await apiRequest('POST', '/api/nfts', {
-        categories,
-        tier,
-        receiptData: receiptData || null
+      const response = await apiRequest('POST', '/api/select-nft', {
+        selectedNft: nft,
+        receiptData
       });
       
-      const data = await response.json();
-      
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
       if (data.success) {
-        setNfts(data.nfts);
-      } else {
-        // Use local data fallback - hardcoded for simplicity
-        setNfts([
-          {
-            id: 'receipt-warrior',
-            name: 'Receipt Warrior',
-            image: '/nft-images/receipt-warrior.svg',
-            description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
-            tier: 'PREMIUM',
-            categories: ['entertainment', 'gaming', 'sports'],
-            attributes: {
-              rarity: 'Epic',
-              power: 72,
-              defense: 68,
-              speed: 65
-            }
-          },
-          {
-            id: 'crypto-receipt',
-            name: 'Crypto Receipt',
-            image: '/nft-images/crypto-receipt.svg',
-            description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
-            tier: 'LUXURY',
-            categories: ['tech', 'finance', 'cryptocurrency'],
-            attributes: {
-              rarity: 'Legendary',
-              encryption: 92,
-              decentralization: 88,
-              volatility: 75
-            }
-          },
-          {
-            id: 'fashion-receipt',
-            name: 'Fashion Couture Receipt',
-            image: '/nft-images/fashion-receipt.svg',
-            description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
-            tier: 'PREMIUM',
-            categories: ['fashion', 'clothing', 'accessories', 'retail'],
-            attributes: {
-              rarity: 'Rare',
-              style: 85,
-              trendiness: 79,
-              exclusivity: 70
-            }
-          },
-          {
-            id: 'grocery-hero',
-            name: 'Grocery Hero',
-            image: '/nft-images/grocery-hero.svg',
-            description: 'A super grocery receipt that saves the day by tracking all your essentials.',
-            tier: 'STANDARD',
-            categories: ['groceries', 'food', 'household'],
-            attributes: {
-              rarity: 'Uncommon',
-              nutrition: 65,
-              value: 60,
-              sustainability: 70
-            }
-          }
-        ]);
-      }
-    } catch (error) {
-      console.error('Error fetching NFTs:', error);
-      
-      // Use local data fallback with all 8 NFTs
-      setNfts([
-        {
-          id: 'receipt-warrior-fallback',
-          name: 'Receipt Warrior',
-          image: '/nft-images/receipt-warrior.svg',
-          description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
-          tier: 'PREMIUM',
-          categories: ['entertainment', 'gaming', 'sports'],
-          attributes: {
-            rarity: 'Epic',
-            power: 72,
-            defense: 68,
-            speed: 65
-          }
-        },
-        {
-          id: 'crypto-receipt-fallback',
-          name: 'Crypto Receipt',
-          image: '/nft-images/crypto-receipt.svg',
-          description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
-          tier: 'LUXURY',
-          categories: ['tech', 'finance', 'cryptocurrency'],
-          attributes: {
-            rarity: 'Legendary',
-            encryption: 92,
-            decentralization: 88,
-            volatility: 75
-          }
-        },
-        {
-          id: 'fashion-receipt-fallback',
-          name: 'Fashion Couture Receipt',
-          image: '/nft-images/fashion-receipt.svg',
-          description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
-          tier: 'PREMIUM',
-          categories: ['fashion', 'clothing', 'accessories', 'retail'],
-          attributes: {
-            rarity: 'Rare',
-            style: 85,
-            trendiness: 79,
-            exclusivity: 70
-          }
-        },
-        {
-          id: 'grocery-hero-fallback',
-          name: 'Grocery Hero',
-          image: '/nft-images/grocery-hero.svg',
-          description: 'A super grocery receipt that saves the day by tracking all your essentials.',
-          tier: 'STANDARD',
-          categories: ['groceries', 'food', 'household'],
-          attributes: {
-            rarity: 'Uncommon',
-            nutrition: 65,
-            value: 60,
-            sustainability: 70
-          }
-        },
-        {
-          id: 'restaurant-receipt-fallback',
-          name: 'Dining Dazzler',
-          image: '/nft-images/restaurant-receipt.svg',
-          description: 'A culinary companion that preserves your gastronomic adventures in pixel perfection.',
-          tier: 'PREMIUM',
-          categories: ['restaurant', 'dining', 'food', 'entertainment'],
-          attributes: {
-            rarity: 'Rare',
-            taste: 88,
-            presentation: 90,
-            atmosphere: 85
-          }
-        },
-        {
-          id: 'tech-receipt-fallback',
-          name: 'Tech Titan Receipt',
-          image: '/nft-images/tech-receipt.svg',
-          description: 'The digital guardian of your tech purchases with circuit-board styling.',
-          tier: 'LUXURY',
-          categories: ['electronics', 'tech', 'gadgets', 'computers'],
-          attributes: {
-            rarity: 'Epic',
-            processing: 95,
-            innovation: 92,
-            durability: 85
-          }
-        },
-        {
-          id: 'travel-receipt-fallback',
-          name: 'Journey Journal',
-          image: '/nft-images/travel-receipt.svg',
-          description: 'Captures your travel expenses with adventurous pixel art styling.',
-          tier: 'STANDARD',
-          categories: ['travel', 'transportation', 'hotels', 'tourism'],
-          attributes: {
-            rarity: 'Uncommon',
-            adventure: 80,
-            discovery: 75,
-            memory: 85
-          }
-        },
-        {
-          id: 'beauty-receipt-fallback',
-          name: 'Beauty Buzz Receipt',
-          image: '/nft-images/beauty-receipt.svg',
-          description: 'Glamorous pixel art receipt for your beauty and personal care purchases.',
-          tier: 'STANDARD',
-          categories: ['beauty', 'cosmetics', 'personal care', 'salon'],
-          attributes: {
-            rarity: 'Uncommon',
-            glamour: 78,
-            style: 82,
-            transformation: 75
-          }
+        toast({
+          title: 'NFT Minted Successfully',
+          description: `Your "${variables.name}" has been minted to your wallet.`,
+          variant: 'default',
+        });
+        
+        if (onSelectNFT) {
+          onSelectNFT(variables);
         }
-      ]);
-    } finally {
-      setLoading(false);
+      } else {
+        throw new Error(data.message || 'Failed to mint NFT');
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Minting Failed',
+        description: error.message || 'There was an error minting your NFT. Please try again.',
+        variant: 'destructive',
+      });
+    },
+    onSettled: () => {
+      setMinting(null);
     }
-  };
+  });
 
   const handleMintNFT = async (nft: NFTMetadata) => {
     if (!receiptData) {
@@ -270,44 +234,14 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
     }
     
     setMinting(nft.id);
-    
-    try {
-      const response = await apiRequest('POST', '/api/select-nft', {
-        selectedNft: nft,
-        receiptData
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: 'NFT Minted Successfully',
-          description: `Your "${nft.name}" has been minted to your wallet.`,
-          variant: 'default',
-        });
-        
-        if (onSelectNFT) {
-          onSelectNFT(nft);
-        }
-      } else {
-        throw new Error(result.message || 'Failed to mint NFT');
-      }
-    } catch (error: any) {
-      console.error('Error minting NFT:', error);
-      toast({
-        title: 'Minting Failed',
-        description: error.message || 'There was an error minting your NFT. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setMinting(null);
-    }
+    mintNFTMutation.mutate(nft);
   };
 
   const filteredNFTs = activeTab === 'all' 
     ? nfts 
     : nfts.filter(nft => nft.tier === activeTab.toUpperCase());
 
+  // Count NFTs by tier
   const tierCount = {
     all: nfts.length,
     basic: nfts.filter(nft => nft.tier === 'BASIC').length,
@@ -316,7 +250,7 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
     luxury: nfts.filter(nft => nft.tier === 'LUXURY').length,
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-2">
