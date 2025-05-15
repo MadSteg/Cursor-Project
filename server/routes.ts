@@ -110,6 +110,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (process.env.NODE_ENV === 'development') {
     app.use('/api', autoProcessReceiptRoutes);
     console.log('[express] Auto-process receipt endpoints enabled in development mode');
+    
+    // Register task queue test endpoints
+    app.use('/api', taskRoutes);
+    console.log('[express] Task queue test endpoints enabled in development mode');
   }
   
   // Register NFT options routes
