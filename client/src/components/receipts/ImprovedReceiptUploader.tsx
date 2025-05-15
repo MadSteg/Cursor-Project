@@ -28,7 +28,22 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskStatusMessage from '../nft/TaskStatusMessage';
-import { determineReceiptTier, type ReceiptTier } from '@/lib/receiptOcr';
+
+// Define receipt tiers locally to avoid import issues
+type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
+
+// Local implementation of determineReceiptTier to avoid import issues
+function determineReceiptTier(total: number): ReceiptTier {
+  if (total >= 500) {
+    return 'ULTRA';
+  } else if (total >= 200) {
+    return 'LUXURY';
+  } else if (total >= 50) {
+    return 'PREMIUM';
+  } else {
+    return 'STANDARD';
+  }
+}
 
 interface ReceiptItem {
   name: string;
