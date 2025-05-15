@@ -13,12 +13,13 @@ import { ReceiptTier, ReceiptData, ReceiptItem } from "@/types";
  * @param total - The total amount from the receipt
  * @returns The tier category (STANDARD, PREMIUM, LUXURY, or ULTRA)
  */
-export function determineReceiptTier(total: number): ReceiptTier {
-  if (total >= 500) {
+export function determineReceiptTier(total: number | undefined): ReceiptTier {
+  const amount = total || 0;
+  if (amount >= 500) {
     return 'ULTRA';
-  } else if (total >= 200) {
+  } else if (amount >= 200) {
     return 'LUXURY';
-  } else if (total >= 50) {
+  } else if (amount >= 50) {
     return 'PREMIUM';
   } else {
     return 'STANDARD';
@@ -35,9 +36,10 @@ export function determineReceiptTier(total: number): ReceiptTier {
  */
 export function determineReceiptCategories(
   merchantName: string,
-  total: number,
+  total: number | undefined,
   items: ReceiptItem[]
 ): string[] {
+  const amount = total || 0;
   const categories = new Set<string>();
   
   // Check merchant name for categories
@@ -74,7 +76,7 @@ export function determineReceiptCategories(
   }
   
   // Check based on total amount
-  if (total >= 500) {
+  if (amount >= 500) {
     categories.add('luxury');
   }
   
@@ -155,7 +157,7 @@ export async function processReceiptImage(imageData: File | string): Promise<Rec
     return {
       merchantName: extractedData.merchantName || "Unknown Merchant",
       date: extractedData.date || new Date().toISOString().split('T')[0],
-      items: (extractedData.items || []).map(item => ({
+      items: (extractedData.items || []).map((item: any) => ({
         name: item.name || "Unknown Item",
         price: typeof item.price === 'number' ? item.price : 0,
         quantity: typeof item.quantity === 'number' ? item.quantity : 1
@@ -164,7 +166,7 @@ export async function processReceiptImage(imageData: File | string): Promise<Rec
       tax: extractedData.tax || 0,
       total: extractedData.total || 0,
       // Combine categories from both sources
-      category: [...new Set([...categories, ...additionalCategories])].join(','),
+      category: Array.from(new Set([...categories, ...additionalCategories])).join(','),
       nftGift: {
         status: "eligible",
         message: "You're eligible for an NFT reward!",
