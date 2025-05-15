@@ -2,7 +2,7 @@
  * Seed script for the NFT Pool database
  * 
  * This script populates the NFT pool with initial data for testing
- * Run with: node scripts/seed-nft-pool.js
+ * Run with: npx tsx scripts/seed-nft-pool.js
  */
 
 import * as dotenv from 'dotenv';
