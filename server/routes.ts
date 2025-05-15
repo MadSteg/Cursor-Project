@@ -38,6 +38,8 @@ import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
 import taskRoutes from "./routes/tasks";
 // Import test routes for the task queue
 import testQueueRoutes from "./routes/test-queue";
+// Import hot wallet routes with TACo encryption
+import walletRoutes from "./routes/wallet";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -111,6 +113,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Task Queue routes
   app.use('/api', taskRoutes);
+  
+  // Register Hot Wallet routes with TACo encryption
+  app.use('/api/wallet', walletRoutes);
   
   // Register Test Queue routes (only in development)
   if (process.env.NODE_ENV === 'development') {
