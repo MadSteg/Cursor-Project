@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import * as nftMintService from '../services/nftMintService';
 import * as nftPoolRepository from '../repositories/nftPoolRepository';
 import * as taskService from '../services/taskService';
-import { Task } from '../services/taskService';
+import type { Task } from '../services/taskService';
 
 const router = express.Router();
 

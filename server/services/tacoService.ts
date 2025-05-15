@@ -39,7 +39,7 @@ export class TacoService implements ITacoService {
     // In development mode, we don't need to actually initialize anything
     if (this.isDevelopment) {
       console.log('Using mock TACo service in development mode');
-      return false;
+      return true; // Return true even in dev mode to indicate service is ready
     }
     
     try {
@@ -49,6 +49,26 @@ export class TacoService implements ITacoService {
     } catch (error) {
       console.error('Failed to initialize TACo service:', error);
       return false;
+    }
+  }
+  
+  /**
+   * Get all public keys for a user
+   * @param userId The user ID to get keys for
+   * @returns An array of public keys
+   */
+  async getUserKeys(userId: number): Promise<Array<{ id: number, name: string, publicKey: string, createdAt: Date }>> {
+    try {
+      // Get all keys for the user from the database
+      const keys = await db
+        .select()
+        .from(tacoKeys)
+        .where(eq(tacoKeys.userId, userId));
+      
+      return keys;
+    } catch (error) {
+      console.error('Error getting user keys:', error);
+      return [];
     }
   }
   

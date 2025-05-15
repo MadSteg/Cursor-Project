@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/tabs";
 import { 
   Card, 
-  CardContent, 
   CardFooter, 
   CardHeader, 
   CardTitle, 
@@ -19,17 +18,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
 import { Info, Check, Crown, Sparkles, Gift, Gamepad2, Music2, Palette, Shapes, Diamond } from 'lucide-react';
-import { collections } from "@/data/nftArtManifest";
 import { NFTArtItem, ReceiptTier } from "@/types";
+import { apiRequest } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
 
 interface NFTArtSelectorProps {
   receiptTier: ReceiptTier;
   onSelectNFT: (nft: NFTArtItem) => void;
   selectedNFTId?: string;
+  receiptData?: any;
 }
 
 // Helper function to get rarity color
@@ -106,82 +107,74 @@ const getTierBadge = (tier: ReceiptTier) => {
   }
 };
 
-const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelectorProps) => {
+const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId, receiptData }: NFTArtSelectorProps) => {
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [availableNFTs, setAvailableNFTs] = useState<NFTArtItem[]>([]);
   
-  // Local implementation of getNFTArtItemsByTier
-  const getNFTArtItems = (tier: ReceiptTier): NFTArtItem[] => {
-    // Mock data for NFT items - in a real app this would come from an API or database
-    const mockNFTs: NFTArtItem[] = [
-      {
-        id: "nft-1",
-        name: "Receipt Collector",
-        description: "A beautiful NFT for your receipt collection",
-        imageUrl: "https://placehold.co/400x400/png",
-        collection: "block-receipt",
-        tier: "STANDARD",
-        rarity: "common",
-        type: "collectible",
-        price: 0
-      },
-      {
-        id: "nft-2",
-        name: "Premium Purchase",
-        description: "A premium NFT for your valuable receipt",
-        imageUrl: "https://placehold.co/400x400/png",
-        collection: "block-receipt", 
-        tier: "PREMIUM",
-        rarity: "uncommon",
-        type: "art",
-        price: 0
-      },
-      {
-        id: "nft-3",
-        name: "Luxury Memento",
-        description: "A luxury NFT for your high-value purchase",
-        imageUrl: "https://placehold.co/400x400/png",
-        collection: "luxury-brands",
-        tier: "LUXURY",
-        rarity: "rare",
-        type: "utility",
-        price: 0
-      },
-      {
-        id: "nft-4",
-        name: "Ultra Keepsake",
-        description: "An ultra-rare NFT for your exceptional purchase",
-        imageUrl: "https://placehold.co/400x400/png",
-        collection: "luxury-brands",
-        tier: "ULTRA",
-        rarity: "epic",
-        type: "game",
-        price: 0
+  // Fetch NFT options from API based on tier
+  const { data: nftData, isLoading, error } = useQuery({
+    queryKey: ['nft-options', receiptTier],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', `/api/nfts/pool?tier=${receiptTier.toLowerCase()}&count=9`);
+        const data = await response.json();
+        
+        if (data.success) {
+          return data.nfts.map((nft: any) => ({
+            id: nft.id,
+            name: nft.name,
+            description: nft.description,
+            imageUrl: nft.image || `https://placehold.co/400x400/png?text=${encodeURIComponent(nft.name)}`,
+            collection: nft.category || 'BlockReceipt',
+            tier: nft.tier.toUpperCase(),
+            rarity: nft.rarity || 'common',
+            type: nft.category || 'collectible',
+            price: 0
+          }));
+        }
+        throw new Error('Failed to fetch NFT options');
+      } catch (error) {
+        console.error('Error fetching NFT options:', error);
+        throw error;
       }
-    ];
-
-    // Filter NFTs by tier
-    return mockNFTs.filter(nft => nft.tier === tier);
-  };
-
-  // Load available NFTs for the current receipt tier
+    },
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+  
+  // Effect to automatically select the first NFT when data is loaded
   useEffect(() => {
-    const nfts = getNFTArtItems(receiptTier);
-    setAvailableNFTs(nfts);
-    
-    // If there are NFTs and none is selected yet, select the first one
-    if (nfts.length > 0 && !selectedNFTId) {
-      onSelectNFT(nfts[0]);
+    if (nftData && nftData.length > 0 && !selectedNFTId) {
+      onSelectNFT(nftData[0]);
     }
-  }, [receiptTier, onSelectNFT, selectedNFTId]);
+  }, [nftData, onSelectNFT, selectedNFTId]);
   
   // Filter NFTs by type based on active tab
   const filteredNFTs = activeTab === 'all' 
-    ? availableNFTs 
-    : availableNFTs.filter(nft => nft.type === activeTab);
-  
-  // Define collection types for tabs
-  const collectionTypes = ['game', 'utility', 'music', 'art', 'collectible', 'sports'];
+    ? nftData || [] 
+    : nftData?.filter(nft => nft.type.toLowerCase() === activeTab.toLowerCase()) || [];
+
+  // Define collection types for tabs - dynamically determine from available data
+  const collectionTypes = nftData 
+    ? Array.from(new Set(nftData.map(nft => nft.type.toLowerCase())))
+    : ['game', 'utility', 'music', 'art', 'collectible', 'sports'];
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading NFT options...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-center py-8 space-y-4">
+        <p className="text-sm text-red-500">Failed to load NFT options. Please try again.</p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-4">
@@ -189,7 +182,7 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelec
         <div>
           <h3 className="text-lg font-semibold">Select NFT Art</h3>
           <p className="text-sm text-muted-foreground">
-            Choose from {availableNFTs.length} options for your {receiptTier.toLowerCase()} receipt
+            Choose from {nftData?.length || 0} options for your {receiptTier.toLowerCase()} receipt
           </p>
         </div>
         {getTierBadge(receiptTier)}
@@ -230,6 +223,9 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId }: NFTArtSelec
                             src={nft.imageUrl} 
                             alt={nft.name} 
                             className="object-cover w-full h-full"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/png?text=NFT';
+                            }}
                           />
                           {selectedNFTId === nft.id && (
                             <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
