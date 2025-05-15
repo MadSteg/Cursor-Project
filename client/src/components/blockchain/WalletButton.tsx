@@ -4,7 +4,7 @@
  * This component provides UI buttons for connecting to MetaMask and WalletConnect,
  * as well as displaying the connected wallet address when connected.
  */
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Wallet, Plug, Loader2, LogOut, Shield, Check } from "lucide-react";
 import { useWalletConnect } from '@/hooks/useWalletConnect';
@@ -87,14 +87,16 @@ export default function WalletButton({
     setDropdownOpen(false); // Close dropdown after disconnection
   };
 
-  // If we hit a connection error, show it
-  if (connectionError) {
-    toast({
-      title: "Connection Error",
-      description: connectionError,
-      variant: "destructive"
-    });
-  }
+  // Handle connection errors with useEffect
+  useEffect(() => {
+    if (connectionError) {
+      toast({
+        title: "Connection Error",
+        description: connectionError,
+        variant: "destructive"
+      });
+    }
+  }, [connectionError, toast]);
 
   // If connected, show the wallet address and disconnect option
   if (walletAddress) {

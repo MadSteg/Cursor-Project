@@ -9,11 +9,13 @@ import { ethers } from 'ethers';
 
 // Dynamic import for WalletConnect to avoid polyfill issues
 let WalletConnectProvider: any = null;
-try {
-  // We'll initialize this dynamically when needed
-  // to avoid early initialization errors with polyfills
-} catch (error) {
-  console.error("Failed to load WalletConnect:", error);
+
+// Type definition for window.ethereum
+interface EthereumProvider {
+  request: (args: { method: string; params?: any[] }) => Promise<any>;
+  on: (eventName: string, callback: any) => void;
+  removeListener: (eventName: string, callback: any) => void;
+  isMetaMask?: boolean;
 }
 
 export function useWalletConnect() {
@@ -33,36 +35,80 @@ export function useWalletConnect() {
     
     try {
       if (window.ethereum) {
-        const instance = new ethers.providers.Web3Provider(window.ethereum);
-        
-        // Request account access
-        await instance.send("eth_requestAccounts", []);
-        
-        const signer = instance.getSigner();
-        const address = await signer.getAddress();
-        const network = await instance.getNetwork();
-        
-        setProvider(instance);
-        setSigner(signer);
-        setWalletAddress(address);
-        setChainId(network.chainId);
-        
-        // Setup event listeners for account and chain changes
-        window.ethereum.on('accountsChanged', (accounts: string[]) => {
-          if (accounts.length === 0) {
-            // User disconnected their wallet
-            disconnectWallet();
-          } else {
-            setWalletAddress(accounts[0]);
+        try {
+          const instance = new ethers.providers.Web3Provider(window.ethereum);
+          
+          // Request account access
+          try {
+            await instance.send("eth_requestAccounts", []);
+          } catch (requestError: any) {
+            // Handle user rejection or other request errors
+            if (requestError.code === 4001) {
+              // User rejected the request
+              throw new Error("Connection request was rejected. Please approve the connection request in MetaMask.");
+            } else {
+              throw requestError;
+            }
           }
-        });
-        
-        window.ethereum.on('chainChanged', (chainId: string) => {
-          // Handle network change - force page refresh as recommended by MetaMask
-          window.location.reload();
-        });
+          
+          const signer = instance.getSigner();
+          let address;
+          
+          try {
+            address = await signer.getAddress();
+          } catch (addressError) {
+            console.error("Error getting wallet address:", addressError);
+            throw new Error("Could not get wallet address. Please check your MetaMask connection.");
+          }
+          
+          let network;
+          try {
+            network = await instance.getNetwork();
+          } catch (networkError) {
+            console.error("Error getting network:", networkError);
+            // Fallback to a default chain ID if network detection fails
+            network = { chainId: 1 }; // Default to Ethereum Mainnet
+          }
+          
+          setProvider(instance);
+          setSigner(signer);
+          setWalletAddress(address);
+          setChainId(network.chainId);
+          
+          console.log("Successfully connected to MetaMask:", { 
+            address, 
+            chainId: network.chainId,
+            network: network.name
+          });
+          
+          // Setup event listeners for account and chain changes
+          window.ethereum.on('accountsChanged', (accounts: string[]) => {
+            if (accounts.length === 0) {
+              // User disconnected their wallet
+              disconnectWallet();
+            } else {
+              setWalletAddress(accounts[0]);
+            }
+          });
+          
+          window.ethereum.on('chainChanged', (chainId: string) => {
+            // Update chainId without reloading the page
+            setChainId(parseInt(chainId, 16));
+            // Refresh provider and signer if ethereum is available
+            if (window.ethereum) {
+              const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+              setProvider(newProvider);
+              setSigner(newProvider.getSigner());
+            }
+          });
+        } catch (connError: any) {
+          console.error("MetaMask connection error:", connError);
+          setConnectionError(connError.message || "Error connecting to MetaMask");
+        }
       } else {
-        setConnectionError("MetaMask not found. Please install the extension.");
+        const errorMessage = "MetaMask not found. Please install the extension from metamask.io";
+        console.error(errorMessage);
+        setConnectionError(errorMessage);
       }
     } catch (error: any) {
       console.error("Wallet connection error:", error);
@@ -80,12 +126,29 @@ export function useWalletConnect() {
     setConnectionError(null);
     
     try {
+      // First, we need to dynamically import WalletConnect to avoid polyfill issues
+      if (!WalletConnectProvider) {
+        try {
+          // Dynamic import
+          const WalletConnectModule = await import('@walletconnect/web3-provider');
+          WalletConnectProvider = WalletConnectModule.default;
+        } catch (importError) {
+          console.error("Failed to load WalletConnect:", importError);
+          throw new Error("Could not load WalletConnect. Please try MetaMask instead.");
+        }
+      }
+      
+      // Check if import was successful
+      if (!WalletConnectProvider) {
+        throw new Error("WalletConnect is not available. Please try MetaMask instead.");
+      }
+      
       // Initialize WalletConnect Provider
       const wcProvider = new WalletConnectProvider({
         rpc: {
           // Polygon Mainnet
           137: "https://polygon-rpc.com",
-          // Polygon Amoy Testnet (if supported)
+          // Polygon Amoy Testnet
           80002: "https://polygon-amoy.g.alchemy.com/v2/demo"
         }
       });
@@ -114,7 +177,7 @@ export function useWalletConnect() {
       });
     } catch (error: any) {
       console.error("WalletConnect error:", error);
-      setConnectionError(error.message || "Failed to connect with WalletConnect");
+      setConnectionError(error.message || "Failed to connect with WalletConnect. Please try MetaMask instead.");
     } finally {
       setConnecting(false);
     }
