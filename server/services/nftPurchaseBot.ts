@@ -157,24 +157,24 @@ console.log('Initialized NFT claim records');
 /**
  * Find a relevant NFT from the pool based on category and tier
  * @param category The category to match
- * @param tier The tier of NFT to find (basic, premium, luxury)
- * @returns Promise resolving to NftPool object or null if none found
+ * @param tier The tier of NFT to find (standard, premium, luxury, ultra)
+ * @returns Promise resolving to NFTOption object or null if none found
  */
-async function findRelevantNFT(category: string = '', tier: string = 'basic'): Promise<NftPool | null> {
+async function findRelevantNFT(category: string = '', tier: string = 'standard'): Promise<NFTOption | null> {
   try {
     // Normalize category and tier
     const lowerCategory = category.toLowerCase();
-    const normalizedTier = ['basic', 'premium', 'luxury'].includes(tier) ? tier : 'basic';
+    const normalizedTier = ['standard', 'premium', 'luxury', 'ultra'].includes(tier) ? tier : 'standard';
     
     // Get a set of NFTs from the specified tier
     const nftOptions = await nftPoolRepository.getNFTsByTier(normalizedTier);
     
     if (!nftOptions || nftOptions.length === 0) {
-      console.warn(`No NFTs found in tier: ${normalizedTier}, using basic tier as fallback`);
+      console.warn(`No NFTs found in tier: ${normalizedTier}, using standard tier as fallback`);
       
-      // Fall back to basic tier if the specified tier has no options
-      if (normalizedTier !== 'basic') {
-        return findRelevantNFT(category, 'basic');
+      // Fall back to standard tier if the specified tier has no options
+      if (normalizedTier !== 'standard') {
+        return findRelevantNFT(category, 'standard');
       }
       
       return null;
@@ -182,9 +182,9 @@ async function findRelevantNFT(category: string = '', tier: string = 'basic'): P
     
     // Try to find an NFT that matches the category
     if (lowerCategory) {
-      // Find an NFT where one of its categories matches our category
+      // Find an NFT where the category attribute matches our category
       const matchingNFT = nftOptions.find(nft => 
-        nft.categories.some(cat => lowerCategory.includes(cat.toLowerCase()))
+        nft.category.toLowerCase().includes(lowerCategory)
       );
       
       if (matchingNFT) {
@@ -248,7 +248,7 @@ export async function purchaseAndTransferNFT(
       }
     }
     
-    console.log(`Selected NFT: ${selectedNFT.name} (ID: ${selectedNFT.nftId})`);
+    console.log(`Selected NFT: ${selectedNFT.name} (ID: ${selectedNFT.id})`);
     
     // Simulate blockchain transaction with a random hash
     const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
@@ -259,13 +259,13 @@ export async function purchaseAndTransferNFT(
     // Record the NFT claim
     recordNFTClaim(walletAddress);
     
-    // Disable the NFT in the pool so it won't be selected again
-    await nftPoolRepository.disableNft(selectedNFT.nftId);
+    // Note: Our current repository doesn't support disabling NFTs
+    // This would be implemented in a database-backed system
     
     // Return success response with NFT details
     return {
       success: true,
-      tokenId: `${Date.now()}-${selectedNFT.nftId}`, // Generate a unique token ID
+      tokenId: selectedNFT.tokenId.toString(), // Use the token ID from our NFT
       contractAddress,
       name: selectedNFT.name,
       imageUrl: selectedNFT.image,
@@ -298,8 +298,8 @@ export async function mintFallbackNFT(
   try {
     console.log(`Minting fallback NFT for wallet ${walletAddress} with category ${receiptCategory}`);
     
-    // Always use basic tier for fallback NFTs
-    const tier = 'basic';
+    // Always use standard tier for fallback NFTs
+    const tier = 'standard';
     
     // Get a fallback NFT from the pool
     const fallbackNFT = await findRelevantNFT(receiptCategory, tier);
@@ -308,8 +308,8 @@ export async function mintFallbackNFT(
       throw new Error("No fallback NFTs available in the pool");
     }
     
-    // Generate a unique token ID
-    const tokenId = `${Date.now()}-${fallbackNFT.nftId}`;
+    // Use the token ID from the NFT
+    const tokenId = fallbackNFT.tokenId.toString();
     
     // Simulate blockchain delay
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -317,8 +317,8 @@ export async function mintFallbackNFT(
     // Record the NFT claim
     recordNFTClaim(walletAddress);
     
-    // Disable the NFT in the pool
-    await nftPoolRepository.disableNft(fallbackNFT.nftId);
+    // Note: Our current repository doesn't support disabling NFTs
+    // This would be implemented in a database-backed system
     
     // Generate tx hash for the minting operation
     const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
