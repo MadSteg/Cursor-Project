@@ -106,7 +106,9 @@ export default function UploadReceiptPage() {
   const { toast } = useToast();
 
   // Get wallet info
-  const { address, isConnected, connect } = useWeb3Wallet();
+  const { walletInfo, connectWallet } = useWeb3Wallet();
+  const address = walletInfo.address;
+  const isConnected = walletInfo.connected;
   
   // Enhanced file upload handler with better error handling
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,9 +125,9 @@ export default function UploadReceiptPage() {
       
       // Try to connect wallet
       try {
-        await connect();
-        // If connection fails, return early
-        if (!isConnected) {
+        await connectWallet();
+        // Check again after connection attempt
+        if (!walletInfo.connected || !walletInfo.address) {
           setIsUploading(false);
           return;
         }
@@ -150,6 +152,9 @@ export default function UploadReceiptPage() {
     // Add wallet address to form data
     if (address) {
       formData.append('walletAddress', address);
+      console.log('Adding wallet address to form data:', address);
+    } else {
+      console.error('No wallet address available for upload');
     }
 
     // Progress simulation interval

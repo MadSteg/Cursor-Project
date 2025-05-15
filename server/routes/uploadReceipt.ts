@@ -49,17 +49,16 @@ const uploadMiddleware = multer({
 
 // Route for uploading a receipt
 router.post('/upload-receipt', (req: Request, res: Response) => {
-  // Validate wallet address first
-  const walletAddress = req.body.walletAddress;
-  if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Valid wallet address is required'
-    });
-  }
-
-  // Use multer as middleware
+  // Use multer as middleware first
   uploadMiddleware(req, res, async (err) => {
+    // Validate wallet address after file is processed
+    const walletAddress = req.body?.walletAddress;
+    if (!walletAddress || !walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Valid wallet address is required'
+      });
+    }
     // Handle file upload errors from multer
     if (err) {
       console.error('File upload error:', err.message);
