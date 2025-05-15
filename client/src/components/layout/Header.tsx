@@ -23,9 +23,10 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 const Header: React.FC = () => {
-  const [, setLocation] = useLocation();
-  const [currentLocation] = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
+  // Use a single call to useLocation to avoid hook order issues
+  const [currentLocation, setLocation] = useLocation();
+  // Always call useAuth after useLocation
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   return (
     <header className="bg-white shadow-sm">
@@ -85,7 +86,7 @@ const Header: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 className="flex items-center"
-                onClick={() => setLocation("/sign-out")}
+                onClick={() => logout()}
               >
                 <User className="h-4 w-4 mr-1.5" /> 
                 <span>Sign Out</span>
@@ -150,7 +151,7 @@ const Header: React.FC = () => {
                     {isAuthenticated ? (
                       <div 
                         className="flex items-center gap-2 text-base font-medium cursor-pointer"
-                        onClick={() => setLocation("/sign-out")}
+                        onClick={() => logout()}
                       >
                         <User className="h-5 w-5" /> Sign Out
                       </div>

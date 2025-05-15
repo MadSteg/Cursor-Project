@@ -20,7 +20,7 @@ export default function ReceiptGalleryPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      setLocation('/signin');
+      setLocation('/sign-in');
     }
   }, [isAuthenticated, isLoading, setLocation]);
   
