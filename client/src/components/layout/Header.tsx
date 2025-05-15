@@ -57,12 +57,7 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Hot Wallet Settings */}
-            <Link href="/wallet-settings">
-              <span className={`text-sm font-medium ${currentLocation === "/wallet-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Wallet className="h-4 w-4 mr-1.5" /> Hot Wallet
-              </span>
-            </Link>
+            {/* Removed Hot Wallet link from here - moved to right side */}
             
             {/* Mint BlockReceipt - Primary Feature */}
             <Link href="/upload-receipt">
@@ -91,9 +86,12 @@ const Header: React.FC = () => {
               <ConnectWalletButton size="sm" />
             </div>
             
-            <div className="w-9 h-9 bg-light rounded-full flex items-center justify-center cursor-pointer">
-              <User className="text-dark h-5 w-5" />
-            </div>
+            <Link href="/wallet-settings">
+              <Button variant="ghost" size="sm" className="flex items-center">
+                <Wallet className="h-4 w-4 mr-1.5" /> 
+                <span>Sign In</span>
+              </Button>
+            </Link>
             
             <Sheet>
               <SheetTrigger asChild>
