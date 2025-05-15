@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { nftPurchaseBot } from '../services/nftPurchaseBot';
+import { marketplaceService } from '../services/marketplaceService';
 
 const router = express.Router();
 
@@ -78,16 +79,21 @@ router.post('/purchase', async (req: Request, res: Response) => {
       });
     }
     
-    // Attempt to purchase and transfer an NFT
+    // Determine receipt tier for logging purposes
+    const { tier } = marketplaceService.determineNFTBudget(total);
+    
+    console.log(`Processing NFT purchase for receipt with total $${total.toFixed(2)} (Tier: ${tier})`);
+    
+    // Attempt to purchase an NFT from a marketplace and transfer it to the user
     const result = await nftPurchaseBot.purchaseAndTransferNFT(
       walletAddress,
       receiptId,
       receiptData
     );
     
-    // If marketplace purchase fails, fall back to minting
+    // If marketplace purchase fails, fall back to minting our own NFT
     if (!result.success && result.error?.includes('No affordable NFTs found')) {
-      console.log('No affordable NFTs found, falling back to minting');
+      console.log('No affordable NFTs found on marketplaces, falling back to custom NFT minting');
       const fallbackResult = await nftPurchaseBot.mintFallbackNFT(
         walletAddress,
         receiptId,
@@ -97,13 +103,28 @@ router.post('/purchase', async (req: Request, res: Response) => {
       return res.status(fallbackResult.success ? 200 : 500).json({
         ...fallbackResult,
         receiptData,
-        fallback: true
+        fallback: true,
+        message: 'Created a custom BlockReceipt NFT (no suitable marketplace NFTs found)',
+        tier: fallbackResult.tier || tier
       });
+    }
+    
+    if (result.success) {
+      console.log(`Successfully purchased NFT for wallet ${walletAddress}: ${result.name} (${result.tokenId})`);
+      if (result.creator && result.creatorName) {
+        console.log(`Creator info: ${result.creatorName} (${result.creator})`);
+      }
     }
     
     return res.status(result.success ? 200 : 500).json({
       ...result,
-      receiptData
+      receiptData,
+      artist: result.creatorName,
+      artistWallet: result.creator,
+      tier: result.tier || tier,
+      message: result.success 
+        ? `Successfully purchased NFT from an emerging artist: ${result.creatorName || 'Unknown Artist'}`
+        : 'Failed to purchase NFT from marketplace'
     });
   } catch (error: any) {
     console.error('Error during NFT purchase process:', error);
@@ -124,8 +145,8 @@ router.get('/transaction/:txHash', async (req: Request, res: Response) => {
     const { txHash } = req.params;
     
     // In a real implementation, this would query the blockchain
-    // For now, return mock data
-    const mockTransaction = {
+    // For now, return simulated data
+    const simulatedTransaction = {
       hash: txHash,
       blockNumber: 12345678,
       timestamp: Date.now(),
@@ -138,13 +159,62 @@ router.get('/transaction/:txHash', async (req: Request, res: Response) => {
     
     return res.status(200).json({
       success: true,
-      transaction: mockTransaction
+      transaction: simulatedTransaction
     });
   } catch (error: any) {
     console.error('Error getting transaction info:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to get transaction info',
+      error: error.message || 'Unknown error'
+    });
+  }
+});
+
+/**
+ * Endpoint to browse available NFTs based on receipt data
+ * This can be used to show what might be purchased before confirming
+ * POST /api/nft-bot/browse
+ * Body: { receiptData, limit }
+ */
+router.post('/browse', async (req: Request, res: Response) => {
+  try {
+    const { receiptData, limit = 5 } = req.body;
+    
+    if (!receiptData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Receipt data is required'
+      });
+    }
+    
+    // Extract receipt details
+    const total = parseFloat(receiptData.total || '0');
+    const category = marketplaceService.categorizeReceipt(receiptData);
+    const { tier, budget } = marketplaceService.determineNFTBudget(total);
+    
+    // Fetch marketplace NFTs based on the receipt
+    const nfts = await marketplaceService.fetchMarketplaceNFTs({
+      maxPrice: budget,
+      category,
+      includeUnverified: true,
+      sort: 'recent',
+      filters: ['lowVolume', 'indieArtist'],
+      limit: limit
+    });
+    
+    return res.status(200).json({
+      success: true,
+      tier,
+      budget,
+      category,
+      nfts
+    });
+  } catch (error: any) {
+    console.error('Error browsing NFTs:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to browse NFTs',
       error: error.message || 'Unknown error'
     });
   }

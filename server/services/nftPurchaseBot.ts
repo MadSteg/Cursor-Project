@@ -3,11 +3,14 @@
  * 
  * Handles automated NFT purchases from marketplaces when users upload receipts,
  * as well as fallback minting from our own collection when marketplace purchases fail.
+ * 
+ * Updated to support external NFT procurement from emerging artists via marketplace APIs.
  */
 
 import { ethers } from 'ethers';
 import fs from 'fs';
 import path from 'path';
+import { marketplaceService, MarketplaceNFT } from './marketplaceService';
 
 // Wallet tracker to prevent abuse (in-memory, replace with DB in production)
 interface ClaimRecord {
@@ -18,7 +21,7 @@ interface ClaimRecord {
 // Store claimed NFTs (in-memory - would use DB in production)
 const claimedNFTs: Map<string, ClaimRecord> = new Map();
 
-// Demo NFT collection for testing - would use live marketplaces in production
+// Demo NFT collection for fallback minting
 const mockNFTCollection = [
   {
     id: 'nft-001',
@@ -76,6 +79,9 @@ export interface NFTPurchaseResult {
   price?: number;
   txHash?: string;
   error?: string;
+  creator?: string;
+  creatorName?: string;
+  tier?: string;
 }
 
 // Initialize and log basic configs
@@ -147,7 +153,7 @@ function recordNFTClaim(walletAddress: string): void {
 console.log('Initialized NFT claim records');
 
 /**
- * Find a relevant NFT based on receipt data
+ * Find a relevant NFT based on receipt data (for fallback minting)
  */
 function findRelevantNFT(receiptData: any): any {
   // Get merchant name and categories from receipt
@@ -184,6 +190,7 @@ function findRelevantNFT(receiptData: any): any {
 
 /**
  * Purchase an NFT from a marketplace and transfer to user
+ * Updated to purchase from external marketplaces
  */
 export async function purchaseAndTransferNFT(
   walletAddress: string,
@@ -193,14 +200,38 @@ export async function purchaseAndTransferNFT(
   try {
     console.log(`Attempting to purchase NFT for wallet ${walletAddress} based on receipt ${receiptId}`);
     
-    // Find a relevant NFT from our mock collection
-    const selectedNFT = findRelevantNFT(receiptData);
+    // Determine receipt category and budget based on total
+    const receiptTotal = receiptData.total || 0;
+    const category = marketplaceService.categorizeReceipt(receiptData);
+    const { tier, budget } = marketplaceService.determineNFTBudget(receiptTotal);
     
-    // Generate a random token ID for simulation
-    const tokenId = generateTokenId();
+    console.log(`Determined category: ${category}, tier: ${tier}, budget: $${budget}`);
     
-    // Simulate blockchain delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Fetch NFTs from marketplace based on budget and category
+    const nftOptions = await marketplaceService.fetchMarketplaceNFTs({
+      maxPrice: budget,
+      category,
+      includeUnverified: true,
+      sort: 'recent',
+      filters: ['lowVolume', 'indieArtist'],
+      limit: 10
+    });
+    
+    // If no NFTs found, throw error to trigger fallback
+    if (!nftOptions.length) {
+      throw new Error("No affordable NFTs found under budget");
+    }
+    
+    // Select a random NFT from the options
+    const selectedNFT = nftOptions[Math.floor(Math.random() * nftOptions.length)];
+    console.log(`Selected NFT: ${selectedNFT.name} by ${selectedNFT.creatorName || 'unknown'}`);
+    
+    // Purchase the NFT and transfer to recipient
+    const purchaseResult = await marketplaceService.purchaseMarketplaceNFT(selectedNFT, walletAddress);
+    
+    if (!purchaseResult.success) {
+      throw new Error(purchaseResult.error || "Failed to purchase NFT");
+    }
     
     // Record the NFT claim
     recordNFTClaim(walletAddress);
@@ -208,13 +239,16 @@ export async function purchaseAndTransferNFT(
     // Return success response with NFT details
     return {
       success: true,
-      tokenId,
-      contractAddress,
-      name: selectedNFT.name,
-      imageUrl: selectedNFT.image,
-      marketplace: 'MockMarketplace',
-      price: selectedNFT.price,
-      txHash: `0x${Math.random().toString(16).substring(2, 42)}`
+      tokenId: purchaseResult.tokenId || selectedNFT.tokenId,
+      contractAddress: purchaseResult.contractAddress || selectedNFT.contractAddress,
+      name: purchaseResult.name || selectedNFT.name,
+      imageUrl: purchaseResult.imageUrl || selectedNFT.imageUrl,
+      marketplace: purchaseResult.marketplace || selectedNFT.marketplace,
+      price: purchaseResult.price || selectedNFT.price,
+      txHash: purchaseResult.txHash || `0x${Math.random().toString(16).substring(2, 42)}`,
+      creator: selectedNFT.creator,
+      creatorName: selectedNFT.creatorName,
+      tier
     };
   } catch (error: any) {
     console.error(`Error purchasing NFT for ${walletAddress}:`, error);
@@ -237,6 +271,11 @@ export async function mintFallbackNFT(
   try {
     console.log(`Minting fallback NFT for wallet ${walletAddress} based on receipt ${receiptId}`);
     
+    // Determine receipt category and tier
+    const receiptTotal = receiptData.total || 0;
+    const category = marketplaceService.categorizeReceipt(receiptData);
+    const { tier } = marketplaceService.determineNFTBudget(receiptTotal);
+    
     // Find a relevant NFT from our mock collection
     const selectedNFT = findRelevantNFT(receiptData);
     
@@ -258,7 +297,10 @@ export async function mintFallbackNFT(
       imageUrl: selectedNFT.image,
       marketplace: 'BlockReceipt',
       price: 0,
-      txHash: `0x${Math.random().toString(16).substring(2, 42)}`
+      txHash: `0x${Math.random().toString(16).substring(2, 42)}`,
+      creator: 'BlockReceipt',
+      creatorName: 'BlockReceipt Artist',
+      tier
     };
   } catch (error: any) {
     console.error(`Error minting fallback NFT for ${walletAddress}:`, error);
