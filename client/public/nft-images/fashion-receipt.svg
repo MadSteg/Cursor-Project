@@ -1,0 +1,36 @@
+<svg width="240" height="240" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    rect { shape-rendering: crispEdges; }
+  </style>
+  <!-- Background -->
+  <rect width="24" height="24" fill="#222034"/>
+  
+  <!-- Receipt Paper -->
+  <rect x="7" y="2" width="10" height="20" fill="#f0f0f0"/>
+  
+  <!-- Receipt Lines -->
+  <rect x="8" y="4" width="8" height="1" fill="#a0a0a0"/>
+  <rect x="8" y="18" width="8" height="1" fill="#a0a0a0"/>
+  
+  <!-- T-shirt -->
+  <rect x="9" y="7" width="6" height="4" fill="#ff6b97"/>
+  <rect x="8" y="7" width="1" height="3" fill="#ff6b97"/>
+  <rect x="15" y="7" width="1" height="3" fill="#ff6b97"/>
+  
+  <!-- Pants -->
+  <rect x="10" y="12" width="4" height="5" fill="#5a6988"/>
+  <rect x="9" y="12" width="1" height="5" fill="#5a6988"/>
+  <rect x="14" y="12" width="1" height="5" fill="#5a6988"/>
+  
+  <!-- Designer Logo -->
+  <rect x="11" y="8" width="2" height="2" fill="#f0f0f0"/>
+  <rect x="11" y="8" width="1" height="1" fill="#222034"/>
+  <rect x="12" y="9" width="1" height="1" fill="#222034"/>
+  
+  <!-- Receipt Edge -->
+  <rect x="7" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="9" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="11" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="13" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="15" y="22" width="1" height="1" fill="#f0f0f0"/>
+</svg>

@@ -1,0 +1,42 @@
+<svg width="240" height="240" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    rect { shape-rendering: crispEdges; }
+  </style>
+  <!-- Background -->
+  <rect width="24" height="24" fill="#222034"/>
+  
+  <!-- Receipt Paper -->
+  <rect x="7" y="2" width="10" height="20" fill="#f0f0f0"/>
+  
+  <!-- Receipt Lines -->
+  <rect x="8" y="4" width="8" height="1" fill="#a0a0a0"/>
+  <rect x="8" y="6" width="8" height="1" fill="#a0a0a0"/>
+  <rect x="8" y="19" width="8" height="1" fill="#a0a0a0"/>
+  
+  <!-- Airplane -->
+  <rect x="10" y="9" width="4" height="1" fill="#3498db"/>
+  <rect x="11" y="8" width="2" height="3" fill="#3498db"/>
+  <rect x="10" y="10" width="1" height="1" fill="#3498db"/>
+  <rect x="13" y="10" width="1" height="1" fill="#3498db"/>
+  <rect x="9" y="11" width="1" height="1" fill="#3498db"/>
+  <rect x="14" y="11" width="1" height="1" fill="#3498db"/>
+  
+  <!-- Suitcase -->
+  <rect x="11" y="13" width="3" height="3" fill="#8e44ad"/>
+  <rect x="10" y="14" width="1" height="1" fill="#8e44ad"/>
+  <rect x="14" y="14" width="1" height="1" fill="#8e44ad"/>
+  <rect x="12" y="12" width="1" height="1" fill="#8e44ad"/>
+  
+  <!-- Sun -->
+  <rect x="9" y="11" width="1" height="1" fill="#f39c12"/>
+  <rect x="8" y="12" width="1" height="1" fill="#f39c12"/>
+  <rect x="8" y="11" width="1" height="1" fill="#f39c12"/>
+  <rect x="8" y="10" width="1" height="1" fill="#f39c12"/>
+  
+  <!-- Receipt Edge -->
+  <rect x="7" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="9" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="11" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="13" y="22" width="1" height="1" fill="#f0f0f0"/>
+  <rect x="15" y="22" width="1" height="1" fill="#f0f0f0"/>
+</svg>
