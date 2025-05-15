@@ -1,0 +1,86 @@
+[
+  {
+    "id": "nft-001",
+    "name": "Block Receipt Basic",
+    "description": "A basic digital receipt NFT on the blockchain",
+    "tier": "standard",
+    "image": "https://ipfs.io/ipfs/QmabCde1234567890",
+    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567890/metadata.json",
+    "category": "receipt",
+    "rarity": "common",
+    "tokenId": 1,
+    "attributes": [
+      {
+        "trait_type": "Category",
+        "value": "receipt"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "standard"
+      }
+    ]
+  },
+  {
+    "id": "nft-002",
+    "name": "Block Receipt Premium",
+    "description": "A premium digital receipt NFT on the blockchain",
+    "tier": "premium",
+    "image": "https://ipfs.io/ipfs/QmabCde1234567891",
+    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567891/metadata.json",
+    "category": "receipt",
+    "rarity": "uncommon",
+    "tokenId": 2,
+    "attributes": [
+      {
+        "trait_type": "Category",
+        "value": "receipt"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "premium"
+      }
+    ]
+  },
+  {
+    "id": "nft-003",
+    "name": "Block Receipt Luxury",
+    "description": "A luxury digital receipt NFT on the blockchain",
+    "tier": "luxury",
+    "image": "https://ipfs.io/ipfs/QmabCde1234567892",
+    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567892/metadata.json",
+    "category": "receipt",
+    "rarity": "rare",
+    "tokenId": 3,
+    "attributes": [
+      {
+        "trait_type": "Category",
+        "value": "receipt"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "luxury"
+      }
+    ]
+  },
+  {
+    "id": "nft-004",
+    "name": "Block Receipt Ultra",
+    "description": "An ultra tier digital receipt NFT on the blockchain",
+    "tier": "ultra",
+    "image": "https://ipfs.io/ipfs/QmabCde1234567893",
+    "metadataUri": "https://ipfs.io/ipfs/QmabCde1234567893/metadata.json",
+    "category": "receipt",
+    "rarity": "epic",
+    "tokenId": 4,
+    "attributes": [
+      {
+        "trait_type": "Category",
+        "value": "receipt"
+      },
+      {
+        "trait_type": "Tier",
+        "value": "ultra"
+      }
+    ]
+  }
+]

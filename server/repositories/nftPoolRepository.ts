@@ -1,147 +1,135 @@
 /**
- * Repository for handling NFT Pool data
+ * NFT Pool Repository
+ * 
+ * This repository manages the NFT pool data, which defines the available
+ * NFTs that can be minted for receipts.
  */
 
-import { Pool } from '@neondatabase/serverless';
-import { nftPool, type NftPool, type InsertNftPool } from '../../shared/schema';
-import { db } from '../db';
-import { eq, sql, desc, and } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
+import { logger } from '../utils/logger';
 
-class NFTPoolRepository {
-  /**
-   * Add a new NFT to the pool
-   * @param nftData The NFT data to add
-   * @returns The added NFT
-   */
-  async addNftToPool(nftData: InsertNftPool): Promise<NftPool> {
-    try {
-      const [nft] = await db.insert(nftPool)
-        .values(nftData)
-        .returning();
-      
-      return nft;
-    } catch (error) {
-      console.error('Error adding NFT to pool:', error);
-      throw error;
-    }
+// Define the structure of an NFT in the pool
+export interface NFTOption {
+  id: string;
+  name: string;
+  description: string;
+  tier: string;
+  image: string;
+  metadataUri: string;
+  category: string;
+  rarity: string;
+  tokenId: number;
+  attributes: Array<{
+    trait_type: string;
+    value: string;
+  }>;
+}
+
+// Path to the NFT pool JSON file
+const NFT_POOL_PATH = path.join(process.cwd(), 'data', 'nft_pool.json');
+
+// In-memory cache of NFT pool data
+let nftPoolCache: NFTOption[] | null = null;
+
+/**
+ * Load all available NFTs from the pool
+ */
+export async function getAllNFTs(): Promise<NFTOption[]> {
+  if (nftPoolCache) {
+    return nftPoolCache;
   }
 
-  /**
-   * Get an NFT from the pool by ID
-   * @param nftId The NFT ID
-   * @returns The NFT or null if not found
-   */
-  async getNftById(nftId: string): Promise<NftPool | null> {
-    try {
-      const [nft] = await db.select()
-        .from(nftPool)
-        .where(eq(nftPool.nftId, nftId));
-      
-      return nft || null;
-    } catch (error) {
-      console.error('Error getting NFT by ID:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get NFTs for a specific tier
-   * @param tier The tier to filter by (basic, premium, luxury)
-   * @param limit The maximum number of NFTs to return
-   * @returns Array of NFTs in the tier
-   */
-  async getNftsByTier(tier: string, limit: number = 50): Promise<NftPool[]> {
-    try {
-      const nfts = await db.select()
-        .from(nftPool)
-        .where(and(
-          eq(nftPool.tier, tier),
-          eq(nftPool.enabled, true)
-        ))
-        .limit(limit);
-      
-      return nfts;
-    } catch (error) {
-      console.error('Error getting NFTs by tier:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get random NFTs for a specific tier
-   * @param tier The tier to filter by (basic, premium, luxury)
-   * @param count The number of random NFTs to return
-   * @returns Array of random NFTs in the tier
-   */
-  async getRandomNftsByTier(tier: string, count: number = 5): Promise<NftPool[]> {
-    try {
-      // Using PostgreSQL's RANDOM() function to get random records
-      const nfts = await db.select()
-        .from(nftPool)
-        .where(and(
-          eq(nftPool.tier, tier),
-          eq(nftPool.enabled, true)
-        ))
-        .orderBy(sql`RANDOM()`)
-        .limit(count);
-      
-      return nfts;
-    } catch (error) {
-      console.error('Error getting random NFTs by tier:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Disable an NFT in the pool (e.g., after it's been minted to a user)
-   * @param nftId The NFT ID to disable
-   * @returns The updated NFT
-   */
-  async disableNft(nftId: string): Promise<NftPool | null> {
-    try {
-      const [updatedNft] = await db.update(nftPool)
-        .set({ 
-          enabled: false,
-          updatedAt: new Date()
-        })
-        .where(eq(nftPool.nftId, nftId))
-        .returning();
-      
-      return updatedNft || null;
-    } catch (error) {
-      console.error('Error disabling NFT:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get total count of NFTs in the pool by tier
-   * @returns Object with counts by tier
-   */
-  async getNftCounts(): Promise<Record<string, number>> {
-    try {
-      // Using count and group by to get counts by tier
-      const result = await db
-        .select({
-          tier: nftPool.tier,
-          count: sql<number>`count(*)`,
-          enabled: sql<number>`sum(case when ${nftPool.enabled} = true then 1 else 0 end)`,
-        })
-        .from(nftPool)
-        .groupBy(nftPool.tier);
-      
-      // Convert to a simple tier:count object
-      const counts: Record<string, number> = {};
-      for (const row of result) {
-        counts[row.tier] = row.enabled;
-      }
-      
-      return counts;
-    } catch (error) {
-      console.error('Error getting NFT counts:', error);
-      throw error;
-    }
+  try {
+    // Read NFT pool data from JSON file
+    const data = fs.readFileSync(NFT_POOL_PATH, 'utf8');
+    nftPoolCache = JSON.parse(data);
+    
+    logger.info(`Loaded ${nftPoolCache.length} NFTs from pool`);
+    return nftPoolCache;
+  } catch (error) {
+    logger.error('Error loading NFT pool data:', error);
+    return [];
   }
 }
 
-export const nftPoolRepository = new NFTPoolRepository();
+/**
+ * Find an NFT by its ID
+ */
+export async function getNFTById(id: string): Promise<NFTOption | null> {
+  const nfts = await getAllNFTs();
+  return nfts.find(nft => nft.id === id) || null;
+}
+
+/**
+ * Find an NFT by its token ID
+ */
+export async function getNFTByTokenId(tokenId: number): Promise<NFTOption | null> {
+  const nfts = await getAllNFTs();
+  return nfts.find(nft => nft.tokenId === tokenId) || null;
+}
+
+/**
+ * Find NFTs matching a specific tier
+ */
+export async function getNFTsByTier(tier: string): Promise<NFTOption[]> {
+  const nfts = await getAllNFTs();
+  return nfts.filter(nft => nft.tier.toLowerCase() === tier.toLowerCase());
+}
+
+/**
+ * Find NFTs matching a specific category
+ */
+export async function getNFTsByCategory(category: string): Promise<NFTOption[]> {
+  const nfts = await getAllNFTs();
+  return nfts.filter(nft => nft.category.toLowerCase() === category.toLowerCase());
+}
+
+/**
+ * Select an appropriate NFT based on receipt data
+ */
+export async function selectNFTForReceipt(
+  tier: string = 'standard',
+  category: string = 'default',
+  excludeIds: string[] = []
+): Promise<NFTOption | null> {
+  try {
+    // First try to find NFTs matching both tier and category
+    let nfts = await getNFTsByTier(tier);
+    let categoryMatches = nfts.filter(nft => 
+      nft.category.toLowerCase() === category.toLowerCase() &&
+      !excludeIds.includes(nft.id)
+    );
+    
+    // If we found matches, return a random one
+    if (categoryMatches.length > 0) {
+      return categoryMatches[Math.floor(Math.random() * categoryMatches.length)];
+    }
+    
+    // Otherwise just use any NFT from the specified tier
+    const tierMatches = nfts.filter(nft => !excludeIds.includes(nft.id));
+    if (tierMatches.length > 0) {
+      return tierMatches[Math.floor(Math.random() * tierMatches.length)];
+    }
+    
+    // Fallback to any NFT if nothing else matches
+    const allNfts = await getAllNFTs();
+    const availableNfts = allNfts.filter(nft => !excludeIds.includes(nft.id));
+    
+    if (availableNfts.length > 0) {
+      return availableNfts[Math.floor(Math.random() * availableNfts.length)];
+    }
+    
+    return null;
+  } catch (error) {
+    logger.error('Error selecting NFT for receipt:', error);
+    return null;
+  }
+}
+
+/**
+ * Clear the NFT pool cache to force reload from disk
+ */
+export function clearCache(): void {
+  nftPoolCache = null;
+}

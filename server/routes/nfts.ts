@@ -2,16 +2,30 @@ import express from 'express';
 import { ethers } from 'ethers';
 import ERC1155_ABI from '../abi/BlockReceiptCollection.json';
 import { logger } from '../utils/logger';
+import * as nftMintService from '../services/nftMintService';
+import * as nftPoolRepository from '../repositories/nftPoolRepository';
+import * as taskService from '../services/taskService';
+import { Task } from '../services/taskService';
 
 const router = express.Router();
 
-// Sample NFT ids for the pool
-const NFT_POOL_IDS = {
-  STANDARD: 1,
-  PREMIUM: 2,
-  LUXURY: 3,
-  ULTRA: 4
-};
+/**
+ * Get a human-readable message for a task's status
+ */
+function getTaskStatusMessage(task: Task): string {
+  switch (task.status) {
+    case 'pending':
+      return 'NFT minting request queued';
+    case 'processing':
+      return 'NFT minting in progress';
+    case 'completed':
+      return 'NFT minted successfully';
+    case 'failed':
+      return `NFT minting failed: ${task.error || 'Unknown error'}`;
+    default:
+      return 'Unknown status';
+  }
+}
 
 /**
  * @route POST /api/nfts/mint
@@ -36,28 +50,34 @@ router.post('/mint', async (req, res) => {
     });
   }
 
-  // Use the requested NFT ID or default to standard
-  const tokenId = nftId || NFT_POOL_IDS.STANDARD;
-
   try {
-    // Save task to track status and return task ID immediately
-    const taskId = `mint-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Create a new task to track the minting process
+    const task = taskService.createTask('nft_mint', walletAddress, { nftId, receiptData });
     
     // Return task ID immediately
     res.status(202).json({
       success: true,
       message: 'NFT minting initiated',
-      taskId: taskId
+      taskId: task.id
     });
 
-    // Start minting process in background
-    processMintTask(taskId, walletAddress, tokenId, receiptData);
+    // Process the minting task in the background
+    taskService.processTask(task.id, async () => {
+      if (nftId) {
+        // Mint the specific NFT if an ID is provided
+        return await nftMintService.mintNFT(walletAddress, nftId, receiptData);
+      } else {
+        // Auto-select an appropriate NFT based on receipt data
+        return await nftMintService.selectAndMintNFT(walletAddress, receiptData);
+      }
+    });
     
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error initiating mint process:', error);
-    
-    // Since we already responded, log the error but don't send another response
-    // This error handling is for the initial request only
+    return res.status(500).json({
+      success: false,
+      message: `Failed to initiate NFT minting: ${error.message}`
+    });
   }
 });
 
@@ -69,16 +89,35 @@ router.post('/mint', async (req, res) => {
 router.get('/task/:taskId', async (req, res) => {
   const { taskId } = req.params;
   
-  // In a production system, this would check a database for task status
-  // For this MVP, we'll just return a mock response
-  // This would be enhanced to actually check a Task status table in the database
-  
-  res.json({
-    success: true,
-    taskId,
-    status: 'processing', // or 'completed', 'failed'
-    message: 'NFT minting in progress'
-  });
+  try {
+    // Get the task from the task service
+    const task = taskService.getTask(taskId);
+    
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: `Task ${taskId} not found`
+      });
+    }
+    
+    // Return task status and data
+    return res.json({
+      success: true,
+      taskId: task.id,
+      status: task.status,
+      message: getTaskStatusMessage(task),
+      data: task.status === 'completed' ? task.result : null,
+      error: task.error || null,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    });
+  } catch (error: any) {
+    logger.error(`Error getting task status:`, error);
+    return res.status(500).json({
+      success: false,
+      message: `Failed to get task status: ${error.message}`
+    });
+  }
 });
 
 /**

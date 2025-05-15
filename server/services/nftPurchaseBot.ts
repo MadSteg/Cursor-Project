@@ -11,8 +11,8 @@ import { ethers } from 'ethers';
 import fs from 'fs';
 import path from 'path';
 import { marketplaceService, MarketplaceNFT } from './marketplaceService';
-import { nftPoolRepository } from '../repositories/nftPoolRepository';
-import { NftPool } from '../../shared/schema';
+import * as nftPoolRepository from '../repositories/nftPoolRepository';
+import { NFTOption } from '../repositories/nftPoolRepository';
 
 // Wallet tracker to prevent abuse (in-memory, replace with DB in production)
 interface ClaimRecord {
@@ -166,8 +166,8 @@ async function findRelevantNFT(category: string = '', tier: string = 'basic'): P
     const lowerCategory = category.toLowerCase();
     const normalizedTier = ['basic', 'premium', 'luxury'].includes(tier) ? tier : 'basic';
     
-    // Get a set of random NFTs from the specified tier
-    const nftOptions = await nftPoolRepository.getRandomNftsByTier(normalizedTier, 5);
+    // Get a set of NFTs from the specified tier
+    const nftOptions = await nftPoolRepository.getNFTsByTier(normalizedTier);
     
     if (!nftOptions || nftOptions.length === 0) {
       console.warn(`No NFTs found in tier: ${normalizedTier}, using basic tier as fallback`);
@@ -231,7 +231,7 @@ export async function purchaseAndTransferNFT(
     // If user selected a specific NFT from the pool, use that
     if (selectedNftId) {
       console.log(`User selected NFT with ID: ${selectedNftId}`);
-      selectedNFT = await nftPoolRepository.getNftById(selectedNftId);
+      selectedNFT = await nftPoolRepository.getNFTById(selectedNftId);
       
       if (!selectedNFT) {
         console.warn(`Selected NFT ${selectedNftId} not found, falling back to auto-selection`);
