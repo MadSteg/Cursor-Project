@@ -109,9 +109,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register NFT Purchase Bot routes
   app.use('/api/nft-bot', nftPurchaseBotRoutes);
   
-  // Register NFT Gallery routes
-  app.use('/api/gallery', galleryRoutes);
-  
   // Register Task Queue routes
   app.use('/api', taskRoutes);
   

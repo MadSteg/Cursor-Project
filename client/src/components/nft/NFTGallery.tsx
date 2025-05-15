@@ -1,274 +1,359 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useWeb3Wallet } from "@/hooks/useWeb3Wallet";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/hooks/use-toast";
-import { Lock, Unlock, ExternalLink } from "lucide-react";
-import { UnlockMetadataButton } from "./UnlockMetadataButton";
+import React, { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle, Lock, Unlock, ShieldCheck } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useWeb3Wallet } from '../../hooks/useWeb3Wallet';
 
 interface NFTGalleryProps {
   walletAddress?: string;
 }
 
-interface NFTItem {
-  id: number;
+interface NFT {
   tokenId: string;
   contractAddress: string;
   name: string;
-  description: string;
-  image: string;
-  category: string;
-  createdAt: string;
-  owner: string;
-  metadataLocked: boolean;
-  lockStatus: 'locked' | 'unlocked';
-  encryptionDetails?: {
-    hasCapsule: boolean;
-    policyId: string;
-    capsuleId: string;
-  } | null;
-  total: string;
-  items: Array<{
-    name: string;
-    price: string;
-    quantity: number;
-    category: string;
-  }>;
+  imageUrl: string;
+  isLocked: boolean;
+  receiptPreview: {
+    merchantName: string;
+    date: string;
+    total: number;
+  };
+  encryptionStatus: {
+    isEncrypted: boolean;
+    canDecrypt: boolean;
+  };
+  ownerAddress: string;
 }
 
-export function NFTGallery({ walletAddress }: NFTGalleryProps) {
-  const [nfts, setNfts] = useState<NFTItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [, setLocation] = useLocation();
+export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
   const { address, isConnected } = useWeb3Wallet();
+  const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
+  const [decryptedData, setDecryptedData] = useState<any | null>(null);
   const { toast } = useToast();
   
-  // Determine which wallet address to use
-  const targetAddress = walletAddress || (isConnected ? address : null);
+  // Use the passed wallet address or the connected wallet address
+  const effectiveWalletAddress = walletAddress || address;
   
-  useEffect(() => {
-    async function fetchNFTs() {
-      if (!targetAddress) {
-        setLoading(false);
-        return;
-      }
+  // Fetch NFTs for this wallet
+  const { 
+    data, 
+    isLoading, 
+    isError, 
+    error 
+  } = useQuery({
+    queryKey: ['nfts', effectiveWalletAddress],
+    queryFn: async () => {
+      if (!effectiveWalletAddress) return { nfts: [] };
       
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch(`/api/gallery/${targetAddress}`);
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to fetch NFTs');
-        }
-        
-        if (data.success && data.nfts) {
-          setNfts(data.nfts);
-        } else {
-          setNfts([]);
-        }
-      } catch (err) {
-        console.error('Error fetching NFTs:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load NFT gallery');
+      const response = await apiRequest('GET', `/api/gallery/${effectiveWalletAddress}`);
+      return response.json();
+    },
+    enabled: !!effectiveWalletAddress,
+  });
+  
+  // Mutation for unlocking encrypted metadata
+  const unlockMutation = useMutation({
+    mutationFn: async (tokenId: string) => {
+      const response = await apiRequest('POST', `/api/gallery/unlock/${tokenId}`, {
+        walletAddress: effectiveWalletAddress
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success && data.metadata) {
+        setDecryptedData(data.metadata);
         toast({
-          title: "Error loading NFTs",
-          description: "Could not retrieve your NFT collection",
-          variant: "destructive"
+          title: 'Metadata Unlocked',
+          description: 'The receipt details have been decrypted successfully.',
+          variant: 'default',
         });
-      } finally {
-        setLoading(false);
+      } else {
+        toast({
+          title: 'Unlock Failed',
+          description: data.message || 'Unable to unlock the metadata.',
+          variant: 'destructive',
+        });
       }
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Unlock Failed',
+        description: error.message || 'An error occurred while unlocking the metadata.',
+        variant: 'destructive',
+      });
     }
-    
-    fetchNFTs();
-  }, [targetAddress, toast]);
+  });
   
-  const toggleExpand = (tokenId: string) => {
-    setExpanded(expanded === tokenId ? null : tokenId);
+  // Handle NFT click - show details and decrypted data if available
+  const handleNftClick = (nft: NFT) => {
+    setSelectedNft(nft);
+    setDecryptedData(null); // Reset decrypted data when selecting a new NFT
   };
   
-  const handleUnlockSuccess = (tokenId: string, unlockedData: any) => {
-    // Update the NFT in the collection with the unlocked data
-    setNfts(nfts.map(nft => {
-      if (nft.tokenId === tokenId) {
-        return {
-          ...nft,
-          metadataLocked: false,
-          lockStatus: 'unlocked',
-          items: unlockedData.metadata.items,
-          total: unlockedData.metadata.total,
-        };
-      }
-      return nft;
-    }));
-    
-    toast({
-      title: "Metadata Unlocked",
-      description: "You now have access to the receipt details",
-    });
+  // Handle unlock button click
+  const handleUnlock = (tokenId: string) => {
+    unlockMutation.mutate(tokenId);
   };
   
-  const getExplorerLink = (contractAddress: string, tokenId: string) => {
-    return `https://amoy.polygonscan.com/token/${contractAddress}?a=${tokenId}`;
-  };
-  
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-  
-  if (!targetAddress) {
+  // Render loading state
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <h2 className="text-xl font-semibold mb-4">Connect Your Wallet</h2>
-        <p className="mb-6 text-muted-foreground">
-          Please connect your wallet to view your BlockReceipt NFT collection
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((index) => (
+            <Card key={index} className="overflow-hidden">
+              <CardHeader className="p-0">
+                <Skeleton className="w-full h-40" />
+              </CardHeader>
+              <CardContent className="mt-4">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-10 w-full" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  // Render error state
+  if (isError) {
+    return (
+      <div className="p-6 rounded-lg bg-red-50 dark:bg-red-900/20 text-center">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+        <h3 className="text-lg font-medium text-red-800 dark:text-red-300">Error Loading NFTs</h3>
+        <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+          {error instanceof Error ? error.message : 'Failed to load NFT gallery.'}
         </p>
-        <Button onClick={() => setLocation("/connect")} className="group">
-          <span>Connect Wallet</span>
-          <span className="ml-2 opacity-70 group-hover:translate-x-1 transition-transform">→</span>
-        </Button>
+        {!isConnected && (
+          <p className="mt-4 text-sm font-medium">Please connect your wallet to view your NFTs.</p>
+        )}
       </div>
     );
   }
   
-  if (loading) {
+  // If no wallet is connected
+  if (!effectiveWalletAddress) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
-        <Spinner size="lg" />
-        <p className="mt-4 text-muted-foreground">Loading your NFT collection...</p>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <h2 className="text-xl font-semibold mb-4 text-destructive">Error Loading NFTs</h2>
-        <p className="mb-6">{error}</p>
-        <Button onClick={() => window.location.reload()} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    );
-  }
-  
-  if (nfts.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <h2 className="text-xl font-semibold mb-4">No NFTs Found</h2>
-        <p className="mb-6 text-muted-foreground">
-          You don't have any BlockReceipt NFTs yet. Upload a receipt to get started.
+      <div className="p-6 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-center">
+        <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
+        <h3 className="text-lg font-medium text-yellow-800 dark:text-yellow-300">No Wallet Connected</h3>
+        <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-400">
+          Please connect your wallet to view your NFT receipts.
         </p>
-        <Button onClick={() => setLocation("/upload-receipt")} className="group">
-          <span>Upload Receipt</span>
-          <span className="ml-2 opacity-70 group-hover:translate-x-1 transition-transform">→</span>
+      </div>
+    );
+  }
+  
+  // If there are no NFTs
+  if (!data?.nfts || data.nfts.length === 0) {
+    return (
+      <div className="p-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-center">
+        <div className="mx-auto h-24 w-24 text-blue-500 mb-4">
+          <img src="/nft-images/empty-receipt.svg" alt="No NFTs" className="w-full h-full" />
+        </div>
+        <h3 className="text-lg font-medium text-blue-800 dark:text-blue-300">No NFT Receipts Found</h3>
+        <p className="mt-2 text-sm text-blue-700 dark:text-blue-400">
+          Upload receipts to get started with your NFT receipt collection.
+        </p>
+        <Button className="mt-4" variant="outline" onClick={() => window.location.href = '/upload-receipt'}>
+          Upload Your First Receipt
         </Button>
       </div>
     );
   }
   
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-6">Your BlockReceipt NFT Collection</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {nfts.map((nft) => (
-          <Card key={nft.tokenId} className="overflow-hidden border-t-4 hover:shadow-lg transition-shadow" 
-                style={{ borderTopColor: nft.metadataLocked ? '#ef4444' : '#22c55e' }}>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>{nft.name}</CardTitle>
-                  <CardDescription>
-                    {formatDate(nft.createdAt)}
-                  </CardDescription>
+    <div className="space-y-8">
+      {/* NFT Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.nfts.map((nft: NFT) => (
+          <Card 
+            key={nft.tokenId} 
+            className={`overflow-hidden transition-all cursor-pointer hover:shadow-lg ${selectedNft?.tokenId === nft.tokenId ? 'ring-2 ring-primary' : ''}`}
+            onClick={() => handleNftClick(nft)}
+          >
+            <div className="relative">
+              <img 
+                src={nft.imageUrl} 
+                alt={nft.name} 
+                className="w-full h-40 object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
+                }}
+              />
+              {nft.encryptionStatus.isEncrypted && (
+                <div className="absolute top-2 right-2">
+                  <Badge variant="secondary" className="flex items-center gap-1 bg-black/70 text-white">
+                    {nft.isLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                    {nft.isLocked ? 'Encrypted' : 'Unlocked'}
+                  </Badge>
                 </div>
-                <Badge variant={nft.metadataLocked ? "destructive" : "outline"} className="flex items-center gap-1">
-                  {nft.metadataLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
-                  {nft.lockStatus}
-                </Badge>
-              </div>
+              )}
+            </div>
+            <CardHeader className="py-3">
+              <CardTitle className="text-lg">{nft.name}</CardTitle>
+              <CardDescription>{nft.receiptPreview.merchantName}</CardDescription>
             </CardHeader>
-            
-            <CardContent className="pb-0">
-              <div className="aspect-square overflow-hidden rounded-md mb-4">
-                <img 
-                  src={nft.image.startsWith('http') ? nft.image : nft.image} 
-                  alt={nft.name}
-                  className="h-full w-full object-cover transition-all hover:scale-105"
-                />
-              </div>
-              
-              <div className="mb-2">
-                <Badge variant="outline" className="mr-2 capitalize">{nft.category}</Badge>
-                <Badge variant="secondary">Total: ${nft.total}</Badge>
-              </div>
-              
-              {expanded === nft.tokenId && !nft.metadataLocked && nft.items && nft.items.length > 0 && (
-                <div className="mt-4 border-t pt-3">
-                  <h4 className="text-sm font-medium mb-2">Receipt Items:</h4>
-                  <ScrollArea className="h-32">
-                    <ul className="space-y-2">
-                      {nft.items.map((item, idx) => (
-                        <li key={idx} className="text-sm flex justify-between">
-                          <span>{item.name}</span>
-                          <span className="font-medium">${item.price}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-              )}
-              
-              {expanded === nft.tokenId && nft.metadataLocked && (
-                <div className="mt-4 border-t pt-3">
-                  <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-md">
-                    <Lock className="mb-2 text-muted-foreground" />
-                    <p className="text-sm text-center mb-3">
-                      This receipt's line items are encrypted with TACo privacy technology
-                    </p>
-                    <UnlockMetadataButton 
-                      tokenId={nft.tokenId} 
-                      walletAddress={targetAddress}
-                      onUnlockSuccess={(data) => handleUnlockSuccess(nft.tokenId, data)}
-                    />
-                  </div>
-                </div>
-              )}
+            <CardContent className="py-0">
+              <p className="text-sm">${nft.receiptPreview.total.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(nft.receiptPreview.date).toLocaleDateString()}
+              </p>
             </CardContent>
-            
-            <CardFooter className="flex justify-between pt-4">
-              <Button variant="outline" size="sm" onClick={() => toggleExpand(nft.tokenId)}>
-                {expanded === nft.tokenId ? 'Hide Details' : 'View Details'}
-              </Button>
-              
-              <Button variant="ghost" size="sm" className="text-xs" asChild>
-                <a 
-                  href={getExplorerLink(nft.contractAddress, nft.tokenId)} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center"
+            <CardFooter className="pt-3 pb-3">
+              {nft.encryptionStatus.isEncrypted && nft.isLocked && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUnlock(nft.tokenId);
+                  }}
+                  disabled={unlockMutation.isPending}
                 >
-                  <span className="mr-1">Explorer</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </Button>
+                  {unlockMutation.isPending && selectedNft?.tokenId === nft.tokenId ? 
+                    'Unlocking...' : 'Unlock Receipt Data'}
+                </Button>
+              )}
+              {nft.encryptionStatus.isEncrypted && !nft.isLocked && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full" 
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Already Unlocked
+                </Button>
+              )}
+              {!nft.encryptionStatus.isEncrypted && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full" 
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  View Receipt
+                </Button>
+              )}
             </CardFooter>
           </Card>
         ))}
       </div>
+      
+      {/* Selected NFT Details */}
+      {selectedNft && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Receipt Details</CardTitle>
+            <CardDescription>
+              {selectedNft.encryptionStatus.isEncrypted 
+                ? 'This receipt has encrypted line items protected with TACo' 
+                : 'Receipt information'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="md:w-1/3">
+                <img 
+                  src={selectedNft.imageUrl} 
+                  alt={selectedNft.name} 
+                  className="w-full h-auto rounded-md"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
+                  }}
+                />
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Token ID:</span>
+                    <span className="text-sm font-mono">{selectedNft.tokenId.substring(0, 10)}...</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Contract:</span>
+                    <span className="text-sm font-mono">
+                      {selectedNft.contractAddress.substring(0, 6)}...
+                      {selectedNft.contractAddress.substring(selectedNft.contractAddress.length - 4)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="md:w-2/3">
+                <h3 className="text-xl font-semibold">{selectedNft.name}</h3>
+                <p className="text-lg mt-2">{selectedNft.receiptPreview.merchantName}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedNft.receiptPreview.date).toLocaleDateString()}
+                </p>
+                <p className="text-xl font-bold mt-4">${selectedNft.receiptPreview.total.toFixed(2)}</p>
+                
+                {decryptedData ? (
+                  <div className="mt-6">
+                    <h4 className="text-md font-medium mb-2">Decrypted Line Items</h4>
+                    <div className="rounded-md border overflow-hidden">
+                      <table className="min-w-full divide-y">
+                        <thead className="bg-muted/50">
+                          <tr>
+                            <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
+                            <th className="py-2 px-4 text-right text-sm font-medium">Price</th>
+                            <th className="py-2 px-4 text-left text-sm font-medium">Category</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {decryptedData.items?.map((item: any, index: number) => (
+                            <tr key={index}>
+                              <td className="py-2 px-4 text-sm">{item.name}</td>
+                              <td className="py-2 px-4 text-sm text-right">${parseFloat(item.price).toFixed(2)}</td>
+                              <td className="py-2 px-4 text-sm">{item.category}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="bg-muted/50">
+                          <tr>
+                            <td className="py-2 px-4 text-sm font-medium">Total</td>
+                            <td className="py-2 px-4 text-sm font-medium text-right">${decryptedData.total}</td>
+                            <td></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  selectedNft.encryptionStatus.isEncrypted && selectedNft.isLocked && (
+                    <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
+                      <div className="flex gap-2 items-center">
+                        <Lock className="h-5 w-5 text-yellow-500" />
+                        <h4 className="text-md font-medium text-yellow-700 dark:text-yellow-400">Encrypted Line Items</h4>
+                      </div>
+                      <p className="mt-2 text-sm text-yellow-600 dark:text-yellow-500">
+                        This receipt's line items are encrypted with TACo threshold encryption.
+                        Click the Unlock button to view the complete receipt details.
+                      </p>
+                      <Button 
+                        className="mt-4 w-full sm:w-auto" 
+                        onClick={() => handleUnlock(selectedNft.tokenId)}
+                        disabled={unlockMutation.isPending}
+                      >
+                        {unlockMutation.isPending ? 'Unlocking...' : 'Unlock Receipt Data'}
+                      </Button>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

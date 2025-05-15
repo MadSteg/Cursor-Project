@@ -102,15 +102,24 @@ export function determineItemCategory(itemName: string): string {
  * 
  * In mock mode, this uses AES encryption as a placeholder
  * In production, it would use the Threshold Network TACo library
+ * 
+ * @param walletAddress The wallet address to encrypt for
+ * @param receiptData The receipt data containing items to encrypt
+ * @returns Encrypted data with policy info
  */
-export async function encryptLineItems(items: Array<{name: string, price: number}>, walletAddress: string) {
+export async function encryptLineItems(walletAddress: string, receiptData: any) {
   try {
+    if (!receiptData || !receiptData.items || !Array.isArray(receiptData.items)) {
+      throw new Error('Invalid receipt data: items array is required');
+    }
+    
+    const items = receiptData.items;
     console.log(`Encrypting ${items.length} line items for wallet ${walletAddress}`);
     
-    // Add categories to items
+    // Add categories to items if they don't already have them
     const itemsWithCategories = items.map(item => ({
       ...item,
-      category: determineItemCategory(item.name)
+      category: item.category || determineItemCategory(item.name)
     }));
     
     if (MOCK_MODE) {
@@ -186,6 +195,12 @@ export async function encryptLineItems(items: Array<{name: string, price: number
  * 
  * In mock mode, this uses AES decryption as a placeholder
  * In production, it would use the Threshold Network TACo library
+ * 
+ * @param encryptedData The encrypted data string
+ * @param policyKey The TACo policy key
+ * @param capsule The TACo capsule
+ * @param walletAddress The wallet address to decrypt for
+ * @returns Decrypted items or error
  */
 export async function decryptLineItems(encryptedData: string, policyKey: string, capsule: string, walletAddress: string) {
   try {
