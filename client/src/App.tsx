@@ -41,6 +41,7 @@ import EncryptedCheckout from "@/pages/EncryptedCheckout";
 // Settings & Admin
 import EncryptionSettings from "@/pages/EncryptionSettings";
 import SignInPage from "@/pages/SignInPage";
+import SignOutPage from "@/pages/SignOutPage";
 import WalletPage from "@/pages/WalletPage";
 import Admin from "@/pages/Admin";
 import ThemePreview from "@/pages/ThemePreview";
@@ -94,6 +95,7 @@ function Router() {
         
         {/* Authentication & Settings */}
         <Route path="/sign-in" component={SignInPage} />
+        <Route path="/sign-out" component={SignOutPage} />
         <Route path="/encryption-settings" component={EncryptionSettings} />
         <Route path="/wallet" component={WalletPage} />
         <Route path="/wallet-settings" component={WalletPage} />

@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useWeb3 } from "@/contexts/Web3Context";
+import { useLocation } from "wouter";
 
 interface AuthResponse {
   authenticated: boolean;
@@ -13,10 +14,13 @@ export interface AuthState {
   userId?: number;
   walletAddress?: string;
   isLoading: boolean;
+  logout: () => void;
 }
 
 export function useAuth(): AuthState {
   const web3Context = useWeb3();
+  const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   // Get authentication status from server
   const { data, isLoading } = useQuery<AuthResponse>({
@@ -38,10 +42,23 @@ export function useAuth(): AuthState {
     }
   }, [isAuthenticated, walletAddress, web3Context]);
   
+  // Logout function
+  const logout = () => {
+    // Redirect to the sign-out page which will handle the actual logout
+    setLocation('/sign-out');
+    
+    // Invalidate all queries to clear client-side cache
+    setTimeout(() => {
+      queryClient.invalidateQueries();
+      web3Context.disconnect();
+    }, 500);
+  };
+  
   return {
     isAuthenticated,
     userId,
     walletAddress,
     isLoading,
+    logout,
   };
 }
