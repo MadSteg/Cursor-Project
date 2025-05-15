@@ -64,16 +64,11 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
       // Determine tier from receipt data if available
       const tier = receiptData?.tier?.id || '';
       
-      const response = await fetch('/api/nfts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          categories,
-          tier,
-          receiptData
-        }),
+      // Use apiRequest from queryClient to handle network errors better
+      const response = await apiRequest('POST', '/api/nfts', {
+        categories,
+        tier,
+        receiptData: receiptData || null
       });
       
       const data = await response.json();
@@ -143,7 +138,8 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
       }
     } catch (error) {
       console.error('Error fetching NFTs:', error);
-      // Use local data fallback
+      
+      // Use local data fallback with all 8 NFTs
       setNfts([
         {
           id: 'receipt-warrior-fallback',
@@ -171,6 +167,90 @@ const NFTCatalog: React.FC<NFTCatalogProps> = ({
             encryption: 92,
             decentralization: 88,
             volatility: 75
+          }
+        },
+        {
+          id: 'fashion-receipt-fallback',
+          name: 'Fashion Couture Receipt',
+          image: '/nft-images/fashion-receipt.svg',
+          description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
+          tier: 'PREMIUM',
+          categories: ['fashion', 'clothing', 'accessories', 'retail'],
+          attributes: {
+            rarity: 'Rare',
+            style: 85,
+            trendiness: 79,
+            exclusivity: 70
+          }
+        },
+        {
+          id: 'grocery-hero-fallback',
+          name: 'Grocery Hero',
+          image: '/nft-images/grocery-hero.svg',
+          description: 'A super grocery receipt that saves the day by tracking all your essentials.',
+          tier: 'STANDARD',
+          categories: ['groceries', 'food', 'household'],
+          attributes: {
+            rarity: 'Uncommon',
+            nutrition: 65,
+            value: 60,
+            sustainability: 70
+          }
+        },
+        {
+          id: 'restaurant-receipt-fallback',
+          name: 'Dining Dazzler',
+          image: '/nft-images/restaurant-receipt.svg',
+          description: 'A culinary companion that preserves your gastronomic adventures in pixel perfection.',
+          tier: 'PREMIUM',
+          categories: ['restaurant', 'dining', 'food', 'entertainment'],
+          attributes: {
+            rarity: 'Rare',
+            taste: 88,
+            presentation: 90,
+            atmosphere: 85
+          }
+        },
+        {
+          id: 'tech-receipt-fallback',
+          name: 'Tech Titan Receipt',
+          image: '/nft-images/tech-receipt.svg',
+          description: 'The digital guardian of your tech purchases with circuit-board styling.',
+          tier: 'LUXURY',
+          categories: ['electronics', 'tech', 'gadgets', 'computers'],
+          attributes: {
+            rarity: 'Epic',
+            processing: 95,
+            innovation: 92,
+            durability: 85
+          }
+        },
+        {
+          id: 'travel-receipt-fallback',
+          name: 'Journey Journal',
+          image: '/nft-images/travel-receipt.svg',
+          description: 'Captures your travel expenses with adventurous pixel art styling.',
+          tier: 'STANDARD',
+          categories: ['travel', 'transportation', 'hotels', 'tourism'],
+          attributes: {
+            rarity: 'Uncommon',
+            adventure: 80,
+            discovery: 75,
+            memory: 85
+          }
+        },
+        {
+          id: 'beauty-receipt-fallback',
+          name: 'Beauty Buzz Receipt',
+          image: '/nft-images/beauty-receipt.svg',
+          description: 'Glamorous pixel art receipt for your beauty and personal care purchases.',
+          tier: 'STANDARD',
+          categories: ['beauty', 'cosmetics', 'personal care', 'salon'],
+          attributes: {
+            rarity: 'Uncommon',
+            glamour: 78,
+            style: 82,
+            transformation: 75
           }
         }
       ]);
