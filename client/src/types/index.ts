@@ -61,3 +61,17 @@ export interface NFTArtItem {
   type: 'game' | 'utility' | 'music' | 'art' | 'collectible' | 'sports';
   price: number;
 }
+
+// NFT Option definition for NFTArtPicker
+export interface NFTOption {
+  id: string;
+  nftId: string;
+  name: string;
+  image: string;
+  preview: string;
+  description: string;
+  tier: string;
+  categories: string[];
+  tags?: string[];
+  metadataUri?: string;
+}

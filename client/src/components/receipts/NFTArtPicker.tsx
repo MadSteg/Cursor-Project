@@ -4,18 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Image, Loader2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-
-interface NFTOption {
-  id: string;
-  nftId: string;
-  name: string;
-  image: string;
-  preview: string;
-  description: string;
-  tier: string;
-  categories: string[];
-  metadataUri?: string;
-}
+import { NFTOption } from '@/types';
 
 interface NFTArtPickerProps {
   receiptData: any;
