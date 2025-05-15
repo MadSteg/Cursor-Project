@@ -306,7 +306,7 @@ export default function ReceiptUploader() {
                       ) : (
                         <>
                           <FileText className="h-4 w-4" />
-                          Process Receipt
+                          Scan Receipt
                         </>
                       )}
                     </Button>
