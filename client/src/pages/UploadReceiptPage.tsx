@@ -7,8 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage, Wallet, Lock } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { LucideFileUp, Camera, Receipt, CheckCircle, AlertCircle, FileImage, Wallet, Lock, Loader2 } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import NFTArtPicker from '@/components/receipts/NFTArtPicker';
 import NFTGiftStatus from '@/components/nft/NFTGiftStatus';
@@ -298,11 +298,18 @@ export default function UploadReceiptPage() {
     }
   };
   
-  // Original function now just shows the NFT picker
-  const mintReceiptNFT = () => {
-    if (!receiptData) return;
-    handleStartNFTSelection();
-  };
+  // Auto-mint function triggered after successful upload
+  useEffect(() => {
+    // If we have receipt data and we're in the review tab, automatically start NFT selection
+    if (receiptData && activeTab === 'review' && !showNftPicker) {
+      // Small delay to allow the user to see the receipt details first
+      const timer = setTimeout(() => {
+        handleStartNFTSelection();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [receiptData, activeTab, showNftPicker]);
 
   const resetUpload = () => {
     setReceiptData(null);
@@ -560,15 +567,15 @@ export default function UploadReceiptPage() {
                 </div>
                 
                 <div className="pt-4">
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                    size="lg"
-                    onClick={mintReceiptNFT}
-                  >
-                    Mint as BlockReceipt NFT
-                  </Button>
+                  {/* Auto-minting message instead of button */}
+                  <div className="flex items-center justify-center mb-2">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2 text-blue-600" />
+                    <p className="text-sm text-blue-600">
+                      Auto-minting your BlockReceipt NFT...
+                    </p>
+                  </div>
                   <p className="text-xs text-center text-muted-foreground mt-2">
-                    Create a permanent, encrypted blockchain receipt
+                    Creating a permanent, encrypted blockchain receipt
                   </p>
                 </div>
               </CardContent>
