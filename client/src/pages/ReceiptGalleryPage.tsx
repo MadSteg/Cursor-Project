@@ -8,9 +8,16 @@ import { ArrowLeft } from "lucide-react";
 export default function ReceiptGalleryPage() {
   const { address } = useParams<{ address?: string }>();
   const [, setLocation] = useLocation();
-  const { isConnected, address: connectedAddress } = useWeb3Wallet();
+  const { isConnected, address: connectedAddress, connect } = useWeb3Wallet();
   const [viewingAddress, setViewingAddress] = useState<string | undefined>(undefined);
   
+  // Auto-connect in development mode
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && !isConnected) {
+      connect();
+    }
+  }, [isConnected, connect]);
+
   // Determine which address to use for the gallery
   useEffect(() => {
     if (address) {
@@ -43,10 +50,10 @@ export default function ReceiptGalleryPage() {
         
         {!isConnected && (
           <Button 
-            onClick={() => setLocation("/connect")}
+            onClick={() => connect()}
             variant="outline"
           >
-            Connect Wallet
+            Connect Test Wallet
           </Button>
         )}
       </div>
