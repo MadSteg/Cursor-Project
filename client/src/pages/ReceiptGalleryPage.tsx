@@ -9,15 +9,26 @@ import { ArrowLeft } from "lucide-react";
 export default function ReceiptGalleryPage() {
   const { address } = useParams<{ address?: string }>();
   const [, setLocation] = useLocation();
-  const { isConnected, address: connectedAddress, connect } = useWeb3Wallet();
+  const { walletInfo, connectWallet } = useWeb3Wallet();
+  const { isAuthenticated, isLoading, walletAddress } = useAuth();
   const [viewingAddress, setViewingAddress] = useState<string | undefined>(undefined);
   
-  // Auto-connect in development mode
+  const isConnected = !!walletInfo?.address; // Check if wallet is connected
+  const connectedAddress = walletInfo?.address; // Get connected wallet address
+  
+  // Redirect if not authenticated
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && !isConnected) {
-      connect();
+    if (!isLoading && !isAuthenticated) {
+      setLocation('/signin');
     }
-  }, [isConnected, connect]);
+  }, [isAuthenticated, isLoading, setLocation]);
+  
+  // Auto-connect wallet after authentication
+  useEffect(() => {
+    if (isAuthenticated && !isConnected) {
+      connectWallet();
+    }
+  }, [isAuthenticated, isConnected, connectWallet]);
 
   // Determine which address to use for the gallery
   useEffect(() => {
@@ -46,12 +57,12 @@ export default function ReceiptGalleryPage() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">Receipt Gallery</h1>
+          <h1 className="text-3xl font-bold">BlockReceipts</h1>
         </div>
         
         {!isConnected && (
           <Button 
-            onClick={() => connect()}
+            onClick={() => connectWallet()}
             variant="outline"
           >
             Connect Test Wallet
@@ -61,7 +72,7 @@ export default function ReceiptGalleryPage() {
       
       <div className="mb-6">
         <p className="text-muted-foreground">
-          View your blockchain-verified receipts with TACo encryption. Each receipt is represented as an NFT with verifiable data.
+          View your BlockReceipts with TACo encryption. Each receipt is represented as an NFT with verifiable data and enhanced privacy controls.
         </p>
       </div>
       

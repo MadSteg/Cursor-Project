@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useWeb3 } from "@/contexts/Web3Context";
 
+interface AuthResponse {
+  authenticated: boolean;
+  userId?: number;
+  walletAddress?: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   userId?: number;
@@ -10,29 +16,32 @@ export interface AuthState {
 }
 
 export function useAuth(): AuthState {
-  const { connect, account } = useWeb3();
+  const web3Context = useWeb3();
   
   // Get authentication status from server
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<AuthResponse>({
     queryKey: ['/api/auth/status'],
     refetchOnWindowFocus: true,
     refetchInterval: 60000, // Refresh every minute
   });
   
+  // Set default values if data is undefined
   const isAuthenticated = data?.authenticated || false;
+  const userId = data?.userId;
+  const walletAddress = data?.walletAddress || web3Context.account;
   
   // Auto-connect to wallet if user is authenticated and has a wallet address
   useEffect(() => {
-    if (isAuthenticated && data?.walletAddress && !account) {
+    if (isAuthenticated && walletAddress && !web3Context.active) {
       // Connect to the wallet when authenticated and has a wallet address
-      connect();
+      web3Context.connect();
     }
-  }, [isAuthenticated, data?.walletAddress, account, connect]);
+  }, [isAuthenticated, walletAddress, web3Context]);
   
   return {
     isAuthenticated,
-    userId: data?.userId,
-    walletAddress: data?.walletAddress || account,
+    userId,
+    walletAddress,
     isLoading,
   };
 }
