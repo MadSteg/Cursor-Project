@@ -64,8 +64,6 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Removed Hot Wallet link from here - moved to right side */}
-            
             {/* Mint BlockReceipt - Primary Feature */}
             <Link href="/mint-blockreceipt">
               <span className={`text-sm font-medium ${currentLocation === "/mint-blockreceipt" || currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
@@ -81,6 +79,13 @@ const Header: React.FC = () => {
                 </span>
               </Link>
             )}
+            
+            {/* Testing Menu */}
+            <Link href="/test/nft">
+              <span className={`text-sm font-medium ${currentLocation.startsWith("/test/") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Package className="h-4 w-4 mr-1.5" /> Testing
+              </span>
+            </Link>
             
           </div>
           
@@ -170,6 +175,33 @@ const Header: React.FC = () => {
                         </span>
                       </Link>
                     )}
+                  </div>
+                  
+                  {/* Test Pages */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Testing</p>
+                    <div className="space-y-4">
+                      <Link href="/test/nft">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Package className="h-5 w-5" /> Test NFT Minting
+                        </span>
+                      </Link>
+                      <Link href="/test/task-status">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Activity className="h-5 w-5" /> Task Queue Test
+                        </span>
+                      </Link>
+                      <Link href="/test/auto-process">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Scan className="h-5 w-5" /> Auto-Process Test
+                        </span>
+                      </Link>
+                      <Link href="/test/taco">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Lock className="h-5 w-5" /> TACo Encryption Test
+                        </span>
+                      </Link>
+                    </div>
                   </div>
                   
                   {/* Other */}

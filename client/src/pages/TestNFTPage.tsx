@@ -8,7 +8,7 @@ import { useWallet } from '@/contexts/WalletContext';
 import { Button } from '@/components/ui/button';
 
 const TestNFTPage: React.FC = () => {
-  const { walletAddress, connectWallet, isConnected, isConnecting } = useWallet();
+  const { walletAddress, connectMetaMask, isConnected, connecting } = useWallet();
   const [activeTab, setActiveTab] = useState('mint');
 
   // Function to handle tab changes
@@ -36,12 +36,12 @@ const TestNFTPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={connectWallet} 
-                disabled={isConnecting}
+                onClick={connectMetaMask} 
+                disabled={connecting}
                 size="lg"
                 className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
               >
-                {isConnecting ? (
+                {connecting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Connecting...
