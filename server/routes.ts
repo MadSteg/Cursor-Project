@@ -29,6 +29,8 @@ import ocrTestRoutes from "./routes/ocr-test";
 import uploadReceiptRoutes from "./routes/uploadReceipt";
 // Import the auto-process receipt routes
 import autoProcessReceiptRoutes from "./routes/autoProcessReceipt";
+// Import the unified upload-and-mint route
+import uploadAndMintRoutes from "./routes/uploadAndMint";
 // Import the NFT options routes
 import nftOptionsRoutes from "./routes/nftOptions";
 // User authentication and wallet management routes
