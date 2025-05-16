@@ -103,10 +103,14 @@ router.post('/', (req, res) => {
       };
 
       // Create a task to handle background processing
-      const taskId = await taskQueueService.createTask('nft_purchase', {
+      const taskResult = taskQueueService.createTask(
+        'nft_purchase', 
+        { receiptDetails: receipt },
         walletAddress,
-        receiptId: receipt.id
-      });
+        receipt.id
+      );
+      
+      const taskId = taskResult.id;
 
       logger.info(`Created NFT purchase task ${taskId} for wallet ${walletAddress}`);
 
@@ -155,10 +159,12 @@ router.post('/', (req, res) => {
 
       // Create encryption task if needed
       if (encryptedMetadata?.available) {
-        await taskQueueService.createTask('metadata_encryption', {
+        taskQueueService.createTask(
+          'metadata_encryption', 
+          { encryptedMetadata },
           walletAddress,
-          receiptId: receipt.id
-        });
+          receipt.id
+        );
       }
 
       // Pin metadata to IPFS

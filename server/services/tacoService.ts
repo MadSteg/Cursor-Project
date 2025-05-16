@@ -17,6 +17,7 @@ export interface ITacoService {
   initialize(): Promise<boolean>;
   encryptPrivateKey(privateKey: string, publicKey: string, userId: number): Promise<string>;
   decryptPrivateKey(encryptedData: string, publicKey: string, userId: number): Promise<string>;
+  encryptData(data: string, walletAddress: string): Promise<string>;
   createTacoProvider(): any;
   getUserKeys(userId: number): Promise<Array<{ id: number, name: string, publicKey: string, createdAt: Date }>>;
   storePublicKey(userId: number, name: string, publicKey: string): Promise<{ id: number, name: string, publicKey: string, createdAt: Date } | null>;
@@ -251,6 +252,36 @@ export class TacoService implements ITacoService {
     
     // In production, implement real TACo decryption
     throw new Error('TACo decryption not implemented for production yet');
+  }
+  
+  /**
+   * Encrypt arbitrary data using the TACo protocol
+   * @param data The string data to encrypt
+   * @param walletAddress The wallet address that will have access to the data
+   * @returns The encrypted data as a string
+   */
+  async encryptData(data: string, walletAddress: string): Promise<string> {
+    if (this.isDevelopment) {
+      // In development mode, use a simplified encryption
+      console.log(`[DEV] Encrypting data for wallet ${walletAddress}`);
+      
+      // Use wallet address as the public key for simplicity in dev mode
+      const publicKey = walletAddress;
+      
+      // Create mock encrypted data using our development helper
+      const { capsule, ciphertext } = this.mockEncrypt(data, publicKey);
+      
+      // Return serialized encrypted data
+      return JSON.stringify({ 
+        capsule, 
+        ciphertext,
+        encryptedFor: walletAddress,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // In production, implement real TACo encryption with proper key management
+    throw new Error('TACo data encryption not implemented for production yet');
   }
 
   /**
