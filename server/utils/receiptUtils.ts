@@ -1,102 +1,177 @@
 /**
- * Receipt tier utilities
+ * Receipt Utilities for BlockReceipt.ai
  * 
- * These functions help determine the NFT receipt tier based on purchase amount
- * and provide other receipt-related utility functions.
+ * This module provides utility functions for processing and formatting receipt data.
  */
 
-export interface ReceiptTier {
+/**
+ * Determine receipt tier based on total amount spent
+ * @param total Total receipt amount
+ * @returns Tier object with ID, name, and benefits
+ */
+export function determineReceiptTier(total: number): {
   id: string;
   name: string;
-  minAmount: number;
-  maxAmount: number | null;
-  description: string;
-  nftReward: string;
   benefits: string[];
-}
-
-// Define receipt tiers based on purchase amount
-const RECEIPT_TIERS: ReceiptTier[] = [
-  {
-    id: 'basic',
-    name: 'Basic Receipt',
-    minAmount: 0,
-    maxAmount: 50,
-    description: 'Standard digital receipt with basic features',
-    nftReward: 'Basic Receipt Verification NFT',
-    benefits: ['Digital verification', 'Basic warranty tracking']
-  },
-  {
-    id: 'silver',
-    name: 'Silver Receipt',
-    minAmount: 50,
-    maxAmount: 200,
-    description: 'Enhanced receipt with additional features',
-    nftReward: 'Silver Receipt Collector NFT',
-    benefits: ['Digital verification', 'Extended warranty tracking', 'Return policy protection']
-  },
-  {
-    id: 'gold',
-    name: 'Gold Receipt',
-    minAmount: 200,
-    maxAmount: 1000,
-    description: 'Premium receipt with exclusive benefits',
-    nftReward: 'Gold Receipt Collector NFT',
-    benefits: ['Digital verification', 'Premium warranty tracking', 'Return policy protection', 'Exclusive merchant offers']
-  },
-  {
-    id: 'platinum',
-    name: 'Platinum Receipt',
-    minAmount: 1000,
-    maxAmount: null, // No upper limit
-    description: 'Exclusive receipt with maximum benefits',
-    nftReward: 'Platinum Receipt Collector NFT',
-    benefits: ['Digital verification', 'Lifetime warranty tracking', 'Priority return processing', 'Exclusive merchant offers', 'Concierge service']
-  }
-];
-
-/**
- * Determine receipt tier based on the total purchase amount
- * @param amount Total purchase amount
- * @returns The appropriate receipt tier
- */
-export function determineReceiptTier(amount: number): ReceiptTier {
-  // Find the first tier where the amount falls within its range
-  const tier = RECEIPT_TIERS.find(tier => 
-    amount >= tier.minAmount && 
-    (tier.maxAmount === null || amount < tier.maxAmount)
-  );
+} {
+  // Default to bronze tier
+  let tier = {
+    id: 'bronze',
+    name: 'Bronze',
+    benefits: ['Basic receipt storage', 'PDF exports']
+  };
   
-  // Default to basic tier if no matching tier is found (should never happen with our tier definitions)
-  return tier || RECEIPT_TIERS[0];
+  // Determine tier based on total amount
+  if (total >= 100) {
+    tier = {
+      id: 'platinum',
+      name: 'Platinum',
+      benefits: ['Premium receipt storage', 'Priority support', 'Analytics dashboard', 'API access', 'Warranty tracking']
+    };
+  } else if (total >= 50) {
+    tier = {
+      id: 'gold',
+      name: 'Gold',
+      benefits: ['Enhanced receipt storage', 'Priority support', 'Analytics dashboard', 'API access']
+    };
+  } else if (total >= 20) {
+    tier = {
+      id: 'silver',
+      name: 'Silver',
+      benefits: ['Enhanced receipt storage', 'Priority support', 'Analytics dashboard']
+    };
+  }
+  
+  return tier;
 }
 
 /**
- * Get a list of all available receipt tiers
- * @returns Array of receipt tiers
- */
-export function getAllReceiptTiers(): ReceiptTier[] {
-  return [...RECEIPT_TIERS];
-}
-
-/**
- * Get receipt tier by ID
- * @param tierId The tier ID to find
- * @returns The requested tier or undefined if not found
- */
-export function getReceiptTierById(tierId: string): ReceiptTier | undefined {
-  return RECEIPT_TIERS.find(tier => tier.id === tierId);
-}
-
-/**
- * Format currency amount with proper currency symbol
- * @param amount The amount to format
- * @param currency The currency code (defaults to USD)
+ * Format currency amount
+ * @param amount Amount to format
+ * @param currency Currency code (default: USD)
  * @returns Formatted currency string
  */
 export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { 
-    style: 'currency', 
-    currency 
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency
   }).format(amount);
+}
+
+/**
+ * Format date
+ * @param date Date to format
+ * @param format Format type (default: 'short')
+ * @returns Formatted date string
+ */
+export function formatDate(date: Date | string, format: 'short' | 'long' = 'short'): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  if (format === 'long') {
+    return dateObj.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  
+  return dateObj.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/**
+ * Clean and normalize merchant name
+ * @param name Raw merchant name
+ * @returns Cleaned and normalized merchant name
+ */
+export function cleanMerchantName(name: string): string {
+  // Convert to uppercase
+  let cleanName = name.toUpperCase();
+  
+  // Remove common suffixes
+  const suffixes = [
+    'INC', 'LLC', 'LTD', 'CORP', 'CORPORATION', 'CO', 'COMPANY',
+    'INCORPORATED', 'LIMITED', 'INTERNATIONAL', 'INTL', 'ENTERPRISES',
+    'HOLDINGS', 'GROUP', 'WORLDWIDE'
+  ];
+  
+  suffixes.forEach(suffix => {
+    const regex = new RegExp(`\\s+${suffix}(\\.)?\\s*$`, 'i');
+    cleanName = cleanName.replace(regex, '');
+  });
+  
+  // Replace multiple spaces with a single space
+  cleanName = cleanName.replace(/\s+/g, ' ').trim();
+  
+  // Convert back to title case
+  cleanName = cleanName
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+  
+  return cleanName;
+}
+
+/**
+ * Calculate tax amount from subtotal and tax rate
+ * @param subtotal Subtotal amount
+ * @param taxRate Tax rate as decimal (e.g., 0.0825 for 8.25%)
+ * @returns Calculated tax amount
+ */
+export function calculateTax(subtotal: number, taxRate: number): number {
+  return subtotal * taxRate;
+}
+
+/**
+ * Validate receipt data
+ * @param receipt Receipt data to validate
+ * @returns Validation result
+ */
+export function validateReceipt(receipt: any): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  // Check for required fields
+  if (!receipt.merchantName) {
+    errors.push('Merchant name is required');
+  }
+  
+  if (!receipt.date) {
+    errors.push('Date is required');
+  } else {
+    // Validate date format
+    const dateObj = new Date(receipt.date);
+    if (isNaN(dateObj.getTime())) {
+      errors.push('Invalid date format');
+    }
+  }
+  
+  if (typeof receipt.total !== 'number' || isNaN(receipt.total)) {
+    errors.push('Total amount is required and must be a number');
+  }
+  
+  // Validate items array if present
+  if (receipt.items && Array.isArray(receipt.items)) {
+    receipt.items.forEach((item, index) => {
+      if (!item.name) {
+        errors.push(`Item #${index + 1}: Name is required`);
+      }
+      
+      if (typeof item.price !== 'number' || isNaN(item.price)) {
+        errors.push(`Item #${index + 1}: Price must be a number`);
+      }
+      
+      if (typeof item.quantity !== 'number' || isNaN(item.quantity)) {
+        errors.push(`Item #${index + 1}: Quantity must be a number`);
+      }
+    });
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
 }

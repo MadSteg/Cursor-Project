@@ -1,155 +1,214 @@
 /**
- * NFT Minting Service
+ * NFT Minting Service for BlockReceipt.ai
  * 
- * This service handles the process of minting NFTs on the blockchain
- * It uses the Polygon Amoy testnet with our BlockReceipt smart contract
+ * This service handles the NFT minting process, including:
+ * - Generating metadata
+ * - Uploading to IPFS
+ * - Minting NFTs on the blockchain
+ * - Recording transactions
  */
+import { amoyBlockchainService } from './amoyBlockchainService';
+import { ipfsService } from './ipfsService';
+import { tacoService } from './tacoService';
+import { determineReceiptTier } from '../utils/receiptUtils';
+import logger from '../logger';
 
-import { ethers } from 'ethers';
-import { logger } from '../utils/logger';
-import * as nftPoolRepository from '../repositories/nftPoolRepository';
-import * as ipfsService from './ipfsService';
+interface ReceiptItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
 
-// Check required environment variables
-function checkEnv() {
-  const requiredVars = [
-    'CONTRACT_ADDRESS',
-    'POLYGON_RPC_URL',
-    'PRIVATE_KEY'
-  ];
+interface ReceiptData {
+  id: string;
+  merchantName: string;
+  date: string;
+  total: number;
+  subtotal?: number;
+  tax?: number;
+  items: ReceiptItem[];
+  category?: string;
+  confidence?: number;
+  imagePath?: string;
+}
+
+interface MintOptions {
+  encryptedMetadata?: boolean;
+  wallet?: string;
+  recipientPublicKey?: string;
+}
+
+class NFTMintService {
+  /**
+   * Generate NFT metadata for a receipt
+   * @param receipt Receipt data
+   * @returns Metadata object
+   */
+  generateMetadata(receipt: ReceiptData): any {
+    const tier = determineReceiptTier(receipt.total);
+    
+    // Generate attributes based on receipt data
+    const attributes = [
+      {
+        trait_type: 'Merchant',
+        value: receipt.merchantName
+      },
+      {
+        trait_type: 'Date',
+        value: receipt.date
+      },
+      {
+        trait_type: 'Total',
+        value: receipt.total.toFixed(2),
+        display_type: 'number'
+      },
+      {
+        trait_type: 'Category',
+        value: receipt.category || 'General'
+      },
+      {
+        trait_type: 'Tier',
+        value: tier.name
+      }
+    ];
+    
+    // Add item count if available
+    if (receipt.items && receipt.items.length > 0) {
+      attributes.push({
+        trait_type: 'Items',
+        value: receipt.items.length.toString(),
+        display_type: 'number'
+      });
+    }
+    
+    // Generate metadata object
+    return {
+      name: `${receipt.merchantName} Receipt - ${receipt.date}`,
+      description: `Digital receipt from ${receipt.merchantName} for $${receipt.total.toFixed(2)}`,
+      image: receipt.imagePath ? `ipfs://${receipt.imagePath}` : 'https://blockreceipt.ai/default-receipt.png',
+      external_url: `https://blockreceipt.ai/receipts/${receipt.id}`,
+      attributes,
+      properties: {
+        merchant: receipt.merchantName,
+        date: receipt.date,
+        total: receipt.total,
+        category: receipt.category || 'General',
+        tier: tier.id,
+        benefits: tier.benefits
+      }
+    };
+  }
   
-  for (const varName of requiredVars) {
-    if (!process.env[varName]) {
-      throw new Error(`Environment variable ${varName} is not set`);
-    }
-  }
-}
-
-/**
- * Mint an NFT to the specified wallet address
- */
-export async function mintNFT(walletAddress: string, nftId: string, receiptData: any) {
-  try {
-    // Check for required environment variables
-    checkEnv();
-    
-    // If using a simulated contract address, use mock implementation
-    if (process.env.CONTRACT_ADDRESS === '0x1111111111111111111111111111111111111111') {
-      return await mockMintNFT(walletAddress, nftId, receiptData);
-    }
-    
-    // Get the NFT data from the repository
-    const nftData = await nftPoolRepository.getNFTById(nftId);
-    if (!nftData) {
-      throw new Error(`NFT with ID ${nftId} not found in pool`);
-    }
-    
-    // Connect to blockchain
-    const provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_RPC_URL);
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-    
-    // Load the contract ABI from the local file
-    const contractABI = require('../abi/BlockReceiptCollection.json');
-    const contract = new ethers.Contract(
-      process.env.CONTRACT_ADDRESS!,
-      contractABI,
-      wallet
-    );
-    
-    // Log the mint attempt
-    logger.info(`Minting NFT ${nftId} (Token ID: ${nftData.tokenId}) to wallet ${walletAddress}`);
-    
-    // Call the mint function
-    const tx = await contract.mint(walletAddress, nftData.tokenId);
-    
-    // Wait for transaction confirmation
-    const receipt = await tx.wait();
-    
-    logger.info(`NFT minted successfully. Transaction hash: ${receipt.transactionHash}`);
-    
-    return {
-      success: true,
-      nftData,
-      transaction: {
-        hash: receipt.transactionHash,
-        blockNumber: receipt.blockNumber,
-        confirmations: receipt.confirmations
+  /**
+   * Mint an NFT for a receipt
+   * @param receipt Receipt data
+   * @param options Minting options
+   * @returns Minting result
+   */
+  async mintReceiptNFT(receipt: ReceiptData, options: MintOptions = {}): Promise<any> {
+    try {
+      logger.info(`Starting NFT minting process for receipt ${receipt.id}`);
+      
+      // Generate metadata
+      const metadata = this.generateMetadata(receipt);
+      logger.info('Metadata generated successfully');
+      
+      // Upload metadata to IPFS
+      logger.info('Uploading metadata to IPFS...');
+      const metadataResult = await ipfsService.pinJSON(metadata);
+      logger.info(`Metadata pinned to IPFS: ${metadataResult}`);
+      
+      // Determine if metadata should be encrypted
+      let encryptedMetadata = null;
+      if (options.encryptedMetadata && options.wallet && options.recipientPublicKey) {
+        logger.info('Encrypting metadata with TaCo...');
+        encryptedMetadata = await tacoService.encryptReceiptMetadata(
+          receipt.items,
+          options.wallet,
+          options.recipientPublicKey
+        );
+        logger.info('Metadata encrypted successfully');
       }
-    };
-  } catch (error: any) {
-    logger.error(`NFT minting failed:`, error);
-    throw new Error(`Failed to mint NFT: ${error.message}`);
-  }
-}
-
-/**
- * Mock implementation for development that doesn't interact with blockchain
- */
-async function mockMintNFT(walletAddress: string, nftId: string, receiptData: any) {
-  try {
-    // Get the NFT data from the repository
-    const nftData = await nftPoolRepository.getNFTById(nftId);
-    if (!nftData) {
-      throw new Error(`NFT with ID ${nftId} not found in pool`);
-    }
-    
-    // Create a fake transaction hash
-    const txHash = `0x${Array(64).fill(0).map(() => 
-      Math.floor(Math.random() * 16).toString(16)).join('')}`;
-    
-    logger.info(`[MOCK] Minted NFT ${nftId} to wallet ${walletAddress}. Transaction hash: ${txHash}`);
-    
-    return {
-      success: true,
-      nftData,
-      transaction: {
-        hash: txHash,
-        blockNumber: Math.floor(Math.random() * 1000000),
-        confirmations: 12
+      
+      // Format wallet address if provided
+      const walletAddress = options.wallet || '0x0000000000000000000000000000000000000000';
+      
+      // Mint NFT on blockchain
+      logger.info(`Minting NFT for wallet ${walletAddress}...`);
+      const mintResult = await amoyBlockchainService.mintReceipt(
+        {
+          id: receipt.id,
+          merchant: { name: receipt.merchantName },
+          date: new Date(receipt.date),
+          total: receipt.total,
+          items: receipt.items,
+          category: receipt.category
+        },
+        walletAddress,
+        metadataResult.cid || metadataResult
+      );
+      logger.info(`NFT minted successfully: ${JSON.stringify(mintResult)}`);
+      
+      // Log encryption event if metadata was encrypted
+      if (encryptedMetadata && encryptedMetadata.available) {
+        logger.info('Logging encryption event to blockchain...');
+        await amoyBlockchainService.logEncryptionEvent(
+          receipt.id,
+          walletAddress,
+          metadataResult.cid || metadataResult
+        );
+        logger.info('Encryption event logged successfully');
       }
-    };
-  } catch (error: any) {
-    logger.error(`[MOCK] NFT minting failed:`, error);
-    throw new Error(`Failed to mint NFT: ${error.message}`);
+      
+      // Return successful result
+      return {
+        success: true,
+        receipt: {
+          id: receipt.id,
+          merchant: receipt.merchantName,
+          date: receipt.date,
+          total: receipt.total
+        },
+        nft: {
+          tokenId: mintResult.tokenId,
+          metadataUri: `ipfs://${metadataResult.cid || metadataResult}`,
+          transaction: mintResult.transaction,
+          tier: determineReceiptTier(receipt.total).id
+        },
+        encryption: encryptedMetadata?.available
+          ? { available: true, publicKey: options.recipientPublicKey }
+          : { available: false }
+      };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Error minting NFT: ${errorMessage}`);
+      throw new Error(`Failed to mint NFT: ${errorMessage}`);
+    }
+  }
+  
+  /**
+   * Get NFT details for a specific token ID
+   * @param tokenId Token ID to retrieve
+   * @returns NFT details
+   */
+  async getNFTDetails(tokenId: string): Promise<any> {
+    try {
+      // For now, this is a mock implementation
+      // In a real implementation, we would query the blockchain
+      return {
+        tokenId,
+        metadataUri: `ipfs://mock-uri-${tokenId}`,
+        owner: '0x0000000000000000000000000000000000000000',
+        tier: 'silver',
+        minted: new Date().toISOString()
+      };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Error getting NFT details: ${errorMessage}`);
+      throw new Error(`Failed to get NFT details: ${errorMessage}`);
+    }
   }
 }
 
-/**
- * Select an appropriate NFT for a receipt and mint it
- */
-export async function selectAndMintNFT(
-  walletAddress: string, 
-  receiptData: any
-) {
-  try {
-    // Calculate appropriate tier based on receipt amount
-    const total = receiptData.total || 0;
-    let tier = 'standard';
-    
-    if (total >= 500) {
-      tier = 'ultra';
-    } else if (total >= 200) {
-      tier = 'luxury';
-    } else if (total >= 50) {
-      tier = 'premium';
-    }
-    
-    // Get category from receipt data or default to 'default'
-    const category = receiptData.category || 'default';
-    
-    // Select an appropriate NFT
-    const selectedNFT = await nftPoolRepository.selectNFTForReceipt(tier, category);
-    
-    if (!selectedNFT) {
-      throw new Error('No suitable NFT found in the pool');
-    }
-    
-    logger.info(`Selected NFT ${selectedNFT.id} for receipt`);
-    
-    // Mint the selected NFT
-    return await mintNFT(walletAddress, selectedNFT.id, receiptData);
-  } catch (error: any) {
-    logger.error('Error selecting and minting NFT:', error);
-    throw new Error(`Failed to select and mint NFT: ${error.message}`);
-  }
-}
+// Export a singleton instance
+export const nftMintService = new NFTMintService();
