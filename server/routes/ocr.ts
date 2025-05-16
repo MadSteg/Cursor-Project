@@ -43,14 +43,12 @@ router.post('/upload', upload.single('receipt'), async (req, res) => {
       return res.status(400).json({ error: 'No receipt image provided' });
     }
     
-    // Convert the buffer to base64
-    const base64Image = req.file.buffer.toString('base64');
+    // Process with our enhanced OCR pipeline (Google Vision or OpenAI fallback)
+    console.log('Starting enhanced receipt OCR processing...');
+    console.log('Processing receipt image with buffer size:', req.file.buffer.length);
     
-    // Process with our robust OCR pipeline (includes both OpenAI and Tesseract with fallbacks)
-    console.log('Starting receipt OCR processing...');
-    console.log('Processing receipt image:', base64Image.substring(0, 20) + '...');
-    
-    const extractedData = await extractReceiptData(base64Image);
+    // Pass the buffer directly to the new OCR service
+    const extractedData = await extractReceiptData(req.file.buffer);
     
     if (!extractedData) {
       console.error('All OCR methods failed. Unable to process receipt image.');

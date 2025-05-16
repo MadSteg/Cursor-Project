@@ -1,9 +1,37 @@
 import vision from '@google-cloud/vision';
 import { promises as fs } from 'fs';
 import path from 'path';
+import OpenAI from 'openai';
 
-// Initialize the client
-const client = new vision.ImageAnnotatorClient();
+// Check if Google Cloud credentials are available
+const useGoogleVision = process.env.GOOGLE_APPLICATION_CREDENTIALS || 
+                       (process.env.GOOGLE_CLOUD_PROJECT && process.env.GOOGLE_CLOUD_CREDENTIALS);
+
+// Initialize the Google Vision client with fallback options
+let client: vision.ImageAnnotatorClient | null = null;
+try {
+  if (useGoogleVision) {
+    console.log('Initializing Google Cloud Vision API client...');
+    client = new vision.ImageAnnotatorClient();
+  } else {
+    console.log('Google Cloud Vision credentials not found, will use OpenAI fallback if available');
+  }
+} catch (error) {
+  console.error('Failed to initialize Google Cloud Vision client:', error);
+}
+
+// Initialize OpenAI as fallback
+let openaiClient: OpenAI | null = null;
+if (process.env.OPENAI_API_KEY) {
+  try {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    console.log('OpenAI API client initialized for fallback OCR');
+  } catch (error) {
+    console.error('Failed to initialize OpenAI client:', error);
+  }
+}
 
 export interface ReceiptItem {
   description: string;
@@ -22,25 +50,83 @@ export interface ReceiptData {
 
 /**
  * Extract data from receipt using Google Cloud Vision API
+ * with OpenAI fallback if Vision API is not available
+ * 
  * @param imageBuffer Buffer containing receipt image
  * @returns Structured receipt data
  */
 export async function extractReceiptData(imageBuffer: Buffer): Promise<ReceiptData> {
   try {
-    // Call Vision API for document text detection
-    const [result] = await client.documentTextDetection(imageBuffer);
-    const fullText = result.fullTextAnnotation?.text || '';
+    let fullText = '';
     
-    if (!fullText) {
-      throw new Error('No text detected in the image');
+    // Try Google Vision if available
+    if (client) {
+      try {
+        console.log('Using Google Cloud Vision API for OCR...');
+        const [result] = await client.documentTextDetection(imageBuffer);
+        fullText = result.fullTextAnnotation?.text || '';
+        
+        if (fullText) {
+          console.log('Google Vision OCR successful');
+        } else {
+          console.warn('Google Vision returned empty result');
+        }
+      } catch (visionError) {
+        console.error('Google Vision API error:', visionError);
+        // Will fall back to OpenAI
+      }
     }
     
-    console.log('OCR Text:', fullText);
+    // Try OpenAI if Vision failed or is not available
+    if (!fullText && openaiClient) {
+      try {
+        console.log('Falling back to OpenAI for OCR...');
+        // Convert buffer to base64
+        const base64Image = imageBuffer.toString('base64');
+        
+        // Use OpenAI to extract text from image
+        const response = await openaiClient.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: "Extract all text from this receipt image, including store name, date, items purchased, prices, subtotal, tax, and total. Format the text exactly as shown in the image." },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 1000,
+        });
+        
+        fullText = response.choices[0]?.message?.content || '';
+        
+        if (fullText) {
+          console.log('OpenAI OCR successful');
+        } else {
+          console.warn('OpenAI returned empty result');
+        }
+      } catch (openaiError) {
+        console.error('OpenAI API error:', openaiError);
+      }
+    }
+    
+    // Check if we have any text to parse
+    if (!fullText) {
+      throw new Error('No text could be extracted from the image using available OCR methods');
+    }
+    
+    console.log('OCR Text:', fullText.substring(0, 200) + '...');
     
     // Parse the extracted text
     return parseReceiptText(fullText);
   } catch (error) {
-    console.error('Google Vision API error:', error);
+    console.error('Receipt OCR extraction error:', error);
     throw new Error(`Failed to extract receipt data: ${error.message}`);
   }
 }
