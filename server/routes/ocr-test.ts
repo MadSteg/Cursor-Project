@@ -7,15 +7,42 @@
 
 import { Router } from "express";
 import multer from "multer";
-import { extractReceiptData } from "../services/ocrService";
+import { ocrService } from "../services/ocrService";
 import fs from "fs";
 import path from "path";
+import { v4 as uuidv4 } from 'uuid';
+import { logger } from '../utils/logger';
 
-// Configure multer for file uploads
+// Configure multer for disk storage
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      
+      // Create uploads directory if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    }
+  }),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10 MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files and PDFs
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG, PNG, WebP, and PDF files are allowed'));
+    }
   },
 });
 
@@ -32,24 +59,31 @@ router.post("/upload", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "No image provided" });
     }
 
-    // Convert the buffer to base64
-    const imageBase64 = req.file.buffer.toString("base64");
+    logger.info(`Processing receipt in test route: ${req.file.path}`);
     
     // Process the image with our OCR service
-    const result = await extractReceiptData(imageBase64);
+    const receiptData = await ocrService.processReceipt(req.file.path);
     
-    if (!result) {
-      return res.status(500).json({ error: "Failed to extract receipt data" });
+    if (!receiptData) {
+      logger.error('All OCR methods failed. Unable to process receipt image.');
+      return res.status(422).json({ 
+        success: false,
+        error: 'Failed to process receipt image. Please try again with a clearer image.'
+      });
     }
     
     // Return the OCR results
     return res.json({
       success: true,
-      data: result
+      data: receiptData,
+      source: receiptData.confidence && receiptData.confidence > 0.8 ? 'openai' : 'tesseract'
     });
   } catch (error) {
-    console.error("OCR test error:", error);
-    return res.status(500).json({ error: "Failed to process image" });
+    logger.error("OCR test error:", error);
+    return res.status(500).json({ 
+      error: "Failed to process image",
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
@@ -65,21 +99,60 @@ router.post("/process", async (req, res) => {
       return res.status(400).json({ error: "No image provided" });
     }
     
-    // Process the image with our OCR service
-    const result = await extractReceiptData(imageBase64);
+    // Create a temporary file from the base64 image
+    const tempFilePath = path.join(process.cwd(), 'uploads', `${Date.now()}-${uuidv4()}-receipt.jpg`);
+    const imageBuffer = Buffer.from(
+      imageBase64.includes('base64,') ? imageBase64.split('base64,')[1] : imageBase64, 
+      'base64'
+    );
     
-    if (!result) {
-      return res.status(500).json({ error: "Failed to extract receipt data" });
+    // Ensure uploads directory exists
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
     }
     
-    // Return the OCR results
-    return res.json({
-      success: true,
-      data: result
-    });
+    // Write the buffer to a temporary file
+    fs.writeFileSync(tempFilePath, imageBuffer);
+    
+    logger.info('Starting OCR test processing...');
+    logger.info(`Processing base64 receipt image, saved to: ${tempFilePath}`);
+    
+    try {
+      // Process the image with our OCR service
+      const receiptData = await ocrService.processReceipt(tempFilePath);
+      
+      if (!receiptData) {
+        logger.error('All OCR methods failed. Unable to process receipt image.');
+        return res.status(422).json({ 
+          success: false,
+          error: 'Failed to process receipt image. Please try again with a clearer image.'
+        });
+      }
+      
+      // Return the OCR results
+      return res.json({
+        success: true,
+        data: receiptData,
+        source: receiptData.confidence && receiptData.confidence > 0.8 ? 'openai' : 'tesseract'
+      });
+    } finally {
+      // Clean up the temporary file
+      try {
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+          logger.info(`Removed temporary file: ${tempFilePath}`);
+        }
+      } catch (cleanupError) {
+        logger.warn(`Failed to remove temporary file: ${cleanupError}`);
+      }
+    }
   } catch (error) {
-    console.error("OCR test error:", error);
-    return res.status(500).json({ error: "Failed to process image" });
+    logger.error("OCR test error:", error);
+    return res.status(500).json({ 
+      error: "Failed to process image",
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 

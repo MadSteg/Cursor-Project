@@ -2,9 +2,9 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import { extractReceiptData } from '../services/ocrService';
+import { ocrService } from '../services/ocrService';
 import { tacoService } from '../services/tacoService';
-import { pinJSON } from '../services/ipfsService';
+import { ipfsService } from '../services/ipfsService';
 import { metadataService } from '../services/metadataService';
 import { blockchainService } from '../services/blockchainService';
 import taskQueueService from '../services/taskQueue';
@@ -77,7 +77,7 @@ router.post('/', (req, res) => {
       }
 
       // Process receipt with OCR
-      const receiptData = await extractReceiptData(file.path);
+      const receiptData = await ocrService.processReceipt(file.path);
       if (!receiptData || !receiptData.total) {
         return res.status(400).json({ 
           success: false, 
@@ -184,7 +184,7 @@ router.post('/', (req, res) => {
         };
 
         // Pin to IPFS
-        metadataUri = await pinJSON(metadata);
+        metadataUri = await ipfsService.pinJSON(metadata);
         logger.info(`Pinned receipt metadata to IPFS: ${metadataUri}`);
       } catch (ipfsError) {
         logger.error(`Error pinning to IPFS: ${ipfsError}`);

@@ -9,8 +9,9 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-// Import the new Google Cloud Vision OCR service instead of the old Tesseract-based one
-import { processReceiptImage } from '../services/ocrService';
+// Import our enhanced OCR service with multi-engine support
+import { ocrService } from '../services/ocrService';
+import { logger } from '../utils/logger';
 import { encryptLineItems } from '../utils/encryptLineItems';
 import { createNFTPurchaseTask } from '../services/taskQueue';
 import { metadataService } from '../services/metadataService';
@@ -81,34 +82,32 @@ router.post('/auto-process', (req: Request, res: Response) => {
 
       console.log(`Auto-processing receipt: ${req.file.originalname} (${req.file.size} bytes) saved as ${req.file.filename}`);
 
-      // Extract data from receipt using Google Cloud Vision
-      const visionReceiptData = await processReceiptImage(req.file.path);
-      
-      // Map the Google Vision receipt format to our application format
-      const receiptData = {
-        merchantName: visionReceiptData.merchant,
-        date: visionReceiptData.date,
-        items: visionReceiptData.items.map(item => ({
-          name: item.description,
-          price: item.price,
-          quantity: item.quantity
-        })),
-        subtotal: visionReceiptData.subtotal || 0,
-        tax: visionReceiptData.tax || 0,
-        total: visionReceiptData.total,
-        rawText: '',
-        confidence: 0.9 // Google Vision typically has high confidence
-      };
+      // Extract data from receipt using our OCR service
+      const receiptData = await ocrService.processReceipt(req.file.path);
       
       // Validate receipt data extraction
       if (!receiptData) {
-        return res.status(400).json({
+        logger.error('OCR processing failed, no receipt data returned');
+        return res.status(422).json({
           success: false,
-          message: "Failed to extract receipt data. Please try a clearer image."
+          message: 'Failed to process receipt image. Please try a clearer image.'
         });
       }
+      
+      // Ensure we have line items
+      if (!receiptData.items) {
+        receiptData.items = [];
+      }
+      
+      // Add defaults for any missing fields
+      if (!receiptData.merchantName) receiptData.merchantName = 'Unknown Merchant';
+      if (!receiptData.date) receiptData.date = new Date().toISOString().split('T')[0];
+      if (!receiptData.subtotal) receiptData.subtotal = receiptData.total || 0;
+      if (!receiptData.tax) receiptData.tax = 0;
+      if (!receiptData.rawText) receiptData.rawText = '';
+      if (!receiptData.confidence) receiptData.confidence = 0.8;
 
-      if (!receiptData.items || !Array.isArray(receiptData.items)) {
+      if (!Array.isArray(receiptData.items)) {
         return res.status(400).json({
           success: false,
           message: "Receipt items not detected. Please try a different receipt."

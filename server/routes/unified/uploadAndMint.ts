@@ -1,235 +1,243 @@
 /**
- * Consolidated Upload and Mint Route for BlockReceipt.ai
+ * Unified Upload and Mint Route
  * 
- * This route handles the entire process from receipt upload to NFT minting:
+ * This unified route handles the complete flow from receipt upload to NFT minting:
  * 1. Upload receipt image
- * 2. Process with OCR
- * 3. Encrypt sensitive data with TaCo
- * 4. Pin to IPFS
- * 5. Mint NFT on blockchain
- * 6. Store receipt information
+ * 2. Process image with OCR
+ * 3. Store data on IPFS
+ * 4. Encrypt metadata (if requested)
+ * 5. Mint NFT
  */
-import express from 'express';
+
+import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
 import { ocrService } from '../../services/ocrService';
-import { nftMintService } from '../../services/nftMintService';
 import { ipfsService } from '../../services/ipfsService';
 import { tacoService } from '../../services/tacoService';
-import { determineReceiptTier } from '../../utils/receiptUtils';
-import { taskQueueService } from '../../services/taskQueueService';
+import { nftMintService } from '../../services/nftMintService';
+import { taskQueueService, TaskStatus } from '../../services/taskQueueService';
+import nftPurchaseHandler from '../../task-handlers/nftPurchaseHandler';
+import logger from '../../logger';
+import { validateReceipt } from '../../utils/receiptUtils';
+import { requireAuth } from '../../middleware/auth';
 
-// Logger - fallback to console if imported logger is not available
-let logger;
-try {
-  logger = require('../../logger').default;
-} catch (error) {
-  logger = console;
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+// Setup multer for image uploads
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      
+      // Create uploads directory if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = `${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
     }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Use timestamp to ensure unique filenames
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `receipt-${uniqueSuffix}${ext}`);
-  }
-});
-
-// Define file filter to only accept images
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  // Accept image files only
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed'));
-  }
-};
-
-// Configure upload middleware
-const upload = multer({ 
-  storage,
-  fileFilter,
+  }),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max file size
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    
+    if (!allowedTypes.includes(file.mimetype)) {
+      cb(new Error('Invalid file type. Only JPEG, PNG, WebP, and PDF files are allowed.'));
+      return;
+    }
+    
+    cb(null, true);
   }
 });
 
-const router = express.Router();
+const router = Router();
+
+// Initialize task handler
+taskQueueService.registerHandler('nft-purchase', nftPurchaseHandler);
 
 /**
- * Unified route to handle receipt upload and NFT minting
- * POST /unified/upload-and-mint
+ * Route for uploading a receipt and minting an NFT
+ * Flow: Upload → OCR → IPFS → Encrypt → Mint
  */
-router.post('/', upload.single('receipt'), async (req, res) => {
-  try {
-    // Check if file was uploaded
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'No receipt image uploaded'
-      });
-    }
-    
-    // Get file path and wallet information
-    const filePath = req.file.path;
-    const { walletAddress, category, recipientPublicKey } = req.body;
-    
-    logger.info(`Processing receipt image: ${filePath} for wallet ${walletAddress || 'anonymous'}`);
-    
-    // Process receipt with OCR
-    logger.info('Sending to OCR service...');
-    let receiptData;
+router.post(
+  '/upload-and-mint',
+  requireAuth,
+  upload.single('receiptImage'),
+  async (req, res) => {
     try {
-      receiptData = await ocrService.processReceiptImage(fs.readFileSync(filePath));
-      logger.info('OCR processing successful');
-    } catch (ocrError) {
-      logger.error(`OCR processing failed: ${ocrError}`);
-      return res.status(422).json({
-        success: false,
-        message: 'Failed to process receipt image. Please try with a clearer image.',
-        error: ocrError.message
-      });
-    }
-    
-    // Enhance receipt data with additional fields
-    const receiptId = `receipt-${Date.now()}`;
-    const receipt = {
-      id: receiptId,
-      merchantName: receiptData.merchant?.name || 'Unknown Merchant',
-      date: receiptData.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-      total: receiptData.total || 0,
-      subtotal: receiptData.subtotal,
-      tax: receiptData.tax,
-      items: receiptData.items || [],
-      category: category || receiptData.category || 'general',
-      confidence: receiptData.confidence || 0,
-      imagePath: filePath
-    };
-    
-    // Upload receipt image to IPFS if available
-    let receiptImageCid = null;
-    try {
-      logger.info('Uploading receipt image to IPFS...');
-      const imageBuffer = fs.readFileSync(filePath);
-      const imageResult = await ipfsService.pinFile(imageBuffer, 'receipt-image.jpg');
-      receiptImageCid = imageResult.cid || imageResult;
-      receipt.imagePath = receiptImageCid;
-      logger.info(`Receipt image pinned to IPFS: ${receiptImageCid}`);
-    } catch (ipfsError) {
-      logger.error(`IPFS image upload failed: ${ipfsError}`);
-      // Continue without IPFS image, this is a non-blocking error
-    }
-    
-    // Determine if encryption should be used
-    const useEncryption = !!recipientPublicKey && !!walletAddress;
-    let encryptedMetadata = { available: false };
-    
-    if (useEncryption) {
+      const { walletAddress, encryptMetadata } = req.body;
+      
+      if (!walletAddress) {
+        return res.status(400).json({
+          error: 'Wallet address is required'
+        });
+      }
+      
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({
+          error: 'Receipt image is required'
+        });
+      }
+      
+      // Step 1: Extract receipt data using OCR
+      logger.info(`Processing receipt image: ${file.filename}`);
+      
+      let receiptData;
       try {
-        logger.info('Encrypting receipt items with TaCo...');
-        encryptedMetadata = await tacoService.encryptReceiptData(
-          receipt.items,
-          walletAddress,
-          recipientPublicKey
-        );
-        logger.info('Receipt items encrypted successfully');
-      } catch (encryptError) {
-        logger.error(`Encryption failed: ${encryptError}`);
-        // Continue without encryption, this is a non-blocking error
-        encryptedMetadata = { available: false };
-      }
-    }
-    
-    // Set receipt tier
-    const tier = determineReceiptTier(receipt.total);
-    
-    // Create a record of the receipt with encrypted items
-    const receiptWithEncryption = {
-      ...receipt,
-      encrypted: encryptedMetadata.available,
-      tier: tier.id
-    };
-    
-    // If wallet address is provided, mint NFT
-    if (walletAddress) {
-      // Create a task to handle background NFT minting
-      logger.info('Creating task for NFT minting in background...');
-      const taskResult = taskQueueService.createTask(
-        'nft_purchase', 
-        { receiptDetails: receipt },
-        walletAddress,
-        receipt.id
-      );
-      
-      const taskId = taskResult.id;
-      logger.info(`Created NFT purchase task ${taskId} for wallet ${walletAddress}`);
-      
-      // Create encryption task if needed
-      if (encryptedMetadata.available) {
-        logger.info('Creating task for metadata encryption...');
-        taskQueueService.createTask(
-          'metadata_encryption', 
-          { encryptedMetadata },
-          walletAddress,
-          receipt.id
-        );
+        receiptData = await ocrService.processReceipt(file.path);
+      } catch (ocrError) {
+        logger.error(`OCR processing failed: ${ocrError}`);
+        return res.status(500).json({
+          error: 'Failed to process receipt image',
+          details: ocrError instanceof Error ? ocrError.message : String(ocrError)
+        });
       }
       
-      // Return response with task information
-      return res.status(200).json({
-        success: true,
-        message: 'Receipt processed successfully and NFT minting started',
-        data: receiptWithEncryption,
-        task: {
-          id: taskId,
-          type: 'nft_purchase'
-        },
-        tier: tier.name
+      if (!receiptData) {
+        return res.status(422).json({
+          error: 'Unable to extract data from receipt image'
+        });
+      }
+      
+      // Step 2: Validate receipt data
+      const validation = validateReceipt(receiptData);
+      if (!validation.valid) {
+        return res.status(422).json({
+          error: 'Invalid receipt data',
+          details: validation.errors
+        });
+      }
+      
+      // Step 3: Upload receipt image to IPFS
+      let imageCid = '';
+      try {
+        imageCid = await ipfsService.uploadFile(file.path);
+      } catch (ipfsError) {
+        logger.error(`IPFS upload failed: ${ipfsError}`);
+        return res.status(500).json({
+          error: 'Failed to upload receipt image to IPFS',
+          details: ipfsError instanceof Error ? ipfsError.message : String(ipfsError)
+        });
+      }
+      
+      // Step 4: Add image CID to receipt data
+      const receiptWithImage = {
+        ...receiptData,
+        imageCid,
+        imageUrl: `ipfs://${imageCid}`
+      };
+      
+      // Step 5: Encrypt metadata if requested
+      let encryptedData = null;
+      if (encryptMetadata === 'true' || encryptMetadata === true) {
+        try {
+          const publicKey = req.body.publicKey;
+          
+          if (!publicKey) {
+            return res.status(400).json({
+              error: 'Public key is required for metadata encryption'
+            });
+          }
+          
+          encryptedData = await tacoService.encryptReceiptMetadata(
+            receiptWithImage,
+            publicKey
+          );
+        } catch (encryptionError) {
+          logger.error(`Metadata encryption failed: ${encryptionError}`);
+          return res.status(500).json({
+            error: 'Failed to encrypt receipt metadata',
+            details: encryptionError instanceof Error ? encryptionError.message : String(encryptionError)
+          });
+        }
+      }
+      
+      // Step 6: Create task for asynchronous NFT minting
+      const uniqueId = uuidv4();
+      const receipt = {
+        id: uniqueId,
+        ...receiptWithImage,
+        // Store the image data for the task handler to use
+        imageData: fs.readFileSync(file.path).toString('base64')
+      };
+      
+      // Create task in queue for async processing
+      const task = taskQueueService.createTask('nft-purchase', {
+        receipt,
+        wallet: walletAddress,
+        publicKey: req.body.publicKey,
+        encryptMetadata: encryptMetadata === 'true' || encryptMetadata === true
       });
-    } else {
-      // No wallet address provided, just return receipt data
-      logger.info('No wallet address provided, skipping NFT minting');
-      return res.status(200).json({
-        success: true,
-        message: 'Receipt processed successfully',
-        data: receiptWithEncryption,
-        tier: tier.name
+      
+      // Return task ID to client for status polling
+      return res.status(202).json({
+        message: 'Receipt processing initiated',
+        taskId: task.id,
+        receiptId: uniqueId,
+        status: task.status
       });
+    } catch (error) {
+      logger.error('Upload and mint error:', error);
+      
+      if (error instanceof multer.MulterError) {
+        return res.status(400).json({
+          error: 'File upload error',
+          details: error.message
+        });
+      } else if (error instanceof Error) {
+        return res.status(500).json({
+          error: 'Server error',
+          details: error.message
+        });
+      } else {
+        return res.status(500).json({
+          error: 'Unknown error occurred'
+        });
+      }
     }
-  } catch (error) {
-    logger.error(`Error in receipt processing: ${error}`);
-    
-    // Provide more specific error messages based on the type of failure
-    let statusCode = 500;
-    let errorMessage = 'Internal server error during receipt processing';
-    
-    if (error.message?.includes('OCR')) {
-      statusCode = 422;
-      errorMessage = 'Failed to process receipt image. Please try a clearer image.';
-    } else if (error.message?.includes('IPFS')) {
-      statusCode = 503;
-      errorMessage = 'Temporary issue with metadata storage. Please try again shortly.';
-    } else if (error.message?.includes('encrypt')) {
-      statusCode = 422;
-      errorMessage = 'Failed to encrypt receipt data. Please check your wallet connection.';
-    }
-    
-    return res.status(statusCode).json({
-      success: false,
-      message: errorMessage,
-      error: error.message
+  }
+);
+
+/**
+ * Route for checking the status of an NFT minting task
+ */
+router.get('/task/:taskId', requireAuth, async (req, res) => {
+  const { taskId } = req.params;
+  
+  if (!taskId) {
+    return res.status(400).json({
+      error: 'Task ID is required'
     });
   }
+  
+  const task = taskQueueService.getTask(taskId);
+  
+  if (!task) {
+    return res.status(404).json({
+      error: 'Task not found'
+    });
+  }
+  
+  // Return task status and result if available
+  return res.status(200).json({
+    taskId: task.id,
+    status: task.status,
+    completed: task.status === TaskStatus.COMPLETED,
+    failed: task.status === TaskStatus.FAILED,
+    error: task.error,
+    result: task.result,
+    createdAt: task.createdAt,
+    completedAt: task.completedAt
+  });
 });
 
 export default router;

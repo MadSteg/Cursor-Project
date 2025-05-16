@@ -11,7 +11,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { insertUserSchema } from "@shared/schema";
 import { AuthService } from "../services/authService";
-import { TacoService } from "../services/tacoService";
+import { tacoService } from "../services/tacoService";
 import { WalletService } from "../services/walletService";
 
 // Extend insertUserSchema for signup with wallet creation
@@ -33,7 +33,6 @@ export const authRouter = Router();
 export default authRouter;
 
 // Initialize services
-const tacoService = new TacoService();
 const walletService = new WalletService();
 const authService = new AuthService(tacoService, walletService);
 

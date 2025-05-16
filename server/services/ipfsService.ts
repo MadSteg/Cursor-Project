@@ -1,131 +1,267 @@
 /**
  * IPFS Service for BlockReceipt.ai
  * 
- * This service handles uploading and retrieving data from IPFS,
- * providing a decentralized storage solution for receipt images and metadata.
+ * This service provides functionality for uploading and retrieving files 
+ * from IPFS (InterPlanetary File System).
  */
 
+import fs from 'fs';
+import axios from 'axios';
+import FormData from 'form-data';
 import logger from '../logger';
 
 /**
- * IPFSService class
+ * IPFS Service Class
  */
 class IPFSService {
-  private isInitialized: boolean = false;
-  private ipfsGateway: string = 'https://ipfs.io/ipfs/';
+  private pinataApiKey: string;
+  private pinataSecretApiKey: string;
+  private useLocal: boolean;
+  private localNode: string;
   
   constructor() {
-    this.initialize();
-  }
-  
-  /**
-   * Initialize IPFS service
-   */
-  private async initialize(): Promise<void> {
-    try {
-      logger.info('Initializing IPFS service...');
-      
-      // In a real implementation, we would initialize the IPFS client here
-      // For now, we'll just simulate the initialization
-      this.isInitialized = true;
-      
-      logger.info('IPFS service initialized successfully');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to initialize IPFS service: ${errorMessage}`);
-      this.isInitialized = false;
+    // Initialize with environment variables
+    this.pinataApiKey = process.env.PINATA_API_KEY || '';
+    this.pinataSecretApiKey = process.env.PINATA_SECRET_API_KEY || '';
+    this.useLocal = process.env.USE_LOCAL_IPFS === 'true';
+    this.localNode = process.env.LOCAL_IPFS_API || 'http://localhost:5001/api/v0';
+    
+    // For development, allow the service to work without real credentials
+    const devMode = process.env.NODE_ENV === 'development' && !this.pinataApiKey;
+    
+    if (!this.pinataApiKey && !this.useLocal && !devMode) {
+      logger.warn('IPFS Service initialized without Pinata API keys');
+    } else {
+      logger.info('IPFS Service initialized');
     }
   }
   
   /**
-   * Pin JSON data to IPFS
-   * @param data JSON data to pin
-   * @returns CID of pinned data
+   * Upload a file to IPFS
+   * @param filePath Path to the file to upload
+   * @returns CID of the uploaded file
    */
-  async pinJSON(data: any): Promise<{ cid: string }> {
+  async uploadFile(filePath: string): Promise<string> {
     try {
-      logger.info('Pinning JSON data to IPFS...');
-      
-      if (!this.isInitialized) {
-        await this.initialize();
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
       }
       
-      // In a real implementation, we would call the IPFS client to pin the data
-      // For now, we'll just simulate the pinning process
-      await new Promise(resolve => setTimeout(resolve, 500));
+      logger.info(`Uploading file to IPFS: ${filePath}`);
       
-      // Generate mock CID
-      const cid = `mock-cid-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      
-      logger.info(`JSON data pinned to IPFS with CID: ${cid}`);
-      
-      return { cid };
+      if (this.useLocal) {
+        return this.uploadToLocalNode(filePath);
+      } else {
+        return this.uploadToPinata(filePath);
+      }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to pin JSON data to IPFS: ${errorMessage}`);
-      throw new Error(`IPFS pin failed: ${errorMessage}`);
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`IPFS upload failed: ${message}`);
+      throw new Error(`Failed to upload file to IPFS: ${message}`);
     }
   }
   
   /**
-   * Upload file to IPFS
-   * @param fileBuffer File buffer to upload
-   * @param fileName Optional file name
-   * @returns CID of uploaded file
+   * Upload a buffer to IPFS
+   * @param buffer Buffer to upload
+   * @param filename Optional filename
+   * @returns CID of the uploaded file
    */
-  async uploadFile(fileBuffer: Buffer, fileName?: string): Promise<{ cid: string }> {
+  async uploadBuffer(buffer: Buffer, filename: string = 'file'): Promise<string> {
     try {
-      logger.info(`Uploading file ${fileName || 'unknown'} to IPFS...`);
+      logger.info(`Uploading buffer to IPFS with filename: ${filename}`);
       
-      if (!this.isInitialized) {
-        await this.initialize();
+      if (this.useLocal) {
+        // Create temporary file from buffer
+        const tempPath = `/tmp/${Date.now()}-${filename}`;
+        fs.writeFileSync(tempPath, buffer);
+        
+        try {
+          return await this.uploadToLocalNode(tempPath);
+        } finally {
+          // Clean up temp file
+          fs.unlinkSync(tempPath);
+        }
+      } else {
+        return this.uploadBufferToPinata(buffer, filename);
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`IPFS buffer upload failed: ${message}`);
+      throw new Error(`Failed to upload buffer to IPFS: ${message}`);
+    }
+  }
+  
+  /**
+   * Upload JSON data to IPFS
+   * @param data JSON data to upload
+   * @returns CID of the uploaded data
+   */
+  async uploadJSON(data: any): Promise<string> {
+    try {
+      logger.info('Uploading JSON data to IPFS');
+      
+      const jsonString = JSON.stringify(data);
+      const buffer = Buffer.from(jsonString);
+      
+      return await this.uploadBuffer(buffer, 'data.json');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`IPFS JSON upload failed: ${message}`);
+      throw new Error(`Failed to upload JSON to IPFS: ${message}`);
+    }
+  }
+  
+  /**
+   * Upload a file to Pinata IPFS service
+   * @param filePath Path to the file to upload
+   * @returns CID of the uploaded file
+   */
+  private async uploadToPinata(filePath: string): Promise<string> {
+    // For development mode, return a mock CID if no API keys
+    if (!this.pinataApiKey && process.env.NODE_ENV === 'development') {
+      logger.warn('Development mode: Returning mock CID for IPFS upload');
+      return `ipfs-mock-cid-${Date.now()}`;
+    }
+    
+    const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+    
+    const data = new FormData();
+    data.append('file', fs.createReadStream(filePath));
+    
+    const response = await axios.post(url, data, {
+      maxBodyLength: Infinity,
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${data.getBoundary()}`,
+        'pinata_api_key': this.pinataApiKey,
+        'pinata_secret_api_key': this.pinataSecretApiKey
+      }
+    });
+    
+    logger.info(`File uploaded to IPFS with CID: ${response.data.IpfsHash}`);
+    
+    return response.data.IpfsHash;
+  }
+  
+  /**
+   * Upload a buffer to Pinata IPFS service
+   * @param buffer Buffer to upload
+   * @param filename Filename to use
+   * @returns CID of the uploaded file
+   */
+  private async uploadBufferToPinata(buffer: Buffer, filename: string): Promise<string> {
+    // For development mode, return a mock CID if no API keys
+    if (!this.pinataApiKey && process.env.NODE_ENV === 'development') {
+      logger.warn('Development mode: Returning mock CID for IPFS buffer upload');
+      return `ipfs-mock-cid-${Date.now()}`;
+    }
+    
+    const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+    
+    const data = new FormData();
+    data.append('file', buffer, { filename });
+    
+    const response = await axios.post(url, data, {
+      maxBodyLength: Infinity,
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${data.getBoundary()}`,
+        'pinata_api_key': this.pinataApiKey,
+        'pinata_secret_api_key': this.pinataSecretApiKey
+      }
+    });
+    
+    logger.info(`Buffer uploaded to IPFS with CID: ${response.data.IpfsHash}`);
+    
+    return response.data.IpfsHash;
+  }
+  
+  /**
+   * Upload a file to a local IPFS node
+   * @param filePath Path to the file to upload
+   * @returns CID of the uploaded file
+   */
+  private async uploadToLocalNode(filePath: string): Promise<string> {
+    try {
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(filePath));
+      
+      const response = await axios.post(`${this.localNode}/add`, formData, {
+        headers: formData.getHeaders()
+      });
+      
+      logger.info(`File uploaded to local IPFS node with CID: ${response.data.Hash}`);
+      
+      return response.data.Hash;
+    } catch (error) {
+      throw new Error(`Local IPFS node upload failed: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Get a file from IPFS
+   * @param cid CID of the file to retrieve
+   * @returns Buffer containing the file data
+   */
+  async getFile(cid: string): Promise<Buffer> {
+    try {
+      // For development mode, return a mock buffer if no API keys
+      if (!this.pinataApiKey && process.env.NODE_ENV === 'development' && cid.startsWith('ipfs-mock-cid-')) {
+        logger.warn('Development mode: Returning mock data for IPFS retrieval');
+        return Buffer.from('Mock IPFS data for development');
       }
       
-      // In a real implementation, we would call the IPFS client to upload the file
-      // For now, we'll just simulate the upload process
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      logger.info(`Retrieving file from IPFS with CID: ${cid}`);
       
-      // Generate mock CID
-      const cid = `mock-file-cid-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      let url: string;
       
-      logger.info(`File uploaded to IPFS with CID: ${cid}`);
-      
-      return { cid };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to upload file to IPFS: ${errorMessage}`);
-      throw new Error(`IPFS upload failed: ${errorMessage}`);
-    }
-  }
-  
-  /**
-   * Get IPFS URL for a CID
-   * @param cid IPFS content ID
-   * @returns IPFS gateway URL
-   */
-  getIPFSUrl(cid: string): string {
-    try {
-      logger.info(`Getting IPFS URL for CID: ${cid}`);
-      
-      if (!cid) {
-        throw new Error('No CID provided');
+      if (this.useLocal) {
+        url = `${this.localNode}/cat?arg=${cid}`;
+      } else {
+        // Use IPFS gateway
+        url = `https://gateway.pinata.cloud/ipfs/${cid}`;
       }
       
-      // Return gateway URL
-      return `${this.ipfsGateway}${cid}`;
+      const response = await axios.get(url, {
+        responseType: 'arraybuffer'
+      });
+      
+      return Buffer.from(response.data);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to get IPFS URL: ${errorMessage}`);
-      throw new Error(`Failed to get IPFS URL: ${errorMessage}`);
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`IPFS retrieval failed: ${message}`);
+      throw new Error(`Failed to retrieve file from IPFS: ${message}`);
     }
   }
   
   /**
-   * Check if IPFS service is available
-   * @returns Boolean indicating availability
+   * Get JSON data from IPFS
+   * @param cid CID of the JSON data to retrieve
+   * @returns Parsed JSON data
    */
-  isAvailable(): boolean {
-    return this.isInitialized;
+  async getJSON(cid: string): Promise<any> {
+    try {
+      // For development mode, return mock data if no API keys
+      if (!this.pinataApiKey && process.env.NODE_ENV === 'development' && cid.startsWith('ipfs-mock-cid-')) {
+        logger.warn('Development mode: Returning mock JSON for IPFS retrieval');
+        return {
+          mockData: true,
+          timestamp: Date.now(),
+          message: 'This is mock data for development'
+        };
+      }
+      
+      logger.info(`Retrieving JSON from IPFS with CID: ${cid}`);
+      
+      const buffer = await this.getFile(cid);
+      const jsonString = buffer.toString('utf8');
+      
+      return JSON.parse(jsonString);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`IPFS JSON retrieval failed: ${message}`);
+      throw new Error(`Failed to retrieve JSON from IPFS: ${message}`);
+    }
   }
 }
 
