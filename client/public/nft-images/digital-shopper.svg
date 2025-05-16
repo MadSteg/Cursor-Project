@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#0E7490"/>
+  <path d="M150 60C115.2 60 87 88.2 87 123C87 157.8 115.2 186 150 186C184.8 186 213 157.8 213 123C213 88.2 184.8 60 150 60Z" fill="#0891B2"/>
+  <rect x="120" y="100" width="60" height="90" rx="5" fill="#E0F2FE"/>
+  <rect x="130" y="110" width="40" height="5" rx="2" fill="#0E7490"/>
+  <rect x="130" y="120" width="40" height="5" rx="2" fill="#0E7490"/>
+  <rect x="130" y="130" width="20" height="5" rx="2" fill="#0E7490"/>
+  <rect x="130" y="145" width="40" height="20" rx="5" fill="#0E7490"/>
+  <path d="M125 210H175L185 240H115L125 210Z" fill="#7DD3FC"/>
+  <path d="M150 186V210" stroke="#7DD3FC" stroke-width="4"/>
+  <path d="M130 155H170" stroke="white" stroke-width="2"/>
+  <circle cx="150" cy="240" r="10" fill="#0369A1"/>
+  <circle cx="133" cy="240" r="6" fill="#0369A1"/>
+  <circle cx="167" cy="240" r="6" fill="#0369A1"/>
+  <text x="150" y="278" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle">Digital Shopper</text>
+</svg>

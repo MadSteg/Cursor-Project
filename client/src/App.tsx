@@ -23,6 +23,7 @@ import UploadReceiptPage from "@/pages/UploadReceiptPage";
 import ReceiptGalleryPage from "@/pages/ReceiptGalleryPage";
 import MerchantDashboard from "@/pages/MerchantDashboard";
 import ImprovedReceiptPage from "@/pages/ImprovedReceiptPage";
+import TestNFTPage from "@/pages/TestNFTPage";
 
 // Analytics & Inventory (now integrated with NFT Wallet)
 import Analytics from "@/pages/Analytics";
