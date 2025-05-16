@@ -33,6 +33,9 @@ if (process.env.OPENAI_API_KEY) {
   }
 }
 
+// Import Tesseract OCR service as last-resort fallback
+import { extractWithTesseractJs } from './tesseractOcrService';
+
 export interface ReceiptItem {
   description: string;
   quantity: number;
@@ -116,8 +119,36 @@ export async function extractReceiptData(imageBuffer: Buffer): Promise<ReceiptDa
       }
     }
     
-    // Check if we have any text to parse
+    // Try Tesseract as a last resort if both Google Vision and OpenAI failed
     if (!fullText) {
+      console.log('Both Google Vision and OpenAI failed, trying Tesseract OCR as last resort...');
+      try {
+        // Convert buffer to base64
+        const base64Image = imageBuffer.toString('base64');
+        
+        // Use Tesseract to extract receipt data
+        const tesseractResult = await extractWithTesseractJs(base64Image);
+        
+        if (tesseractResult) {
+          console.log('Tesseract OCR successful');
+          return {
+            merchant: tesseractResult.merchantName,
+            date: tesseractResult.date,
+            total: tesseractResult.total,
+            items: tesseractResult.items.map(item => ({
+              description: item.name,
+              quantity: 1,
+              price: item.price
+            })),
+            subtotal: tesseractResult.subtotal,
+            tax: tesseractResult.tax
+          };
+        }
+      } catch (tesseractError) {
+        console.error('Tesseract OCR error:', tesseractError);
+      }
+      
+      // If we got here, all OCR methods failed
       throw new Error('No text could be extracted from the image using available OCR methods');
     }
     
