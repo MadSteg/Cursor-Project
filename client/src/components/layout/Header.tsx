@@ -86,8 +86,8 @@ const Header: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             
-            {/* Show wallet status if wallet is connected */}
-            {active ? (
+            {/* Show wallet status only when wallet is connected */}
+            {active && (
               <div className="flex items-center">
                 {/* Wallet indicator with address and network status */}
                 <div className="flex items-center px-3 py-1.5 border rounded-md bg-gray-50 mr-2">
@@ -112,16 +112,6 @@ const Header: React.FC = () => {
                   </Button>
                 )}
               </div>
-            ) : (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center"
-                onClick={connect}
-              >
-                <Wallet className="h-4 w-4 mr-1.5" /> 
-                <span>Connect Wallet</span>
-              </Button>
             )}
             
             {/* Show sign out button if authenticated */}
@@ -195,8 +185,8 @@ const Header: React.FC = () => {
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    {/* Wallet Connection Status */}
-                    {active ? (
+                    {/* Wallet Connection Status - Only show when connected */}
+                    {active && (
                       <div className="mb-4">
                         <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Wallet</p>
                         <div className="flex items-center">
@@ -218,13 +208,6 @@ const Header: React.FC = () => {
                             </Button>
                           )}
                         </div>
-                      </div>
-                    ) : (
-                      <div 
-                        className="flex items-center gap-2 text-base font-medium cursor-pointer mb-4"
-                        onClick={connect}
-                      >
-                        <Wallet className="h-5 w-5" /> Connect Wallet
                       </div>
                     )}
                     
