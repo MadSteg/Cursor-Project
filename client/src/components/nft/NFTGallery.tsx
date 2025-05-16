@@ -145,6 +145,12 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
         <p className="mt-2 text-sm text-yellow-700 dark:text-yellow-400">
           Please connect your wallet to view your NFT receipts.
         </p>
+        <Button 
+          className="mt-4"
+          onClick={() => window.location.href = '/upload-receipt'}
+        >
+          Connect Wallet
+        </Button>
       </div>
     );
   }

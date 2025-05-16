@@ -58,8 +58,8 @@ const uploadMiddleware = multer({
 router.post('/auto-process', (req: Request, res: Response) => {
   // Use multer to handle file upload
   uploadMiddleware(req, res, async (err) => {
-    // Use a fixed development wallet address - no real wallet needed
-    const devWalletAddress = '0xDEV000000000000000000000000000000000WALLET';
+    // Get the wallet address from request body or use a development fallback
+    const walletAddress = req.body.walletAddress || '0xDEV000000000000000000000000000000000WALLET';
     
     // Handle file upload errors
     if (err) {
@@ -152,7 +152,7 @@ router.post('/auto-process', (req: Request, res: Response) => {
       };
 
       // Encrypt line items (for privacy)
-      const encryptedItems = await encryptLineItems(devWalletAddress, receiptData);
+      const encryptedItems = await encryptLineItems(walletAddress, receiptData);
       
       // Status for NFT gift - assume eligible
       let nftGiftStatus = {
@@ -169,7 +169,7 @@ router.post('/auto-process', (req: Request, res: Response) => {
       
       // Create a task for processing the NFT
       const purchaseTask = createNFTPurchaseTask(
-        devWalletAddress, 
+        walletAddress, 
         receiptId, 
         receiptData,
         encryptedMetadataInfo
