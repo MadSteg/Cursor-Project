@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'wouter'; 
 import { Helmet } from 'react-helmet';
 import ImprovedReceiptUploader from '@/components/receipts/ImprovedReceiptUploader';
-import { useWeb3 } from '@/contexts/Web3Context';
+import { useWallet } from '@/contexts/WalletContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Wallet } from 'lucide-react';
@@ -19,29 +19,29 @@ import { Wallet } from 'lucide-react';
  * It enforces wallet connection before allowing receipt upload.
  */
 const ImprovedReceiptPage: React.FC = () => {
-  const { active, connect, isCorrectNetwork, switchToPolygonAmoy } = useWeb3();
+  const { isConnected, connectMetaMask, chainId, switchToPolygonAmoy } = useWallet();
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
   useEffect(() => {
     // Show a toast if wallet is not connected
-    if (!active) {
+    if (!isConnected) {
       toast({
         title: 'Wallet Connection Required',
         description: 'Please connect your wallet to mint BlockReceipts',
         variant: 'default',
       });
-    } else if (!isCorrectNetwork) {
+    } else if (chainId !== 80002) { // Polygon Amoy network is 80002
       toast({
         title: 'Network Switch Required',
         description: 'Please switch to Polygon Amoy network',
         variant: 'default',
       });
     }
-  }, [active, isCorrectNetwork]);
+  }, [isConnected, chainId]);
 
   // If wallet is not connected, show the connect wallet screen
-  if (!active) {
+  if (!isConnected) {
     return (
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <Helmet>

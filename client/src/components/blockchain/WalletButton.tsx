@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Wallet, Plug, Loader2, LogOut, Shield, Check } from "lucide-react";
-import { useWalletConnect } from '@/hooks/useWalletConnect';
+import { useWallet } from '@/contexts/WalletContext';
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,

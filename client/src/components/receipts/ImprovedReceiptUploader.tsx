@@ -547,7 +547,7 @@ export function ImprovedReceiptUploader() {
                         <Lock className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-green-800">Protected with Threshold TaCo</p>
+                        <p className="font-medium text-green-800">Protected with Access Control</p>
                         <p className="text-sm text-green-700">Your receipt data is secured with Threshold Proxy Re-Encryption</p>
                       </div>
                     </div>
