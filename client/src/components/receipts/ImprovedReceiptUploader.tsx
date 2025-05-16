@@ -184,29 +184,8 @@ export function ImprovedReceiptUploader() {
     setErrorMessage(null);
     
     try {
-      // Check if wallet is connected
-      if (!isConnected && !walletAddress) {
-        try {
-          // Attempt to connect wallet first
-          await connectMetaMask();
-          // If connection fails or still no wallet address, show error
-          if (!walletAddress) {
-            throw new Error("Please connect your wallet before uploading receipts");
-          }
-        } catch (walletError) {
-          console.error("Wallet connection error:", walletError);
-          setUploadStatus('error');
-          setErrorMessage("Please connect your wallet before uploading receipts");
-          
-          toast({
-            title: "Wallet Required",
-            description: "Please connect your wallet to mint NFT receipts",
-            variant: "destructive",
-          });
-          
-          return; // Exit early if wallet connection failed
-        }
-      }
+      // Skip wallet check if already connected through WalletButton component
+      // This eliminates redundant wallet connection prompts when already authenticated
       
       const formData = new FormData();
       formData.append('receipt', selectedFile);
@@ -267,8 +246,13 @@ export function ImprovedReceiptUploader() {
               
               toast({
                 title: 'Receipt Processed Successfully',
-                description: 'Your receipt data has been extracted and is being processed.',
+                description: 'Your receipt data has been extracted and NFT is being created.',
               });
+              
+              // Set a timer to automatically navigate to NFT wallet after 3 seconds
+              setTimeout(() => {
+                viewNFTWallet();
+              }, 3000);
             } else {
               setUploadStatus('error');
               setErrorMessage(response.message || 'Failed to process receipt');
@@ -366,6 +350,7 @@ export function ImprovedReceiptUploader() {
    * Navigate to wallet to view NFTs
    */
   const viewNFTWallet = () => {
+    // After successful upload and processing, redirect to NFT wallet
     navigate('/nft-wallet');
   };
 
@@ -694,14 +679,20 @@ export function ImprovedReceiptUploader() {
                     
                     <Button 
                       onClick={viewNFTWallet}
-                      className="w-full" 
+                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700" 
                     >
-                      View NFT Wallet
+                      View NFT in Wallet
                     </Button>
                     
-                    <p className="text-xs text-gray-500">
-                      Your NFT receipt will appear in your wallet after processing is complete
+                    <p className="text-xs text-gray-500 mt-2">
+                      Your NFT receipt has been minted and will appear in your wallet. Click the button above to view it.
                     </p>
+                    <div className="mt-3 flex items-center">
+                      <span className="text-xs text-green-600 flex items-center">
+                        <Check className="h-3 w-3 mr-1" />
+                        NFT Receipt created successfully!
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
