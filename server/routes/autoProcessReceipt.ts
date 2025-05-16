@@ -9,7 +9,8 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { extractReceiptData } from '../../shared/utils/receiptLogic';
+// Import the new Google Cloud Vision OCR service instead of the old Tesseract-based one
+import { processReceiptImage } from '../services/ocrService';
 import { encryptLineItems } from '../utils/encryptLineItems';
 import { createNFTPurchaseTask } from '../services/taskQueue';
 import { metadataService } from '../services/metadataService';
@@ -80,8 +81,24 @@ router.post('/auto-process', (req: Request, res: Response) => {
 
       console.log(`Auto-processing receipt: ${req.file.originalname} (${req.file.size} bytes) saved as ${req.file.filename}`);
 
-      // Extract data from receipt
-      const receiptData = await extractReceiptData(req.file.path);
+      // Extract data from receipt using Google Cloud Vision
+      const visionReceiptData = await processReceiptImage(req.file.path);
+      
+      // Map the Google Vision receipt format to our application format
+      const receiptData = {
+        merchantName: visionReceiptData.merchant,
+        date: visionReceiptData.date,
+        items: visionReceiptData.items.map(item => ({
+          name: item.description,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        subtotal: visionReceiptData.subtotal || 0,
+        tax: visionReceiptData.tax || 0,
+        total: visionReceiptData.total,
+        rawText: '',
+        confidence: 0.9 // Google Vision typically has high confidence
+      };
       
       // Validate receipt data extraction
       if (!receiptData) {
@@ -99,7 +116,7 @@ router.post('/auto-process', (req: Request, res: Response) => {
       }
 
       // Generate receipt ID (simulated, would usually come from a database)
-      const receiptId = Date.now();
+      const receiptId = Date.now().toString();
       
       // Create encrypted metadata for TACo
       let encryptedData = null;
@@ -135,7 +152,7 @@ router.post('/auto-process', (req: Request, res: Response) => {
       };
 
       // Encrypt line items (for privacy)
-      const encryptedItems = encryptLineItems(receiptData.items);
+      const encryptedItems = await encryptLineItems(devWalletAddress, receiptData);
       
       // Status for NFT gift - assume eligible
       let nftGiftStatus = {
@@ -147,8 +164,7 @@ router.post('/auto-process', (req: Request, res: Response) => {
       // Prepare encrypted metadata
       const encryptedMetadataInfo = encryptedData ? {
         capsule: encryptedData.capsule,
-        ciphertext: encryptedData.ciphertext,
-        policyPublicKey: encryptedData.policyPublicKey
+        ciphertext: encryptedData.ciphertext
       } : undefined;
       
       // Create a task for processing the NFT
@@ -159,13 +175,17 @@ router.post('/auto-process', (req: Request, res: Response) => {
         encryptedMetadataInfo
       );
       
-      // Update NFT gift status
+      // Update NFT gift status with task ID
       nftGiftStatus = {
         status: 'processing',
         message: 'Your NFT receipt is being processed automatically.',
-        eligible: true,
-        taskId: purchaseTask.id
+        eligible: true
       };
+      
+      // Add task ID to the status object if available
+      if (purchaseTask && purchaseTask.id) {
+        (nftGiftStatus as any).taskId = purchaseTask.id;
+      }
       
       // Add NFT gift status to response
       responseData.nftGift = nftGiftStatus;

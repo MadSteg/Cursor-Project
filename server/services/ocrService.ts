@@ -1,567 +1,302 @@
-/**
- * OCR Service for Receipt Scanning
- * 
- * This service handles the extraction of data from receipt images using multiple methods:
- * 1. OpenAI's GPT-4o Vision API for high-quality extraction
- * 2. Tesseract OCR for offline/local processing when OpenAI is unavailable 
- * 3. Multi-level caching (memory, disk, and database) for performance
- */
-
-import OpenAI from 'openai';
-import { createHash } from 'crypto';
-import fs from 'fs';
+import vision from '@google-cloud/vision';
+import { promises as fs } from 'fs';
 import path from 'path';
-import { db } from '../db';
-import { eq } from 'drizzle-orm';
-import { ocrResultCache, ExtractedReceiptData as SchemaExtractedReceiptData } from '../../shared/schema';
 
-// Initialize OpenAI client
-if (!process.env.OPENAI_API_KEY) {
-  console.warn('OPENAI_API_KEY environment variable is missing. OCR will use fallback methods.');
+// Initialize the client
+const client = new vision.ImageAnnotatorClient();
+
+export interface ReceiptItem {
+  description: string;
+  quantity: number;
+  price: number;
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy-key',
-});
-
-// Create cache directories if they don't exist
-const CACHE_DIR = path.join(process.cwd(), 'cache');
-const OCR_CACHE_DIR = path.join(CACHE_DIR, 'ocr');
-
-// Ensure the directories exist
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
-}
-if (!fs.existsSync(OCR_CACHE_DIR)) {
-  fs.mkdirSync(OCR_CACHE_DIR, { recursive: true });
-}
-
-// LRU Cache for OCR results
-interface CacheEntry {
-  timestamp: number;
-  data: ExtractedReceiptData;
-}
-
-// Database cache functions
-async function getFromDbCache(imageHash: string): Promise<ExtractedReceiptData | null> {
-  if (!db) return null;
-  
-  try {
-    const result = await db.select().from(ocrResultCache)
-      .where(eq(ocrResultCache.imageHash, imageHash))
-      .limit(1);
-      
-    if (result.length > 0) {
-      console.log(`Using database cached OCR result for image ${imageHash}`);
-      return result[0].result as unknown as ExtractedReceiptData;
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Error reading from database cache:', error);
-    return null;
-  }
-}
-
-async function saveToDbCache(imageHash: string, data: ExtractedReceiptData, method: string) {
-  if (!db) return;
-  
-  try {
-    // Convert confidence from 0-1 to 0-100 for storage
-    const confidenceScore = Math.round(data.confidence * 100);
-    
-    // Set expiry date (30 days from now)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30);
-    
-    await db.insert(ocrResultCache).values({
-      imageHash,
-      result: data as any,
-      confidence: confidenceScore,
-      processingMethod: method,
-      expiresAt
-    });
-    
-    console.log(`Saved OCR result to database cache for image ${imageHash}`);
-  } catch (error) {
-    console.error('Error saving to database cache:', error);
-  }
-}
-
-const OCR_CACHE: Record<string, CacheEntry> = {}; 
-const CACHE_MAX_SIZE = 100; // Maximum number of items in cache
-const CACHE_TTL = 24 * 60 * 60 * 1000; // Cache TTL: 24 hours
-
-// Function to clean up old cache entries
-function cleanupCache() {
-  const now = Date.now();
-  const entries = Object.entries(OCR_CACHE);
-  
-  // Remove expired entries
-  for (const [key, entry] of entries) {
-    if (now - entry.timestamp > CACHE_TTL) {
-      delete OCR_CACHE[key];
-    }
-  }
-  
-  // If we still have too many entries, remove oldest ones
-  if (Object.keys(OCR_CACHE).length > CACHE_MAX_SIZE) {
-    const sortedEntries = entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    const toRemove = sortedEntries.slice(0, sortedEntries.length - CACHE_MAX_SIZE);
-    
-    for (const [key] of toRemove) {
-      delete OCR_CACHE[key];
-    }
-  }
-}
-
-// Types
-export interface ExtractedReceiptData {
-  merchantName: string;
+export interface ReceiptData {
+  merchant: string;
   date: string;
-  items: Array<{
-    name: string;
-    price: number;
-    quantity: number;
-  }>;
-  subtotal: number;
-  tax: number;
   total: number;
-  category?: string;
-  confidence: number;
-  rawText?: string;
+  items: ReceiptItem[];
+  subtotal?: number;
+  tax?: number;
 }
 
 /**
- * Process a receipt image and extract structured data using OCR with caching
- * 
- * @param imageBase64 Base64 encoded image data
- * @returns Extracted receipt data or null if extraction failed
+ * Extract data from receipt using Google Cloud Vision API
+ * @param imageBuffer Buffer containing receipt image
+ * @returns Structured receipt data
  */
-export async function extractReceiptData(imageBase64: string): Promise<ExtractedReceiptData | null> {
+export async function extractReceiptData(imageBuffer: Buffer): Promise<ReceiptData> {
   try {
-    console.log('Starting receipt OCR processing...');
+    // Call Vision API for document text detection
+    const [result] = await client.documentTextDetection(imageBuffer);
+    const fullText = result.fullTextAnnotation?.text || '';
     
-    // Generate a hash of the image for caching and logging
-    const imageHash = createHash('sha256')
-      .update(imageBase64.substring(0, 5000)) // Using first 5000 chars for better uniqueness
-      .digest('hex')
-      .substring(0, 20); // Use first 20 chars of hash for better uniqueness
-    
-    console.log(`Processing receipt image: ${imageHash}...`);
-    
-    // Clean up cache periodically
-    cleanupCache();
-    
-    // Level 1: Check memory cache first (fastest)
-    if (OCR_CACHE[imageHash]) {
-      console.log(`Using in-memory cached OCR result for image ${imageHash}`);
-      return OCR_CACHE[imageHash].data;
+    if (!fullText) {
+      throw new Error('No text detected in the image');
     }
     
-    // Level 2: Check database cache
-    if (db) {
-      const dbCachedData = await getFromDbCache(imageHash);
-      if (dbCachedData) {
-        // Found in database, update memory cache
-        OCR_CACHE[imageHash] = {
-          timestamp: Date.now(),
-          data: dbCachedData
-        };
-        
-        return dbCachedData;
-      }
-    }
+    console.log('OCR Text:', fullText);
     
-    // Level 3: Check disk cache
-    const cachePath = path.join(OCR_CACHE_DIR, `${imageHash}.json`);
-    if (fs.existsSync(cachePath)) {
-      try {
-        const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
-        console.log(`Using disk-cached OCR result for image ${imageHash}`);
-        
-        // Update the in-memory cache
-        OCR_CACHE[imageHash] = {
-          timestamp: Date.now(),
-          data: cachedData
-        };
-        
-        // Also update the database cache for future requests
-        if (db) {
-          saveToDbCache(imageHash, cachedData, 'disk-cache');
-        }
-        
-        return cachedData;
-      } catch (cacheError) {
-        console.warn(`Failed to read disk cache for ${imageHash}:`, cacheError);
-        // Continue with API call if cache read fails
-      }
-    }
-    
-    // Function to process the receipt with OpenAI
-    const processWithOpenAI = async (): Promise<ExtractedReceiptData | null> => {
-      try {
-        // The newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `You are an expert OCR system specialized in extracting structured data from receipt images. 
-              Extract the following information from the receipt image:
-              - Merchant name (store/business name)
-              - Date of purchase (in ISO format YYYY-MM-DD if possible)
-              - List of items purchased with name, price (in dollars), and quantity
-              - Subtotal (before tax, in dollars)
-              - Tax amount (in dollars)
-              - Total amount (in dollars)
-              - Merchant category (if identifiable)
-              
-              Respond with JSON only in this exact format:
-              {
-                "merchantName": "string",
-                "date": "YYYY-MM-DD",
-                "items": [
-                  {
-                    "name": "string",
-                    "price": float,
-                    "quantity": integer
-                  }
-                ],
-                "subtotal": float,
-                "tax": float,
-                "total": float,
-                "category": "string",
-                "confidence": float (0.0-1.0),
-                "rawText": "string (all text recognized from receipt)"
-              }
-              
-              For fields you cannot determine, make reasonable estimations with lower confidence scores. For items, try to extract as many as visible.
-              If total and tax are visible but subtotal is not, calculate subtotal = total - tax.
-              Make sure all numeric values are in dollars (not cents).
-              IMPORTANT: Respond ONLY with a JSON object, no prose.`
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "Analyze this receipt image and extract the structured data as JSON."
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/jpeg;base64,${imageBase64}`
-                  }
-                }
-              ]
-            }
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 2000
-        });
-        
-        // Extract the JSON response
-        if (response.choices[0].message.content) {
-          const result = JSON.parse(response.choices[0].message.content);
-          return result;
-        }
-        return null;
-      } catch (openaiError) {
-        console.error('OpenAI API error:', openaiError);
-        return null;
-      }
-    };
-    
-    // Attempt to process with OpenAI
-    let result = null;
-    
-    if (process.env.OPENAI_API_KEY) {
-      // Only attempt OpenAI if we have an API key
-      console.log('Attempting to process receipt with OpenAI...');
-      result = await processWithOpenAI();
-      
-      if (!result) {
-        console.log('OpenAI OCR failed, falling back to alternative method');
-        // We'd implement an alternative OCR here if needed
-      }
-    } else {
-      console.log('No OpenAI API key available, skipping OpenAI processing');
-    }
-    
-    // If result is null (API failed or no key), use Tesseract OCR as fallback
-    if (!result) {
-      console.log('OpenAI OCR failed, falling back to Tesseract OCR');
-      
-      try {
-        // Dynamically import Tesseract OCR service to avoid circular dependency
-        const { extractWithTesseractJs, extractWithNodeTesseract } = await import('./tesseractOcrService');
-        
-        // Try Tesseract.js first
-        result = await extractWithTesseractJs(imageBase64);
-        
-        // If Tesseract.js fails, try node-tesseract-ocr as a second fallback
-        if (!result) {
-          console.log('Tesseract.js failed, trying node-tesseract-ocr as secondary fallback');
-          result = await extractWithNodeTesseract(imageBase64);
-        }
-        
-        if (result) {
-          console.log('Successfully processed receipt with Tesseract OCR fallback');
-        } else {
-          console.warn('All OCR fallbacks failed');
-          return null;
-        }
-      } catch (fallbackError) {
-        console.error('Error in Tesseract OCR fallback:', fallbackError);
-        return null;
-      }
-    }
-    
-    // Validate and transform the data
-    const extractedData: ExtractedReceiptData = {
-      merchantName: result.merchantName || "Unknown Merchant",
-      date: result.date || new Date().toISOString().split('T')[0],
-      items: (result.items || []).map((item: any) => ({
-        name: item.name || "Unknown Item",
-        // Ensure price is a number and convert to cents
-        price: typeof item.price === 'number' ? Math.round(item.price * 100) : 0,
-        quantity: typeof item.quantity === 'number' ? item.quantity : 1
-      })),
-      // Convert dollar amounts to cents for storage
-      subtotal: typeof result.subtotal === 'number' ? Math.round(result.subtotal * 100) : 0,
-      tax: typeof result.tax === 'number' ? Math.round(result.tax * 100) : 0,
-      total: typeof result.total === 'number' ? Math.round(result.total * 100) : 0,
-      category: result.category || undefined,
-      confidence: typeof result.confidence === 'number' ? Math.min(Math.max(result.confidence, 0), 1) : 0.5,
-      rawText: result.rawText
-    };
-    
-    // Calculate missing values if needed
-    if (extractedData.total === 0 && extractedData.subtotal > 0) {
-      extractedData.total = extractedData.subtotal + extractedData.tax;
-    } else if (extractedData.subtotal === 0 && extractedData.total > 0 && extractedData.tax >= 0) {
-      extractedData.subtotal = extractedData.total - extractedData.tax;
-    }
-    
-    // Cache the result in memory
-    OCR_CACHE[imageHash] = {
-      timestamp: Date.now(),
-      data: extractedData
-    };
-    
-    // Cache to disk
-    try {
-      fs.writeFileSync(
-        path.join(OCR_CACHE_DIR, `${imageHash}.json`),
-        JSON.stringify(extractedData),
-        'utf8'
-      );
-    } catch (cacheWriteError) {
-      console.warn('Failed to write to disk cache:', cacheWriteError);
-      // Continue even if cache write fails
-    }
-    
-    // Cache to database
-    if (db) {
-      try {
-        // Determine which OCR method was used
-        const processingMethod = result.confidence > 0.8 ? 'openai' : 'tesseract';
-        
-        // Save to database cache
-        await saveToDbCache(imageHash, extractedData, processingMethod);
-      } catch (dbCacheError) {
-        console.warn('Failed to write to database cache:', dbCacheError);
-        // Continue even if database cache write fails
-      }
-    }
-    
-    console.log(`Successfully extracted receipt data for ${extractedData.merchantName} (${imageHash})`);
-    return extractedData;
+    // Parse the extracted text
+    return parseReceiptText(fullText);
   } catch (error) {
-    console.error('OCR extraction error:', error);
-    return null;
+    console.error('Google Vision API error:', error);
+    throw new Error(`Failed to extract receipt data: ${error.message}`);
   }
 }
 
-// Simple in-memory cache for category inference
-const CATEGORY_CACHE: Record<string, string> = {};
-const CATEGORY_CACHE_MAX_SIZE = 1000;
-
 /**
- * Infer receipt category from items and merchant name with caching
- * 
- * @param merchantName Name of the merchant
- * @param items List of purchased items
- * @returns Inferred category or "other" if unable to determine
+ * Extract structured receipt data from OCR text
+ * @param text Raw OCR text from the receipt
+ * @returns Structured receipt data
  */
-export async function inferReceiptCategory(
-  merchantName: string, 
-  items: Array<{name: string; price: number}> | string
-): Promise<string> {
-  try {
-    // Prepare the input text from merchant and items
-    let itemDescriptions: string;
-    if (typeof items === 'string') {
-      itemDescriptions = items;
-    } else {
-      itemDescriptions = items.map(item => item.name).join(', ');
+function parseReceiptText(text: string): ReceiptData {
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+  
+  // Default receipt data
+  const receipt: ReceiptData = {
+    merchant: 'Unknown Merchant',
+    date: new Date().toLocaleDateString(),
+    total: 0,
+    items: [],
+    subtotal: 0,
+    tax: 0
+  };
+  
+  // Extract merchant name (typically in the first few lines)
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    if (lines[i].length > 3 && !lines[i].match(/^(tel|phone|address|store|receipt|invoice)/i)) {
+      receipt.merchant = lines[i];
+      break;
+    }
+  }
+  
+  // Extract date
+  const datePattern = /(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})|(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{2,4})/i;
+  for (const line of lines) {
+    const dateMatch = line.match(datePattern);
+    if (dateMatch) {
+      receipt.date = dateMatch[0];
+      break;
+    }
+  }
+  
+  // Extract total amount
+  const totalPattern = /total[\s:]*([$€£¥])?(\d+[.,]\d{2})/i;
+  for (const line of lines) {
+    const totalMatch = line.match(totalPattern);
+    if (totalMatch) {
+      receipt.total = parseFloat(totalMatch[2].replace(',', '.'));
+      break;
+    }
+  }
+  
+  // Extract subtotal if available
+  const subtotalPattern = /subtotal[\s:]*([$€£¥])?(\d+[.,]\d{2})/i;
+  for (const line of lines) {
+    const subtotalMatch = line.match(subtotalPattern);
+    if (subtotalMatch) {
+      receipt.subtotal = parseFloat(subtotalMatch[2].replace(',', '.'));
+      break;
+    }
+  }
+  
+  // Extract tax if available
+  const taxPattern = /(?:tax|vat|gst)[\s:]*([$€£¥])?(\d+[.,]\d{2})/i;
+  for (const line of lines) {
+    const taxMatch = line.match(taxPattern);
+    if (taxMatch) {
+      receipt.tax = parseFloat(taxMatch[2].replace(',', '.'));
+      break;
+    }
+  }
+  
+  // Extract line items
+  // This is trickier as item formats vary widely between receipts
+  let inItemsSection = false;
+  let currentItem: Partial<ReceiptItem> = {};
+  
+  const pricePattern = /([$€£¥])?(\d+[.,]\d{2})/;
+  const quantityPattern = /(\d+)\s*[xX]/;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Skip header lines and total sections
+    if (line.match(/subtotal|total|tax|amount|payment|card|cash|change/i)) {
+      continue;
     }
     
-    // Create a cache key from the merchant and items
-    const cacheKey = createHash('md5')
-      .update(`${merchantName}:${itemDescriptions}`)
-      .digest('hex');
-    
-    // Check cache first
-    if (CATEGORY_CACHE[cacheKey]) {
-      console.log(`Using cached category for ${merchantName}: ${CATEGORY_CACHE[cacheKey]}`);
-      return CATEGORY_CACHE[cacheKey];
-    }
-    
-    // Trim cache if it's getting too large
-    const cacheKeys = Object.keys(CATEGORY_CACHE);
-    if (cacheKeys.length > CATEGORY_CACHE_MAX_SIZE) {
-      // Remove 20% of the oldest entries
-      const keysToRemove = Math.floor(CATEGORY_CACHE_MAX_SIZE * 0.2);
-      for (let i = 0; i < keysToRemove; i++) {
-        delete CATEGORY_CACHE[cacheKeys[i]];
+    const priceMatch = line.match(pricePattern);
+    if (priceMatch) {
+      const price = parseFloat(priceMatch[2].replace(',', '.'));
+      
+      // If we have a price, let's try to extract the item details
+      const lineParts = line.split(priceMatch[0]).map(part => part.trim());
+      const description = lineParts[0];
+      
+      if (description && description.length > 1) {
+        // Check for quantity
+        const quantityMatch = description.match(quantityPattern);
+        const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+        
+        // Clean up description
+        const cleanDescription = description.replace(quantityPattern, '').trim();
+        
+        receipt.items.push({
+          description: cleanDescription || 'Unknown Item',
+          quantity,
+          price
+        });
       }
     }
-    
-    const validCategories = [
-      'groceries', 'dining', 'retail', 'electronics', 'travel', 
-      'entertainment', 'utilities', 'health', 'beauty', 'home', 
-      'education', 'charity', 'other'
+  }
+  
+  // If no items were found using pattern matching, try a simpler approach
+  if (receipt.items.length === 0) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const priceMatch = line.match(pricePattern);
+      
+      if (priceMatch && 
+          !line.match(/subtotal|total|tax|amount|payment|card|cash|change/i)) {
+        const price = parseFloat(priceMatch[2].replace(',', '.'));
+        const description = line.replace(pricePattern, '').trim();
+        
+        if (description && price > 0) {
+          receipt.items.push({
+            description,
+            quantity: 1,
+            price
+          });
+        }
+      }
+    }
+  }
+  
+  // If we still don't have items but have a total, create a single generic item
+  if (receipt.items.length === 0 && receipt.total > 0) {
+    receipt.items.push({
+      description: 'Purchase',
+      quantity: 1,
+      price: receipt.total
+    });
+  }
+  
+  // If we have items but no total, calculate it
+  if (receipt.total === 0 && receipt.items.length > 0) {
+    receipt.total = receipt.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  }
+  
+  // If we have total but no subtotal, use total as subtotal if tax is 0
+  if (receipt.subtotal === 0 && receipt.tax === 0) {
+    receipt.subtotal = receipt.total;
+  }
+  
+  return receipt;
+}
+
+/**
+ * Process a receipt image file and extract its data
+ * @param filePath Path to receipt image file
+ * @returns Structured receipt data
+ */
+export async function processReceiptImage(filePath: string): Promise<ReceiptData> {
+  try {
+    const imageBuffer = await fs.readFile(filePath);
+    return extractReceiptData(imageBuffer);
+  } catch (error) {
+    console.error('Error processing receipt image:', error);
+    throw new Error(`Failed to process receipt image: ${error.message}`);
+  }
+}
+
+/**
+ * Uses AI to infer the category of a receipt based on the merchant and items
+ * @param merchantName The name of the merchant/store
+ * @param itemsText Text representation of the items on the receipt
+ * @returns Inferred category string
+ */
+export async function inferReceiptCategory(merchantName: string, itemsText: string): Promise<string> {
+  try {
+    // List of common receipt categories
+    const categories = [
+      'groceries',
+      'restaurant',
+      'electronics',
+      'clothing',
+      'entertainment',
+      'travel',
+      'transportation',
+      'healthcare',
+      'home',
+      'office',
+      'pets',
+      'gifts',
+      'beauty',
+      'sports',
+      'other'
     ];
     
-    let category = 'other';
+    // Basic category inference based on merchant name
+    const merchantNameLower = merchantName.toLowerCase();
     
-    // Only attempt OpenAI if we have an API key
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        // Call the OpenAI API
-        // The newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `You are a receipt categorization system. Based on the merchant name and items purchased, 
-              classify the receipt into one of these categories:
-              - groceries
-              - dining
-              - retail
-              - electronics
-              - travel
-              - entertainment
-              - utilities
-              - health
-              - beauty
-              - home
-              - education
-              - charity
-              - other
-              
-              Respond with just the category name in lowercase, no explanation.`
-            },
-            {
-              role: "user",
-              content: `Merchant: ${merchantName}\nItems: ${itemDescriptions}`
-            }
-          ],
-          max_tokens: 20
-        });
-        
-        category = response.choices[0].message.content?.trim().toLowerCase() || 'other';
-        
-        // Validate that the category is one of our allowed values
-        if (!validCategories.includes(category)) {
-          category = 'other';
-        }
-      } catch (openaiError) {
-        console.error('OpenAI category inference error:', openaiError);
-        // Fall back to rule-based categorization
-        category = await fallbackCategorization(merchantName, itemDescriptions);
-      }
-    } else {
-      // If no API key, use rule-based categorization
-      category = await fallbackCategorization(merchantName, itemDescriptions);
+    // Restaurant detection
+    if (merchantNameLower.includes('restaurant') || merchantNameLower.includes('café') || 
+        merchantNameLower.includes('cafe') || merchantNameLower.includes('pizza') ||
+        merchantNameLower.includes('grill') || merchantNameLower.includes('bar') ||
+        merchantNameLower.includes('kitchen') || merchantNameLower.includes('bistro')) {
+      return 'restaurant';
     }
     
-    // Cache the result
-    CATEGORY_CACHE[cacheKey] = category;
+    // Grocery detection
+    if (merchantNameLower.includes('grocery') || merchantNameLower.includes('groceries') ||
+        merchantNameLower.includes('market') || merchantNameLower.includes('food') ||
+        merchantNameLower.includes('supermarket') || merchantNameLower.includes('mart')) {
+      return 'groceries';
+    }
     
-    return category;
+    // Electronics detection
+    if (merchantNameLower.includes('electronics') || merchantNameLower.includes('tech') ||
+        merchantNameLower.includes('computer') || merchantNameLower.includes('digital') ||
+        merchantNameLower.includes('mobile') || merchantNameLower.includes('phone')) {
+      return 'electronics';
+    }
+    
+    // Clothing detection
+    if (merchantNameLower.includes('clothing') || merchantNameLower.includes('apparel') ||
+        merchantNameLower.includes('fashion') || merchantNameLower.includes('wear') ||
+        merchantNameLower.includes('boutique') || merchantNameLower.includes('dress')) {
+      return 'clothing';
+    }
+    
+    // If we can't determine from merchant name, try to infer from the items
+    if (itemsText) {
+      const itemsLower = itemsText.toLowerCase();
+      
+      if (itemsLower.includes('milk') || itemsLower.includes('bread') || 
+          itemsLower.includes('egg') || itemsLower.includes('fruit') ||
+          itemsLower.includes('vegetable') || itemsLower.includes('meat')) {
+        return 'groceries';
+      }
+      
+      if (itemsLower.includes('tv') || itemsLower.includes('phone') || 
+          itemsLower.includes('computer') || itemsLower.includes('cable') ||
+          itemsLower.includes('charger') || itemsLower.includes('laptop')) {
+        return 'electronics';
+      }
+      
+      if (itemsLower.includes('shirt') || itemsLower.includes('pant') || 
+          itemsLower.includes('dress') || itemsLower.includes('sock') ||
+          itemsLower.includes('shoe') || itemsLower.includes('jacket')) {
+        return 'clothing';
+      }
+    }
+    
+    // Default category if we can't determine
+    return 'other';
   } catch (error) {
-    console.error('Category inference error:', error);
+    console.error('Error inferring receipt category:', error);
     return 'other';
   }
 }
-
-/**
- * Simple rule-based categorization as fallback when OpenAI is unavailable
- * @param merchantName The merchant name
- * @param itemDescriptions The item descriptions
- * @returns A category
- */
-async function fallbackCategorization(merchantName: string, itemDescriptions: string): Promise<string> {
-  try {
-    // Import the Tesseract OCR service
-    const tesseractService = await import('./tesseractOcrService');
-    
-    // Convert string itemDescriptions to array of objects for Tesseract categorization
-    const items = itemDescriptions.split(',').map(item => ({
-      name: item.trim(),
-      price: 0
-    }));
-    
-    return tesseractService.inferCategoryFromText(merchantName, items);
-  } catch (error) {
-    console.warn('Error using Tesseract categorization, falling back to basic keywords', error);
-    
-    // Basic keyword-based categorization as final fallback
-    const merchant = merchantName.toLowerCase();
-    const items = itemDescriptions.toLowerCase();
-    
-    const keywords = {
-      groceries: ['grocery', 'supermarket', 'food', 'mart', 'market', 'fresh', 'produce', 'deli'],
-      dining: ['restaurant', 'cafe', 'coffee', 'bar', 'grill', 'eatery', 'bistro', 'kitchen', 'diner'],
-      retail: ['store', 'shop', 'mall', 'boutique', 'outlet', 'clothing', 'apparel', 'fashion'],
-      electronics: ['electronic', 'tech', 'computer', 'phone', 'device', 'gadget', 'digital', 'tv', 'appliance'],
-      travel: ['airline', 'hotel', 'motel', 'flight', 'car rental', 'vacation', 'travel', 'booking', 'trip'],
-      entertainment: ['movie', 'theater', 'cinema', 'concert', 'show', 'ticket', 'event', 'game', 'streaming'],
-      utilities: ['electric', 'water', 'gas', 'power', 'internet', 'phone', 'telecom', 'utility', 'bill'],
-      health: ['pharmacy', 'drug', 'medical', 'doctor', 'health', 'hospital', 'clinic', 'care'],
-      beauty: ['salon', 'spa', 'cosmetic', 'beauty', 'nail', 'hair', 'makeup', 'barber'],
-      home: ['hardware', 'furniture', 'home', 'garden', 'decor', 'improvement', 'repair', 'tool'],
-      education: ['school', 'college', 'university', 'course', 'class', 'tuition', 'education', 'book', 'learning'],
-      charity: ['donation', 'charity', 'foundation', 'nonprofit', 'fund', 'giving', 'support']
-    };
-    
-    // Check merchant name first
-    for (const [category, terms] of Object.entries(keywords)) {
-      for (const term of terms) {
-        if (merchant.includes(term)) {
-          return category;
-        }
-      }
-    }
-    
-    // Then check items
-    for (const [category, terms] of Object.entries(keywords)) {
-      for (const term of terms) {
-        if (items.includes(term)) {
-          return category;
-        }
-      }
-    }
-    
-    return 'other';
-  }
-}
-
-export default {
-  extractReceiptData,
-  inferReceiptCategory
-};
