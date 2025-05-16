@@ -260,50 +260,216 @@ class OCRService {
       // The first annotation contains all the detected text
       const fullText = detections[0].description;
       
-      // Parse the text to extract receipt data
-      // This is a simplified parsing, would be more complex in production
-      const lines = fullText.split('\n');
+      // Parse text to extract receipt data with improved algorithms
+      const lines = fullText.split('\n').filter(line => line.trim().length > 0);
+      logger.debug(`Google Vision detected ${lines.length} lines of text`);
       
-      // Extract merchant name (usually at the top of the receipt)
-      const merchantName = lines[0].trim();
+      // Enhanced merchant name extraction (usually at the top of the receipt)
+      let merchantName = 'Unknown Merchant';
+      const skipWords = ['receipt', 'invoice', 'order', 'transaction', 'purchase', 'sale', 'thank', 'welcome'];
+      const skipRegexes = [
+        /^\d+$/,                  // Just numbers
+        /^tel:|^phone:/i,         // Phone numbers
+        /^fax:/i,                 // Fax numbers
+        /^www\.|http|\.com/i,     // Websites
+        /^-+$/,                   // Just dashes
+        /^=+$/,                   // Just equals signs
+        /^#\d+$/,                 // Receipt numbers
+        /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/ // Dates
+      ];
       
-      // Extract date using regex
-      const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
-      const dateMatch = fullText.match(dateRegex);
-      const date = dateMatch 
-        ? this.formatDate(dateMatch[0]) 
-        : new Date().toISOString().split('T')[0]; // Default to today
+      // Find the most likely merchant name in the first few lines
+      merchantNameSearch:
+      for (let i = 0; i < Math.min(7, lines.length); i++) {
+        const line = lines[i].trim();
+        
+        // Skip lines that are too short or contain skip words
+        if (line.length < 3) continue;
+        if (skipWords.some(word => line.toLowerCase().includes(word))) continue;
+        if (skipRegexes.some(regex => line.match(regex))) continue;
+        
+        // This is likely the merchant name
+        merchantName = line;
+        break merchantNameSearch;
+      }
       
-      // Extract total using regex
-      const totalRegex = /(?:total|amount|due)[:\s]*[$€£¥]?\s*(\d+[.,]\d+)/i;
-      const totalMatch = fullText.match(totalRegex);
-      const total = totalMatch 
-        ? parseFloat(totalMatch[1].replace(',', '.')) 
-        : 0;
+      // Enhanced date extraction
+      let date = '';
+      // Common date formats in receipts
+      const dateRegexes = [
+        /(\d{1,4}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/,               // MM/DD/YYYY or YYYY/MM/DD
+        /(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,]*(\d{2,4})/i, // 15 Jan 2023
+        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,]*(\d{1,2})[\s,]*(\d{2,4})/i // Jan 15, 2023
+      ];
       
-      // Extract items (simplified approach)
-      const items: LineItem[] = [];
-      const itemRegex = /(.+?)\s+(\d+(?:\.\d+)?)\s+x\s+(\d+(?:\.\d+)?)/i;
-      
-      lines.forEach(line => {
-        const itemMatch = line.match(itemRegex);
-        if (itemMatch) {
-          items.push({
-            name: itemMatch[1].trim(),
-            quantity: parseFloat(itemMatch[2]),
-            price: parseFloat(itemMatch[3])
-          });
+      // Look for date with context
+      const dateContextKeywords = ['date', 'time', 'datetime', 'purchase', 'transaction', 'order'];
+      for (const line of lines) {
+        // First check if line has date context
+        const hasDateContext = dateContextKeywords.some(keyword => 
+          line.toLowerCase().includes(keyword)
+        );
+        
+        // If it has date context or we're just looking for any date
+        if (hasDateContext || !date) {
+          for (const regex of dateRegexes) {
+            const match = line.match(regex);
+            if (match) {
+              // For first regex format
+              if (match.length >= 2) {
+                date = this.formatDate(match[1]);
+                
+                // If we found a date with context, prioritize it
+                if (hasDateContext) break;
+              }
+            }
+          }
         }
-      });
+      }
       
-      // Return extracted data
+      // If no date found, use current date
+      if (!date) {
+        date = new Date().toISOString().split('T')[0];
+      }
+      
+      // Enhanced total amount extraction
+      let total = 0;
+      let subtotal = 0;
+      let tax = 0;
+      
+      // Receipt-specific money amount regex
+      const moneyRegex = /(^|\s)(\$?\s*\d{1,3}(?:,\d{3})*\.\d{2}|\d{1,3}(?:,\d{3})*\.\d{2})/;
+      
+      // 1. First look for explicit total with context
+      const totalContexts = ['total', 'amount due', 'amount paid', 'grand total', 'payment', 'paid', 'balance'];
+      totalSearch:
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i].toLowerCase();
+        
+        // Skip irrelevant lines
+        if (line.includes('subtotal') || line.includes('sub-total') || line.includes('sub total')) continue;
+        
+        // Check if line has total context
+        const hasTotal = totalContexts.some(context => line.includes(context));
+        if (hasTotal) {
+          const match = lines[i].match(moneyRegex);
+          if (match) {
+            const amountStr = match[2].replace(/[^\d.]/g, '');
+            total = parseFloat(amountStr);
+            break totalSearch;
+          }
+        }
+      }
+      
+      // 2. If no total found yet, look for subtotal and tax to calculate
+      if (total === 0) {
+        // Look for subtotal
+        for (const line of lines) {
+          if (line.toLowerCase().match(/subtotal|sub\s*total|sub\-total/)) {
+            const match = line.match(moneyRegex);
+            if (match) {
+              const amountStr = match[2].replace(/[^\d.]/g, '');
+              subtotal = parseFloat(amountStr);
+            }
+          }
+        }
+        
+        // Look for tax
+        const taxRegexes = [
+          /tax/i,
+          /vat/i,
+          /gst/i,
+          /hst/i
+        ];
+        
+        for (const line of lines) {
+          const hasTaxContext = taxRegexes.some(regex => line.match(regex));
+          if (hasTaxContext) {
+            const match = line.match(moneyRegex);
+            if (match) {
+              const amountStr = match[2].replace(/[^\d.]/g, '');
+              tax = parseFloat(amountStr);
+            }
+          }
+        }
+        
+        // Calculate total from subtotal and tax if both found
+        if (subtotal > 0 && tax > 0) {
+          total = parseFloat((subtotal + tax).toFixed(2));
+        }
+      }
+      
+      // 3. If still no total, look for any amount at the bottom of the receipt
+      if (total === 0) {
+        for (let i = lines.length - 1; i >= Math.max(0, lines.length - 15); i--) {
+          const match = lines[i].match(moneyRegex);
+          if (match) {
+            const amountStr = match[2].replace(/[^\d.]/g, '');
+            const amount = parseFloat(amountStr);
+            // Take the largest amount found as it's likely the total
+            if (amount > total) {
+              total = amount;
+            }
+          }
+        }
+      }
+      
+      // Extract line items with improved detection
+      const items: LineItem[] = [];
+      
+      // Multiple patterns to recognize line items
+      const itemRegexes = [
+        /(.{3,30})\s+(\d+)\s+(\$?\s*\d+\.\d{2})/,            // Name   Qty   Price
+        /(.{3,30})\s+(\d+(?:\.\d+)?)\s+x\s+(\d+(?:\.\d+)?)/i, // Name  Qty x Price
+        /(.{3,30})\s+(\d+).*?(\$?\s*\d+\.\d{2})/              // Name  Qty ...... Price
+      ];
+      
+      // Look for item section
+      let inItemsSection = false;
+      
+      for (const line of lines) {
+        // Check if we're entering items section
+        if (line.toLowerCase().match(/items|description|qty|quantity|item|product/)) {
+          inItemsSection = true;
+          continue;
+        }
+        
+        // Stop looking for items if we hit totals section
+        if (inItemsSection && line.toLowerCase().match(/total|subtotal|tax|sum|amount|balance/)) {
+          inItemsSection = false;
+          continue;
+        }
+        
+        // Try to parse items
+        if (inItemsSection) {
+          let matched = false;
+          
+          for (const regex of itemRegexes) {
+            const match = line.match(regex);
+            if (match) {
+              items.push({
+                name: match[1].trim(),
+                quantity: parseInt(match[2], 10) || 1,
+                price: parseFloat(match[3].replace(/[^\d.]/g, ''))
+              });
+              matched = true;
+              break;
+            }
+          }
+        }
+      }
+      
+      // Return extracted data with improved accuracy
       return {
         merchantName,
         date,
         total,
+        subtotal: subtotal > 0 ? subtotal : undefined,
+        tax: tax > 0 ? tax : undefined,
         items: items.length > 0 ? items : undefined,
         rawText: fullText,
-        confidence: 0.8 // Google Vision generally has good confidence
+        confidence: 0.85,
+        ocrProvider: 'google-vision'
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
@@ -367,34 +533,200 @@ class OCRService {
         throw new Error('No text detected in the image');
       }
       
-      // Parse the text to extract receipt data
-      // This is a simplified parsing, would be more complex in production
-      const lines = text.split('\n');
+      // Parse text to extract receipt data with improved algorithms
+      const lines = text.split('\n').filter(line => line.trim().length > 0);
       
-      // Extract merchant name (usually at the top of the receipt)
-      const merchantName = lines[0].trim();
+      // Enhanced merchant name extraction (usually at the top of the receipt)
+      let merchantName = 'Unknown Merchant';
+      const skipWords = ['receipt', 'invoice', 'order', 'transaction', 'purchase', 'sale', 'thank', 'welcome'];
+      const skipRegexes = [
+        /^\d+$/,                  // Just numbers
+        /^tel:|^phone:/i,         // Phone numbers
+        /^fax:/i,                 // Fax numbers
+        /^www\.|http|\.com/i,     // Websites
+        /^-+$/,                   // Just dashes
+        /^=+$/,                   // Just equals signs
+        /^#\d+$/,                 // Receipt numbers
+        /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/ // Dates
+      ];
       
-      // Extract date using regex
-      const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
-      const dateMatch = text.match(dateRegex);
-      const date = dateMatch 
-        ? this.formatDate(dateMatch[0]) 
-        : new Date().toISOString().split('T')[0]; // Default to today
+      // Find the most likely merchant name in the first few lines
+      merchantNameSearch:
+      for (let i = 0; i < Math.min(7, lines.length); i++) {
+        const line = lines[i].trim();
+        
+        // Skip lines that are too short or contain skip words
+        if (line.length < 3) continue;
+        if (skipWords.some(word => line.toLowerCase().includes(word))) continue;
+        if (skipRegexes.some(regex => line.match(regex))) continue;
+        
+        // This is likely the merchant name
+        merchantName = line;
+        break merchantNameSearch;
+      }
       
-      // Extract total using regex
-      const totalRegex = /(?:total|amount|due)[:\s]*[$€£¥]?\s*(\d+[.,]\d+)/i;
-      const totalMatch = text.match(totalRegex);
-      const total = totalMatch 
-        ? parseFloat(totalMatch[1].replace(',', '.')) 
-        : 0;
+      // Enhanced date extraction
+      let date = '';
+      // Common date formats in receipts
+      const dateRegexes = [
+        /(\d{1,4}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/,               // MM/DD/YYYY or YYYY/MM/DD
+        /(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,]*(\d{2,4})/i, // 15 Jan 2023
+        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,]*(\d{1,2})[\s,]*(\d{2,4})/i // Jan 15, 2023
+      ];
       
-      // Return extracted data
+      // Look for date with context
+      const dateContextKeywords = ['date', 'time', 'datetime', 'purchase', 'transaction', 'order'];
+      for (const line of lines) {
+        // First check if line has date context
+        const hasDateContext = dateContextKeywords.some(keyword => 
+          line.toLowerCase().includes(keyword)
+        );
+        
+        // If it has date context or we're just looking for any date
+        if (hasDateContext || !date) {
+          for (const regex of dateRegexes) {
+            const match = line.match(regex);
+            if (match) {
+              // For first regex format
+              if (match.length >= 2) {
+                date = this.formatDate(match[1]);
+                
+                // If we found a date with context, prioritize it
+                if (hasDateContext) break;
+              }
+            }
+          }
+        }
+      }
+      
+      // If no date found, use current date
+      if (!date) {
+        date = new Date().toISOString().split('T')[0];
+      }
+      
+      // Enhanced total amount extraction
+      let total = 0;
+      let subtotal = 0;
+      let tax = 0;
+      
+      // Receipt-specific money amount regex
+      const moneyRegex = /(^|\s)(\$?\s*\d{1,3}(?:,\d{3})*\.\d{2}|\d{1,3}(?:,\d{3})*\.\d{2})/;
+      
+      // 1. First look for explicit total with context
+      const totalContexts = ['total', 'amount due', 'amount paid', 'grand total', 'payment', 'paid', 'balance'];
+      totalSearch:
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i].toLowerCase();
+        
+        // Skip irrelevant lines
+        if (line.includes('subtotal') || line.includes('sub-total') || line.includes('sub total')) continue;
+        
+        // Check if line has total context
+        const hasTotal = totalContexts.some(context => line.includes(context));
+        if (hasTotal) {
+          const match = lines[i].match(moneyRegex);
+          if (match) {
+            const amountStr = match[2].replace(/[^\d.]/g, '');
+            total = parseFloat(amountStr);
+            break totalSearch;
+          }
+        }
+      }
+      
+      // 2. If no total found yet, look for subtotal and tax to calculate
+      if (total === 0) {
+        // Look for subtotal
+        for (const line of lines) {
+          if (line.toLowerCase().match(/subtotal|sub\s*total|sub\-total/)) {
+            const match = line.match(moneyRegex);
+            if (match) {
+              const amountStr = match[2].replace(/[^\d.]/g, '');
+              subtotal = parseFloat(amountStr);
+            }
+          }
+        }
+        
+        // Look for tax
+        const taxRegexes = [
+          /tax/i,
+          /vat/i,
+          /gst/i,
+          /hst/i
+        ];
+        
+        for (const line of lines) {
+          const hasTaxContext = taxRegexes.some(regex => line.match(regex));
+          if (hasTaxContext) {
+            const match = line.match(moneyRegex);
+            if (match) {
+              const amountStr = match[2].replace(/[^\d.]/g, '');
+              tax = parseFloat(amountStr);
+            }
+          }
+        }
+        
+        // Calculate total from subtotal and tax if both found
+        if (subtotal > 0 && tax > 0) {
+          total = parseFloat((subtotal + tax).toFixed(2));
+        }
+      }
+      
+      // 3. If still no total, look for any amount at the bottom of the receipt
+      if (total === 0) {
+        for (let i = lines.length - 1; i >= Math.max(0, lines.length - 15); i--) {
+          const match = lines[i].match(moneyRegex);
+          if (match) {
+            const amountStr = match[2].replace(/[^\d.]/g, '');
+            const amount = parseFloat(amountStr);
+            // Take the largest amount found as it's likely the total
+            if (amount > total) {
+              total = amount;
+            }
+          }
+        }
+      }
+      
+      // Extract line items if possible
+      const items: LineItem[] = [];
+      const itemRegex = /(.{3,30})\s+(\d+)\s+(\$?\s*\d+\.\d{2})/;
+      
+      let inItemsSection = false;
+      for (const line of lines) {
+        // Check if we're entering items section
+        if (line.toLowerCase().match(/items|description|qty|quantity|item|product/)) {
+          inItemsSection = true;
+          continue;
+        }
+        
+        // Stop looking for items if we hit total/subtotal
+        if (inItemsSection && line.toLowerCase().match(/total|subtotal|tax|sum|amount|balance/)) {
+          inItemsSection = false;
+          continue;
+        }
+        
+        // Try to parse items
+        if (inItemsSection) {
+          const match = line.match(itemRegex);
+          if (match) {
+            items.push({
+              name: match[1].trim(),
+              quantity: parseInt(match[2], 10),
+              price: parseFloat(match[3].replace(/[^\d.]/g, ''))
+            });
+          }
+        }
+      }
+      
       return {
         merchantName,
         date,
         total,
+        subtotal: subtotal > 0 ? subtotal : undefined,
+        tax: tax > 0 ? tax : undefined,
+        items: items.length > 0 ? items : undefined,
         rawText: text,
-        confidence: 0.6 // Tesseract generally has lower confidence than other services
+        confidence: 0.6,
+        ocrProvider: 'tesseract'
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
