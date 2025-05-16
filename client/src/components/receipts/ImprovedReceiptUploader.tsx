@@ -22,12 +22,16 @@ import {
   AlertCircle, 
   Receipt,
   Tag,
-  Clock
+  Clock,
+  ShieldCheck
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskStatusMessage from '../nft/TaskStatusMessage';
+import { ReceiptEncryptionToggle } from '../receipt/ReceiptEncryptionToggle';
+import { usePublicKey } from '@/hooks/usePublicKey';
+import { receiptEncryptionClient } from '@/lib/receiptEncryptionClient';
 
 // Define receipt tiers locally to avoid import issues
 type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
@@ -61,6 +65,7 @@ interface ReceiptData {
   tax?: number;
   total: number;
   category?: string;
+  isEncrypted?: boolean;
   nftGift?: {
     status: string;
     message: string;
@@ -88,10 +93,14 @@ export function ImprovedReceiptUploader() {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('upload');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [encryptionEnabled, setEncryptionEnabled] = useState(false);
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [_, navigate] = useLocation();
+  
+  // Get user's TaCo public key for encryption
+  const { publicKey, isLoading: keyLoading } = usePublicKey();
 
   /**
    * Handle file selection from input
@@ -172,6 +181,14 @@ export function ImprovedReceiptUploader() {
       const formData = new FormData();
       formData.append('receipt', selectedFile);
       
+      // Add encryption flag to the form data
+      formData.append('encryptData', encryptionEnabled ? 'true' : 'false');
+      
+      // If encryption is enabled, add the public key to the form data
+      if (encryptionEnabled && publicKey) {
+        formData.append('publicKey', publicKey);
+      }
+      
       // Create XHR for progress tracking
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/auto-process');
@@ -198,7 +215,13 @@ export function ImprovedReceiptUploader() {
             console.log('Receipt processed:', response);
             
             if (response.success) {
-              setReceiptData(response.data);
+              // Store receipt data, with flag indicating if it's encrypted
+              const receiptDataWithEncryptionFlag = {
+                ...response.data,
+                isEncrypted: encryptionEnabled
+              };
+              
+              setReceiptData(receiptDataWithEncryptionFlag);
               setActiveTab('result');
               
               // Store task ID if available
@@ -480,7 +503,16 @@ export function ImprovedReceiptUploader() {
                   </div>
                 )}
                 
-                <div className="space-y-2 w-full">
+                <div className="space-y-4 w-full">
+                  {/* TaCo Encryption Toggle */}
+                  <div className="flex justify-center">
+                    <ReceiptEncryptionToggle
+                      enabled={encryptionEnabled}
+                      onChange={setEncryptionEnabled}
+                      className="mb-2"
+                    />
+                  </div>
+                  
                   <div className="w-full flex flex-col sm:flex-row gap-3 justify-center">
                     <Button variant="outline" onClick={resetUpload} disabled={uploadStatus === 'uploading'}>
                       Upload Different Image
@@ -520,6 +552,19 @@ export function ImprovedReceiptUploader() {
                     <h3 className="text-lg font-semibold">Receipt Details</h3>
                     {renderTierBadge(receiptData.total)}
                   </div>
+                  
+                  {/* Encryption Status */}
+                  {receiptData.isEncrypted && (
+                    <div className="mb-4">
+                      <Alert variant="success" className="bg-green-50 border-green-200">
+                        <ShieldCheck className="h-4 w-4 text-green-600" />
+                        <AlertTitle className="text-green-700">Encrypted Receipt</AlertTitle>
+                        <AlertDescription className="text-green-600">
+                          This receipt's metadata is secured with TaCo threshold encryption
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  )}
                   
                   {/* Merchant and Date */}
                   <div className="grid grid-cols-2 gap-4">
