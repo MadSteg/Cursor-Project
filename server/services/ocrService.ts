@@ -36,6 +36,7 @@ export interface ReceiptData {
   category?: string;
   rawText?: string;
   confidence?: number;
+  ocrProvider?: string;  // Indicates which OCR service was used: 'openai', 'google-vision', 'tesseract'
 }
 
 /**
@@ -74,8 +75,12 @@ class OCRService {
       const fileHash = this.calculateFileHash(imagePath);
       const cacheFilePath = path.join(this.cacheDir, `${fileHash}.json`);
       
+      // Check if we should bypass cache based on environment variable 
+      // (useful for testing and development)
+      const bypassCache = process.env.BYPASS_OCR_CACHE === 'true';
+      
       // Check if result is cached
-      if (fs.existsSync(cacheFilePath)) {
+      if (!bypassCache && fs.existsSync(cacheFilePath)) {
         logger.info(`Using cached OCR result for ${imagePath}`);
         const cachedData = JSON.parse(fs.readFileSync(cacheFilePath, 'utf8'));
         return cachedData;
@@ -85,27 +90,38 @@ class OCRService {
       let receiptData: ReceiptData | null = null;
       let error: Error | null = null;
       
-      // Try OpenAI Vision API first (highest accuracy)
+      // First priority: Try OpenAI Vision API (highest accuracy)
       try {
-        receiptData = await this.processWithOpenAI(imagePath);
+        if (process.env.OPENAI_API_KEY) {
+          logger.info("Using OpenAI Vision API for OCR processing");
+          receiptData = await this.processWithOpenAI(imagePath);
+        } else {
+          logger.warn("Skipping OpenAI Vision API: API key not configured");
+        }
       } catch (err) {
         error = err instanceof Error ? err : new Error(String(err));
         logger.warn(`OpenAI Vision processing failed: ${error.message}`);
       }
       
-      // If OpenAI failed, try Google Vision API
+      // Second priority: Try Google Vision API if available
       if (!receiptData) {
         try {
-          receiptData = await this.processWithGoogleVision(imagePath);
+          if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+            logger.info("Using Google Vision API for OCR processing");
+            receiptData = await this.processWithGoogleVision(imagePath);
+          } else {
+            logger.warn("Skipping Google Vision API: credentials not configured");
+          }
         } catch (err) {
           error = err instanceof Error ? err : new Error(String(err));
           logger.warn(`Google Vision processing failed: ${error.message}`);
         }
       }
       
-      // If all else failed, try Tesseract as last resort
+      // Third priority: Use Tesseract as last resort
       if (!receiptData) {
         try {
+          logger.info("Using Tesseract OCR for processing");
           receiptData = await this.processWithTesseract(imagePath);
         } catch (err) {
           error = err instanceof Error ? err : new Error(String(err));
@@ -115,13 +131,18 @@ class OCRService {
       
       // If all OCR services failed, throw error
       if (!receiptData) {
-        throw new Error('All OCR services failed to process the receipt image');
+        throw new Error('All OCR services failed to process the receipt image. Please try with a clearer image.');
       }
+      
+      // Add info about which OCR provider was used
+      receiptData.ocrProvider = receiptData.ocrProvider || 
+                               (receiptData.confidence && receiptData.confidence > 0.9 ? 'openai' : 
+                                receiptData.confidence && receiptData.confidence > 0.7 ? 'google-vision' : 'tesseract');
       
       // Store result in cache
       fs.writeFileSync(cacheFilePath, JSON.stringify(receiptData));
       
-      // Try to infer the receipt category
+      // Try to infer the receipt category if not already present
       if (!receiptData.category) {
         try {
           receiptData.category = await this.inferReceiptCategory(receiptData);
@@ -150,6 +171,8 @@ class OCRService {
       
       // Check if OpenAI API key is available
       if (!process.env.OPENAI_API_KEY) {
+        logger.warn('OpenAI API key not provided, checking for cached API key');
+        // Try to check for OpenAI API key differently if needed
         throw new Error('OpenAI API key not provided');
       }
       
@@ -298,51 +321,47 @@ class OCRService {
     try {
       logger.info(`Processing receipt with Tesseract: ${imagePath}`);
       
-      // For development mode, we'll use a simplified OCR approach
-      // that doesn't rely on Tesseract when the API is not working
-      if (process.env.NODE_ENV === 'development') {
-        logger.info('Using development OCR simulation');
-        
-        // Get the base filename to simulate different merchants
-        const filename = imagePath.split('/').pop() || '';
-        const fileHash = this.calculateFileHash(imagePath);
-        
-        // Create a deterministic but random-looking merchant name based on file hash
-        const merchantName = `Merchant-${fileHash.substring(0, 6)}`;
-        
-        // Today's date
-        const date = new Date().toISOString().split('T')[0];
-        
-        // Generate a consistent but random-looking price based on hash
-        const total = parseFloat((parseInt(fileHash.substring(0, 4), 16) % 100).toFixed(2)) + 0.99;
-        
-        // Generate mock line items based on hash to make them deterministic
-        const rawText = `Receipt #${fileHash.substring(0, 8)}\n${merchantName}\nDate: ${date}\nItems:\n- Item ${fileHash.substring(8, 12)}: $${(total * 0.4).toFixed(2)}\n- Item ${fileHash.substring(12, 16)}: $${(total * 0.6).toFixed(2)}\nTotal: $${total.toFixed(2)}\nThank you for your purchase!`;
-        
-        return {
-          merchantName,
-          date,
-          total,
-          rawText,
-          confidence: 0.85,
-          ocrProvider: 'development-fallback'
-        };
-      }
-      
-      // Actual Tesseract implementation
+      // Enhanced Tesseract implementation
       const { createWorker } = require('tesseract.js');
       
-      // Create worker with pre-downloaded eng.traineddata
-      const worker = await createWorker();
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
+      logger.info('Starting Tesseract OCR processing...');
       
-      // Recognize text
-      const { data } = await worker.recognize(imagePath);
+      // Try to find eng.traineddata in project root 
+      const tessdataPath = path.join(process.cwd(), 'tessdata');
+      const trainedDataExists = fs.existsSync(path.join(process.cwd(), 'eng.traineddata')) || 
+                              (fs.existsSync(tessdataPath) && fs.existsSync(path.join(tessdataPath, 'eng.traineddata')));
+      
+      // Create worker with configuration options for better accuracy
+      const worker = await createWorker({
+        langPath: trainedDataExists ? tessdataPath : undefined,
+        logger: m => logger.debug(`Tesseract: ${JSON.stringify(m)}`),
+        errorHandler: e => logger.error(`Tesseract error: ${e}`)
+      });
+      
+      // Load language data - English is best for receipts
+      await worker.loadLanguage('eng');
+      
+      // Initialize with English language and set parameters for receipt recognition
+      await worker.initialize('eng', {
+        // Use Page Segmentation Mode 4 to assume single column of text
+        tessedit_pageseg_mode: '4',
+        // Whitelist common receipt characters
+        tessedit_char_whitelist: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.:$%&()+-=@#/\\*" ',
+        // Improve accuracy by considering document structure
+        tessedit_ocr_engine_mode: '1', // Use LSTM neural network
+      });
+      
+      // Recognize text with improved settings
+      const { data } = await worker.recognize(imagePath, {
+        rotateAuto: true, // Auto-rotate the image if needed
+      });
+      
       const text = data.text;
       
       // Terminate worker
       await worker.terminate();
+      
+      logger.info('Tesseract OCR processing completed');
       
       if (!text) {
         throw new Error('No text detected in the image');
