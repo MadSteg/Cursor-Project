@@ -184,7 +184,7 @@ router.post('/', (req, res) => {
         };
 
         // Pin to IPFS
-        metadataUri = await ipfsService.pinJSON(metadata);
+        metadataUri = await ipfsService.uploadJSON(metadata);
         logger.info(`Pinned receipt metadata to IPFS: ${metadataUri}`);
       } catch (ipfsError) {
         logger.error(`Error pinning to IPFS: ${ipfsError}`);

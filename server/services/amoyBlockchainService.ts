@@ -46,7 +46,7 @@ const CONTRACT_ABI = [
  * Amoy Blockchain Service Class
  */
 class AmoyBlockchainService {
-  private provider: ethers.JsonRpcProvider | null = null;
+  private provider: any = null;
   private wallet: ethers.Wallet | null = null;
   private contract: ethers.Contract | null = null;
   private isInitialized: boolean = false;
@@ -73,7 +73,14 @@ class AmoyBlockchainService {
       logger.info('Initializing Amoy blockchain service...');
       
       // Create provider and wallet
-      this.provider = new ethers.JsonRpcProvider(RPC_URL);
+      // Handle different versions of ethers.js
+      if (typeof ethers.providers !== 'undefined' && typeof ethers.providers.JsonRpcProvider !== 'undefined') {
+        // ethers v5
+        this.provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+      } else {
+        // ethers v6
+        this.provider = new ethers.getDefaultProvider(RPC_URL);
+      }
       this.wallet = new ethers.Wallet(PRIVATE_KEY, this.provider);
       
       // Create contract instance
