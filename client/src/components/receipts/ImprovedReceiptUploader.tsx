@@ -94,7 +94,8 @@ export function ImprovedReceiptUploader() {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('upload');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [encryptionEnabled, setEncryptionEnabled] = useState(false);
+  // Encryption is always enabled with TaCo Proxy Re-Encryption
+  const encryptionEnabled = true;
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
