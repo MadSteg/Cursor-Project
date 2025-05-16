@@ -48,6 +48,8 @@ import testQueueRoutes from "./routes/test-queue";
 import walletTacoRoutes from "./routes/wallet";
 // Import wallet authentication routes
 import walletAuthRoutes from "./routes/wallet";
+// Import receipt encryption routes with TaCo
+import receiptEncryptionRoutes from "./routes/receiptEncryption";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {

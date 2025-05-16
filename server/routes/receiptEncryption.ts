@@ -6,8 +6,8 @@
  */
 import { Router } from 'express';
 import { tacoService } from '../services/tacoService';
-import { requireAuth } from '../auth';
-import logger from '../logger';
+import { requireAuth } from '../middleware/auth';
+import console from 'console';
 import { z } from 'zod';
 
 const router = Router();
@@ -59,7 +59,7 @@ router.post('/encrypt', requireAuth, async (req, res) => {
       encryptedData
     });
   } catch (error: any) {
-    logger.error('Receipt encryption error:', error);
+    console.error('Receipt encryption error:', error);
     return res.status(500).json({
       success: false,
       message: `Error encrypting receipt: ${error.message}`
@@ -102,7 +102,7 @@ router.post('/decrypt', requireAuth, async (req, res) => {
       decryptedData
     });
   } catch (error: any) {
-    logger.error('Receipt decryption error:', error);
+    console.error('Receipt decryption error:', error);
     return res.status(500).json({
       success: false,
       message: `Error decrypting receipt: ${error.message}`
@@ -146,7 +146,7 @@ router.post('/grant-access', requireAuth, async (req, res) => {
       reEncryptedData
     });
   } catch (error: any) {
-    logger.error('Receipt access grant error:', error);
+    console.error('Receipt access grant error:', error);
     return res.status(500).json({
       success: false,
       message: `Error granting receipt access: ${error.message}`
@@ -175,7 +175,7 @@ router.post('/revoke-access', requireAuth, async (req, res) => {
       success
     });
   } catch (error: any) {
-    logger.error('Receipt access revocation error:', error);
+    console.error('Receipt access revocation error:', error);
     return res.status(500).json({
       success: false,
       message: `Error revoking receipt access: ${error.message}`
