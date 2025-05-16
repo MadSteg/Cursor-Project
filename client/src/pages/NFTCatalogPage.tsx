@@ -20,7 +20,7 @@ const NFTCatalogPage: React.FC = () => {
         </p>
       </div>
       
-      <NFTCatalog showMintButton={false} />
+      <NFTCatalog showMintButton={true} />
     </div>
   );
 }

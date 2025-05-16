@@ -1,0 +1,43 @@
+1. v26 Codebase Summary
+- **Contracts**: `Receipt1155_for_remix.sol` implements ERC-1155 with per-token URIs and receiptHash mappings.
+- **Server**: Express app with modular `services` (OCR, TACo, IPFS, metadata), `routes` (uploadAndMint, nfts), and `middleware`.
+- **Frontend**: React/Vite project under `src/frontend` with `ReceiptUpload`, `NFTSelection`, `ReceiptGallery` components and `useWalletConnect` hook.
+- **Scripts**: Hardhat deploy & verify scripts, Vite setup, wallet utilities, and sample guides in `/scripts` and root markdown files.
+
+2. What’s Working Well
+- **Complete E2E Flow**: `upload-and-mint` route covers file upload, OCR extraction, TACo encryption, IPFS pinning, on-chain mint, and metadata storage.
+- **Enhanced Contract**: ERC-1155 contract supports dynamic URIs and receiptHash tracking with `mintNewReceipt`.
+- **Modular Architecture**: Clear separation of concerns in `services`, `routes`, and `frontend` components.
+- **Configuration & Guides**: Comprehensive deployment and configuration guides (Amoy, Remix, Hardhat) are present.
+- **Session & Logging**: Robust Express session configuration and request logging for API routes.
+
+3. Critical Gaps & Suggested Improvements
+1. **Event Emissions**: Add `event ReceiptMinted(address to, uint256 tokenId, string uri)` and `event EncryptedData(uint256 indexed tokenId, bytes32 capsule, bytes32 ciphertext)` to the contract for on-chain traceability.
+2. **OCR Robustness**: Upgrade from simple regex parsing to Google Cloud Vision or integrate a specialized receipt-parser; add unit tests with varied sample receipts.
+3. **IPFS Pinning**: Implement retry logic, error-handling, and CID validation in `ipfsService`.
+4. **TokenID Strategy**: Replace `Date.now()` IDs with on-chain counter in contract or backend sequence to avoid collisions.
+5. **Error Handling**: Refactor `uploadAndMint` into discrete steps with individual try/catch blocks and user-friendly error messages for each stage.
+6. **Frontend Feedback & Guards**: Ensure upload button is disabled until wallet connected; provide toasts for each step (Parsing, Encrypting, Pinning, Minting, Success); handle promise rejections.
+7. **Route Consolidation**: Remove legacy endpoints (`uploadReceipt`, `autoProcessReceipt`, `mockMint`) to avoid duplication.
+
+4. Next Steps & Sprint Plan
+Day 1: Contract Enhancements
+- Add events and URI-setting to `Receipt1155` contract, deploy to testnet, verify.
+- Update Hardhat scripts and `.env` accordingly.
+Day 2: OCR & Parsing
+- Integrate Google Cloud Vision or `receipt-parser` library in `ocrService`.
+- Add tests in `/test/receipts` to validate extraction accuracy.
+Day 3: IPFS & Metadata
+- Implement robust `ipfsService` with retries and CID checks.
+- Pin existing metadata JSON + images, update `nft_pool.json` URIs if used.
+Day 4: Backend Refactor & Error Handling
+- Refactor `uploadAndMint.ts` into smaller steps with granular error handling.
+- Ensure each failure returns meaningful client messages and logs.
+Day 5: Frontend Feedback & QA
+- Disable upload until wallet connect.
+- Add toasts for each step using your UI library.
+- Test entire flow end-to-end on Polygon testnet, document issues.
+Day 6-7: Final Polishing
+- Remove legacy code and redundant components.
+- Optimize UI/UX, ensure responsive design, finalize deployment guides.
+- Prepare demo script and record walkthrough.

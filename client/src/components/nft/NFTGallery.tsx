@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, Lock, Unlock, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useWalletConnect } from '@/hooks/useWalletConnect';
+import { useWallet } from '@/contexts/WalletContext';
 
 interface NFTGalleryProps {
   walletAddress?: string;
@@ -27,7 +27,7 @@ interface NFT {
 }
 
 export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
-  const { walletAddress: connectedAddress, isConnected } = useWalletConnect();
+  const { walletAddress: connectedAddress, isConnected } = useWallet();
   const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
   const [decryptedData, setDecryptedData] = useState<any | null>(null);
   const { toast } = useToast();
