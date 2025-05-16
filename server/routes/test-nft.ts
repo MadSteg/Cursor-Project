@@ -1,9 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../db';
-import { nfts, users } from '@shared/schema';
-import { eq } from 'drizzle-orm';
 
 const router = express.Router();
 
@@ -80,24 +77,7 @@ router.post('/mint-test-nft', async (req, res) => {
     
     // Store in our mock database
     testMintedNFTs.set(tokenId, mintedNFT);
-    
-    // Try to store in the actual database if it exists
-    try {
-      if (db) {
-        await db.insert(nfts).values({
-          tokenId,
-          contractAddress: mintedNFT.contractAddress,
-          name: mintedNFT.name,
-          imageUrl,
-          isLocked: mintedNFT.isLocked,
-          hasMetadata: true,
-          ownerAddress: walletAddress,
-          metadata: JSON.stringify(receiptData)
-        });
-      }
-    } catch (dbError) {
-      console.warn('Could not store NFT in database, continuing with in-memory storage', dbError);
-    }
+    console.log(`Minted test NFT ${tokenId} for wallet ${walletAddress}`);
     
     // Return the minted NFT information
     return res.status(201).json({
@@ -121,22 +101,11 @@ router.get('/wallet/:address/nfts', async (req, res) => {
   try {
     const { address } = req.params;
     
-    // Try to get NFTs from the database if it exists
-    let userNFTs = [];
+    // Use our in-memory collection
+    const userNFTs = Array.from(testMintedNFTs.values())
+      .filter(nft => nft.ownerAddress.toLowerCase() === address.toLowerCase());
     
-    try {
-      if (db) {
-        userNFTs = await db.select().from(nfts).where(eq(nfts.ownerAddress, address));
-      }
-    } catch (dbError) {
-      console.warn('Could not query NFTs from database, using in-memory storage', dbError);
-    }
-    
-    // If no NFTs found in database, check our in-memory collection
-    if (userNFTs.length === 0) {
-      userNFTs = Array.from(testMintedNFTs.values())
-        .filter(nft => nft.ownerAddress.toLowerCase() === address.toLowerCase());
-    }
+    console.log(`Found ${userNFTs.length} NFTs for wallet ${address}`);
     
     return res.json({
       success: true,

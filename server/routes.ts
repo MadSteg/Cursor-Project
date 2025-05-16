@@ -48,6 +48,8 @@ import taskRoutes from "./routes/tasks";
 // Import test routes for the task queue
 import testQueueRoutes from "./routes/test-queue";
 // Import hot wallet routes with TACo encryption
+// Import test NFT routes for development
+import testNFTRoutes from "./routes/test-nft";
 import walletTacoRoutes from "./routes/wallet";
 // Import wallet authentication routes
 import walletAuthRoutes from "./routes/wallet";
@@ -113,6 +115,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register receipt upload routes
   app.use('/api/upload', uploadReceiptRoutes);
+  
+  // Register test NFT routes (for development testing)
+  app.use('/api', testNFTRoutes);
   
   // Register auto-process receipt routes (development mode)
   if (process.env.NODE_ENV === 'development') {
