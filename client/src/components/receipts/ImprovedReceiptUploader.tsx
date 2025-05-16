@@ -23,7 +23,8 @@ import {
   Receipt,
   Tag,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Lock as LockClosedIcon
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -106,6 +107,8 @@ export function ImprovedReceiptUploader() {
   
   // Get wallet connection
   const { walletAddress, connectMetaMask, isConnected } = useWalletConnect();
+  
+  // LockClosedIcon is now correctly imported at the top of the file
 
   /**
    * Handle file selection from input
@@ -539,13 +542,17 @@ export function ImprovedReceiptUploader() {
                 )}
                 
                 <div className="space-y-4 w-full">
-                  {/* TaCo Encryption Toggle */}
-                  <div className="flex justify-center">
-                    <ReceiptEncryptionToggle
-                      enabled={encryptionEnabled}
-                      onChange={setEncryptionEnabled}
-                      className="mb-2"
-                    />
+                  {/* TaCo Encryption Indicator (always enabled) */}
+                  <div className="flex justify-center w-full">
+                    <div className="flex items-center p-3 bg-green-50 border border-green-200 rounded-md mb-2 w-full">
+                      <div className="flex-shrink-0 mr-3">
+                        <LockClosedIcon className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-green-800">Protected with Threshold TaCo</p>
+                        <p className="text-sm text-green-700">Your receipt data is secured with advanced proxy re-encryption</p>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="w-full flex flex-col sm:flex-row gap-3 justify-center">
