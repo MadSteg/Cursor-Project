@@ -3,11 +3,11 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { extractReceiptData } from '../services/ocrService';
-import { encryptLineItems } from '../services/tacoService';
+import { tacoService } from '../services/tacoService';
 import { pinJSON } from '../services/ipfsService';
 import { metadataService } from '../services/metadataService';
 import { blockchainService } from '../services/blockchainService';
-import { taskQueueService } from '../services/taskQueue';
+import taskQueueService from '../services/taskQueue';
 import { determineReceiptTier } from '../utils/receiptUtils';
 import { logger } from '../utils/logger';
 
@@ -117,10 +117,14 @@ router.post('/', (req, res) => {
           // Encrypt receipt line items
           const itemsToEncrypt = receipt.items.map(item => ({
             category: item.category || 'Other',
-            price: item.price
+            price: item.price,
+            name: item.name || 'Unknown item',
+            quantity: item.quantity || 1
           }));
 
           logger.info(`Encrypting ${itemsToEncrypt.length} line items for wallet ${walletAddress}`);
+          // Import the utility function for encrypting line items
+          const { encryptLineItems } = await import('../utils/encryptLineItems');
           const encryptedItems = await encryptLineItems(walletAddress, itemsToEncrypt);
           
           encryptedMetadata = {

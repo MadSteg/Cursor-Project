@@ -425,6 +425,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Mount NFT Pool routes
   app.use('/api/nfts', nftPoolRoutes);
+  
+  // Mount unified upload-and-mint route
+  app.use('/api/upload-and-mint', uploadAndMintRoutes);
 
   // Create HTTP server
   const httpServer = createServer(app);
