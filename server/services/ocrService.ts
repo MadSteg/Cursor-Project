@@ -299,10 +299,16 @@ class OCRService {
       logger.info(`Processing receipt with Tesseract: ${imagePath}`);
       
       // Import Tesseract.js
-      const { createWorker } = require('tesseract.js');
+      const tesseract = await import('tesseract.js');
+      const { createWorker } = tesseract;
       
-      // Create worker
-      const worker = await createWorker('eng');
+      // Create worker with pre-downloaded eng.traineddata
+      const worker = await createWorker({
+        langPath: '.',
+        logger: m => console.log(m)
+      });
+      await worker.loadLanguage('eng');
+      await worker.initialize('eng');
       
       // Recognize text
       const { data } = await worker.recognize(imagePath);
