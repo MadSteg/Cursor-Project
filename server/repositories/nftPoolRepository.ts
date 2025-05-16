@@ -45,6 +45,12 @@ export async function getAllNFTs(): Promise<NFTOption[]> {
     const data = fs.readFileSync(NFT_POOL_PATH, 'utf8');
     nftPoolCache = JSON.parse(data);
     
+    if (!Array.isArray(nftPoolCache)) {
+      logger.error('NFT pool data is not an array');
+      nftPoolCache = [];
+      return [];
+    }
+    
     logger.info(`Loaded ${nftPoolCache.length} NFTs from pool`);
     return nftPoolCache;
   } catch (error) {

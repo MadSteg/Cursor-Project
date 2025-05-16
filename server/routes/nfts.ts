@@ -6,6 +6,7 @@ import * as nftMintService from '../services/nftMintService';
 import * as nftPoolRepository from '../repositories/nftPoolRepository';
 import * as taskService from '../services/taskService';
 import type { Task } from '../services/taskService';
+import type { NFTOption } from '../repositories/nftPoolRepository';
 
 const router = express.Router();
 
@@ -173,5 +174,58 @@ async function processMintTask(taskId: string, walletAddress: string, tokenId: n
     // updateTaskStatus(taskId, 'failed', { error: error.message });
   }
 }
+
+/**
+ * @route GET /api/nfts/pool
+ * @desc Get a selection of NFT options from the pool
+ * @access Public
+ */
+router.get('/pool', async (req, res) => {
+  try {
+    const { tier = 'standard', count = 9, category } = req.query;
+    
+    // Validate tier
+    const validTiers = ['standard', 'premium', 'luxury', 'ultra'];
+    const validTier = validTiers.includes(tier.toString().toLowerCase()) 
+      ? tier.toString().toLowerCase()
+      : 'standard';
+    
+    // Get NFT options from the repository
+    const nftOptions = await nftPoolRepository.getNFTsByTier(validTier);
+    
+    // Filter by category if provided
+    let filteredOptions = category
+      ? nftOptions.filter((nft: NFTOption) => 
+          nft.category?.toLowerCase() === category.toString().toLowerCase())
+      : nftOptions;
+    
+    // Limit the number of options returned
+    const limitCount = Math.min(parseInt(count.toString()) || 9, 20); // Max 20 items
+    
+    // Randomize and limit
+    const shuffled = [...filteredOptions].sort(() => 0.5 - Math.random());
+    const selectedOptions = shuffled.slice(0, limitCount);
+    
+    // Enhance with more information if needed
+    const enhancedOptions = selectedOptions.map(nft => ({
+      ...nft,
+      // Add any additional fields or transformations here
+    }));
+    
+    return res.json({
+      success: true,
+      tier: validTier,
+      count: enhancedOptions.length,
+      total: filteredOptions.length,
+      nfts: enhancedOptions
+    });
+  } catch (error: any) {
+    logger.error('Error fetching NFT options:', error);
+    return res.status(500).json({
+      success: false,
+      message: `Failed to fetch NFT options: ${error.message}`
+    });
+  }
+});
 
 export default router;

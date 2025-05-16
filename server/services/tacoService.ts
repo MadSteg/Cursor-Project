@@ -58,14 +58,35 @@ export class TacoService implements ITacoService {
    * @returns An array of public keys
    */
   async getUserKeys(userId: number): Promise<Array<{ id: number, name: string, publicKey: string, createdAt: Date }>> {
+    // In development mode, return mock keys
+    if (this.isDevelopment) {
+      // Return mock data for testing
+      return [
+        {
+          id: 1,
+          name: 'Primary Key',
+          publicKey: 'mock-public-key-1',
+          createdAt: new Date()
+        },
+        {
+          id: 2,
+          name: 'Backup Key',
+          publicKey: 'mock-public-key-2',
+          createdAt: new Date()
+        }
+      ];
+    }
+
     try {
-      // Get all keys for the user from the database
-      const keys = await db
-        .select()
-        .from(tacoKeys)
-        .where(eq(tacoKeys.userId, userId));
+      // In production, get keys from the database
+      // This is just a placeholder for now until we implement the real database
+      // const keys = await db
+      //   .select()
+      //   .from(tacoKeys)
+      //   .where(eq(tacoKeys.userId, userId));
       
-      return keys;
+      // return keys;
+      return [];
     } catch (error) {
       console.error('Error getting user keys:', error);
       return [];

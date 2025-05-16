@@ -150,11 +150,11 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId, receiptData }
   // Filter NFTs by type based on active tab
   const filteredNFTs = activeTab === 'all' 
     ? nftData || [] 
-    : nftData?.filter(nft => nft.type.toLowerCase() === activeTab.toLowerCase()) || [];
+    : nftData?.filter((nft: NFTArtItem) => nft.type.toLowerCase() === activeTab.toLowerCase()) || [];
 
   // Define collection types for tabs - dynamically determine from available data
-  const collectionTypes = nftData 
-    ? Array.from(new Set(nftData.map(nft => nft.type.toLowerCase())))
+  const collectionTypes: string[] = nftData 
+    ? Array.from(new Set(nftData.map((nft: NFTArtItem) => nft.type.toLowerCase())))
     : ['game', 'utility', 'music', 'art', 'collectible', 'sports'];
 
   // Loading state
@@ -206,7 +206,7 @@ const NFTArtSelector = ({ receiptTier, onSelectNFT, selectedNFTId, receiptData }
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {filteredNFTs.map((nft) => (
+              {filteredNFTs.map((nft: NFTArtItem) => (
                 <TooltipProvider key={nft.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
