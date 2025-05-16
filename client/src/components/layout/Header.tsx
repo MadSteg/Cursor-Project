@@ -18,15 +18,20 @@ import {
   Store, 
   FileCheck,
   FileImage,
-  Upload
+  Upload,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useWeb3 } from "@/contexts/Web3Context";
 
 const Header: React.FC = () => {
   // Use a single call to useLocation to avoid hook order issues
   const [currentLocation, setLocation] = useLocation();
   // Always call useAuth after useLocation
   const { isAuthenticated, isLoading, logout } = useAuth();
+  // Get wallet connection status
+  const { active, account, isCorrectNetwork, connect, switchToPolygonAmoy } = useWeb3();
 
   return (
     <header className="bg-white shadow-sm">
@@ -81,7 +86,46 @@ const Header: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             
-            {isAuthenticated ? (
+            {/* Show wallet status if wallet is connected */}
+            {active ? (
+              <div className="flex items-center">
+                {/* Wallet indicator with address and network status */}
+                <div className="flex items-center px-3 py-1.5 border rounded-md bg-gray-50 mr-2">
+                  <div className={`w-2.5 h-2.5 rounded-full mr-2 ${isCorrectNetwork ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                  <span className="text-sm font-medium">
+                    {account && `${account.substring(0, 6)}...${account.substring(account.length - 4)}`}
+                  </span>
+                </div>
+                
+                {/* Network switch button if on wrong network */}
+                {!isCorrectNetwork && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-yellow-600"
+                    onClick={switchToPolygonAmoy}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 38 33" fill="none">
+                      <path d="M19 0L38 33H0L19 0Z" fill="currentColor" />
+                    </svg>
+                    Switch
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center"
+                onClick={connect}
+              >
+                <Wallet className="h-4 w-4 mr-1.5" /> 
+                <span>Connect Wallet</span>
+              </Button>
+            )}
+            
+            {/* Show sign out button if authenticated */}
+            {isAuthenticated && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -91,10 +135,13 @@ const Header: React.FC = () => {
                 <User className="h-4 w-4 mr-1.5" /> 
                 <span>Sign Out</span>
               </Button>
-            ) : (
+            )}
+            
+            {/* Show login/signup if not authenticated and no wallet connected */}
+            {!isAuthenticated && !active && (
               <Link href="/sign-in">
                 <Button variant="outline" size="sm" className="flex items-center">
-                  <Wallet className="h-4 w-4 mr-1.5" /> 
+                  <User className="h-4 w-4 mr-1.5" /> 
                   <span>Login/Signup</span>
                 </Button>
               </Link>
@@ -148,6 +195,40 @@ const Header: React.FC = () => {
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-gray-100">
+                    {/* Wallet Connection Status */}
+                    {active ? (
+                      <div className="mb-4">
+                        <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Wallet</p>
+                        <div className="flex items-center">
+                          <div className={`w-3 h-3 rounded-full mr-2 ${isCorrectNetwork ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                          <span className="text-sm font-medium flex-1 truncate">
+                            {account && `${account.substring(0, 6)}...${account.substring(account.length - 4)}`}
+                          </span>
+                          {!isCorrectNetwork && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="ml-2 text-yellow-600"
+                              onClick={switchToPolygonAmoy}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 38 33" fill="none">
+                                <path d="M19 0L38 33H0L19 0Z" fill="currentColor" />
+                              </svg>
+                              Switch Network
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className="flex items-center gap-2 text-base font-medium cursor-pointer mb-4"
+                        onClick={connect}
+                      >
+                        <Wallet className="h-5 w-5" /> Connect Wallet
+                      </div>
+                    )}
+                    
+                    {/* Login/Logout */}
                     {isAuthenticated ? (
                       <div 
                         className="flex items-center gap-2 text-base font-medium cursor-pointer"
@@ -155,7 +236,7 @@ const Header: React.FC = () => {
                       >
                         <User className="h-5 w-5" /> Sign Out
                       </div>
-                    ) : (
+                    ) : !active && (
                       <Link href="/sign-in">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                           <User className="h-5 w-5" /> Login/Signup

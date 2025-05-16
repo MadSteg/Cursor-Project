@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'wouter'; 
 import { Helmet } from 'react-helmet';
 import ImprovedReceiptUploader from '@/components/receipts/ImprovedReceiptUploader';
+import { useWeb3 } from '@/contexts/Web3Context';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { Wallet } from 'lucide-react';
 
 // Ensure the component doesn't directly import from receiptOcr.ts
 // which seems to be causing issues
@@ -10,8 +15,128 @@ import ImprovedReceiptUploader from '@/components/receipts/ImprovedReceiptUpload
  * 
  * This page provides a streamlined, user-friendly experience for uploading
  * receipt images, extracting data with OCR, and creating blockchain NFT receipts.
+ * 
+ * It enforces wallet connection before allowing receipt upload.
  */
 const ImprovedReceiptPage: React.FC = () => {
+  const { active, connect, isCorrectNetwork, switchToPolygonAmoy } = useWeb3();
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    // Show a toast if wallet is not connected
+    if (!active) {
+      toast({
+        title: 'Wallet Connection Required',
+        description: 'Please connect your wallet to mint BlockReceipts',
+        variant: 'default',
+      });
+    } else if (!isCorrectNetwork) {
+      toast({
+        title: 'Network Switch Required',
+        description: 'Please switch to Polygon Amoy network',
+        variant: 'default',
+      });
+    }
+  }, [active, isCorrectNetwork]);
+
+  // If wallet is not connected, show the connect wallet screen
+  if (!active) {
+    return (
+      <div className="container max-w-4xl mx-auto px-4 py-8">
+        <Helmet>
+          <title>Connect Wallet - BlockReceipt.ai</title>
+          <meta 
+            name="description" 
+            content="Connect your wallet to create blockchain-based NFT receipts with privacy controls."
+          />
+        </Helmet>
+        
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Connect Your Wallet
+          </h1>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            To create BlockReceipts and claim NFT rewards, you need to connect your blockchain wallet first.
+          </p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-md mx-auto border border-gray-200">
+          <div className="mb-6">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Wallet className="h-8 w-8 text-blue-600" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Wallet Connection Required</h2>
+            <p className="text-gray-600 mb-4">
+              BlockReceipt.ai uses blockchain technology to create secure, verifiable receipts.
+              Connect your wallet to get started.
+            </p>
+          </div>
+          
+          <Button 
+            size="lg" 
+            className="w-full"
+            onClick={connect}
+          >
+            <Wallet className="mr-2 h-5 w-5" />
+            Connect Wallet
+          </Button>
+          
+          <p className="mt-4 text-sm text-gray-500">
+            Don't have a wallet? Sign up to create one automatically.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If connected but wrong network, show the switch network screen
+  if (!isCorrectNetwork) {
+    return (
+      <div className="container max-w-4xl mx-auto px-4 py-8">
+        <Helmet>
+          <title>Switch Network - BlockReceipt.ai</title>
+          <meta 
+            name="description" 
+            content="Switch to Polygon Amoy network to create blockchain-based NFT receipts."
+          />
+        </Helmet>
+        
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Network Switch Required
+          </h1>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            BlockReceipt.ai uses the Polygon Amoy network. Please switch your wallet to continue.
+          </p>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-8 text-center max-w-md mx-auto border border-gray-200">
+          <div className="mb-6">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-600" viewBox="0 0 38 33" fill="none">
+                <path d="M19 0L38 33H0L19 0Z" fill="#8247E5" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Switch to Polygon Amoy</h2>
+            <p className="text-gray-600 mb-4">
+              Your wallet is connected but you need to switch to the Polygon Amoy network to continue.
+            </p>
+          </div>
+          
+          <Button 
+            size="lg" 
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            onClick={switchToPolygonAmoy}
+          >
+            Switch to Polygon Amoy
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If wallet is connected and on the right network, show the receipt uploader
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <Helmet>
