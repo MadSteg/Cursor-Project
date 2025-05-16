@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TestNFTMinter from '@/components/nft/TestNFTMinter';
-import { NFTGallery } from '@/components/nft/NFTGallery';
+import NFTGallery from '@/components/nft/NFTGallery';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useWallet } from '@/contexts/WalletContext';
 import { Button } from '@/components/ui/button';
 
 const TestNFTPage: React.FC = () => {
-  const { account, connect, isConnected, isConnecting } = useWallet();
+  const { walletAddress, connectWallet, isConnected, isConnecting } = useWallet();
   const [activeTab, setActiveTab] = useState('mint');
 
   // Function to handle tab changes
@@ -36,7 +36,7 @@ const TestNFTPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={connect} 
+                onClick={connectWallet} 
                 disabled={isConnecting}
                 size="lg"
                 className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
@@ -57,7 +57,7 @@ const TestNFTPage: React.FC = () => {
             <div className="bg-card rounded-lg p-4 mb-6 border border-border">
               <p className="text-sm font-medium">Connected Wallet</p>
               <p className="font-mono text-primary text-sm">
-                {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Unknown'}
+                {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Unknown'}
               </p>
             </div>
 
@@ -72,12 +72,9 @@ const TestNFTPage: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="gallery" className="pt-6">
-                {account && (
+                {walletAddress && (
                   <NFTGallery 
-                    walletAddress={account} 
-                    showWalletHeader={false}
-                    title="Your Test NFT Collection"
-                    description="View all the test NFTs you've minted in development mode"
+                    walletAddress={walletAddress}
                   />
                 )}
               </TabsContent>

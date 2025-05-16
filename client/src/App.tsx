@@ -115,6 +115,7 @@ function Router() {
         <Route path="/test/task-status" component={TaskStatusTestPage} />
         <Route path="/test/auto-process" component={AutoProcessReceiptPage} />
         <Route path="/test/taco" component={TacoTestPage} />
+        <Route path="/test/nft" component={TestNFTPage} />
         
         {/* 404 Page */}
         <Route component={NotFound} />
