@@ -50,6 +50,7 @@ import ThemePreview from "@/pages/ThemePreview";
 // Development Testing Pages
 import TaskStatusTestPage from "@/pages/TaskStatusTestPage";
 import AutoProcessReceiptPage from "@/pages/AutoProcessReceiptPage";
+import TacoTestPage from "@/pages/tacoTest";
 
 // Layout components
 import Header from "@/components/layout/Header";
@@ -109,6 +110,7 @@ function Router() {
         {/* Development Testing Pages */}
         <Route path="/test/task-status" component={TaskStatusTestPage} />
         <Route path="/test/auto-process" component={AutoProcessReceiptPage} />
+        <Route path="/test/taco" component={TacoTestPage} />
         
         {/* 404 Page */}
         <Route component={NotFound} />
