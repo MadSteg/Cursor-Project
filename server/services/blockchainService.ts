@@ -12,6 +12,8 @@ export interface IBlockchainService {
   mintReceipt(receipt: FullReceipt): Promise<any>;
   verifyReceipt(tokenId: string, receipt: FullReceipt): Promise<any>;
   getNetworkStatus(): Promise<any>;
+  isConnected(): boolean;
+  logEncryptionEvent(receiptId: string, walletAddress: string, metadataUri: string): Promise<any>;
 }
 
 class BlockchainService implements IBlockchainService {

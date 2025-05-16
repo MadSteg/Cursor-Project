@@ -192,18 +192,51 @@ router.post('/', (req, res) => {
         metadataUri = `ipfs://mock-uri-${Date.now()}`;
       }
 
+      // Emit events to the blockchain for the encrypted data if applicable
+      if (encryptedMetadata?.available && blockchainService.isConnected()) {
+        try {
+          logger.info('Emitting encrypted data event to blockchain');
+          // This will be improved in the next version using actual blockchain events
+          await blockchainService.logEncryptionEvent(
+            receipt.id, 
+            walletAddress, 
+            metadataUri || 'pending'
+          );
+        } catch (blockchainError) {
+          logger.error(`Failed to emit blockchain event: ${blockchainError}`);
+          // Non-fatal error, continue with the response
+        }
+      }
+
       // Return successful response even though minting happens in background
       return res.status(200).json({
         success: true,
         message: 'Receipt processed successfully and NFT minting started',
         data: receiptWithEncryption,
-        metadataUri
+        metadataUri,
+        tier: determineReceiptTier(receipt.total).name
       });
     } catch (error) {
       logger.error(`Error in receipt processing: ${error}`);
-      return res.status(500).json({
+      
+      // Provide more specific error messages based on the type of failure
+      let statusCode = 500;
+      let errorMessage = 'Internal server error during receipt processing';
+      
+      if (error.message?.includes('OCR')) {
+        statusCode = 422;
+        errorMessage = 'Failed to process receipt image. Please try a clearer image.';
+      } else if (error.message?.includes('IPFS')) {
+        statusCode = 503;
+        errorMessage = 'Temporary issue with metadata storage. Please try again shortly.';
+      } else if (error.message?.includes('encrypt')) {
+        statusCode = 422;
+        errorMessage = 'Failed to encrypt receipt data. Please check your wallet connection.';
+      }
+      
+      return res.status(statusCode).json({
         success: false,
-        message: 'Internal server error during receipt processing',
+        message: errorMessage,
         error: error.message
       });
     }
