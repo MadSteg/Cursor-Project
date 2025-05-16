@@ -1,90 +1,102 @@
 /**
- * Receipt utility functions
+ * Receipt tier utilities
+ * 
+ * These functions help determine the NFT receipt tier based on purchase amount
+ * and provide other receipt-related utility functions.
  */
 
-// Receipt tier definitions based on purchase amount
 export interface ReceiptTier {
+  id: string;
   name: string;
-  min: number;
-  max: number;
-  color: string;
-  nftEligible: boolean;
+  minAmount: number;
+  maxAmount: number | null;
   description: string;
+  nftReward: string;
+  benefits: string[];
 }
 
-// Define receipt tiers
+// Define receipt tiers based on purchase amount
 const RECEIPT_TIERS: ReceiptTier[] = [
   {
-    name: 'STANDARD',
-    min: 0,
-    max: 49.99,
-    color: '#6b7280', // Gray
-    nftEligible: true,
-    description: 'Standard receipt for purchases under $50'
+    id: 'basic',
+    name: 'Basic Receipt',
+    minAmount: 0,
+    maxAmount: 50,
+    description: 'Standard digital receipt with basic features',
+    nftReward: 'Basic Receipt Verification NFT',
+    benefits: ['Digital verification', 'Basic warranty tracking']
   },
   {
-    name: 'PREMIUM',
-    min: 50,
-    max: 149.99,
-    color: '#3b82f6', // Blue
-    nftEligible: true,
-    description: 'Premium receipt for purchases from $50 to $150'
+    id: 'silver',
+    name: 'Silver Receipt',
+    minAmount: 50,
+    maxAmount: 200,
+    description: 'Enhanced receipt with additional features',
+    nftReward: 'Silver Receipt Collector NFT',
+    benefits: ['Digital verification', 'Extended warranty tracking', 'Return policy protection']
   },
   {
-    name: 'LUXURY',
-    min: 150,
-    max: 499.99,
-    color: '#8b5cf6', // Purple
-    nftEligible: true,
-    description: 'Luxury receipt for purchases from $150 to $500'
+    id: 'gold',
+    name: 'Gold Receipt',
+    minAmount: 200,
+    maxAmount: 1000,
+    description: 'Premium receipt with exclusive benefits',
+    nftReward: 'Gold Receipt Collector NFT',
+    benefits: ['Digital verification', 'Premium warranty tracking', 'Return policy protection', 'Exclusive merchant offers']
   },
   {
-    name: 'ULTRA',
-    min: 500,
-    max: Number.MAX_SAFE_INTEGER,
-    color: '#f59e0b', // Amber/Gold
-    nftEligible: true,
-    description: 'Ultra receipt for purchases over $500'
+    id: 'platinum',
+    name: 'Platinum Receipt',
+    minAmount: 1000,
+    maxAmount: null, // No upper limit
+    description: 'Exclusive receipt with maximum benefits',
+    nftReward: 'Platinum Receipt Collector NFT',
+    benefits: ['Digital verification', 'Lifetime warranty tracking', 'Priority return processing', 'Exclusive merchant offers', 'Concierge service']
   }
 ];
 
 /**
- * Determines the receipt tier based on the total amount
- * 
- * @param total The total amount of the receipt
+ * Determine receipt tier based on the total purchase amount
+ * @param amount Total purchase amount
  * @returns The appropriate receipt tier
  */
-export function determineReceiptTier(total: number): ReceiptTier {
-  // Find the matching tier based on the total amount
+export function determineReceiptTier(amount: number): ReceiptTier {
+  // Find the first tier where the amount falls within its range
   const tier = RECEIPT_TIERS.find(tier => 
-    total >= tier.min && total <= tier.max
+    amount >= tier.minAmount && 
+    (tier.maxAmount === null || amount < tier.maxAmount)
   );
   
-  // Default to STANDARD if no tier is found (should never happen unless total is negative)
+  // Default to basic tier if no matching tier is found (should never happen with our tier definitions)
   return tier || RECEIPT_TIERS[0];
 }
 
 /**
- * Checks if a receipt is eligible for NFT minting based on its tier
- * 
- * @param total The total amount of the receipt
- * @returns Boolean indicating NFT eligibility
+ * Get a list of all available receipt tiers
+ * @returns Array of receipt tiers
  */
-export function isEligibleForNFT(total: number): boolean {
-  const tier = determineReceiptTier(total);
-  return tier.nftEligible;
+export function getAllReceiptTiers(): ReceiptTier[] {
+  return [...RECEIPT_TIERS];
 }
 
 /**
- * Formats a receipt total with appropriate currency symbol
- * 
- * @param total The total amount to format
- * @param currency The currency code (default: USD)
+ * Get receipt tier by ID
+ * @param tierId The tier ID to find
+ * @returns The requested tier or undefined if not found
+ */
+export function getReceiptTierById(tierId: string): ReceiptTier | undefined {
+  return RECEIPT_TIERS.find(tier => tier.id === tierId);
+}
+
+/**
+ * Format currency amount with proper currency symbol
+ * @param amount The amount to format
+ * @param currency The currency code (defaults to USD)
  * @returns Formatted currency string
  */
-export function formatCurrency(total: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency
-  }).format(total);
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  return new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency 
+  }).format(amount);
 }

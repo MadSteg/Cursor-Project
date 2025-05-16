@@ -5,7 +5,14 @@
  * The code here exists only to satisfy imports, but does not actually initialize
  * a connection to the Mumbai network.
  */
-import { FullReceipt } from '@shared/schema';
+// Use any available receipt interface
+interface FullReceipt {
+  id: string | number;
+  merchant: { name: string };
+  date: Date;
+  total: number;
+  items: Array<{ name: string; price: number; quantity: number }>;
+}
 
 export interface IBlockchainService {
   createReceiptHash(receipt: FullReceipt): string;
@@ -18,6 +25,14 @@ export interface IBlockchainService {
 
 class BlockchainService implements IBlockchainService {
   private mockMode: boolean = true;
+  private connected: boolean = false;
+  private provider: any = null;
+  private contract: any = null;
+  
+  constructor() {
+    this.connected = this.mockMode;
+    console.log(`BlockchainService initialized in ${this.mockMode ? 'mock' : 'production'} mode`);
+  }
 
   createReceiptHash(receipt: FullReceipt): string {
     // Create a deterministic hash of the receipt data 
@@ -115,6 +130,48 @@ class BlockchainService implements IBlockchainService {
       mockMode: true,
       message: 'Mumbai network has been disabled. Please use Amoy network.'
     };
+  }
+  
+  /**
+   * Check if blockchain service is connected
+   * @returns Boolean indicating connection status
+   */
+  isConnected(): boolean {
+    return this.mockMode; // In mock mode, we're always "connected"
+  }
+  
+  /**
+   * Log an encryption event to the blockchain
+   * @param receiptId The receipt ID
+   * @param walletAddress The wallet address that owns the receipt
+   * @param metadataUri The IPFS URI for the receipt metadata
+   * @returns Mock transaction details in development mode
+   */
+  async logEncryptionEvent(
+    receiptId: string, 
+    walletAddress: string, 
+    metadataUri: string
+  ): Promise<any> {
+    console.log(`[BlockchainService] Logging encryption event for receipt ${receiptId} owned by ${walletAddress}`);
+    
+    if (this.mockMode) {
+      // Simulate blockchain latency
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      return {
+        success: true,
+        eventType: 'EncryptedData',
+        transactionHash: `0x${Math.random().toString(16).substring(2, 66)}`,
+        receiptId,
+        walletAddress,
+        metadataUri,
+        timestamp: new Date(),
+        blockNumber: Math.floor(Math.random() * 1000000),
+        mock: true
+      };
+    }
+    
+    throw new Error('Mumbai network has been disabled. Please use Amoy network.');
   }
 
   private mockMintReceipt(receipt: FullReceipt): any {
