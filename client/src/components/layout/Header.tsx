@@ -20,7 +20,10 @@ import {
   FileImage,
   Upload,
   CheckCircle,
-  XCircle
+  XCircle,
+  Key,
+  Image,
+  Images
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useWeb3 } from "@/contexts/Web3Context";
@@ -57,10 +60,17 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Security (formerly Settings) */}
-            <Link href="/encryption-settings">
-              <span className={`text-sm font-medium ${currentLocation === "/encryption-settings" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Shield className="h-4 w-4 mr-1.5" /> Security
+            {/* NFT Gallery - Main feature as requested */}
+            <Link href="/nft-catalog">
+              <span className={`text-sm font-medium ${currentLocation === "/nft-catalog" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Images className="h-4 w-4 mr-1.5" /> NFT Gallery
+              </span>
+            </Link>
+            
+            {/* Access Control - New section for key management */}
+            <Link href="/receipt-keys">
+              <span className={`text-sm font-medium ${currentLocation === "/receipt-keys" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Key className="h-4 w-4 mr-1.5" /> Access Control
               </span>
             </Link>
             
@@ -73,9 +83,9 @@ const Header: React.FC = () => {
             
             {/* BlockReceipts - Only visible when authenticated */}
             {isAuthenticated && (
-              <Link href="/receipt-gallery">
-                <span className={`text-sm font-medium ${currentLocation === "/receipt-gallery" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                  <Receipt className="h-4 w-4 mr-1.5" /> BlockReceipts
+              <Link href="/nft-wallet">
+                <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                  <Wallet className="h-4 w-4 mr-1.5" /> My NFT Wallet
                 </span>
               </Link>
             )}
@@ -157,9 +167,14 @@ const Header: React.FC = () => {
                         <FileCheck className="h-5 w-5" /> About
                       </span>
                     </Link>
-                    <Link href="/encryption-settings">
+                    <Link href="/nft-catalog">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Shield className="h-5 w-5" /> Security
+                        <Images className="h-5 w-5" /> NFT Gallery
+                      </span>
+                    </Link>
+                    <Link href="/receipt-keys">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <Key className="h-5 w-5" /> Access Control
                       </span>
                     </Link>
                     <Link href="/mint-blockreceipt">
@@ -169,9 +184,9 @@ const Header: React.FC = () => {
                     </Link>
                     {/* BlockReceipts - Only visible when authenticated */}
                     {isAuthenticated && (
-                      <Link href="/receipt-gallery">
+                      <Link href="/nft-wallet">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Receipt className="h-5 w-5" /> BlockReceipts
+                          <Wallet className="h-5 w-5" /> My NFT Wallet
                         </span>
                       </Link>
                     )}
