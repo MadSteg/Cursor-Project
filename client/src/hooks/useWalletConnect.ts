@@ -99,9 +99,45 @@ export function useWalletConnect() {
           setConnectionError(connError.message || "Error connecting to MetaMask");
         }
       } else {
-        const errorMessage = "MetaMask not found. Please install the extension from metamask.io";
-        console.error(errorMessage);
-        setConnectionError(errorMessage);
+        // No MetaMask detected - use dev wallet fallback instead
+        console.log("MetaMask not found. Using development wallet fallback instead.");
+        
+        try {
+          // Check if we're in development mode where we should use the mock wallet
+          if (process.env.NODE_ENV === 'development' || import.meta.env.MODE === 'development') {
+            // Import the mock provider
+            const { mockProvider, simulateWalletConnection } = await import('@/utils/mockWalletProvider');
+            
+            // Assign mock provider to window.ethereum for compatibility
+            // @ts-ignore - we know we're modifying a read-only property in the global object
+            window.ethereum = mockProvider;
+            
+            // Create a provider with the mock
+            const instance = new ethers.providers.Web3Provider(mockProvider as any);
+            const signer = instance.getSigner();
+            
+            // Simulate wallet connection
+            const address = simulateWalletConnection();
+            
+            // Set state
+            setProvider(instance);
+            setSigner(signer);
+            setWalletAddress(address);
+            setChainId(80002); // Polygon Amoy testnet
+            
+            console.log("[Dev Mode] Wallet connected:", address);
+            
+            // No need to add event listeners as they're handled by the mock provider
+          } else {
+            // In production, still show error but don't use mock wallet
+            const errorMessage = "MetaMask not found. Please install the extension from metamask.io";
+            console.error(errorMessage);
+            setConnectionError(errorMessage);
+          }
+        } catch (fallbackError: any) {
+          console.error("Dev wallet fallback error:", fallbackError);
+          setConnectionError(fallbackError.message || "Failed to use development wallet fallback");
+        }
       }
     } catch (error: any) {
       console.error("Wallet connection error:", error);
