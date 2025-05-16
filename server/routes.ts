@@ -10,6 +10,7 @@ import thresholdReceiptRoutes from "./routes/threshold-receipt";
 import encryptedPaymentRoutes from "./routes/encrypted-payments";
 import encryptionRoutes from "./routes/encryption";
 import tacoRoutes from "./routes/taco";
+import receiptEncryptionRoutes from "./routes/receiptEncryption";
 import cryptoRoutes from "./routes/crypto";
 import inventoryRoutes from "./routes/inventory";
 import merchantPluginRoutes from "./routes/merchant-plugin";
