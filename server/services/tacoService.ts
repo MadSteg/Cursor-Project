@@ -20,6 +20,44 @@ export interface ITacoService {
   createTacoProvider(): any;
   getUserKeys(userId: number): Promise<Array<{ id: number, name: string, publicKey: string, createdAt: Date }>>;
   storePublicKey(userId: number, name: string, publicKey: string): Promise<{ id: number, name: string, publicKey: string, createdAt: Date } | null>;
+  
+  // Receipt encryption methods
+  encryptReceiptMetadata(
+    receiptData: {
+      items: Array<{ name: string, price: number, quantity: number }>,
+      merchantName: string,
+      date: string,
+      total: number,
+      subtotal: number,
+      tax: number,
+      category?: string
+    },
+    publicKey?: string
+  ): Promise<{ capsule: string, ciphertext: string }>;
+  
+  decryptReceiptMetadata(
+    encryptedData: { capsule: string, ciphertext: string },
+    publicKey: string
+  ): Promise<{
+    items: Array<{ name: string, price: number, quantity: number }>,
+    merchantName: string,
+    date: string,
+    total: number,
+    subtotal: number,
+    tax: number,
+    category?: string
+  }>;
+  
+  grantReceiptAccess(
+    encryptedData: { capsule: string, ciphertext: string },
+    ownerPublicKey: string,
+    recipientPublicKey: string
+  ): Promise<{ capsule: string, ciphertext: string }>;
+  
+  revokeReceiptAccess(
+    receiptId: string,
+    recipientPublicKey: string
+  ): Promise<boolean>;
 }
 
 /**
@@ -284,6 +322,130 @@ export class TacoService implements ITacoService {
     
     // Ensure it's a reasonable length for encryption
     return hashStr.padEnd(32, hashStr);
+  }
+
+  /**
+   * Encrypt receipt metadata using TaCo
+   * @param receiptData The receipt data to encrypt
+   * @param publicKey Optional public key to use for encryption (uses default key if not provided)
+   * @returns An object with the capsule and ciphertext
+   */
+  async encryptReceiptMetadata(
+    receiptData: {
+      items: Array<{ name: string, price: number, quantity: number }>,
+      merchantName: string,
+      date: string,
+      total: number,
+      subtotal: number,
+      tax: number,
+      category?: string
+    },
+    publicKey?: string
+  ): Promise<{ capsule: string, ciphertext: string }> {
+    if (this.isDevelopment) {
+      // In development mode, use a simple mock encryption
+      console.log(`[DEV] Encrypting receipt metadata`);
+      
+      // Use the provided publicKey or a default one for testing
+      const keyToUse = publicKey || 'default-taco-public-key';
+      
+      // Convert the receipt data to a JSON string for encryption
+      const jsonData = JSON.stringify(receiptData);
+      
+      // Use the mock encryption method
+      return this.mockEncrypt(jsonData, keyToUse);
+    }
+    
+    // In production, implement real TACo encryption
+    throw new Error('TACo receipt encryption not implemented for production yet');
+  }
+
+  /**
+   * Decrypt receipt metadata using TaCo
+   * @param encryptedData The encrypted data (capsule and ciphertext)
+   * @param publicKey The public key to use for decryption
+   * @returns The decrypted receipt data
+   */
+  async decryptReceiptMetadata(
+    encryptedData: { capsule: string, ciphertext: string },
+    publicKey: string
+  ): Promise<{
+    items: Array<{ name: string, price: number, quantity: number }>,
+    merchantName: string,
+    date: string,
+    total: number,
+    subtotal: number,
+    tax: number,
+    category?: string
+  }> {
+    if (this.isDevelopment) {
+      // In development mode, use a simple mock decryption
+      console.log(`[DEV] Decrypting receipt metadata`);
+      
+      // Use the mock decryption method
+      const decryptedJson = this.mockDecrypt(encryptedData.capsule, encryptedData.ciphertext, publicKey);
+      
+      try {
+        // Parse the decrypted JSON string back to an object
+        return JSON.parse(decryptedJson);
+      } catch (error) {
+        console.error('Error parsing decrypted receipt data:', error);
+        throw new Error('Invalid receipt data format');
+      }
+    }
+    
+    // In production, implement real TACo decryption
+    throw new Error('TACo receipt decryption not implemented for production yet');
+  }
+
+  /**
+   * Grant access to an encrypted receipt to another user
+   * @param encryptedData The encrypted receipt data
+   * @param ownerPublicKey The public key of the owner
+   * @param recipientPublicKey The public key of the recipient
+   * @returns The re-encrypted data that the recipient can decrypt
+   */
+  async grantReceiptAccess(
+    encryptedData: { capsule: string, ciphertext: string },
+    ownerPublicKey: string,
+    recipientPublicKey: string
+  ): Promise<{ capsule: string, ciphertext: string }> {
+    if (this.isDevelopment) {
+      // In development mode, simulate re-encryption
+      console.log(`[DEV] Granting receipt access to ${recipientPublicKey.slice(0, 10)}...`);
+      
+      // For mock purposes, just return the same encrypted data
+      // In a real implementation, this would create a re-encryption key
+      return {
+        capsule: encryptedData.capsule + '-shared-' + recipientPublicKey.slice(0, 5),
+        ciphertext: encryptedData.ciphertext
+      };
+    }
+    
+    // In production, implement real TACo re-encryption
+    throw new Error('TACo receipt access granting not implemented for production yet');
+  }
+
+  /**
+   * Revoke a recipient's access to an encrypted receipt
+   * @param receiptId The ID of the receipt
+   * @param recipientPublicKey The public key of the recipient to revoke access from
+   * @returns True if revocation was successful, false otherwise
+   */
+  async revokeReceiptAccess(
+    receiptId: string,
+    recipientPublicKey: string
+  ): Promise<boolean> {
+    if (this.isDevelopment) {
+      // In development mode, simulate access revocation
+      console.log(`[DEV] Revoking receipt access for ${recipientPublicKey.slice(0, 10)}...`);
+      
+      // For testing, always return success
+      return true;
+    }
+    
+    // In production, implement real TACo access revocation
+    throw new Error('TACo receipt access revocation not implemented for production yet');
   }
 }
 
