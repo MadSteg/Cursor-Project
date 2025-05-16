@@ -32,6 +32,7 @@ import TaskStatusMessage from '../nft/TaskStatusMessage';
 import { ReceiptEncryptionToggle } from '../receipt/ReceiptEncryptionToggle';
 import { usePublicKey } from '@/hooks/usePublicKey';
 import { receiptEncryptionClient } from '@/lib/receiptEncryptionClient';
+import { useWalletConnect } from '@/hooks/useWalletConnect';
 
 // Define receipt tiers locally to avoid import issues
 type ReceiptTier = 'STANDARD' | 'PREMIUM' | 'LUXURY' | 'ULTRA';
@@ -101,6 +102,9 @@ export function ImprovedReceiptUploader() {
   
   // Get user's TaCo public key for encryption
   const { publicKey, isLoading: keyLoading } = usePublicKey();
+  
+  // Get wallet connection
+  const { walletAddress, connectMetaMask, isConnected } = useWalletConnect();
 
   /**
    * Handle file selection from input
