@@ -7,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, Lock, Unlock, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useWeb3Wallet } from '../../hooks/useWeb3Wallet';
+import { useWalletConnect } from '@/hooks/useWalletConnect';
 
 interface NFTGalleryProps {
   walletAddress?: string;
+  nfts?: NFT[];
 }
 
 interface NFT {
@@ -25,16 +26,16 @@ interface NFT {
   ownerAddress: string;
 }
 
-export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
-  const { address, isConnected } = useWeb3Wallet();
+export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
+  const { walletAddress: connectedAddress, isConnected } = useWalletConnect();
   const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
   const [decryptedData, setDecryptedData] = useState<any | null>(null);
   const { toast } = useToast();
   
   // Use the passed wallet address or the connected wallet address
-  const effectiveWalletAddress = walletAddress || address;
+  const effectiveWalletAddress = walletAddress || connectedAddress;
   
-  // Fetch NFTs for this wallet
+  // Fetch NFTs for this wallet if not provided as prop
   const { 
     data, 
     isLoading, 
@@ -48,7 +49,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
       const response = await apiRequest('GET', `/api/gallery/${effectiveWalletAddress}`);
       return response.json();
     },
-    enabled: !!effectiveWalletAddress,
+    enabled: !!effectiveWalletAddress && !nfts, // Only fetch if nfts prop is not provided
   });
   
   // Mutation for unlocking encrypted metadata
@@ -148,8 +149,11 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
     );
   }
   
+  // Use either provided nfts prop or data from the query
+  const displayNfts = nfts || data?.nfts || [];
+  
   // If there are no NFTs
-  if (!data?.nfts || data.nfts.length === 0) {
+  if (displayNfts.length === 0) {
     return (
       <div className="p-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-center">
         <div className="mx-auto h-24 w-24 text-blue-500 mb-4">
@@ -170,7 +174,7 @@ export default function NFTGallery({ walletAddress }: NFTGalleryProps) {
     <div className="space-y-8">
       {/* NFT Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data.nfts.map((nft: NFT) => (
+        {displayNfts.map((nft: NFT) => (
           <Card 
             key={nft.tokenId} 
             className={`overflow-hidden transition-all cursor-pointer hover:shadow-lg ${selectedNft?.tokenId === nft.tokenId ? 'ring-2 ring-primary' : ''}`}

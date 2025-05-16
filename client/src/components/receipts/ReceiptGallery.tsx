@@ -89,10 +89,42 @@ export default function ReceiptGallery() {
     );
   }
 
-  // Simply render the NFTGallery component with the wallet address
+  // Show loading state when fetching NFTs
+  if (nftsLoading) {
+    return (
+      <div className="p-6 flex justify-center items-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mb-2 mx-auto text-primary" />
+          <p className="text-gray-500">Loading your NFT receipts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there was a problem
+  if (nftsError) {
+    return (
+      <div className="p-6 border rounded-lg">
+        <Alert className="mb-4" variant="destructive">
+          <AlertTitle>Error loading NFTs</AlertTitle>
+          <AlertDescription>
+            There was a problem loading your NFT receipts. Please try again later.
+          </AlertDescription>
+        </Alert>
+        <Button onClick={() => window.location.reload()}>
+          Refresh
+        </Button>
+      </div>
+    );
+  }
+
+  // Render the NFTGallery component with the wallet address
   return (
     <div className="receipt-gallery">
-      <NFTGallery walletAddress={walletAddress} />
+      <NFTGallery 
+        walletAddress={walletAddress}
+        nfts={nftData?.nfts || []} 
+      />
     </div>
   );
 }

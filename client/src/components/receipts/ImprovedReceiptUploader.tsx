@@ -182,6 +182,30 @@ export function ImprovedReceiptUploader() {
     setErrorMessage(null);
     
     try {
+      // Check if wallet is connected
+      if (!isConnected && !walletAddress) {
+        try {
+          // Attempt to connect wallet first
+          await connectMetaMask();
+          // If connection fails or still no wallet address, show error
+          if (!walletAddress) {
+            throw new Error("Please connect your wallet before uploading receipts");
+          }
+        } catch (walletError) {
+          console.error("Wallet connection error:", walletError);
+          setUploadStatus('error');
+          setErrorMessage("Please connect your wallet before uploading receipts");
+          
+          toast({
+            title: "Wallet Required",
+            description: "Please connect your wallet to mint NFT receipts",
+            variant: "destructive",
+          });
+          
+          return; // Exit early if wallet connection failed
+        }
+      }
+      
       const formData = new FormData();
       formData.append('receipt', selectedFile);
       
@@ -191,6 +215,12 @@ export function ImprovedReceiptUploader() {
       // If encryption is enabled, add the public key to the form data
       if (encryptionEnabled && publicKey) {
         formData.append('publicKey', publicKey);
+      }
+      
+      // Attach wallet address to the form data
+      if (walletAddress) {
+        formData.append('walletAddress', walletAddress);
+        console.log('Including wallet address in upload:', walletAddress);
       }
       
       // Create XHR for progress tracking
