@@ -76,7 +76,7 @@ const ImprovedReceiptPage: React.FC = () => {
           <Button 
             size="lg" 
             className="w-full"
-            onClick={connect}
+            onClick={connectMetaMask}
           >
             <Wallet className="mr-2 h-5 w-5" />
             Connect Wallet
@@ -91,7 +91,7 @@ const ImprovedReceiptPage: React.FC = () => {
   }
 
   // If connected but wrong network, show the switch network screen
-  if (!isCorrectNetwork) {
+  if (chainId !== 80002) {
     return (
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <Helmet>

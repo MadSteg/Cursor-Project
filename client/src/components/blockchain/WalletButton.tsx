@@ -39,7 +39,7 @@ export default function WalletButton({
     connectionError,
     connecting,
     chainId
-  } = useWalletConnect();
+  } = useWallet();
   
   // Track dropdown open state
   const [dropdownOpen, setDropdownOpen] = useState(false);
