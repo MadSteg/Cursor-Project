@@ -7,6 +7,8 @@
 import { Router } from 'express';
 import { createLogger } from '../logger';
 import { nftMintService } from '../services/nftMintService';
+import { merchantService } from '../services/merchantService';
+import { couponService } from '../services/couponService';
 
 const router = Router();
 const logger = createLogger('nft-routes');

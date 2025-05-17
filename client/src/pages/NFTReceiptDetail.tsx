@@ -67,19 +67,25 @@ export default function NFTReceiptDetail() {
     enabled: !!receiptId
   });
   
-  // Fetch coupons associated with this NFT
+  // Fetch coupons associated with this NFT's vendor metadata
   const { data: coupons = [], isLoading: couponsLoading } = useQuery({
     queryKey: [`/api/nfts/${receiptId}/coupons`],
     queryFn: async () => {
-      if (!receiptId) return [];
-      const response = await apiRequest('GET', `/api/nfts/${receiptId}/coupons`);
+      if (!receiptId || !nftData?.merchantName) return [];
+      
+      // We need the merchant data from the NFT to fetch relevant coupons
+      const response = await apiRequest('GET', `/api/nfts/${receiptId}/merchant-coupons`);
+      
       if (!response.ok) {
-        console.error('Failed to fetch coupons');
+        console.error('Failed to fetch merchant coupons');
         return [];
       }
+      
+      // Return only coupons that are available and based on live merchant data
       return response.json();
     },
-    enabled: !!receiptId
+    // Only run this query when we have both the receipt ID and the merchant data
+    enabled: !!receiptId && !!nftData?.merchantName
   });
   
   // Mutation for decrypting metadata

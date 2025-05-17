@@ -88,10 +88,31 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
     }
   });
   
-  // Handle NFT click - navigate to the detail page
+  // Handle NFT click - prompt for private metadata view
   const handleNftClick = (nft: NFT) => {
-    // Navigate to the detail page for this NFT
-    navigate(`/nft-receipts/${nft.tokenId}`);
+    if (nft.hasMetadata) {
+      // If the NFT has private metadata, ask if the user wants to view it
+      const viewPrivateData = window.confirm(
+        "This BlockReceipt contains private receipt metadata obtained via OCR. Would you like to view this private data?"
+      );
+      
+      if (!viewPrivateData) {
+        // If user declines, just navigate to the receipt detail without metadata focus
+        navigate(`/nft-receipts/${nft.tokenId}`);
+        return;
+      }
+      
+      // If the data is locked and user wants to view it, unlock it first
+      if (nft.isLocked) {
+        handleUnlock(nft.tokenId);
+      }
+      
+      // Navigate to the detail page with a query param to indicate metadata view
+      navigate(`/nft-receipts/${nft.tokenId}?viewMetadata=true`);
+    } else {
+      // If no private metadata, just navigate to the detail page
+      navigate(`/nft-receipts/${nft.tokenId}`);
+    }
   };
   
   // Handle unlock button click
