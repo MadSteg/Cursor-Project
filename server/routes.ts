@@ -59,6 +59,8 @@ import receiptEncryptionRoutes from "./routes/receiptEncryption";
 import testUploadRoutes from "./routes/testUpload";
 // Import coupon routes
 import couponRoutes from "./routes/coupons";
+// Import NFT routes
+import nftRoutes from "./routes/nfts";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -173,6 +175,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register coupon routes
   app.use('/api/coupons', couponRoutes);
   console.log('[express] Coupon routes registered successfully');
+  
+  // Register NFT routes
+  app.use('/api/nfts', nftRoutes);
+  console.log('[express] NFT routes registered successfully');
   
 
   

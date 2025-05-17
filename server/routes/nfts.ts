@@ -1,229 +1,176 @@
-import express from 'express';
-import { ethers } from 'ethers';
-import ERC1155_ABI from '../abi/BlockReceiptCollection.json';
-import { logger } from '../utils/logger';
-import * as nftMintService from '../services/nftMintService';
-import * as nftPoolRepository from '../repositories/nftPoolRepository';
-import * as taskService from '../services/taskService';
-import type { Task } from '../services/taskService';
-import type { NFTOption } from '../repositories/nftPoolRepository';
+/**
+ * NFT Routes for BlockReceipt
+ * 
+ * Handles NFT-related API endpoints including fetching NFTs with coupon data
+ */
 
-const router = express.Router();
+import { Router } from 'express';
+import { createLogger } from '../logger';
+import { nftMintService } from '../services/nftMintService';
+
+const router = Router();
+const logger = createLogger('nft-routes');
 
 /**
- * Get a human-readable message for a task's status
+ * Get all NFTs owned by a wallet address
+ * GET /api/nfts
  */
-function getTaskStatusMessage(task: Task): string {
-  switch (task.status) {
-    case 'pending':
-      return 'NFT minting request queued';
-    case 'processing':
-      return 'NFT minting in progress';
-    case 'completed':
-      return 'NFT minted successfully';
-    case 'failed':
-      return `NFT minting failed: ${task.error || 'Unknown error'}`;
-    default:
-      return 'Unknown status';
-  }
-}
-
-/**
- * @route POST /api/nfts/mint
- * @desc Mint a new NFT receipt to user's wallet
- * @access Private
- */
-router.post('/mint', async (req, res) => {
-  const { walletAddress, nftId, receiptData } = req.body;
-  
-  if (!walletAddress) {
-    return res.status(400).json({
-      success: false,
-      message: 'Wallet address is required'
-    });
-  }
-
-  // Validate wallet address format
-  if (!ethers.utils.isAddress(walletAddress)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid wallet address format'
-    });
-  }
-
+router.get('/', async (req, res) => {
   try {
-    // Create a new task to track the minting process
-    const task = taskService.createTask('nft_mint', walletAddress, { nftId, receiptData });
+    const { walletAddress } = req.query;
     
-    // Return task ID immediately
-    res.status(202).json({
-      success: true,
-      message: 'NFT minting initiated',
-      taskId: task.id
-    });
-
-    // Process the minting task in the background
-    taskService.processTask(task.id, async () => {
-      if (nftId) {
-        // Mint the specific NFT if an ID is provided
-        return await nftMintService.mintNFT(walletAddress, nftId, receiptData);
-      } else {
-        // Auto-select an appropriate NFT based on receipt data
-        return await nftMintService.selectAndMintNFT(walletAddress, receiptData);
-      }
-    });
-    
-  } catch (error: any) {
-    logger.error('Error initiating mint process:', error);
-    return res.status(500).json({
-      success: false,
-      message: `Failed to initiate NFT minting: ${error.message}`
-    });
-  }
-});
-
-/**
- * @route GET /api/nfts/task/:taskId
- * @desc Check status of minting task
- * @access Private
- */
-router.get('/task/:taskId', async (req, res) => {
-  const { taskId } = req.params;
-  
-  try {
-    // Get the task from the task service
-    const task = taskService.getTask(taskId);
-    
-    if (!task) {
-      return res.status(404).json({
+    if (!walletAddress) {
+      return res.status(400).json({
         success: false,
-        message: `Task ${taskId} not found`
+        message: 'Wallet address is required'
       });
     }
     
-    // Return task status and data
-    return res.json({
-      success: true,
-      taskId: task.id,
-      status: task.status,
-      message: getTaskStatusMessage(task),
-      data: task.status === 'completed' ? task.result : null,
-      error: task.error || null,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt
-    });
-  } catch (error: any) {
-    logger.error(`Error getting task status:`, error);
+    // In a real implementation, fetch from the blockchain
+    // For now, we'll return mock data
+    const mockNfts = [
+      {
+        id: '1',
+        tokenId: '1001',
+        name: 'Walmart Receipt',
+        description: 'Purchase at Walmart on May 12, 2025',
+        imageUrl: 'https://ipfs.io/ipfs/QmXyZ123...',
+        dateCreated: new Date().toISOString(),
+        metadata: {
+          merchantName: 'Walmart',
+          date: '2025-05-12',
+          total: 134.76,
+          items: [
+            { name: 'Groceries', price: 89.97 },
+            { name: 'Electronics', price: 44.79 }
+          ]
+        }
+      },
+      {
+        id: '2',
+        tokenId: '1002',
+        name: 'Target Receipt',
+        description: 'Purchase at Target on May 14, 2025',
+        imageUrl: 'https://ipfs.io/ipfs/QmAbC456...',
+        dateCreated: new Date().toISOString(),
+        metadata: {
+          merchantName: 'Target',
+          date: '2025-05-14',
+          total: 67.89,
+          items: [
+            { name: 'Clothing', price: 49.99 },
+            { name: 'Home Goods', price: 17.90 }
+          ]
+        }
+      }
+    ];
+    
+    return res.status(200).json(mockNfts);
+    
+  } catch (error) {
+    logger.error(`Error fetching NFTs: ${error}`);
     return res.status(500).json({
       success: false,
-      message: `Failed to get task status: ${error.message}`
+      message: 'Server error while fetching NFTs'
     });
   }
 });
 
 /**
- * Process the mint task in the background
+ * Get NFTs with coupon data
+ * GET /api/nfts/with-coupons
  */
-async function processMintTask(taskId: string, walletAddress: string, tokenId: number, receiptData: any) {
+router.get('/with-coupons', async (req, res) => {
   try {
-    // Check required environment variables
-    if (!process.env.CONTRACT_ADDRESS) {
-      throw new Error('CONTRACT_ADDRESS not set in environment');
-    }
+    // In a real implementation, we would fetch NFTs with coupons from the blockchain
+    // For now, we'll return mock data for the frontend integration
     
-    if (!process.env.POLYGON_RPC_URL) {
-      throw new Error('POLYGON_RPC_URL not set in environment');
-    }
+    // Create mock data with a mix of active and expired coupons
+    const now = Date.now();
+    const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
     
-    if (!process.env.PRIVATE_KEY) {
-      throw new Error('PRIVATE_KEY not set in environment');
-    }
-
-    // Connect to the blockchain
-    const provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_RPC_URL);
+    const mockNfts = [
+      {
+        id: '1',
+        tokenId: '1001',
+        name: 'Costco',
+        imageUrl: 'https://ipfs.io/ipfs/QmXyZ123...',
+        dateCreated: new Date(now - (3 * 24 * 60 * 60 * 1000)).toISOString(),
+        metadata: {
+          merchantName: 'Costco',
+          date: '2025-05-14',
+          total: 231.45,
+          coupon: {
+            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            ciphertext: Buffer.from('COSTCO25').toString('base64'),
+            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            validUntil: now + twoWeeksMs // Active
+          }
+        }
+      },
+      {
+        id: '2',
+        tokenId: '1002',
+        name: 'Target',
+        imageUrl: 'https://ipfs.io/ipfs/QmAbC456...',
+        dateCreated: new Date(now - (5 * 24 * 60 * 60 * 1000)).toISOString(),
+        metadata: {
+          merchantName: 'Target',
+          date: '2025-05-12',
+          total: 87.99,
+          coupon: {
+            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            ciphertext: Buffer.from('TARGET10').toString('base64'),
+            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            validUntil: now + (twoWeeksMs / 2) // Active
+          }
+        }
+      },
+      {
+        id: '3',
+        tokenId: '1003',
+        name: 'Walmart',
+        imageUrl: 'https://ipfs.io/ipfs/QmDeF789...',
+        dateCreated: new Date(now - (20 * 24 * 60 * 60 * 1000)).toISOString(),
+        metadata: {
+          merchantName: 'Walmart',
+          date: '2025-04-27',
+          total: 134.56,
+          coupon: {
+            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            ciphertext: Buffer.from('WALMART15').toString('base64'),
+            policyId: `policy_expired_${Math.random().toString(36).substring(2, 15)}`,
+            validUntil: now - (twoWeeksMs / 2) // Expired
+          }
+        }
+      },
+      {
+        id: '4',
+        tokenId: '1004',
+        name: 'Best Buy',
+        imageUrl: 'https://ipfs.io/ipfs/QmGhI012...',
+        dateCreated: new Date(now - (1 * 24 * 60 * 60 * 1000)).toISOString(),
+        metadata: {
+          merchantName: 'Best Buy',
+          date: '2025-05-16',
+          total: 349.99,
+          coupon: {
+            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            ciphertext: Buffer.from('BESTBUY20').toString('base64'),
+            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            validUntil: now + twoWeeksMs // Active
+          }
+        }
+      }
+    ];
     
-    // Create a wallet using the private key
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-    
-    // Connect to the smart contract
-    const contract = new ethers.Contract(
-      process.env.CONTRACT_ADDRESS,
-      ERC1155_ABI,
-      wallet
-    );
-
-    // Log the minting attempt
-    logger.info(`Minting NFT ID ${tokenId} to ${walletAddress}`);
-    
-    // Call the mint function on the contract
-    const tx = await contract.mint(walletAddress, tokenId);
-    
-    // Wait for the transaction to be mined
-    const receipt = await tx.wait();
-    
-    logger.info(`NFT minted successfully: ${receipt.transactionHash}`);
-    
-    // Update transaction status in DB (would be implemented in production)
-    // updateTaskStatus(taskId, 'completed', { txHash: receipt.transactionHash });
-    
-    // Store receipt data in a database or IPFS if needed
-    // In a production system, this would link the receipt data to the NFT
+    return res.status(200).json(mockNfts);
     
   } catch (error) {
-    logger.error(`NFT minting failed for task ${taskId}:`, error);
-    // updateTaskStatus(taskId, 'failed', { error: error.message });
-  }
-}
-
-/**
- * @route GET /api/nfts/pool
- * @desc Get a selection of NFT options from the pool
- * @access Public
- */
-router.get('/pool', async (req, res) => {
-  try {
-    const { tier = 'standard', count = 9, category } = req.query;
-    
-    // Validate tier
-    const validTiers = ['standard', 'premium', 'luxury', 'ultra'];
-    const validTier = validTiers.includes(tier.toString().toLowerCase()) 
-      ? tier.toString().toLowerCase()
-      : 'standard';
-    
-    // Get NFT options from the repository
-    const nftOptions = await nftPoolRepository.getNFTsByTier(validTier);
-    
-    // Filter by category if provided
-    let filteredOptions = category
-      ? nftOptions.filter((nft: NFTOption) => 
-          nft.category?.toLowerCase() === category.toString().toLowerCase())
-      : nftOptions;
-    
-    // Limit the number of options returned
-    const limitCount = Math.min(parseInt(count.toString()) || 9, 20); // Max 20 items
-    
-    // Randomize and limit
-    const shuffled = [...filteredOptions].sort(() => 0.5 - Math.random());
-    const selectedOptions = shuffled.slice(0, limitCount);
-    
-    // Enhance with more information if needed
-    const enhancedOptions = selectedOptions.map(nft => ({
-      ...nft,
-      // Add any additional fields or transformations here
-    }));
-    
-    return res.json({
-      success: true,
-      tier: validTier,
-      count: enhancedOptions.length,
-      total: filteredOptions.length,
-      nfts: enhancedOptions
-    });
-  } catch (error: any) {
-    logger.error('Error fetching NFT options:', error);
+    logger.error(`Error fetching NFTs with coupons: ${error}`);
     return res.status(500).json({
       success: false,
-      message: `Failed to fetch NFT options: ${error.message}`
+      message: 'Server error while fetching NFTs with coupons'
     });
   }
 });

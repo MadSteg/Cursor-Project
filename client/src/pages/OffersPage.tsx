@@ -14,11 +14,31 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Loader2, Info } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Define NFT type with coupon data to fix TypeScript errors
+interface NFT {
+  id: string;
+  tokenId: string;
+  name: string;
+  imageUrl?: string;
+  dateCreated?: string;
+  metadata: {
+    merchantName?: string;
+    date?: string;
+    total?: number;
+    coupon?: {
+      capsule: string;
+      ciphertext: string;
+      policyId: string;
+      validUntil: number;
+    }
+  }
+}
+
 const OffersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
 
   // Fetch NFTs with coupons
-  const { data: nfts, isLoading, error } = useQuery({
+  const { data: nfts, isLoading, error } = useQuery<NFT[]>({
     queryKey: ['/api/nfts/with-coupons'],
     retry: 1,
   });
@@ -26,11 +46,11 @@ const OffersPage: React.FC = () => {
   // Filter NFTs by active/expired
   const now = Date.now();
   const activeOffers = nfts?.filter(
-    (nft) => nft.metadata?.coupon?.validUntil && now < nft.metadata.coupon.validUntil
+    (nft: NFT) => nft.metadata?.coupon?.validUntil && now < nft.metadata.coupon.validUntil
   ) || [];
   
   const expiredOffers = nfts?.filter(
-    (nft) => nft.metadata?.coupon?.validUntil && now >= nft.metadata.coupon.validUntil
+    (nft: NFT) => nft.metadata?.coupon?.validUntil && now >= nft.metadata.coupon.validUntil
   ) || [];
 
   return (
@@ -65,7 +85,7 @@ const OffersPage: React.FC = () => {
         </Alert>
       ) : (
         <>
-          {nfts?.length === 0 ? (
+          {!nfts || nfts.length === 0 ? (
             <Card className="p-6 text-center">
               <CardHeader>
                 <CardTitle className="flex items-center justify-center gap-2">
@@ -88,7 +108,7 @@ const OffersPage: React.FC = () => {
               <TabsList className="mb-6">
                 <TabsTrigger value="all" className="relative">
                   All Offers
-                  {nfts?.length > 0 && (
+                  {nfts && nfts.length > 0 && (
                     <span className="ml-2 text-xs bg-primary/10 px-2 py-0.5 rounded-full">
                       {nfts.length}
                     </span>
@@ -114,7 +134,7 @@ const OffersPage: React.FC = () => {
               
               <TabsContent value="all" className="mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {nfts?.map((nft) => (
+                  {nfts.map((nft: NFT) => (
                     <CouponCard key={nft.id} nft={nft} />
                   ))}
                 </div>
@@ -127,7 +147,7 @@ const OffersPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {activeOffers.map((nft) => (
+                    {activeOffers.map((nft: NFT) => (
                       <CouponCard key={nft.id} nft={nft} />
                     ))}
                   </div>
@@ -141,7 +161,7 @@ const OffersPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {expiredOffers.map((nft) => (
+                    {expiredOffers.map((nft: NFT) => (
                       <CouponCard key={nft.id} nft={nft} />
                     ))}
                   </div>
