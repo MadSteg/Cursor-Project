@@ -83,9 +83,9 @@ function Router() {
         <Route path="/merchant-dashboard" component={MerchantDashboard} />
         <Route path="/new-receipt" component={ImprovedReceiptPage} /> {/* New improved receipt uploader */}
         
-        {/* NFT Receipt Features - Commented out as requested, but kept for future development */}
+        {/* NFT Receipt Features */}
         {/* <Route path="/nft-wallet" component={UserNFTWallet} /> */}
-        {/* <Route path="/nft-receipts/:id" component={NFTReceiptDetail} /> */}
+        <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
         
         {/* Routes now accessible via NFT Wallet tabs - Commented out as requested, but kept for future development */}
         {/* <Route path="/nft-wallet/analytics" component={Analytics} /> */}
