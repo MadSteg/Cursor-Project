@@ -240,19 +240,41 @@ export function ImprovedReceiptUploader() {
             console.log('Receipt processed:', response);
             
             if (response.success) {
-              // Store receipt data, with flag indicating if it's encrypted
-              const receiptDataWithEncryptionFlag = {
-                ...response.data,
-                isEncrypted: encryptionEnabled
-              };
+              // Handle the response from test-upload endpoint which has a different format
+              // than the regular upload-and-mint endpoint
               
-              setReceiptData(receiptDataWithEncryptionFlag);
-              setActiveTab('result');
+              let processedData;
               
-              // Store task ID if available
-              if (response.data.nftGift?.taskId) {
-                setTaskId(response.data.nftGift.taskId);
+              // Check if response is from test-upload or regular endpoint
+              if (response.file) {
+                // This is from test-upload endpoint
+                processedData = {
+                  merchant: { name: 'Test Merchant' },
+                  date: new Date().toISOString(),
+                  total: 0,
+                  subtotal: 0,
+                  tax: 0,
+                  items: [],
+                  imageUrl: response.file.path,
+                  isEncrypted: encryptionEnabled
+                };
+                console.log('Using test upload response data:', processedData);
+              } else {
+                // This is from regular upload-and-mint endpoint
+                processedData = {
+                  ...response.data,
+                  isEncrypted: encryptionEnabled
+                };
+                
+                // Store task ID if available
+                if (response.data?.nftGift?.taskId) {
+                  setTaskId(response.data.nftGift.taskId);
+                }
               }
+              
+              // Set the receipt data with proper structure
+              setReceiptData(processedData);
+              setActiveTab('result');
               
               toast({
                 title: 'Receipt Processed Successfully',
