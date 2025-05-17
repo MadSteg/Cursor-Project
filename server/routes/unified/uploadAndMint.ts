@@ -184,11 +184,20 @@ router.post(
             routeLogger.info('Using development mode mock encryption');
           } else {
             // In production, use the actual TaCo service
-            encryptedData = await tacoService.encryptReceiptMetadata(
-              [receiptWithImage], // Wrap in array as the service expects an array
-              walletAddress,      // Pass the wallet address as the second parameter
-              publicKey           // Pass the public key as the third parameter
+            // Since we've renamed our service methods, we need to use the new method
+            const serializedData = JSON.stringify([receiptWithImage]);
+            const encryptResult = await tacoService.encryptData(
+              serializedData,
+              `receipt-${walletAddress}-${Date.now()}`, // Policy name
+              null                                      // No expiration
             );
+            
+            encryptedData = {
+              available: true,
+              encryptedData: encryptResult.ciphertext,
+              capsule: encryptResult.capsule,
+              publicKey: publicKey
+            };
           }
         } catch (encryptionError) {
           routeLogger.error(`Metadata encryption failed: ${encryptionError}`);
@@ -199,26 +208,20 @@ router.post(
         }
       }
       
-      // Step 6: Generate a time-limited coupon code if a public key is provided
-      let couponUri = '';
-      if (req.body.publicKey) {
+      // Step 6: Generate a time-limited coupon using our coupon service if receipt has merchant info
+      let couponData = null;
+      if (receiptData && receiptData.merchantName) {
         try {
-          // Generate a 2-week coupon
-          const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
-          const validUntil = Date.now() + twoWeeksMs;
-          const couponCode = `OFF${Math.random().toString(36).slice(-6).toUpperCase()}_${Math.floor(Math.random() * 50)}`;
+          // Generate a coupon based on the merchant name (default 14-day expiration)
+          routeLogger.info(`Generating coupon for merchant: ${receiptData.merchantName}`);
           
-          routeLogger.info(`Generating coupon code ${couponCode} valid until ${new Date(validUntil).toISOString()}`);
-          
-          const couponResult = await couponService.createTimedCoupon(
-            req.body.publicKey,
-            couponCode,
-            validUntil
+          // Use our coupon service to create an encrypted coupon
+          couponData = await couponService.generateCoupon(
+            receiptData.merchantName,
+            14 // 14-day expiration
           );
           
-          couponUri = couponResult.metadataUri;
-          
-          routeLogger.info(`Coupon generated successfully with URI: ${couponUri}`);
+          routeLogger.info(`Coupon generated successfully, valid until: ${new Date(couponData.validUntil).toISOString()}`);
         } catch (couponError) {
           routeLogger.error(`Failed to generate coupon: ${couponError}`);
           // Continue with receipt processing even if coupon generation fails
@@ -232,8 +235,8 @@ router.post(
         ...receiptWithImage,
         // Store the image data for the task handler to use
         imageData: fs.readFileSync(file.path).toString('base64'),
-        // Add coupon URI if available
-        couponUri: couponUri || undefined
+        // Add coupon data if available
+        coupon: couponData || undefined
       };
       
       // Create task in queue for async processing
@@ -242,7 +245,7 @@ router.post(
         wallet: walletAddress,
         publicKey: req.body.publicKey,
         encryptMetadata: encryptMetadata === 'true' || encryptMetadata === true,
-        hasCoupon: !!couponUri
+        hasCoupon: !!couponData
       });
       
       // Return success response with data in the expected format for the client

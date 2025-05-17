@@ -1,105 +1,187 @@
 /**
- * Coupon Service
+ * CouponService.ts
  * 
- * Manages the creation and verification of time-limited coupons 
- * encrypted using Threshold Network's Proxy Re-Encryption (TACo PRE)
+ * Service for managing time-limited promotional coupons
+ * using Threshold PRE encryption for secure access control
  */
 
-import { tacoService } from './tacoService';
-import { ipfsService } from './ipfsService';
-import { v4 as uuidv4 } from 'uuid';
+import { tacoService, TacoEncryptedData } from './tacoService';
 import { createLogger } from '../logger';
 
 const logger = createLogger('coupon-service');
 
-/**
- * Creates a time-limited coupon that can only be decrypted within the validity period
- */
-export async function createTimedCoupon(
-  userPubKey: string,
-  couponCode: string,
-  validUntil: number
-) {
-  try {
-    logger.info(`Creating timed coupon valid until ${new Date(validUntil).toISOString()}`);
-    
-    // Encrypt the coupon code using TaCo PRE
-    const encryptionResult = await tacoService.encrypt({
-      recipientPublicKey: userPubKey,
-      data: Buffer.from(couponCode),
-      expiresAt: validUntil
-    });
-    
-    // Prepare metadata for IPFS
-    const metadata = {
-      name: 'Time-Limited Coupon',
-      description: `Valid until ${new Date(validUntil).toISOString()}`,
-      type: 'coupon',
-      couponId: uuidv4(),
-      validUntil,
-      encryptedData: {
-        capsule: encryptionResult.capsule,
-        ciphertext: encryptionResult.ciphertext,
-        policyId: encryptionResult.policyId
-      }
-    };
-    
-    // Pin metadata to IPFS
-    const metadataUri = await ipfsService.uploadJSON(metadata);
-    logger.info(`Coupon metadata pinned to IPFS: ${metadataUri}`);
-    
-    return {
-      metadataUri,
-      validUntil,
-      policyId: encryptionResult.policyId
-    };
-  } catch (error) {
-    logger.error(`Failed to create timed coupon: ${error}`);
-    throw new Error(`Coupon creation failed: ${error}`);
-  }
+// Types for coupon data
+export interface CouponData {
+  code: string;         // The coupon discount code
+  discount: number;     // The discount percentage or amount
+  validUntil: number;   // Timestamp when the coupon expires
+  merchantId?: string;  // Optional merchant ID the coupon is restricted to
+  minPurchase?: number; // Optional minimum purchase amount
+  maxDiscount?: number; // Optional cap on discount amount
 }
 
-/**
- * Verifies and decrypts a time-limited coupon
- */
-export async function decryptCoupon(encryptedData: any) {
-  try {
-    const { capsule, ciphertext, policyId } = encryptedData;
+export interface EncryptedCouponData {
+  capsule: string;      // TACo encryption capsule 
+  ciphertext: string;   // Encrypted coupon data
+  policyId: string;     // Policy ID for access control
+  validUntil: number;   // Plaintext expiration date (needed for filtering)
+}
+
+export interface CouponDecryptResult {
+  success: boolean;
+  couponCode?: string;
+  message?: string;
+}
+
+class CouponService {
+  /**
+   * Generate and encrypt a new coupon
+   * @param merchantName - The name of the merchant issuing the coupon
+   * @param expirationDays - Number of days until coupon expires
+   * @returns EncryptedCouponData with TACo-encrypted coupon
+   */
+  async generateCoupon(merchantName: string, expirationDays: number = 30): Promise<EncryptedCouponData> {
+    try {
+      // Calculate expiration date
+      const now = Date.now();
+      const validUntil = now + (expirationDays * 24 * 60 * 60 * 1000);
+      
+      // Generate a coupon code based on merchant name and random string
+      const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const merchantPrefix = merchantName.substring(0, 3).toUpperCase();
+      const couponCode = `${merchantPrefix}${randomString}`;
+      
+      // Create coupon data object
+      const couponData: CouponData = {
+        code: couponCode,
+        discount: this.generateRandomDiscount(),
+        validUntil,
+        merchantId: merchantName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      };
+      
+      // Add conditional extra properties
+      if (couponData.discount > 15) {
+        couponData.maxDiscount = 50; // Cap high percentage discounts
+      }
+      
+      if (couponData.discount > 30) {
+        couponData.minPurchase = 100; // Require minimum purchase for big discounts
+      }
+      
+      logger.info(`Generating coupon for ${merchantName}, valid until ${new Date(validUntil).toISOString()}`);
+      
+      // Encrypt the coupon data using TACo
+      const encryptedData = await this.encryptCouponData(couponData);
+      
+      return {
+        ...encryptedData,
+        validUntil // Keep the expiration date in plaintext for filtering
+      };
+      
+    } catch (error) {
+      logger.error(`Error generating coupon: ${error}`);
+      throw new Error(`Failed to generate coupon: ${error}`);
+    }
+  }
+  
+  /**
+   * Encrypt coupon data using TACo
+   * @param couponData - The coupon data to encrypt
+   * @returns TacoEncryptedData with capsule, ciphertext and policyId
+   */
+  private async encryptCouponData(couponData: CouponData): Promise<TacoEncryptedData> {
+    // Serialize the coupon data to a string
+    const serializedData = JSON.stringify(couponData);
     
-    // Attempt to decrypt using TaCo PRE
-    const decrypted = await tacoService.decrypt({
-      capsule,
-      ciphertext,
-      policyId
-    });
-    
-    // Convert the decrypted buffer to a string
-    return {
-      success: true,
-      couponCode: new TextDecoder().decode(decrypted)
-    };
-  } catch (error) {
-    logger.error(`Failed to decrypt coupon: ${error}`);
-    
-    // Check if this is an expiration error
-    if (error.message?.includes('expired') || error.message?.includes('policy not valid')) {
+    // Use TACo service to encrypt the data with a time-based policy
+    // that automatically expires after the coupon's validity period
+    return await tacoService.encryptData(
+      serializedData,
+      `coupon-${couponData.merchantId}-${Date.now()}`, // Policy name
+      couponData.validUntil // Time-based expiration
+    );
+  }
+  
+  /**
+   * Decrypt a coupon if it's still valid
+   * @param encryptedData - The encrypted coupon data
+   * @returns CouponDecryptResult with success status and decrypted coupon code
+   */
+  async decryptCoupon(encryptedData: {
+    capsule: string;
+    ciphertext: string;
+    policyId: string;
+  }): Promise<CouponDecryptResult> {
+    try {
+      const { capsule, ciphertext, policyId } = encryptedData;
+      
+      logger.info(`Attempting to decrypt coupon with policy ID: ${policyId}`);
+      
+      // Check validity using TACo service
+      const currentTime = Date.now();
+      
+      // Attempt to decrypt using TACo
+      const decryptedData = await tacoService.decryptData({
+        capsule,
+        ciphertext,
+        policyId
+      });
+      
+      if (!decryptedData) {
+        return {
+          success: false,
+          message: 'Failed to decrypt coupon data'
+        };
+      }
+      
+      // Parse the decrypted data
+      const couponData: CouponData = JSON.parse(decryptedData);
+      
+      // Check if coupon is expired (additional validation)
+      if (currentTime > couponData.validUntil) {
+        return {
+          success: false,
+          message: 'This coupon has expired'
+        };
+      }
+      
+      return {
+        success: true,
+        couponCode: couponData.code
+      };
+      
+    } catch (error) {
+      logger.error(`Error decrypting coupon: ${error}`);
       return {
         success: false,
-        message: 'This coupon has expired and can no longer be redeemed.'
+        message: 'Error processing coupon'
       };
     }
+  }
+  
+  /**
+   * Generate a random discount value between 5% and 40%
+   * With weighted distribution favoring smaller discounts
+   */
+  private generateRandomDiscount(): number {
+    // Generate random number 0-100
+    const rand = Math.random() * 100;
     
-    return {
-      success: false,
-      message: 'Failed to decrypt coupon.'
-    };
+    // Weight distribution to favor smaller discounts
+    if (rand < 50) {
+      // 50% chance of 5-10% discount
+      return Math.floor(Math.random() * 6) + 5;
+    } else if (rand < 80) {
+      // 30% chance of 10-20% discount
+      return Math.floor(Math.random() * 11) + 10;
+    } else if (rand < 95) {
+      // 15% chance of 20-30% discount
+      return Math.floor(Math.random() * 11) + 20;
+    } else {
+      // 5% chance of 30-40% discount
+      return Math.floor(Math.random() * 11) + 30;
+    }
   }
 }
 
-// Export functions
-export const couponService = {
-  createTimedCoupon,
-  decryptCoupon
-};
-
-export default couponService;
+export const couponService = new CouponService();

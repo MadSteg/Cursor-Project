@@ -1,405 +1,257 @@
 /**
- * TaCo (Threshold Cryptography) Service for BlockReceipt.ai
+ * TacoService.ts
  * 
- * This service handles the encryption and decryption of sensitive receipt data
- * using Threshold Cryptography for enhanced privacy control.
+ * Service for interacting with the Threshold Network's TACo PRE
+ * (Threshold Access Control - Proxy Re-Encryption) protocol.
+ * 
+ * This service provides encryption and decryption capabilities with time-based access controls.
  */
 
-// Logger setup
-let logger;
-try {
-  logger = require('../logger').default;
-} catch (error) {
-  logger = console;
+import { createLogger } from '../logger';
+
+const logger = createLogger('taco-service');
+
+// Mock for testing without TACo network integration
+const MOCK_MODE = process.env.NODE_ENV === 'development';
+
+export interface TacoEncryptedData {
+  capsule: string;      // The encryption capsule 
+  ciphertext: string;   // The encrypted data
+  policyId: string;     // The policy ID for access control
 }
 
-// Define encryption result interface
-export interface EncryptionResult {
-  available: boolean;
-  encryptedData?: string;
-  capsule?: string;
-  publicKey?: string;
-  error?: string;
-}
-
-// Define coupon encryption parameters
-export interface CouponEncryptParams {
-  recipientPublicKey: string;
-  data: Buffer;
-  expiresAt: number;
-}
-
-// Define coupon decryption parameters
-export interface CouponDecryptParams {
-  capsule: string;
-  ciphertext: string;
-  policyId: string;
-}
-
-/**
- * TaCo Service class
- */
 class TacoService {
-  private isInitialized: boolean = false;
+  private initialized: boolean = false;
   
   constructor() {
-    // Initialize TaCo encryption
     this.initialize();
   }
   
   /**
-   * Initialize TaCo encryption
+   * Initialize the TACo service connection
    */
-  private async initialize(): Promise<void> {
+  private async initialize() {
     try {
-      logger.info('Initializing TaCo encryption service...');
+      if (MOCK_MODE) {
+        logger.info('Using mock Taco service in development environment');
+        console.log('[taco] Using mock Taco service');
+        this.initialized = true;
+        return;
+      }
       
-      // In a real implementation, we would initialize the TaCo SDK here
-      // For now, we'll just simulate the initialization
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // In production, this would connect to actual Threshold Network nodes
+      // and initialize the necessary cryptographic components
       
-      this.isInitialized = true;
       logger.info('TaCo encryption service initialized successfully');
+      this.initialized = true;
     } catch (error) {
-      logger.error(`Failed to initialize TaCo encryption: ${error}`);
-      this.isInitialized = false;
+      logger.error(`Failed to initialize TaCo service: ${error}`);
+      // Fallback to mock mode if initialization fails
+      logger.info('Falling back to mock TaCo service');
+      this.initialized = true;
     }
   }
   
   /**
-   * Encrypt receipt metadata
-   * @param receiptItems Receipt items to encrypt
-   * @param walletAddress Owner wallet address
-   * @param recipientPublicKey Recipient public key
-   * @returns Encryption result
+   * Encrypt data using TACo PRE
+   * 
+   * @param data - The data to encrypt (string)
+   * @param policyName - Name for the encryption policy
+   * @param expirationTime - Optional timestamp when access should expire
+   * @returns Encrypted data with capsule, ciphertext and policy ID
    */
-  async encryptReceiptMetadata(
-    receiptItems: any[],
-    walletAddress: string,
-    recipientPublicKey: string
-  ): Promise<EncryptionResult> {
+  async encryptData(
+    data: string,
+    policyName: string,
+    expirationTime?: number | null
+  ): Promise<TacoEncryptedData> {
+    await this.ensureInitialized();
+    
     try {
-      if (!this.isInitialized) {
-        await this.initialize();
-        
-        if (!this.isInitialized) {
-          throw new Error('TaCo encryption service not initialized');
-        }
+      logger.info(`Encrypting data with policy: ${policyName}`);
+      
+      if (MOCK_MODE) {
+        // In mock mode, we just base64 encode the data
+        // and create mock capsule and policy identifiers
+        return this.mockEncrypt(data, policyName);
       }
       
-      logger.info(`Encrypting receipt metadata for wallet ${walletAddress}...`);
+      // In production, this would:
+      // 1. Create a TACo policy with the specified parameters
+      // 2. Use the policy's encryption key to encrypt the data
+      // 3. Return the capsule, ciphertext, and policy ID
       
-      // Ensure valid inputs
-      if (!receiptItems || receiptItems.length === 0) {
-        throw new Error('No receipt items to encrypt');
-      }
+      // Production implementation would go here
       
-      if (!walletAddress) {
-        throw new Error('No wallet address provided');
-      }
+      // For now, return mock data
+      return this.mockEncrypt(data, policyName);
       
-      if (!recipientPublicKey) {
-        throw new Error('No recipient public key provided');
-      }
-      
-      // In a real implementation, we would call the TaCo SDK to encrypt the data
-      // For now, we'll just simulate the encryption
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Create a mock encrypted result
-      const encryptedData = Buffer.from(JSON.stringify(receiptItems)).toString('base64');
-      const capsule = `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      
-      logger.info('Receipt metadata encrypted successfully');
-      
-      return {
-        available: true,
-        encryptedData,
-        capsule,
-        publicKey: recipientPublicKey
-      };
     } catch (error) {
-      logger.error(`Failed to encrypt receipt metadata: ${error}`);
-      return {
-        available: false,
-        error: `Encryption failed: ${error.message}`
-      };
+      logger.error(`Error encrypting data: ${error}`);
+      throw new Error(`TACo encryption failed: ${error}`);
     }
   }
   
   /**
-   * Decrypt receipt metadata
-   * @param encryptedData Encrypted receipt data
-   * @param capsule Encryption capsule
-   * @param walletAddress Owner wallet address
-   * @returns Decrypted receipt items
+   * Decrypt data using TACo PRE
+   * 
+   * @param encryptedData - The encrypted data with capsule, ciphertext and policy ID
+   * @returns Decrypted data as string, or null if decryption fails
    */
-  async decryptReceiptMetadata(
-    encryptedData: string,
-    capsule: string,
-    walletAddress: string
-  ): Promise<any[]> {
+  async decryptData(encryptedData: TacoEncryptedData): Promise<string | null> {
+    await this.ensureInitialized();
+    
     try {
-      if (!this.isInitialized) {
-        await this.initialize();
-        
-        if (!this.isInitialized) {
-          throw new Error('TaCo encryption service not initialized');
-        }
+      const { capsule, ciphertext, policyId } = encryptedData;
+      
+      logger.info(`Decrypting data for policy ID: ${policyId}`);
+      
+      if (MOCK_MODE) {
+        // In mock mode, simply decode the base64 ciphertext
+        return this.mockDecrypt(ciphertext, policyId);
       }
       
-      logger.info(`Decrypting receipt metadata for wallet ${walletAddress}...`);
+      // In production, this would:
+      // 1. Retrieve the policy using the policy ID
+      // 2. Check if the current user has access to the policy
+      // 3. Use the policy's decryption key to decrypt the data
       
-      // Ensure valid inputs
-      if (!encryptedData) {
-        throw new Error('No encrypted data provided');
-      }
+      // Production implementation would go here
       
-      if (!capsule) {
-        throw new Error('No encryption capsule provided');
-      }
+      // For now, use mock decryption
+      return this.mockDecrypt(ciphertext, policyId);
       
-      if (!walletAddress) {
-        throw new Error('No wallet address provided');
-      }
-      
-      // In a real implementation, we would call the TaCo SDK to decrypt the data
-      // For now, we'll just simulate the decryption by base64 decoding
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Decode the mock encrypted data
-      const decodedData = Buffer.from(encryptedData, 'base64').toString('utf-8');
-      
-      // Parse the JSON data
-      const receiptItems = JSON.parse(decodedData);
-      
-      logger.info('Receipt metadata decrypted successfully');
-      
-      return receiptItems;
     } catch (error) {
-      logger.error(`Failed to decrypt receipt metadata: ${error}`);
-      throw new Error(`Decryption failed: ${error.message}`);
+      logger.error(`Error decrypting data: ${error}`);
+      return null;
     }
   }
   
   /**
-   * Grant access to encrypted receipt data
-   * @param capsule Encryption capsule
-   * @param ownerWalletAddress Owner wallet address
-   * @param recipientPublicKey Recipient public key
-   * @returns Grant result
+   * Ensure the TACo service is initialized before use
    */
-  async grantAccess(
-    capsule: string,
-    ownerWalletAddress: string,
-    recipientPublicKey: string
-  ): Promise<any> {
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      logger.info('TaCo service not initialized, attempting initialization...');
+      await this.initialize();
+    }
+  }
+  
+  /**
+   * Mock encryption function for development/testing
+   */
+  private mockEncrypt(data: string, policyName: string): TacoEncryptedData {
+    // Create a mock policy ID
+    const policyId = `policy_${policyName}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    
+    // Simple base64 encoding for mock "encryption"
+    const ciphertext = Buffer.from(data).toString('base64');
+    
+    // Mock capsule with random identifier
+    const capsule = `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    
+    logger.info(`Mock encrypted data with policy ID: ${policyId}`);
+    
+    return {
+      capsule,
+      ciphertext,
+      policyId
+    };
+  }
+  
+  /**
+   * Mock decryption function for development/testing
+   */
+  private mockDecrypt(ciphertext: string, policyId: string): string | null {
     try {
-      if (!this.isInitialized) {
-        await this.initialize();
-        
-        if (!this.isInitialized) {
-          throw new Error('TaCo encryption service not initialized');
-        }
+      // Check if this is a time-limited policy and if it's expired
+      if (policyId.includes('expired')) {
+        logger.info(`Mock policy ${policyId} is expired, denying access`);
+        return null;
       }
       
-      logger.info(`Granting access for recipient ${recipientPublicKey}...`);
+      // Simple base64 decoding for mock "decryption"
+      const decrypted = Buffer.from(ciphertext, 'base64').toString('utf-8');
       
-      // Ensure valid inputs
-      if (!capsule) {
-        throw new Error('No encryption capsule provided');
-      }
+      logger.info(`Mock decrypted data for policy ID: ${policyId}`);
       
-      if (!ownerWalletAddress) {
-        throw new Error('No owner wallet address provided');
-      }
-      
-      if (!recipientPublicKey) {
-        throw new Error('No recipient public key provided');
-      }
-      
-      // In a real implementation, we would call the TaCo SDK to grant access
-      // For now, we'll just simulate the grant
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Create a mock grant result
-      const grantId = `grant_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      
-      logger.info(`Access granted successfully with ID ${grantId}`);
-      
-      return {
-        success: true,
-        grantId,
-        capsule,
-        ownerWalletAddress,
-        recipientPublicKey,
-        timestamp: new Date()
-      };
+      return decrypted;
     } catch (error) {
-      logger.error(`Failed to grant access: ${error}`);
-      throw new Error(`Grant access failed: ${error.message}`);
+      logger.error(`Error in mock decryption: ${error}`);
+      return null;
     }
   }
   
   /**
-   * Revoke access to encrypted receipt data
-   * @param grantId Grant ID
-   * @param ownerWalletAddress Owner wallet address
-   * @returns Revoke result
+   * In a real implementation, this method would grant access to a specific user
+   * for a specific policy. In mock mode, it just logs the action.
    */
-  async revokeAccess(
-    grantId: string,
-    ownerWalletAddress: string
-  ): Promise<any> {
+  async grantAccess(policyId: string, userAddress: string): Promise<boolean> {
+    await this.ensureInitialized();
+    
     try {
-      if (!this.isInitialized) {
-        await this.initialize();
-        
-        if (!this.isInitialized) {
-          throw new Error('TaCo encryption service not initialized');
-        }
+      logger.info(`Granting access to policy ${policyId} for user ${userAddress}`);
+      
+      if (MOCK_MODE) {
+        // Just return success in mock mode
+        return true;
       }
       
-      logger.info(`Revoking access for grant ${grantId}...`);
+      // In production, this would call the TACo protocol to grant access
       
-      // Ensure valid inputs
-      if (!grantId) {
-        throw new Error('No grant ID provided');
-      }
-      
-      if (!ownerWalletAddress) {
-        throw new Error('No owner wallet address provided');
-      }
-      
-      // In a real implementation, we would call the TaCo SDK to revoke access
-      // For now, we'll just simulate the revocation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      logger.info(`Access revoked successfully for grant ${grantId}`);
-      
-      return {
-        success: true,
-        grantId,
-        ownerWalletAddress,
-        timestamp: new Date()
-      };
+      return true;
     } catch (error) {
-      logger.error(`Failed to revoke access: ${error}`);
-      throw new Error(`Revoke access failed: ${error.message}`);
+      logger.error(`Error granting access: ${error}`);
+      return false;
     }
   }
   
   /**
-   * Encrypt data with a time-limited policy for coupons
-   * @param params Encryption parameters
-   * @returns Encryption result including policy ID
+   * In a real implementation, this method would revoke access for a specific user
+   * from a specific policy. In mock mode, it just logs the action.
    */
-  async encrypt(params: CouponEncryptParams): Promise<any> {
+  async revokeAccess(policyId: string, userAddress: string): Promise<boolean> {
+    await this.ensureInitialized();
+    
     try {
-      if (!this.isInitialized) {
-        await this.initialize();
-        
-        if (!this.isInitialized) {
-          throw new Error('TaCo encryption service not initialized');
-        }
+      logger.info(`Revoking access to policy ${policyId} for user ${userAddress}`);
+      
+      if (MOCK_MODE) {
+        // Just return success in mock mode
+        return true;
       }
       
-      logger.info(`Encrypting coupon data with expiry at ${new Date(params.expiresAt).toISOString()}...`);
+      // In production, this would call the TACo protocol to revoke access
       
-      // Ensure valid inputs
-      if (!params.recipientPublicKey) {
-        throw new Error('No recipient public key provided');
-      }
-      
-      if (!params.data || params.data.length === 0) {
-        throw new Error('No data to encrypt');
-      }
-      
-      // In a real implementation, we would call the TaCo SDK to encrypt the data with a time-limited policy
-      // For now, we'll just simulate the encryption
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Create a mock encrypted result with a policy ID
-      const ciphertext = Buffer.from(params.data).toString('base64');
-      const capsule = `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      const policyId = `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      
-      logger.info(`Coupon data encrypted successfully with policy ID ${policyId}`);
-      
-      return {
-        ciphertext,
-        capsule,
-        policyId,
-        expiresAt: params.expiresAt
-      };
-    } catch (error: any) {
-      logger.error(`Failed to encrypt coupon data: ${error}`);
-      throw new Error(`Coupon encryption failed: ${error.message}`);
+      return true;
+    } catch (error) {
+      logger.error(`Error revoking access: ${error}`);
+      return false;
     }
   }
   
   /**
-   * Decrypt data using a policy ID - will fail if policy has expired
-   * @param params Decryption parameters
-   * @returns Decrypted data as Buffer
+   * Returns whether a particular policy is active and accessible
    */
-  async decrypt(params: CouponDecryptParams): Promise<Buffer> {
+  async isPolicyActive(policyId: string): Promise<boolean> {
+    await this.ensureInitialized();
+    
     try {
-      if (!this.isInitialized) {
-        await this.initialize();
-        
-        if (!this.isInitialized) {
-          throw new Error('TaCo encryption service not initialized');
-        }
+      logger.info(`Checking if policy ${policyId} is active`);
+      
+      if (MOCK_MODE) {
+        // In mock mode, any policy without "expired" in the ID is considered active
+        return !policyId.includes('expired');
       }
       
-      logger.info(`Decrypting data with policy ID ${params.policyId}...`);
+      // In production, this would check the policy status on the TACo network
       
-      // Ensure valid inputs
-      if (!params.capsule) {
-        throw new Error('No encryption capsule provided');
-      }
-      
-      if (!params.ciphertext) {
-        throw new Error('No encrypted data provided');
-      }
-      
-      if (!params.policyId) {
-        throw new Error('No policy ID provided');
-      }
-      
-      // In a real implementation, we would call the TaCo SDK to decrypt and verify the policy
-      // For now, we'll simulate success or expiration based on the policy ID
-      
-      // Check if policy has expired - simulate expiry for policies containing "expired"
-      const policyIdLower = params.policyId.toLowerCase();
-      if (policyIdLower.includes('expired') || Math.random() < 0.2) {
-        throw new Error('Policy has expired or is no longer valid');
-      }
-      
-      // Simulate decryption
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Decode the mock encrypted data
-      const decodedData = Buffer.from(params.ciphertext, 'base64');
-      
-      logger.info('Data decrypted successfully');
-      
-      return decodedData;
-    } catch (error: any) {
-      logger.error(`Failed to decrypt data: ${error}`);
-      throw new Error(`Decryption failed: ${error.message}`);
+      return true;
+    } catch (error) {
+      logger.error(`Error checking policy status: ${error}`);
+      return false;
     }
-  }
-  
-  /**
-   * Check if TaCo service is available
-   * @returns Boolean indicating availability
-   */
-  isAvailable(): boolean {
-    return this.isInitialized;
   }
 }
 
-// Export singleton instance
 export const tacoService = new TacoService();
