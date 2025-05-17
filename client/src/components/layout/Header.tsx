@@ -151,7 +151,7 @@ const Header: React.FC = () => {
               <Link href="/sign-in">
                 <Button variant="outline" size="sm" className="flex items-center">
                   <User className="h-4 w-4 mr-1.5" /> 
-                  <span>Login/Signup</span>
+                  <span>Sign In/Connect Wallet</span>
                 </Button>
               </Link>
             )}

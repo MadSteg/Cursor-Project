@@ -189,12 +189,12 @@ export function ImprovedReceiptUploader() {
       
       // Create FormData for upload with the correct field name
       const formData = new FormData();
-      // Add file with proper field name expected by server (upload.single('receipt'))
-      formData.append('receipt', selectedFile);
+      // Add file with proper field name expected by server (upload.single('receiptImage'))
+      formData.append('receiptImage', selectedFile);
       
       // Log formData contents for debugging
       console.log('Uploading file:', selectedFile.name);
-      console.log('FormData field name used:', 'receipt');
+      console.log('FormData field name used:', 'receiptImage');
       
       // Add encryption flag to the form data
       formData.append('encryptMetadata', encryptionEnabled ? 'true' : 'false');
