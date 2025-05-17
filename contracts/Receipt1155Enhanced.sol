@@ -2,331 +2,224 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-/// @title Receipt1155Enhanced - Advanced ERC1155 Receipt NFT Contract
-/// @author BlockReceipt.ai
-/// @notice This contract is used to mint and manage digital receipts as NFTs
-/// @dev ERC1155 token representing digital receipts with enhanced features including role management, events, and security features
-/// @custom:security-contact security@blockreceipt.ai
-contract Receipt1155Enhanced is ERC1155, AccessControl, Pausable {
+/**
+ * @title Receipt1155Enhanced
+ * @dev Enhanced ERC-1155 contract for BlockReceipt.ai with passport stamp support
+ */
+contract Receipt1155Enhanced is ERC1155, Ownable {
     using Strings for uint256;
     
-    /// @notice Role that grants admin privileges (pausing, revoking receipts, etc.)
-    /// @dev keccak256 hash of "ADMIN_ROLE"
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    
-    /// @notice Role that grants minting privileges
-    /// @dev keccak256 hash of "MINTER_ROLE"
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    
-    /// @notice Maps token IDs to their specific URI
-    /// @dev This overrides the base ERC1155 URI behavior
+    // Token URI mapping
     mapping(uint256 => string) private _tokenURIs;
     
-    /// @notice Base URI for all token metadata
-    /// @dev Used as a prefix for all token URIs
-    string private _baseURI;
+    // Receipt hash mapping
+    mapping(uint256 => bytes32) private _receiptHashes;
     
-    /// @notice Metadata structure for each receipt
-    /// @dev Stores on-chain receipt information
-    struct ReceiptMetadata {
-        /// @notice Timestamp when the receipt was created
-        uint256 timestamp;
-        
-        /// @notice Whether the receipt has been revoked
-        bool revoked;
-        
-        /// @notice Type of receipt (standard, premium, luxury)
-        string receiptType;
-    }
+    // Passport stamp URI mapping
+    mapping(uint256 => string) private _stampURIs;
     
-    /// @notice Maps token IDs to their metadata
-    /// @dev Provides access to on-chain receipt information
-    mapping(uint256 => ReceiptMetadata) private _receiptMetadata;
+    // Metadata encryption status mapping
+    mapping(uint256 => bool) private _encryptedStatus;
     
-    /// @notice Emitted when a new receipt is minted
-    /// @param to The address that received the receipt
-    /// @param tokenId The token ID of the minted receipt
-    /// @param uri The token URI for the receipt metadata
-    /// @param receiptType The type of receipt minted (standard, premium, luxury)
-    event ReceiptMinted(address indexed to, uint256 indexed tokenId, string uri, string receiptType);
+    // Metadata access control policy ID mapping
+    mapping(uint256 => string) private _policyIds;
     
-    /// @notice Emitted when a receipt is revoked (without burning)
-    /// @param tokenId The token ID of the revoked receipt
-    event ReceiptRevoked(uint256 indexed tokenId);
+    // Next token ID counter
+    uint256 private _nextTokenId = 1;
     
-    /// @notice Emitted when a receipt is burned
-    /// @param owner The address that owned the receipt
-    /// @param tokenId The token ID of the burned receipt
-    /// @param amount The amount of tokens burned
-    event ReceiptBurned(address indexed owner, uint256 indexed tokenId, uint256 amount);
-    
-    /// @notice Emitted when the base URI is updated
-    /// @param newBaseURI The new base URI for all tokens
-    event BaseURISet(string newBaseURI);
-    
-    /// @notice Initializes the contract with a base URI and sets up roles
-    /// @dev Sets the deployer as admin and minter
-    /// @param baseURI Base URI for all token metadata
-    constructor(string memory baseURI) ERC1155("") {
-        _baseURI = baseURI;
-        
-        // Set up roles
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
-        
-        emit BaseURISet(baseURI);
-    }
-    
-    /// @notice Mints a new receipt token
-    /// @dev Can only be called by accounts with the MINTER_ROLE
-    /// @param to Address receiving the receipt
-    /// @param tokenId The token/receipt identifier - must be unique
-    /// @param amount Amount of tokens to mint (usually 1)
-    /// @param tokenURI URI for the token's metadata
-    /// @param receiptType Type of receipt (standard, premium, luxury)
-    /// @custom:event Emits a ReceiptMinted event
+    // Events
+    event ReceiptMinted(address indexed to, uint256 indexed tokenId, bytes32 receiptHash, string uri, string stampUri);
+    event StampUpdated(uint256 indexed tokenId, string stampUri);
+    event EncryptionStatusSet(uint256 indexed tokenId, bool encrypted);
+    event PolicyIdSet(uint256 indexed tokenId, string policyId);
+
+    /**
+     * @dev Constructor initializes the contract with an owner
+     * @param initialOwner The initial owner of the contract
+     */
+    constructor(address initialOwner) ERC1155("") Ownable(initialOwner) {}
+
+    /**
+     * @dev Mint a receipt NFT with a specific token ID
+     * @param to Recipient address
+     * @param tokenId Specific token ID to mint
+     * @param receiptHash Hash of the receipt data for verification
+     * @param uri_ Metadata URI for the token
+     * @param stampUri_ Passport stamp URI for the token (optional)
+     * @param encrypted Whether the metadata is encrypted
+     * @param policyId The encryption policy ID (optional)
+     */
     function mintReceipt(
         address to,
         uint256 tokenId,
-        uint256 amount,
-        string calldata tokenURI,
-        string calldata receiptType
-    ) external whenNotPaused onlyRole(MINTER_ROLE) {
-        require(bytes(_receiptMetadata[tokenId].receiptType).length == 0, "Receipt already exists");
-        
-        _tokenURIs[tokenId] = tokenURI;
-        _receiptMetadata[tokenId] = ReceiptMetadata({
-            timestamp: block.timestamp,
-            revoked: false,
-            receiptType: receiptType
-        });
-        
-        _mint(to, tokenId, amount, "");
-        
-        emit ReceiptMinted(to, tokenId, tokenURI, receiptType);
-    }
-    
-    /// @notice Mints a new receipt token with an auto-generated token ID
-    /// @dev Generates a unique token ID based on timestamp and randomness
-    /// @param to Address receiving the receipt
-    /// @param tokenURI URI for the token's metadata
-    /// @param receiptType Type of receipt (standard, premium, luxury)
-    /// @return tokenId The generated token ID
-    /// @custom:event Emits a ReceiptMinted event
-    function mintNewReceipt(
-        address to,
-        string calldata tokenURI,
-        string calldata receiptType
-    ) external whenNotPaused onlyRole(MINTER_ROLE) returns (uint256 tokenId) {
-        // Generate a unique token ID based on timestamp and a simple pseudorandom component
-        tokenId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    block.timestamp,
-                    block.prevrandao,
-                    to,
-                    msg.sender,
-                    tokenURI
-                )
-            )
-        );
-        
-        // Mint the token with the generated ID
-        _tokenURIs[tokenId] = tokenURI;
-        _receiptMetadata[tokenId] = ReceiptMetadata({
-            timestamp: block.timestamp,
-            revoked: false,
-            receiptType: receiptType
-        });
+        bytes32 receiptHash,
+        string calldata uri_,
+        string calldata stampUri_,
+        bool encrypted,
+        string calldata policyId
+    ) external onlyOwner {
+        _tokenURIs[tokenId] = uri_;
+        _receiptHashes[tokenId] = receiptHash;
+        _stampURIs[tokenId] = stampUri_;
+        _encryptedStatus[tokenId] = encrypted;
+        _policyIds[tokenId] = policyId;
         
         _mint(to, tokenId, 1, "");
         
-        emit ReceiptMinted(to, tokenId, tokenURI, receiptType);
+        emit ReceiptMinted(to, tokenId, receiptHash, uri_, stampUri_);
+        emit EncryptionStatusSet(tokenId, encrypted);
+        
+        if (bytes(policyId).length > 0) {
+            emit PolicyIdSet(tokenId, policyId);
+        }
+    }
+
+    /**
+     * @dev Mint a new receipt NFT with an auto-generated token ID
+     * @param to Recipient address
+     * @param receiptHash Hash of the receipt data for verification
+     * @param uri_ Metadata URI for the token
+     * @param stampUri_ Passport stamp URI for the token (optional)
+     * @param encrypted Whether the metadata is encrypted
+     * @param policyId The encryption policy ID (optional)
+     * @return The new token ID
+     */
+    function mintNewReceipt(
+        address to,
+        bytes32 receiptHash,
+        string calldata uri_,
+        string calldata stampUri_,
+        bool encrypted,
+        string calldata policyId
+    ) external onlyOwner returns (uint256) {
+        uint256 tokenId = _nextTokenId++;
+        
+        _tokenURIs[tokenId] = uri_;
+        _receiptHashes[tokenId] = receiptHash;
+        _stampURIs[tokenId] = stampUri_;
+        _encryptedStatus[tokenId] = encrypted;
+        _policyIds[tokenId] = policyId;
+        
+        _mint(to, tokenId, 1, "");
+        
+        emit ReceiptMinted(to, tokenId, receiptHash, uri_, stampUri_);
+        emit EncryptionStatusSet(tokenId, encrypted);
+        
+        if (bytes(policyId).length > 0) {
+            emit PolicyIdSet(tokenId, policyId);
+        }
         
         return tokenId;
     }
-    
-    /// @notice Batch mints multiple receipts in a single transaction
-    /// @dev Efficiently mints multiple receipts, validates that all input arrays have the same length
-    /// @param to Address receiving the receipts
-    /// @param tokenIds Array of token IDs
-    /// @param amounts Array of amounts
-    /// @param tokenURIs Array of token URIs
-    /// @param receiptTypes Array of receipt types
-    /// @custom:event Emits multiple ReceiptMinted events
-    function batchMintReceipts(
-        address to,
-        uint256[] calldata tokenIds,
-        uint256[] calldata amounts,
-        string[] calldata tokenURIs,
-        string[] calldata receiptTypes
-    ) external whenNotPaused onlyRole(MINTER_ROLE) {
-        require(
-            tokenIds.length == amounts.length &&
-            tokenIds.length == tokenURIs.length &&
-            tokenIds.length == receiptTypes.length,
-            "Input arrays must have same length"
-        );
-        
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            require(bytes(_receiptMetadata[tokenIds[i]].receiptType).length == 0, "Receipt already exists");
-            
-            _tokenURIs[tokenIds[i]] = tokenURIs[i];
-            _receiptMetadata[tokenIds[i]] = ReceiptMetadata({
-                timestamp: block.timestamp,
-                revoked: false,
-                receiptType: receiptTypes[i]
-            });
-            
-            emit ReceiptMinted(to, tokenIds[i], tokenURIs[i], receiptTypes[i]);
-        }
-        
-        _mintBatch(to, tokenIds, amounts, "");
+
+    /**
+     * @dev Update the passport stamp URI for a token
+     * @param tokenId The token ID to update
+     * @param stampUri_ The new passport stamp URI
+     */
+    function updateStampUri(uint256 tokenId, string calldata stampUri_) external onlyOwner {
+        require(bytes(_tokenURIs[tokenId]).length > 0, "Token does not exist");
+        _stampURIs[tokenId] = stampUri_;
+        emit StampUpdated(tokenId, stampUri_);
     }
-    
-    /// @notice Burns receipt tokens
-    /// @dev Can be called by token owners or admins
-    /// @param from Address that owns the tokens
-    /// @param tokenId Token ID to burn
-    /// @param amount Amount to burn
-    /// @custom:event Emits a ReceiptBurned event
-    function burn(
-        address from,
-        uint256 tokenId,
-        uint256 amount
-    ) external {
-        require(
-            from == msg.sender || hasRole(ADMIN_ROLE, msg.sender),
-            "Caller must be owner or admin"
-        );
-        
-        _burn(from, tokenId, amount);
-        
-        emit ReceiptBurned(from, tokenId, amount);
+
+    /**
+     * @dev Update the encryption policy ID for a token
+     * @param tokenId The token ID to update
+     * @param policyId The new encryption policy ID
+     */
+    function updatePolicyId(uint256 tokenId, string calldata policyId) external onlyOwner {
+        require(bytes(_tokenURIs[tokenId]).length > 0, "Token does not exist");
+        _policyIds[tokenId] = policyId;
+        emit PolicyIdSet(tokenId, policyId);
     }
-    
-    /// @notice Revokes a receipt (marks as invalid without burning)
-    /// @dev Only callable by ADMIN_ROLE
-    /// @param tokenId The token ID to revoke
-    /// @custom:event Emits a ReceiptRevoked event
-    function revokeReceipt(uint256 tokenId) external onlyRole(ADMIN_ROLE) {
-        require(bytes(_receiptMetadata[tokenId].receiptType).length > 0, "Receipt does not exist");
-        require(!_receiptMetadata[tokenId].revoked, "Receipt already revoked");
-        
-        _receiptMetadata[tokenId].revoked = true;
-        
-        emit ReceiptRevoked(tokenId);
+
+    /**
+     * @dev Set the encryption status for a token
+     * @param tokenId The token ID to update
+     * @param encrypted The new encryption status
+     */
+    function setEncryptionStatus(uint256 tokenId, bool encrypted) external onlyOwner {
+        require(bytes(_tokenURIs[tokenId]).length > 0, "Token does not exist");
+        _encryptedStatus[tokenId] = encrypted;
+        emit EncryptionStatusSet(tokenId, encrypted);
     }
-    
-    /// @notice Sets the base URI for all token metadata
-    /// @dev Only callable by ADMIN_ROLE
-    /// @param newBaseURI New base URI
-    /// @custom:event Emits a BaseURISet event
-    function setBaseURI(string calldata newBaseURI) external onlyRole(ADMIN_ROLE) {
-        _baseURI = newBaseURI;
-        
-        emit BaseURISet(newBaseURI);
-    }
-    
-    /// @notice Gets the full URI for a specific token
-    /// @dev Overrides ERC1155 uri function
-    /// @param tokenId Token ID to get URI for
-    /// @return Complete URI string for the token metadata
+
+    /**
+     * @dev Get token URI
+     * @param tokenId The token ID to query
+     * @return The token's metadata URI
+     */
     function uri(uint256 tokenId) public view override returns (string memory) {
-        string memory tokenURI = _tokenURIs[tokenId];
-        
-        // If there's no token-specific URI, use the baseURI + tokenId
-        if (bytes(tokenURI).length == 0) {
-            return string(abi.encodePacked(_baseURI, tokenId.toString()));
-        }
-        
-        // If we have a baseURI and a token-specific URI, concatenate them
-        if (bytes(_baseURI).length > 0) {
-            return string(abi.encodePacked(_baseURI, tokenURI));
-        }
-        
-        return tokenURI;
+        return _tokenURIs[tokenId];
     }
-    
-    /// @notice Gets the on-chain metadata for a receipt
-    /// @dev Returns the timestamp, revocation status, and receipt type
-    /// @param tokenId Token ID to get metadata for
-    /// @return timestamp When the receipt was created
-    /// @return revoked Whether the receipt has been revoked
-    /// @return receiptType The type of receipt (standard, premium, luxury)
-    function getReceiptMetadata(uint256 tokenId) external view returns (
-        uint256 timestamp,
-        bool revoked,
-        string memory receiptType
+
+    /**
+     * @dev Get passport stamp URI
+     * @param tokenId The token ID to query
+     * @return The token's passport stamp URI
+     */
+    function stampUri(uint256 tokenId) public view returns (string memory) {
+        return _stampURIs[tokenId];
+    }
+
+    /**
+     * @dev Get receipt hash
+     * @param tokenId The token ID to query
+     * @return The token's receipt hash
+     */
+    function getReceiptHash(uint256 tokenId) public view returns (bytes32) {
+        return _receiptHashes[tokenId];
+    }
+
+    /**
+     * @dev Verify a receipt hash
+     * @param tokenId The token ID to verify
+     * @param hash The hash to verify against
+     * @return Whether the hash matches the stored hash
+     */
+    function verifyReceiptHash(uint256 tokenId, bytes32 hash) public view returns (bool) {
+        return _receiptHashes[tokenId] == hash;
+    }
+
+    /**
+     * @dev Get encryption status
+     * @param tokenId The token ID to query
+     * @return Whether the token's metadata is encrypted
+     */
+    function isEncrypted(uint256 tokenId) public view returns (bool) {
+        return _encryptedStatus[tokenId];
+    }
+
+    /**
+     * @dev Get policy ID
+     * @param tokenId The token ID to query
+     * @return The token's encryption policy ID
+     */
+    function getPolicyId(uint256 tokenId) public view returns (string memory) {
+        return _policyIds[tokenId];
+    }
+
+    /**
+     * @dev Get full token data for frontend display
+     * @param tokenId The token ID to query
+     * @return Token URI, stamp URI, encrypted status, and policy ID
+     */
+    function getTokenData(uint256 tokenId) public view returns (
+        string memory tokenUri,
+        string memory stampUri_,
+        bool encrypted,
+        string memory policyId
     ) {
-        require(bytes(_receiptMetadata[tokenId].receiptType).length > 0, "Receipt does not exist");
-        
-        ReceiptMetadata memory metadata = _receiptMetadata[tokenId];
-        return (metadata.timestamp, metadata.revoked, metadata.receiptType);
-    }
-    
-    /// @notice Checks if a receipt exists and is not revoked
-    /// @dev Returns false if the receipt doesn't exist or has been revoked
-    /// @param tokenId Token ID to check
-    /// @return True if receipt exists and is valid, false otherwise
-    function isValidReceipt(uint256 tokenId) public view returns (bool) {
-        return bytes(_receiptMetadata[tokenId].receiptType).length > 0 && 
-               !_receiptMetadata[tokenId].revoked;
-    }
-    
-    /// @notice Pauses all token transfers and minting
-    /// @dev Only callable by ADMIN_ROLE
-    function pause() external onlyRole(ADMIN_ROLE) {
-        _pause();
-    }
-    
-    /// @notice Unpauses token transfers and minting
-    /// @dev Only callable by ADMIN_ROLE
-    function unpause() external onlyRole(ADMIN_ROLE) {
-        _unpause();
-    }
-    
-    /// @notice Hook that is called before any token transfer
-    /// @dev Ensures transfers cannot occur when contract is paused
-    /// @param operator Address performing the transfer
-    /// @param from Address tokens are transferred from
-    /// @param to Address tokens are transferred to 
-    /// @param ids Token IDs being transferred
-    /// @param amounts Amounts of tokens being transferred
-    /// @param data Additional data with no specified format
-    function _beforeTokenTransfer(
-        address operator,
-        address from,
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal override whenNotPaused {
-        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    }
-    
-    /// @notice Determines which interfaces the contract supports
-    /// @dev Required override to resolve inheritance conflict
-    /// @param interfaceId Interface ID to check
-    /// @return True if the interface is supported
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC1155, AccessControl)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
-    
-    /// @notice Gets the contract-level metadata URI for marketplaces
-    /// @dev Used by OpenSea and other marketplaces to display collection info
-    /// @return URI string pointing to the collection metadata
-    function contractURI() public view returns (string memory) {
-        return string(abi.encodePacked(_baseURI, "contract"));
+        require(bytes(_tokenURIs[tokenId]).length > 0, "Token does not exist");
+        return (
+            _tokenURIs[tokenId],
+            _stampURIs[tokenId],
+            _encryptedStatus[tokenId],
+            _policyIds[tokenId]
+        );
     }
 }
