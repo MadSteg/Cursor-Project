@@ -91,6 +91,32 @@ export const merchants = pgTable('merchants', {
   logoUrl: text('logo_url'),
   website: text('website'),
   category: text('category'),
+  walletAddress: text('wallet_address'), // Merchant's wallet for identifying their NFTs
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Merchant Name Patterns Table - For recognizing merchant names in receipts
+export const merchantNamePatterns = pgTable('merchant_name_patterns', {
+  id: serial('id').primaryKey(),
+  merchantId: integer('merchant_id').notNull().references(() => merchants.id),
+  pattern: text('pattern').notNull(), // Pattern to match (e.g., "WALMART", "Walmart Inc", etc.)
+  priority: integer('priority').default(0), // Higher priority patterns are checked first
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Merchant Promotions Table - For storing promotional content
+export const merchantPromotions = pgTable('merchant_promotions', {
+  id: serial('id').primaryKey(),
+  merchantId: integer('merchant_id').notNull().references(() => merchants.id),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  couponCode: text('coupon_code'), // Plain text coupon code
+  discount: integer('discount'), // Percentage discount amount
+  isActive: boolean('is_active').default(true),
+  minimumPurchase: integer('minimum_purchase'), // Minimum purchase amount in cents
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -219,6 +245,8 @@ export type OcrCache = typeof ocrResultCache.$inferSelect;
 export type Receipt = typeof userReceipts.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Merchant = typeof merchants.$inferSelect;
+export type MerchantNamePattern = typeof merchantNamePatterns.$inferSelect;
+export type MerchantPromotion = typeof merchantPromotions.$inferSelect;
 export type BlockchainReceipt = typeof receipts.$inferSelect;
 export type TacoKey = typeof tacoKeys.$inferSelect;
 export type SharedReceipt = typeof sharedReceipts.$inferSelect;
