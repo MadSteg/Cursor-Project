@@ -26,6 +26,36 @@ const formatLog = (level: string, message: string, meta?: any) => {
   return `[${timestamp}] [${level}] ${message}${metaStr}`;
 };
 
+export const createLogger = (context: string) => {
+  // Return a logger specific to a component or context
+  return {
+    debug: (message: string, meta?: any) => {
+      if (currentLogLevel >= LogLevel.DEBUG) {
+        console.debug(formatLog('DEBUG', `[${context}] ${message}`, meta));
+      }
+    },
+    
+    info: (message: string, meta?: any) => {
+      if (currentLogLevel >= LogLevel.INFO) {
+        console.info(formatLog('INFO', `[${context}] ${message}`, meta));
+      }
+    },
+    
+    warn: (message: string, meta?: any) => {
+      if (currentLogLevel >= LogLevel.WARN) {
+        console.warn(formatLog('WARN', `[${context}] ${message}`, meta));
+      }
+    },
+    
+    error: (message: string, meta?: any) => {
+      if (currentLogLevel >= LogLevel.ERROR) {
+        console.error(formatLog('ERROR', `[${context}] ${message}`, meta));
+      }
+    }
+  };
+};
+
+// Default logger with no context
 export const logger = {
   debug: (message: string, meta?: any) => {
     if (currentLogLevel >= LogLevel.DEBUG) {

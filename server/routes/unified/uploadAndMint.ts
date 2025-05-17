@@ -17,13 +17,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ocrService } from '../../services/ocrService';
 import { ipfsService } from '../../services/ipfsService';
-import { thresholdClient } from '../../services/tacoService';
+import { thresholdClient } from '../../services/thresholdClient';
 import { nftMintService } from '../../services/nftMintService';
 import { couponService } from '../../services/couponService';
 import { taskQueueService, TaskStatus } from '../../services/taskQueueService';
-import nftPurchaseHandler from '../../task-handlers/nftPurchaseHandler';
-import logger from '../../logger';
-import { createLogger } from '../../logger';
+import { nftPurchaseHandler } from '../../task-handlers/nftPurchaseHandler';
+import { logger, createLogger } from '../../utils/logger';
 const routeLogger = createLogger('upload-mint');
 import { validateReceipt } from '../../utils/receiptUtils';
 import { requireAuth } from '../../middleware/requireAuth';
