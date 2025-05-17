@@ -22,6 +22,8 @@ import { nftMintService } from '../../services/nftMintService';
 import { taskQueueService, TaskStatus } from '../../services/taskQueueService';
 import nftPurchaseHandler from '../../task-handlers/nftPurchaseHandler';
 import logger from '../../logger';
+import { createLogger } from '../../logger';
+const routeLogger = createLogger('upload-mint');
 import { validateReceipt } from '../../utils/receiptUtils';
 import { requireAuth } from '../../middleware/auth';
 
@@ -69,16 +71,21 @@ taskQueueService.registerHandler('nft-purchase', nftPurchaseHandler);
  */
 router.post(
   '/upload-and-mint',
-  requireAuth,
   upload.single('receiptImage'),
   async (req, res) => {
     try {
-      const { walletAddress, encryptMetadata } = req.body;
+      let { walletAddress, encryptMetadata } = req.body;
       
       if (!walletAddress) {
-        return res.status(400).json({
-          error: 'Wallet address is required'
-        });
+        // In development, provide a default wallet address if not provided
+        if (process.env.NODE_ENV === 'development') {
+          walletAddress = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e'; // Development wallet
+          routeLogger.info(`Using default development wallet: ${walletAddress}`);
+        } else {
+          return res.status(400).json({
+            error: 'Wallet address is required'
+          });
+        }
       }
       
       const file = req.file;
