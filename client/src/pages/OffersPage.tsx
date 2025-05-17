@@ -11,7 +11,10 @@ import { Helmet } from 'react-helmet';
 import CouponCard from '../components/coupons/CouponCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Loader2, Info, Sparkles, Gift, Clock, Calendar, Trophy, Zap, BadgePercent, Ticket, ShoppingBag, Upload } from 'lucide-react';
+import { 
+  Loader2, Info, Sparkles, Gift, Clock, Calendar, Trophy, Zap, BadgePercent, 
+  Ticket, ShoppingBag, Upload, Shield, Key, FileCheck, Store 
+} from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -183,6 +186,177 @@ const OffersPage: React.FC = () => {
         </p>
       </div>
       
+      {/* Privacy & Access Control Info Banner */}
+      <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-4 border border-blue-100 dark:border-blue-900">
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="shrink-0 bg-blue-100 dark:bg-blue-900/50 p-3 rounded-full">
+            <Shield className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-medium text-blue-800 dark:text-blue-300 mb-1 flex items-center">
+              <span>Privacy-First Technology</span>
+              <Badge variant="outline" className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                Threshold Encryption
+              </Badge>
+            </h3>
+            <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
+              BlockReceipt.ai uses advanced Threshold Access Control (TACo) encryption to protect your sensitive receipt data.
+              Your coupons and offers are securely stored on the blockchain with selective disclosure controls.
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+              <div className="bg-white/70 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
+                <h4 className="font-medium flex items-center text-sm text-blue-800 dark:text-blue-300 mb-1">
+                  <Key className="h-4 w-4 mr-1.5" /> Controlled Access
+                </h4>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  Grant temporary access to specific parties (vendors, tax services) without revealing all receipt details.
+                </p>
+              </div>
+              
+              <div className="bg-white/70 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
+                <h4 className="font-medium flex items-center text-sm text-blue-800 dark:text-blue-300 mb-1">
+                  <Clock className="h-4 w-4 mr-1.5" /> Time-Bound Permissions
+                </h4>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  Set expiration dates for access permissions that automatically revoke when the time period ends.
+                </p>
+              </div>
+              
+              <div className="bg-white/70 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
+                <h4 className="font-medium flex items-center text-sm text-blue-800 dark:text-blue-300 mb-1">
+                  <Zap className="h-4 w-4 mr-1.5" /> One-Click Revocation
+                </h4>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  Instantly revoke access to any third party with a single click, putting you in complete control of your data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Demo: Access Control Management */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <h2 className="text-xl font-medium flex items-center gap-2">
+            <Key className="h-5 w-5 text-blue-600" />
+            Threshold Access Control
+          </h2>
+          <Badge className="ml-3 bg-blue-100 text-blue-800 border-blue-200">Unique to BlockReceipt</Badge>
+        </div>
+        
+        <Card className="mb-6 overflow-hidden border-blue-100 dark:border-blue-900">
+          <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-blue-100 dark:divide-blue-900">
+            {/* Current Access Permissions */}
+            <div className="p-4 bg-gradient-to-b from-blue-50/50 to-white dark:from-blue-950/20 dark:to-slate-900">
+              <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-3 flex items-center">
+                <Shield className="h-4 w-4 mr-2" /> Active Access Permissions
+              </h3>
+              <div className="space-y-3">
+                {/* Demo permission item */}
+                <div className="p-3 bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex gap-2">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
+                        <FileCheck className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Tax Preparer</p>
+                        <p className="text-xs text-muted-foreground">Read-only access to receipt data</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
+                      Revoke
+                    </Button>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center">
+                      <Clock className="h-3 w-3 mr-1" /> Expires in 14 days
+                    </span>
+                    <span className="flex items-center">
+                      <ShoppingBag className="h-3 w-3 mr-1" /> 23 receipts shared
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Another permission */}
+                <div className="p-3 bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex gap-2">
+                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <Store className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Best Buy</p>
+                        <p className="text-xs text-muted-foreground">Warranty data only</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
+                      Revoke
+                    </Button>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center">
+                      <Clock className="h-3 w-3 mr-1" /> Expires in 365 days
+                    </span>
+                    <span className="flex items-center">
+                      <ShoppingBag className="h-3 w-3 mr-1" /> 3 receipts shared
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Encryption Technology Explainer */}
+            <div className="p-4 bg-gradient-to-b from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-900 lg:col-span-2">
+              <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-3">How BlockReceipt Protects Your Data</h3>
+              <div className="text-sm space-y-4">
+                <p className="text-slate-600 dark:text-slate-400">
+                  Your receipt data and promotional coupons are secured with Threshold Proxy Re-Encryption (PRE), a revolutionary 
+                  cryptographic technology that keeps your sensitive financial data private while enabling selective sharing.
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
+                    <h4 className="font-medium flex items-center text-sm text-blue-800 dark:text-blue-300 mb-1">
+                      <Shield className="h-4 w-4 mr-1.5" /> End-to-End Encryption
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Your receipt data is encrypted before it leaves your device and can only be decrypted by parties you authorize.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
+                    <h4 className="font-medium flex items-center text-sm text-blue-800 dark:text-blue-300 mb-1">
+                      <Key className="h-4 w-4 mr-1.5" /> Selective Decryption
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Grant specific access to specific parts of your data. Share warranty info with vendors without revealing prices.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
+                    <h4 className="font-medium flex items-center text-sm text-blue-800 dark:text-blue-300 mb-1">
+                      <Zap className="h-4 w-4 mr-1.5" /> Instant Revocation
+                    </h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Unlike traditional systems, BlockReceipt allows you to revoke access instantly - even after data is shared.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button variant="outline" className="text-xs" size="sm">
+                    <Key className="h-3.5 w-3.5 mr-1.5" /> Manage Access Keys
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+        
       {/* Rewards Dashboard */}
       <div className="mb-8">
         <Card className="bg-gradient-to-r from-slate-800 to-slate-900 border-slate-700 text-white shadow-xl overflow-hidden">

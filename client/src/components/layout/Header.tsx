@@ -76,12 +76,7 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Access Control - New section for key management */}
-            <Link href="/receipt-keys">
-              <span className={`text-sm font-medium ${currentLocation === "/receipt-keys" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Key className="h-4 w-4 mr-1.5" /> Access Control
-              </span>
-            </Link>
+            {/* Access Control has been integrated into the Offers page */}
             
             {/* Mint BlockReceipt - Primary Feature */}
             <Link href="/mint-blockreceipt">
@@ -186,11 +181,7 @@ const Header: React.FC = () => {
                         <Gift className="h-5 w-5" /> Offers & Coupons
                       </span>
                     </Link>
-                    <Link href="/receipt-keys">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <Key className="h-5 w-5" /> Access Control
-                      </span>
-                    </Link>
+                    {/* Access Control integrated into Offers page */}
                     <Link href="/mint-blockreceipt">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                         <FileImage className="h-5 w-5" /> Mint a BlockReceipt
