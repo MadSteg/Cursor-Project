@@ -25,8 +25,26 @@ import {
   Image,
   Images,
   Gift,
-  Ticket
+  Ticket,
+  ChevronDown,
+  Gauge,
+  Wrench,
+  Tag,
+  Zap,
+  Building,
+  LucideIcon,
+  BadgeCheck,
+  KeyRound,
+  HelpCircle
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useWeb3 } from "@/contexts/Web3Context";
 
@@ -55,20 +73,57 @@ const Header: React.FC = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
-            {/* Core Navigation - Simplified as requested */}
+            {/* Core Navigation - Main links remain as direct navigation */}
             <Link href="/about">
               <span className={`text-sm font-medium ${currentLocation === "/about" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <FileCheck className="h-4 w-4 mr-1.5" /> About
               </span>
             </Link>
             
-            {/* NFT Gallery - Main feature as requested */}
+            {/* NFT Gallery - Main feature */}
             <Link href="/nft-catalog">
               <span className={`text-sm font-medium ${currentLocation === "/nft-catalog" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Images className="h-4 w-4 mr-1.5" /> NFT Gallery
               </span>
             </Link>
             
+            {/* Receipt Features - Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className={`text-sm font-medium ${currentLocation.includes("receipt") || currentLocation === "/mint-blockreceipt" || currentLocation === "/upload-receipt" || currentLocation === "/verify-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center outline-none`}>
+                <Receipt className="h-4 w-4 mr-1.5" /> Receipts <ChevronDown className="h-3 w-3 ml-0.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/mint-blockreceipt">
+                    <span className="flex items-center">
+                      <FileImage className="h-4 w-4 mr-2" /> Mint a BlockReceipt
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/new-receipt">
+                    <span className="flex items-center">
+                      <Upload className="h-4 w-4 mr-2" /> New Receipt
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/verify-receipt">
+                    <span className="flex items-center">
+                      <BadgeCheck className="h-4 w-4 mr-2" /> Verify Receipt
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/receipt-gallery">
+                    <span className="flex items-center">
+                      <Image className="h-4 w-4 mr-2" /> Receipt Gallery
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Offers & Coupons */}
             <Link href="/offers">
               <span className={`text-sm font-medium ${currentLocation === "/offers" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
@@ -76,31 +131,113 @@ const Header: React.FC = () => {
               </span>
             </Link>
             
-            {/* Access Control has been integrated into the Offers page */}
+            {/* Merchant Tools - Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className={`text-sm font-medium ${currentLocation.includes("merchant") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center outline-none`}>
+                <Store className="h-4 w-4 mr-1.5" /> Merchant Tools <ChevronDown className="h-3 w-3 ml-0.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/merchant-dashboard">
+                    <span className="flex items-center">
+                      <Gauge className="h-4 w-4 mr-2" /> Merchant Dashboard
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/merchant-dashboard?tab=webhook">
+                    <span className="flex items-center">
+                      <Zap className="h-4 w-4 mr-2" /> POS Integration
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/merchant-dashboard?tab=promos">
+                    <span className="flex items-center">
+                      <Tag className="h-4 w-4 mr-2" /> Promotion Management
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
-            {/* Mint BlockReceipt - Primary Feature */}
-            <Link href="/mint-blockreceipt">
-              <span className={`text-sm font-medium ${currentLocation === "/mint-blockreceipt" || currentLocation === "/upload-receipt" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <FileImage className="h-4 w-4 mr-1.5" /> Mint a BlockReceipt
-              </span>
-            </Link>
+            {/* Wallet & Settings - Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className={`text-sm font-medium ${currentLocation.includes("wallet") || currentLocation.includes("settings") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center outline-none`}>
+                <Wallet className="h-4 w-4 mr-1.5" /> Wallet & Settings <ChevronDown className="h-3 w-3 ml-0.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {isAuthenticated && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/nft-wallet">
+                      <span className="flex items-center">
+                        <Wallet className="h-4 w-4 mr-2" /> My NFT Wallet
+                      </span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link href="/wallet-settings">
+                    <span className="flex items-center">
+                      <Settings className="h-4 w-4 mr-2" /> Wallet Settings
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/encryption-settings">
+                    <span className="flex items-center">
+                      <KeyRound className="h-4 w-4 mr-2" /> Encryption Settings
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
-            {/* BlockReceipts - Only visible when authenticated */}
-            {isAuthenticated && (
-              <Link href="/nft-wallet">
-                <span className={`text-sm font-medium ${currentLocation === "/nft-wallet" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                  <Wallet className="h-4 w-4 mr-1.5" /> My NFT Wallet
-                </span>
-              </Link>
-            )}
-            
-            {/* Testing Menu */}
-            <Link href="/test/nft">
-              <span className={`text-sm font-medium ${currentLocation.startsWith("/test/") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
-                <Package className="h-4 w-4 mr-1.5" /> Testing
-              </span>
-            </Link>
-            
+            {/* Admin & Developer Tools - Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className={`text-sm font-medium ${currentLocation.includes("admin") || currentLocation.includes("test") ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center outline-none`}>
+                <Wrench className="h-4 w-4 mr-1.5" /> Admin Tools <ChevronDown className="h-3 w-3 ml-0.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin">
+                    <span className="flex items-center">
+                      <Gauge className="h-4 w-4 mr-2" /> Admin Dashboard
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Testing Tools</DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link href="/test/nft">
+                    <span className="flex items-center">
+                      <Package className="h-4 w-4 mr-2" /> Test NFT Minting
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/test/task-status">
+                    <span className="flex items-center">
+                      <Activity className="h-4 w-4 mr-2" /> Task Queue Test
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/test/auto-process">
+                    <span className="flex items-center">
+                      <Scan className="h-4 w-4 mr-2" /> Auto-Process Test
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/test/taco">
+                    <span className="flex items-center">
+                      <Lock className="h-4 w-4 mr-2" /> TACo Encryption Test
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           <div className="flex items-center space-x-3">
@@ -181,23 +318,94 @@ const Header: React.FC = () => {
                         <Gift className="h-5 w-5" /> Offers & Coupons
                       </span>
                     </Link>
-                    {/* Access Control integrated into Offers page */}
-                    <Link href="/mint-blockreceipt">
-                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                        <FileImage className="h-5 w-5" /> Mint a BlockReceipt
-                      </span>
-                    </Link>
-                    {/* BlockReceipts - Only visible when authenticated */}
-                    {isAuthenticated && (
-                      <Link href="/nft-wallet">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Wallet className="h-5 w-5" /> My NFT Wallet
-                        </span>
-                      </Link>
-                    )}
                   </div>
                   
-                  {/* Test Pages */}
+                  {/* Receipt Features */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Receipts</p>
+                    <div className="space-y-4">
+                      <Link href="/mint-blockreceipt">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <FileImage className="h-5 w-5" /> Mint a BlockReceipt
+                        </span>
+                      </Link>
+                      <Link href="/new-receipt">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Upload className="h-5 w-5" /> New Receipt
+                        </span>
+                      </Link>
+                      <Link href="/verify-receipt">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <BadgeCheck className="h-5 w-5" /> Verify Receipt
+                        </span>
+                      </Link>
+                      <Link href="/receipt-gallery">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Image className="h-5 w-5" /> Receipt Gallery
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  {/* Merchant Tools */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Merchant Tools</p>
+                    <div className="space-y-4">
+                      <Link href="/merchant-dashboard">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Gauge className="h-5 w-5" /> Merchant Dashboard
+                        </span>
+                      </Link>
+                      <Link href="/merchant-dashboard?tab=webhook">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Zap className="h-5 w-5" /> POS Integration
+                        </span>
+                      </Link>
+                      <Link href="/merchant-dashboard?tab=promos">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Tag className="h-5 w-5" /> Promotion Management
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  {/* Wallet & Settings */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Wallet & Settings</p>
+                    <div className="space-y-4">
+                      {isAuthenticated && (
+                        <Link href="/nft-wallet">
+                          <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                            <Wallet className="h-5 w-5" /> My NFT Wallet
+                          </span>
+                        </Link>
+                      )}
+                      <Link href="/wallet-settings">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Settings className="h-5 w-5" /> Wallet Settings
+                        </span>
+                      </Link>
+                      <Link href="/encryption-settings">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <KeyRound className="h-5 w-5" /> Encryption Settings
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  {/* Admin */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Admin</p>
+                    <div className="space-y-4">
+                      <Link href="/admin">
+                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                          <Gauge className="h-5 w-5" /> Admin Dashboard
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  {/* Testing Tools */}
                   <div className="pt-2 border-t border-gray-100">
                     <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Testing</p>
                     <div className="space-y-4">
@@ -219,18 +427,6 @@ const Header: React.FC = () => {
                       <Link href="/test/taco">
                         <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                           <Lock className="h-5 w-5" /> TACo Encryption Test
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-                  
-                  {/* Other */}
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Admin</p>
-                    <div className="space-y-4">
-                      <Link href="/admin">
-                        <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                          <Activity className="h-5 w-5" /> Admin Dashboard
                         </span>
                       </Link>
                     </div>
