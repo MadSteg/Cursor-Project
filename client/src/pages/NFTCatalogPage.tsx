@@ -136,16 +136,16 @@ const groupByCategory = (collection) => {
 
 const categorizedNFTs = groupByCategory(nftCollection);
 
-// High-resolution Pixel Art City NFT Component
+// Minimalistic Pixel Art City NFT Component
 const PixelNFT = ({ nft }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [timeState, setTimeState] = useState(nft.timeOfDay);
   
-  // Create a detailed city-themed pixel art with 1000 pixels (32x32 grid)
+  // Create a minimalistic city-themed pixel art (10x10 grid)
   const generateCityGrid = () => {
     const grid = [];
-    const rows = 32; // Larger grid for much more detail
-    const cols = 32;
+    const rows = 10;
+    const cols = 10;
     
     // Get a seed from the NFT ID for deterministic but unique generation
     const nftNum = parseInt(nft.id.split('-')[1]);
@@ -153,41 +153,18 @@ const PixelNFT = ({ nft }) => {
     // Create a skyline profile based on nft properties
     const skylineProfile = [];
     
-    // Generate a more varied and interesting skyline profile
+    // Generate a simple skyline
     for (let col = 0; col < cols; col++) {
-      // Use sine waves of different frequencies to create natural-looking skylines
-      const baseHeight = Math.max(
-        4, 
-        Math.floor(
-          8 + // Base height offset
-          6 * Math.sin(col / 3 + nftNum % 5) + // Primary wave
-          3 * Math.sin(col / 7 + nftNum % 3) + // Secondary wave
-          2 * Math.cos(col / 2 + nftNum % 7)   // Tertiary wave
-        )
-      );
+      // Use a simpler algorithm for skyline heights
+      const baseHeight = Math.floor(3 + 
+                               2 * Math.sin(col + nftNum % 5) + 
+                               (col === Math.floor(cols/2) ? 2 : 0)); // Make center taller
       
-      // Adjust height based on city population and landmark
-      const heightMod = Math.floor(nft.population / 4) + 
-                      (nft.landmark === 'Skyscraper' ? 4 : 
-                       nft.landmark === 'Tower' ? 3 :
-                       nft.landmark === 'Cathedral' ? 2 : 0);
-                       
-      const finalHeight = Math.min(rows - 4, baseHeight + heightMod);
+      // Adjust height based on city properties
+      const heightMod = (nft.landmark === 'Skyscraper' && col === Math.floor(cols/2)) ? 2 : 0;
+      
+      const finalHeight = Math.min(rows - 2, baseHeight + heightMod);
       skylineProfile.push(finalHeight);
-    }
-    
-    // Find the landmark position (usually near the center with some variation)
-    const landmarkPosition = Math.floor(cols / 2) + (nftNum % 7) - 3;
-    
-    // Add special height for the landmark
-    if (nft.landmark === 'Tower' || nft.landmark === 'Skyscraper') {
-      // Make the landmark taller
-      for (let i = -2; i <= 2; i++) {
-        const pos = landmarkPosition + i;
-        if (pos >= 0 && pos < cols) {
-          skylineProfile[pos] = Math.min(rows - 2, skylineProfile[pos] + 5 - Math.abs(i * 2));
-        }
-      }
     }
     
     // Generate grid with sky and buildings
@@ -199,125 +176,48 @@ const PixelNFT = ({ nft }) => {
         const isSky = row < rows - skylineProfile[col];
         
         // Ground/street level (below buildings)
-        const isGround = row >= rows - 2;
+        const isGround = row >= rows - 1;
         
         // Building area (between sky and ground)
         const isBuilding = !isSky && !isGround;
         
-        // Landmark feature
-        const isLandmark = isBuilding && 
-                        Math.abs(col - landmarkPosition) < 3 && 
-                        row < rows - skylineProfile[col] + 5;
+        // Windows should appear on buildings
+        const isWindow = isBuilding && 
+                       ((row % 2 === 0) && (col % 2 === 0)) && 
+                       Math.random() > 0.5;
         
-        // Generate specialized buildings based on styles
-        const isModernBuilding = isBuilding && 
-                               !isLandmark &&
-                               nft.buildingStyle === 'Modern' && 
-                               (col % 5 === 0 || col % 5 === 1);
+        // Create a special landmark in the center
+        const isLandmark = (col === Math.floor(cols/2) || col === Math.floor(cols/2) - 1) && 
+                         isBuilding && 
+                         row <= rows - skylineProfile[col] + 3;
         
-        const isHistoricalBuilding = isBuilding && 
-                                   !isLandmark &&
-                                   nft.buildingStyle === 'Historical' && 
-                                   (col % 4 === 0 || col % 4 === 1);
+        // Create special features based on city
+        const hasSpecialFeature = (nft.city === 'Paris' && col === 4 && row === 3) || // Eiffel Tower top
+                               (nft.city === 'New York' && col === 5 && row === 2) || // Statue of Liberty
+                               (nft.city === 'London' && col === 7 && row === 6) || // London Eye
+                               (nft.city === 'Tokyo' && col === 6 && row === 3); // Tokyo Tower
         
-        const isFuturisticBuilding = isBuilding && 
-                                   !isLandmark &&
-                                   nft.buildingStyle === 'Futuristic' && 
-                                   (col % 3 === 0 || col % 3 === 1);
+        // Weather effects - simple and minimal
+        const hasCloud = isSky && row < 3 && col % 3 === 0 && Math.random() > 0.7;
         
-        const isArtDecoBuilding = isBuilding && 
-                                !isLandmark &&
-                                nft.buildingStyle === 'Art Deco' && 
-                                (col % 6 === 0 || col % 6 === 1);
-        
-        // Add windows to buildings with different patterns based on time of day
-        // Windows appear more frequently at night
-        const isNightTime = timeState === 'night' || timeState === 'dusk' || timeState === 'neon';
-        const windowProbability = isNightTime ? 0.4 : 0.7;
-        const hasWindow = isBuilding && 
-                        !isGround && 
-                        row % 3 === 1 && // Window rows
-                        col % 2 === 1 && // Window columns
-                        Math.random() > windowProbability;
-        
-        // Create special areas for different landmarks
-        const hasBridge = isGround && 
-                      nft.landmark === 'Bridge' && 
-                      col > cols / 3 && 
-                      col < 2 * cols / 3;
-                      
-        const hasFountain = isGround && 
-                         nft.landmark === 'Fountain' && 
-                         Math.abs(col - cols / 2) < 3;
-                         
-        const hasRiver = (row >= rows - 4) && 
-                      nft.landmark === 'River' && 
-                      row >= rows - 4 - Math.floor(Math.sin(col / 5) * 2);
-                         
-        // Weather effects
-        const hasCloud = isSky && 
-                     (nft.weather === 'Cloudy' || nft.weather === 'Rainy' || nft.weather === 'Stormy') && 
-                     Math.random() > 0.8 &&
-                     row > rows / 8 && row < rows / 2;
-                     
-        const hasRain = isSky && 
-                     (nft.weather === 'Rainy' || nft.weather === 'Stormy') && 
-                     Math.random() > 0.85 &&
-                     col % 4 === (Math.floor(row / 2) % 4);
-                     
-        const hasSnow = (isSky || isGround) && 
-                     nft.weather === 'Snowy' && 
-                     Math.random() > 0.9;
-                     
-        const hasFog = isSky && 
-                    nft.weather === 'Foggy' && 
-                    row > rows / 3 &&
-                    Math.random() > 0.7;
-                    
-        // Add city-specific decorations
-        const hasPalm = isGround && 
-                     (nft.city === 'Miami' || nft.city === 'Dubai' || nft.city === 'Los Angeles') &&
-                     col % 7 === 0;
-                     
-        const hasSnowCap = isBuilding && 
-                        (nft.weather === 'Snowy') &&
-                        row === rows - skylineProfile[col];
-                        
-        // Interactive elements that change with time
-        const isInteractiveElement = nft.interactive && (
-          // Windows at night
-          (isNightTime && hasWindow) ||
-          // Neon signs
-          (timeState === 'neon' && isBuilding && col % 5 === 0 && row % 4 === 0) ||
-          // Landmark lighting
-          (isLandmark && isNightTime)
-        );
-        
-        // Push all these cell properties
+        // Interactive elements based on time of day
+        const isNightTime = (timeState === 'night' || timeState === 'dusk');
+        const isInteractive = nft.interactive && 
+                           ((isWindow && isNightTime) || 
+                            (hasSpecialFeature && nft.interactive));
+                            
+        // Push the cell with properties
         grid.push({
           row,
           col,
           isSky,
           isGround,
           isBuilding,
+          isWindow,
           isLandmark,
-          isModernBuilding,
-          isHistoricalBuilding,
-          isFuturisticBuilding,
-          isArtDecoBuilding,
-          hasWindow,
-          hasBridge,
-          hasFountain,
-          hasRiver,
+          hasSpecialFeature,
           hasCloud,
-          hasRain,
-          hasSnow,
-          hasFog,
-          hasPalm,
-          hasSnowCap,
-          isInteractiveElement,
-          // Randomize some pixels for details
-          detail: Math.random()
+          isInteractive,
         });
       }
     }
@@ -325,248 +225,75 @@ const PixelNFT = ({ nft }) => {
     return grid;
   };
   
-  // Get sky color based on time of day
-  const getSkyColor = (timeOfDay) => {
-    switch(timeOfDay) {
-      case 'dawn': return 'bg-gradient-to-b from-indigo-800 via-pink-400 to-orange-300';
-      case 'sunrise': return 'bg-gradient-to-b from-indigo-500 via-orange-300 to-yellow-200';
-      case 'morning': return 'bg-gradient-to-b from-blue-400 to-blue-200';
-      case 'day': return 'bg-gradient-to-b from-blue-500 to-blue-300';
-      case 'sunset': return 'bg-gradient-to-b from-blue-400 via-orange-400 to-red-500';
-      case 'golden': return 'bg-gradient-to-b from-blue-300 via-amber-300 to-amber-400';
-      case 'dusk': return 'bg-gradient-to-b from-indigo-800 via-purple-600 to-purple-900';
-      case 'night': return 'bg-gradient-to-b from-gray-900 via-indigo-900 to-purple-900';
-      case 'neon': return 'bg-gradient-to-b from-gray-900 via-purple-900 to-pink-900';
-      case 'rainy': return 'bg-gradient-to-b from-gray-700 to-gray-500';
-      case 'foggy': return 'bg-gradient-to-b from-gray-400 to-gray-300';
-      case 'snowy': return 'bg-gradient-to-b from-gray-200 to-blue-100';
-      case 'cyberpunk': return 'bg-gradient-to-b from-blue-900 via-purple-800 to-cyan-700';
-      case 'retro': return 'bg-gradient-to-b from-amber-700 via-orange-600 to-red-700';
-      case 'vintage': return 'bg-gradient-to-b from-sepia via-amber-700 to-amber-800';
-      default: return 'bg-blue-400';
-    }
-  };
-  
-  // Get building color based on style and time of day
-  const getBuildingColor = (buildingType, timeOfDay) => {
-    // Base colors for different building types
-    const styleBases = {
-      landmark: {
-        dawn: 'bg-amber-700',
-        sunrise: 'bg-amber-600',
-        morning: 'bg-amber-500',
-        day: 'bg-amber-500',
-        sunset: 'bg-amber-600',
-        golden: 'bg-amber-500',
-        dusk: 'bg-amber-800',
-        night: 'bg-amber-900',
-        neon: 'bg-amber-800',
-        rainy: 'bg-amber-800',
-        foggy: 'bg-amber-700',
-        snowy: 'bg-amber-700',
-        cyberpunk: 'bg-amber-700',
-        retro: 'bg-amber-600',
-        vintage: 'bg-amber-800',
+  // Get color schemes based on time of day
+  const getColorScheme = (timeOfDay) => {
+    const schemes = {
+      dawn: {
+        sky: 'bg-gradient-to-b from-indigo-500 to-pink-300',
+        building: 'bg-indigo-900',
+        landmark: 'bg-indigo-700',
+        ground: 'bg-indigo-950',
+        window: 'bg-yellow-200',
+        cloud: 'bg-pink-200',
+        special: 'bg-pink-400'
       },
-      modern: {
-        dawn: 'bg-gray-700',
-        sunrise: 'bg-gray-600',
-        morning: 'bg-gray-500',
-        day: 'bg-gray-400',
-        sunset: 'bg-gray-500',
-        golden: 'bg-gray-500',
-        dusk: 'bg-gray-700',
-        night: 'bg-gray-800',
-        neon: 'bg-gray-800',
-        rainy: 'bg-gray-700',
-        foggy: 'bg-gray-600',
-        snowy: 'bg-gray-400',
-        cyberpunk: 'bg-gray-800',
-        retro: 'bg-gray-600',
-        vintage: 'bg-gray-700',
+      day: {
+        sky: 'bg-gradient-to-b from-blue-400 to-blue-200',
+        building: 'bg-gray-700',
+        landmark: 'bg-gray-600',
+        ground: 'bg-gray-800',
+        window: 'bg-blue-100',
+        cloud: 'bg-white',
+        special: 'bg-blue-300'
       },
-      historical: {
-        dawn: 'bg-stone-700',
-        sunrise: 'bg-stone-600',
-        morning: 'bg-stone-500',
-        day: 'bg-stone-500',
-        sunset: 'bg-stone-600',
-        golden: 'bg-stone-600',
-        dusk: 'bg-stone-700',
-        night: 'bg-stone-800',
-        neon: 'bg-stone-800',
-        rainy: 'bg-stone-700',
-        foggy: 'bg-stone-600',
-        snowy: 'bg-stone-600',
-        cyberpunk: 'bg-stone-700',
-        retro: 'bg-stone-600',
-        vintage: 'bg-stone-700',
+      sunset: {
+        sky: 'bg-gradient-to-b from-blue-400 to-orange-300',
+        building: 'bg-gray-800',
+        landmark: 'bg-gray-700',
+        ground: 'bg-gray-900',
+        window: 'bg-orange-200',
+        cloud: 'bg-orange-200',
+        special: 'bg-amber-400'
       },
-      futuristic: {
-        dawn: 'bg-slate-700',
-        sunrise: 'bg-slate-600',
-        morning: 'bg-slate-500',
-        day: 'bg-slate-400',
-        sunset: 'bg-slate-500',
-        golden: 'bg-slate-600',
-        dusk: 'bg-slate-700',
-        night: 'bg-slate-800',
-        neon: 'bg-slate-900',
-        rainy: 'bg-slate-700',
-        foggy: 'bg-slate-600',
-        snowy: 'bg-slate-500',
-        cyberpunk: 'bg-slate-800',
-        retro: 'bg-slate-600',
-        vintage: 'bg-slate-700',
+      dusk: {
+        sky: 'bg-gradient-to-b from-indigo-700 to-purple-500',
+        building: 'bg-gray-900',
+        landmark: 'bg-gray-800',
+        ground: 'bg-gray-950',
+        window: 'bg-yellow-300',
+        cloud: 'bg-purple-300',
+        special: 'bg-purple-400'
       },
-      artDeco: {
-        dawn: 'bg-amber-800',
-        sunrise: 'bg-amber-700',
-        morning: 'bg-amber-600',
-        day: 'bg-amber-600',
-        sunset: 'bg-amber-700',
-        golden: 'bg-amber-600',
-        dusk: 'bg-amber-800',
-        night: 'bg-amber-900',
-        neon: 'bg-amber-800',
-        rainy: 'bg-amber-800',
-        foggy: 'bg-amber-700',
-        snowy: 'bg-amber-700',
-        cyberpunk: 'bg-amber-800',
-        retro: 'bg-amber-700',
-        vintage: 'bg-amber-900',
+      night: {
+        sky: 'bg-gradient-to-b from-gray-900 to-indigo-900',
+        building: 'bg-gray-950',
+        landmark: 'bg-gray-900',
+        ground: 'bg-black',
+        window: 'bg-yellow-400',
+        cloud: 'bg-gray-800',
+        special: 'bg-indigo-400'
       },
-      default: {
-        dawn: 'bg-gray-800',
-        sunrise: 'bg-gray-700',
-        morning: 'bg-gray-600',
-        day: 'bg-gray-500',
-        sunset: 'bg-gray-600',
-        golden: 'bg-gray-600',
-        dusk: 'bg-gray-700',
-        night: 'bg-gray-900',
-        neon: 'bg-gray-900',
-        rainy: 'bg-gray-800',
-        foggy: 'bg-gray-700',
-        snowy: 'bg-gray-600',
-        cyberpunk: 'bg-gray-900',
-        retro: 'bg-gray-700',
-        vintage: 'bg-gray-800',
+      neon: {
+        sky: 'bg-gradient-to-b from-gray-900 to-purple-900',
+        building: 'bg-gray-950',
+        landmark: 'bg-gray-900',
+        ground: 'bg-black',
+        window: 'bg-pink-500',
+        cloud: 'bg-purple-800',
+        special: 'bg-cyan-400'
       }
     };
     
-    // Choose base style
-    let style = styleBases.default;
-    if (buildingType === 'landmark') style = styleBases.landmark;
-    else if (buildingType === 'modern') style = styleBases.modern;
-    else if (buildingType === 'historical') style = styleBases.historical;
-    else if (buildingType === 'futuristic') style = styleBases.futuristic;
-    else if (buildingType === 'artDeco') style = styleBases.artDeco;
-    
-    // Return color for current time of day
-    return style[timeOfDay] || style.day;
-  };
-  
-  // Get window color based on time of day
-  const getWindowColor = (timeOfDay) => {
-    switch(timeOfDay) {
-      case 'dawn': return 'bg-orange-200';
-      case 'sunrise': return 'bg-amber-100';
-      case 'morning': return 'bg-white/70';
-      case 'day': return 'bg-sky-100/70';
-      case 'sunset': return 'bg-amber-200';
-      case 'golden': return 'bg-amber-200';
-      case 'dusk': return 'bg-amber-400';
-      case 'night': return 'bg-yellow-300';
-      case 'neon': return 'bg-pink-300';
-      case 'rainy': return 'bg-yellow-100';
-      case 'foggy': return 'bg-white/40';
-      case 'snowy': return 'bg-white/70';
-      case 'cyberpunk': return 'bg-cyan-300';
-      case 'retro': return 'bg-amber-300';
-      case 'vintage': return 'bg-amber-200';
-      default: return 'bg-white/60';
-    }
-  };
-  
-  // Get color for special elements
-  const getSpecialColor = (elementType, timeOfDay) => {
-    const specialColors = {
-      cloud: 'bg-white/70',
-      rain: 'bg-blue-300/40',
-      snow: 'bg-white',
-      fog: 'bg-white/30',
-      ground: {
-        dawn: 'bg-gray-700',
-        day: 'bg-gray-600',
-        night: 'bg-gray-900',
-        default: 'bg-gray-700'
-      },
-      river: {
-        dawn: 'bg-blue-400',
-        day: 'bg-blue-500',
-        night: 'bg-blue-900',
-        default: 'bg-blue-600'
-      },
-      fountain: {
-        dawn: 'bg-blue-300',
-        day: 'bg-blue-400',
-        night: 'bg-blue-800',
-        default: 'bg-blue-500'
-      },
-      bridge: {
-        dawn: 'bg-stone-700',
-        day: 'bg-stone-600',
-        night: 'bg-stone-900',
-        default: 'bg-stone-700'
-      },
-      palm: 'bg-green-600',
-      snowCap: 'bg-white'
-    };
-    
-    // Return appropriate color
-    if (elementType === 'cloud') return specialColors.cloud;
-    if (elementType === 'rain') return specialColors.rain;
-    if (elementType === 'snow') return specialColors.snow;
-    if (elementType === 'fog') return specialColors.fog;
-    if (elementType === 'ground') {
-      if (timeOfDay in specialColors.ground) {
-        return specialColors.ground[timeOfDay];
-      }
-      return specialColors.ground.default;
-    }
-    if (elementType === 'river') {
-      if (timeOfDay in specialColors.river) {
-        return specialColors.river[timeOfDay];
-      }
-      return specialColors.river.default;
-    }
-    if (elementType === 'fountain') {
-      if (timeOfDay in specialColors.fountain) {
-        return specialColors.fountain[timeOfDay];
-      }
-      return specialColors.fountain.default;
-    }
-    if (elementType === 'bridge') {
-      if (timeOfDay in specialColors.bridge) {
-        return specialColors.bridge[timeOfDay];
-      }
-      return specialColors.bridge.default;
-    }
-    if (elementType === 'palm') return specialColors.palm;
-    if (elementType === 'snowCap') return specialColors.snowCap;
-    
-    return 'bg-transparent';
+    // Default to day if time not found
+    return schemes[timeOfDay] || schemes.day;
   };
   
   // Animation class for interactive elements
   const getAnimationClass = (timeOfDay) => {
     switch(timeOfDay) {
       case 'neon': return 'animate-pulse';
-      case 'cyberpunk': return 'animate-pulse';
       case 'night': return 'animate-pulse';
-      case 'storm': return 'animate-ping';
-      default: return 'animate-none';
+      default: return '';
     }
   };
   
@@ -577,15 +304,14 @@ const PixelNFT = ({ nft }) => {
   const cycleTimePeriod = () => {
     if (!nft.interactive) return;
     
-    const times = [
-      'dawn', 'sunrise', 'morning', 'day', 
-      'sunset', 'golden', 'dusk', 'night', 
-      'neon', 'cyberpunk'
-    ];
+    const times = ['dawn', 'day', 'sunset', 'dusk', 'night', 'neon'];
     const currentIndex = times.indexOf(timeState);
     const nextIndex = (currentIndex + 1) % times.length;
     setTimeState(times[nextIndex]);
   };
+  
+  // Get current color scheme
+  const colorScheme = getColorScheme(timeState);
   
   return (
     <div 
@@ -594,50 +320,35 @@ const PixelNFT = ({ nft }) => {
       onMouseLeave={() => setIsHovered(false)}
       onClick={cycleTimePeriod}
     >
-      {/* High-resolution pixelated city NFT artwork */}
+      {/* Minimalistic pixelated city NFT artwork */}
       <div 
         className={`
-          w-44 h-44 rounded-lg overflow-hidden border-2 
-          ${nft.owned ? 'border-amber-500 shadow-lg shadow-amber-200/50' : 'border-gray-400'}
-          transition-all transform hover:scale-105 cursor-pointer
+          w-24 h-24 rounded-lg overflow-hidden border-2 
+          ${nft.owned ? 'border-amber-500 shadow-md shadow-amber-200/50' : 'border-gray-400'}
+          transition-all transform hover:scale-110 cursor-pointer
           ${nft.interactive ? 'hover:ring-2 hover:ring-purple-400' : ''}
         `}
       >
         {/* Sky background */}
-        <div className={`w-full h-full ${getSkyColor(timeState)}`}>
+        <div className={`w-full h-full ${colorScheme.sky}`}>
           {/* Pixel grid */}
-          <div className="w-full h-full grid grid-cols-32 grid-rows-32">
+          <div className="w-full h-full grid grid-cols-10 grid-rows-10">
             {cityGrid.map((cell, i) => (
               <div 
                 key={i} 
                 className={`
-                  ${cell.isSky && !cell.hasCloud && !cell.hasRain && !cell.hasSnow && !cell.hasFog ? 'bg-transparent' : ''}
-                  ${cell.isGround ? getSpecialColor('ground', timeState) : ''}
-                  ${cell.isBuilding && !cell.isLandmark && !cell.isModernBuilding && !cell.isHistoricalBuilding && 
-                    !cell.isFuturisticBuilding && !cell.isArtDecoBuilding ? 
-                      getBuildingColor('default', timeState) : ''}
-                  ${cell.isLandmark ? getBuildingColor('landmark', timeState) : ''}
-                  ${cell.isModernBuilding ? getBuildingColor('modern', timeState) : ''}
-                  ${cell.isHistoricalBuilding ? getBuildingColor('historical', timeState) : ''}
-                  ${cell.isFuturisticBuilding ? getBuildingColor('futuristic', timeState) : ''}
-                  ${cell.isArtDecoBuilding ? getBuildingColor('artDeco', timeState) : ''}
-                  ${cell.hasWindow ? 'relative' : ''}
-                  ${cell.hasCloud ? getSpecialColor('cloud', timeState) : ''}
-                  ${cell.hasRain ? getSpecialColor('rain', timeState) : ''}
-                  ${cell.hasSnow ? getSpecialColor('snow', timeState) : ''}
-                  ${cell.hasFog ? getSpecialColor('fog', timeState) : ''}
-                  ${cell.hasBridge ? getSpecialColor('bridge', timeState) : ''}
-                  ${cell.hasFountain ? getSpecialColor('fountain', timeState) : ''}
-                  ${cell.hasRiver ? getSpecialColor('river', timeState) : ''}
-                  ${cell.hasPalm ? getSpecialColor('palm', timeState) : ''}
-                  ${cell.hasSnowCap ? getSpecialColor('snowCap', timeState) : ''}
-                  ${cell.isInteractiveElement ? getAnimationClass(timeState) : ''}
-                  ${nft.interactive && cell.isInteractiveElement ? 'animate-duration-[1500ms]' : ''}
+                  ${cell.isSky && !cell.hasCloud ? 'bg-transparent' : ''}
+                  ${cell.isGround ? colorScheme.ground : ''}
+                  ${cell.isBuilding && !cell.isLandmark ? colorScheme.building : ''}
+                  ${cell.isLandmark ? colorScheme.landmark : ''}
+                  ${cell.hasCloud ? colorScheme.cloud : ''}
+                  ${cell.hasSpecialFeature ? colorScheme.special : ''}
+                  ${cell.isInteractive ? getAnimationClass(timeState) : ''}
+                  ${cell.isWindow ? 'relative' : ''}
                 `}
               >
-                {/* Add window lights */}
-                {cell.hasWindow && (
-                  <div className={`absolute inset-[25%] ${getWindowColor(timeState)}`}></div>
+                {cell.isWindow && (
+                  <div className={`absolute inset-[30%] ${colorScheme.window}`}></div>
                 )}
               </div>
             ))}
@@ -645,22 +356,17 @@ const PixelNFT = ({ nft }) => {
         </div>
         
         {/* City name badge */}
-        <div className="absolute bottom-1 left-1 right-1 text-[9px] leading-tight font-mono bg-black/70 text-white px-1 rounded truncate">
+        <div className="absolute bottom-1 left-1 right-1 text-[8px] leading-tight font-mono bg-black/70 text-white px-1 rounded truncate">
           {nft.city}
         </div>
         
         {/* Time of day indicator when interactive */}
         {nft.interactive && isHovered && (
-          <div className="absolute top-1 right-1 text-[8px] leading-tight font-mono bg-purple-900/80 text-white px-1 py-0.5 rounded-sm">
-            <Clock className="h-2.5 w-2.5 inline-block mr-0.5" /> 
+          <div className="absolute top-1 right-1 text-[7px] leading-tight font-mono bg-purple-900/80 text-white px-1 py-0.5 rounded-sm">
+            <Clock className="h-2 w-2 inline-block mr-0.5" /> 
             {timeState.charAt(0).toUpperCase() + timeState.slice(1)}
           </div>
         )}
-        
-        {/* Weather display */}
-        <div className="absolute top-1 left-1 text-[8px] leading-tight font-mono bg-black/60 text-white px-1 rounded">
-          {nft.weather}
-        </div>
       </div>
       
       {/* Owned indicator */}
@@ -810,73 +516,7 @@ const NFTCatalogPage: React.FC = () => {
         ))}
       </Tabs>
       
-      {/* City Explorer Section */}
-      <div className="mt-12">
-        <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-950 dark:to-blue-950 rounded-xl p-6 border border-indigo-200 dark:border-indigo-900">
-          <h2 className="text-2xl font-bold mb-4 flex items-center">
-            <Book className="h-6 w-6 mr-3 text-indigo-600 dark:text-indigo-400" />
-            <span>BlockReceipt City Explorer</span>
-          </h2>
-          
-          <p className="text-slate-600 dark:text-slate-400 max-w-3xl mb-6">
-            Each BlockReceipt NFT showcases a unique cityscape from around the world, rendered in beautiful ultra-detailed pixel art. 
-            Discover iconic skylines from all continents with 1000-pixel resolution and interactive time-of-day effects.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Interactive Cities Feature */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-purple-100 dark:border-purple-900">
-              <h3 className="font-medium text-lg mb-3 flex items-center">
-                <Sparkles className="h-5 w-5 mr-2 text-purple-500" /> 
-                <span>Interactive Cityscapes</span>
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Special interactive NFTs change appearance based on time of day. Click on any city with the ⚡ symbol 
-                to cycle through dawn, day, sunset, night and more unique lighting conditions.
-              </p>
-              <div className="flex justify-center mb-2">
-                <Badge className="bg-purple-100 text-purple-800 border-purple-200">30% of Collection</Badge>
-              </div>
-            </div>
-            
-            {/* Time of Day Features */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-blue-100 dark:border-blue-900">
-              <h3 className="font-medium text-lg mb-3 flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-blue-500" /> 
-                <span>Dynamic Lighting</span>
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Each city is captured at different times of day - from sunrise to neon-lit night. 
-                The lighting, mood, and animation changes to create a unique cityscape experience.
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 mb-2">
-                <Badge className="bg-orange-100 text-orange-800 border-orange-200">Dawn</Badge>
-                <Badge className="bg-blue-100 text-blue-800 border-blue-200">Day</Badge>
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200">Sunset</Badge>
-                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">Night</Badge>
-                <Badge className="bg-pink-100 text-pink-800 border-pink-200">Neon</Badge>
-              </div>
-            </div>
-            
-            {/* World Cities Showcase */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-amber-100 dark:border-amber-900">
-              <h3 className="font-medium text-lg mb-3 flex items-center">
-                <Star className="h-5 w-5 mr-2 text-amber-500" /> 
-                <span>Global Landmarks</span>
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Collect cities with iconic landmarks from every continent. From towering skyscrapers to 
-                historic monuments, each NFT captures the unique architecture and atmosphere of world-famous cities.
-              </p>
-              <div className="flex justify-center mb-2">
-                <Button variant="outline" size="sm" className="text-xs">
-                  <Trophy className="h-3.5 w-3.5 mr-1.5" /> View Collection Map
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 }
