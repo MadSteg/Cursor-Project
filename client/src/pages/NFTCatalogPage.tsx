@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Book, Sparkles, Shield, Trophy, Star, LucideIcon } from 'lucide-react';
+import { Book, Sparkles, Shield, Trophy, Star, Clock, LucideIcon } from 'lucide-react';
 
 // Generate pixelated city-themed NFT collection data
 const generateNFTCollection = () => {
