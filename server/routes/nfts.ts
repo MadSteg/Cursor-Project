@@ -83,86 +83,95 @@ router.get('/', async (req, res) => {
 router.get('/with-coupons', async (req, res) => {
   try {
     // In a real implementation, we would fetch NFTs with coupons from the blockchain
-    // For now, we'll return mock data for the frontend integration
+    // For demo purposes, we generate diverse coupon data
     
     // Create mock data with a mix of active and expired coupons
     const now = Date.now();
     const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
     
-    const mockNfts = [
-      {
-        id: '1',
-        tokenId: '1001',
-        name: 'Costco',
-        imageUrl: 'https://ipfs.io/ipfs/QmXyZ123...',
-        dateCreated: new Date(now - (3 * 24 * 60 * 60 * 1000)).toISOString(),
-        metadata: {
-          merchantName: 'Costco',
-          date: '2025-05-14',
-          total: 231.45,
-          coupon: {
-            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            ciphertext: Buffer.from('COSTCO25').toString('base64'),
-            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            validUntil: now + twoWeeksMs // Active
-          }
-        }
-      },
-      {
-        id: '2',
-        tokenId: '1002',
-        name: 'Target',
-        imageUrl: 'https://ipfs.io/ipfs/QmAbC456...',
-        dateCreated: new Date(now - (5 * 24 * 60 * 60 * 1000)).toISOString(),
-        metadata: {
-          merchantName: 'Target',
-          date: '2025-05-12',
-          total: 87.99,
-          coupon: {
-            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            ciphertext: Buffer.from('TARGET10').toString('base64'),
-            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            validUntil: now + (twoWeeksMs / 2) // Active
-          }
-        }
-      },
-      {
-        id: '3',
-        tokenId: '1003',
-        name: 'Walmart',
-        imageUrl: 'https://ipfs.io/ipfs/QmDeF789...',
-        dateCreated: new Date(now - (20 * 24 * 60 * 60 * 1000)).toISOString(),
-        metadata: {
-          merchantName: 'Walmart',
-          date: '2025-04-27',
-          total: 134.56,
-          coupon: {
-            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            ciphertext: Buffer.from('WALMART15').toString('base64'),
-            policyId: `policy_expired_${Math.random().toString(36).substring(2, 15)}`,
-            validUntil: now - (twoWeeksMs / 2) // Expired
-          }
-        }
-      },
-      {
-        id: '4',
-        tokenId: '1004',
-        name: 'Best Buy',
-        imageUrl: 'https://ipfs.io/ipfs/QmGhI012...',
-        dateCreated: new Date(now - (1 * 24 * 60 * 60 * 1000)).toISOString(),
-        metadata: {
-          merchantName: 'Best Buy',
-          date: '2025-05-16',
-          total: 349.99,
-          coupon: {
-            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            ciphertext: Buffer.from('BESTBUY20').toString('base64'),
-            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-            validUntil: now + twoWeeksMs // Active
-          }
-        }
-      }
+    // Generate a variety of merchants for rich demo experience
+    const merchants = [
+      { name: 'Costco', code: 'COSTCO25', total: 231.45, date: '2025-05-14' },
+      { name: 'Target', code: 'TARGET10', total: 87.99, date: '2025-05-12' },
+      { name: 'Walmart', code: 'WALMART15', total: 134.56, date: '2025-04-27' },
+      { name: 'Best Buy', code: 'BESTBUY20', total: 349.99, date: '2025-05-16' },
+      { name: 'Apple Store', code: 'APPLE50', total: 1299.99, date: '2025-05-15' },
+      { name: 'Home Depot', code: 'HOMEDEP15', total: 189.75, date: '2025-05-10' },
+      { name: 'Whole Foods', code: 'WHOLEFDS', total: 78.45, date: '2025-05-13' },
+      { name: 'Amazon', code: 'AMZPRIME', total: 156.78, date: '2025-05-11' },
+      { name: 'Starbucks', code: 'SBUX10', total: 23.85, date: '2025-05-17' }
     ];
+    
+    // Generate tiers, rarities, and point values for gamification
+    const tiers = ['Silver', 'Gold', 'Premium', 'Platinum'];
+    const rarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+    
+    // Create a mix of active and expired coupons
+    const mockNfts = [];
+    
+    // Generate active offers (5-7)
+    const activeCount = 5 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < activeCount; i++) {
+      const merchant = merchants[i % merchants.length];
+      const tier = tiers[Math.floor(Math.random() * tiers.length)];
+      const rarity = rarities[Math.floor(Math.random() * rarities.length)];
+      const pointValue = 20 + Math.floor(Math.random() * 80); // 20-100 points
+      const daysAgo = Math.floor(Math.random() * 7); // 0-6 days ago
+      
+      mockNfts.push({
+        id: `${i + 1}`,
+        tokenId: `100${i + 1}`,
+        name: merchant.name,
+        imageUrl: `https://ipfs.io/ipfs/Qm${Math.random().toString(36).substring(2, 15)}...`,
+        dateCreated: new Date(now - (daysAgo * 24 * 60 * 60 * 1000)).toISOString(),
+        metadata: {
+          merchantName: merchant.name,
+          date: merchant.date,
+          total: merchant.total,
+          coupon: {
+            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            ciphertext: Buffer.from(merchant.code).toString('base64'),
+            policyId: `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            validUntil: now + twoWeeksMs - (Math.random() * twoWeeksMs / 2), // Random future date
+            tier,
+            rarity,
+            pointValue
+          }
+        }
+      });
+    }
+    
+    // Generate expired offers (2-4)
+    const expiredCount = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < expiredCount; i++) {
+      const merchant = merchants[(i + activeCount) % merchants.length];
+      const tier = tiers[Math.floor(Math.random() * (tiers.length - 1))]; // Lower tiers for expired
+      const rarity = rarities[Math.floor(Math.random() * 3)]; // Common/Uncommon/Rare for expired
+      const pointValue = 10 + Math.floor(Math.random() * 30); // 10-40 points
+      const daysAgo = 10 + Math.floor(Math.random() * 20); // 10-30 days ago
+      
+      mockNfts.push({
+        id: `${i + activeCount + 1}`,
+        tokenId: `100${i + activeCount + 1}`,
+        name: merchant.name,
+        imageUrl: `https://ipfs.io/ipfs/Qm${Math.random().toString(36).substring(2, 15)}...`,
+        dateCreated: new Date(now - (daysAgo * 24 * 60 * 60 * 1000)).toISOString(),
+        metadata: {
+          merchantName: merchant.name,
+          date: new Date(now - (daysAgo * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+          total: merchant.total,
+          coupon: {
+            capsule: `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+            ciphertext: Buffer.from(merchant.code).toString('base64'),
+            policyId: `policy_expired_${Math.random().toString(36).substring(2, 15)}`,
+            validUntil: now - (Math.random() * twoWeeksMs / 2), // Random past date
+            tier,
+            rarity,
+            pointValue
+          }
+        }
+      });
+    }
     
     return res.status(200).json(mockNfts);
     

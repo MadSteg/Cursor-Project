@@ -171,11 +171,20 @@ class TacoService {
       }
       
       // Simple base64 decoding for mock "decryption"
-      const decrypted = Buffer.from(ciphertext, 'base64').toString('utf-8');
+      const rawDecoded = Buffer.from(ciphertext, 'base64').toString('utf-8');
+      
+      // Create a proper JSON object with the decoded coupon code
+      // This simulates what would happen with real encryption
+      const mockCouponData = {
+        code: rawDecoded,
+        discount: 15 + Math.floor(Math.random() * 25),
+        validUntil: Date.now() + (14 * 24 * 60 * 60 * 1000),
+        merchantId: "mock-merchant"
+      };
       
       logger.info(`Mock decrypted data for policy ID: ${policyId}`);
       
-      return decrypted;
+      return JSON.stringify(mockCouponData);
     } catch (error) {
       logger.error(`Error in mock decryption: ${error}`);
       return null;

@@ -11,7 +11,7 @@ import { Helmet } from 'react-helmet';
 import CouponCard from '../components/coupons/CouponCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Loader2, Info, Sparkles, Gift, Clock, Calendar, Trophy, Zap, BadgePercent, Ticket } from 'lucide-react';
+import { Loader2, Info, Sparkles, Gift, Clock, Calendar, Trophy, Zap, BadgePercent, Ticket, ShoppingBag, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
