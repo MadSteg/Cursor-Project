@@ -149,7 +149,7 @@ export default function UploadReceiptPage() {
 
     // Create FormData for multipart upload
     const formData = new FormData();
-    formData.append('receipt', file);
+    formData.append('receiptImage', file); // Fixed field name to match server expectation
     // Add wallet address to form data
     if (address) {
       formData.append('walletAddress', address);
