@@ -22,6 +22,20 @@ export interface EncryptionResult {
   error?: string;
 }
 
+// Define coupon encryption parameters
+export interface CouponEncryptParams {
+  recipientPublicKey: string;
+  data: Buffer;
+  expiresAt: number;
+}
+
+// Define coupon decryption parameters
+export interface CouponDecryptParams {
+  capsule: string;
+  ciphertext: string;
+  policyId: string;
+}
+
 /**
  * TaCo Service class
  */
@@ -272,6 +286,109 @@ class TacoService {
     } catch (error) {
       logger.error(`Failed to revoke access: ${error}`);
       throw new Error(`Revoke access failed: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Encrypt data with a time-limited policy for coupons
+   * @param params Encryption parameters
+   * @returns Encryption result including policy ID
+   */
+  async encrypt(params: CouponEncryptParams): Promise<any> {
+    try {
+      if (!this.isInitialized) {
+        await this.initialize();
+        
+        if (!this.isInitialized) {
+          throw new Error('TaCo encryption service not initialized');
+        }
+      }
+      
+      logger.info(`Encrypting coupon data with expiry at ${new Date(params.expiresAt).toISOString()}...`);
+      
+      // Ensure valid inputs
+      if (!params.recipientPublicKey) {
+        throw new Error('No recipient public key provided');
+      }
+      
+      if (!params.data || params.data.length === 0) {
+        throw new Error('No data to encrypt');
+      }
+      
+      // In a real implementation, we would call the TaCo SDK to encrypt the data with a time-limited policy
+      // For now, we'll just simulate the encryption
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Create a mock encrypted result with a policy ID
+      const ciphertext = Buffer.from(params.data).toString('base64');
+      const capsule = `capsule_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const policyId = `policy_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      
+      logger.info(`Coupon data encrypted successfully with policy ID ${policyId}`);
+      
+      return {
+        ciphertext,
+        capsule,
+        policyId,
+        expiresAt: params.expiresAt
+      };
+    } catch (error: any) {
+      logger.error(`Failed to encrypt coupon data: ${error}`);
+      throw new Error(`Coupon encryption failed: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Decrypt data using a policy ID - will fail if policy has expired
+   * @param params Decryption parameters
+   * @returns Decrypted data as Buffer
+   */
+  async decrypt(params: CouponDecryptParams): Promise<Buffer> {
+    try {
+      if (!this.isInitialized) {
+        await this.initialize();
+        
+        if (!this.isInitialized) {
+          throw new Error('TaCo encryption service not initialized');
+        }
+      }
+      
+      logger.info(`Decrypting data with policy ID ${params.policyId}...`);
+      
+      // Ensure valid inputs
+      if (!params.capsule) {
+        throw new Error('No encryption capsule provided');
+      }
+      
+      if (!params.ciphertext) {
+        throw new Error('No encrypted data provided');
+      }
+      
+      if (!params.policyId) {
+        throw new Error('No policy ID provided');
+      }
+      
+      // In a real implementation, we would call the TaCo SDK to decrypt and verify the policy
+      // For now, we'll simulate success or expiration based on the policy ID
+      
+      // Check if policy has expired - simulate expiry for policies containing "expired"
+      const policyIdLower = params.policyId.toLowerCase();
+      if (policyIdLower.includes('expired') || Math.random() < 0.2) {
+        throw new Error('Policy has expired or is no longer valid');
+      }
+      
+      // Simulate decryption
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Decode the mock encrypted data
+      const decodedData = Buffer.from(params.ciphertext, 'base64');
+      
+      logger.info('Data decrypted successfully');
+      
+      return decodedData;
+    } catch (error: any) {
+      logger.error(`Failed to decrypt data: ${error}`);
+      throw new Error(`Decryption failed: ${error.message}`);
     }
   }
   

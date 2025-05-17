@@ -19,6 +19,7 @@ import { ocrService } from '../../services/ocrService';
 import { ipfsService } from '../../services/ipfsService';
 import { tacoService } from '../../services/tacoService';
 import { nftMintService } from '../../services/nftMintService';
+import { couponService } from '../../services/couponService';
 import { taskQueueService, TaskStatus } from '../../services/taskQueueService';
 import nftPurchaseHandler from '../../task-handlers/nftPurchaseHandler';
 import logger from '../../logger';
@@ -198,13 +199,41 @@ router.post(
         }
       }
       
-      // Step 6: Create task for asynchronous NFT minting
+      // Step 6: Generate a time-limited coupon code if a public key is provided
+      let couponUri = '';
+      if (req.body.publicKey) {
+        try {
+          // Generate a 2-week coupon
+          const twoWeeksMs = 14 * 24 * 60 * 60 * 1000;
+          const validUntil = Date.now() + twoWeeksMs;
+          const couponCode = `OFF${Math.random().toString(36).slice(-6).toUpperCase()}_${Math.floor(Math.random() * 50)}`;
+          
+          routeLogger.info(`Generating coupon code ${couponCode} valid until ${new Date(validUntil).toISOString()}`);
+          
+          const couponResult = await couponService.createTimedCoupon(
+            req.body.publicKey,
+            couponCode,
+            validUntil
+          );
+          
+          couponUri = couponResult.metadataUri;
+          
+          routeLogger.info(`Coupon generated successfully with URI: ${couponUri}`);
+        } catch (couponError) {
+          routeLogger.error(`Failed to generate coupon: ${couponError}`);
+          // Continue with receipt processing even if coupon generation fails
+        }
+      }
+      
+      // Step 7: Create task for asynchronous NFT minting
       const uniqueId = uuidv4();
       const receipt = {
         id: uniqueId,
         ...receiptWithImage,
         // Store the image data for the task handler to use
-        imageData: fs.readFileSync(file.path).toString('base64')
+        imageData: fs.readFileSync(file.path).toString('base64'),
+        // Add coupon URI if available
+        couponUri: couponUri || undefined
       };
       
       // Create task in queue for async processing
@@ -212,7 +241,8 @@ router.post(
         receipt,
         wallet: walletAddress,
         publicKey: req.body.publicKey,
-        encryptMetadata: encryptMetadata === 'true' || encryptMetadata === true
+        encryptMetadata: encryptMetadata === 'true' || encryptMetadata === true,
+        hasCoupon: !!couponUri
       });
       
       // Return success response with data in the expected format for the client
