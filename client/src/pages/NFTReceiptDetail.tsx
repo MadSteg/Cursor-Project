@@ -297,9 +297,7 @@ export default function NFTReceiptDetail() {
                     alt={`Receipt from ${displayData.merchantName}`}
                     className="object-cover w-full h-full"
                   />
-                  <Badge className="absolute top-2 right-2 capitalize bg-primary/80">
-                    {displayData.tier}
-                  </Badge>
+                  {/* No tier badge displayed as per user request */}
                 </div>
                 
                 <div className="mt-4 text-center">
