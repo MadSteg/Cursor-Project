@@ -57,6 +57,8 @@ import walletAuthRoutes from "./routes/wallet";
 import receiptEncryptionRoutes from "./routes/receiptEncryption";
 // Import test upload route
 import testUploadRoutes from "./routes/testUpload";
+// Import coupon routes
+import couponRoutes from "./routes/coupons";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -167,6 +169,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     app.use('/api/test', testQueueRoutes);
     console.log('[express] Task queue test endpoints enabled in development mode');
   }
+  
+  // Register coupon routes
+  app.use('/api/coupons', couponRoutes);
+  console.log('[express] Coupon routes registered successfully');
   
 
   

@@ -42,6 +42,9 @@ import Checkout from "@/pages/Checkout";
 import CryptoCheckout from "@/pages/CryptoCheckout";
 import EncryptedCheckout from "@/pages/EncryptedCheckout";
 
+// Offers & Coupons
+import OffersPage from "@/pages/OffersPage";
+
 // Settings & Admin
 import EncryptionSettings from "@/pages/EncryptionSettings";
 import SignInPage from "@/pages/SignInPage";
@@ -101,6 +104,9 @@ function Router() {
         <Route path="/checkout" component={Checkout} />
         <Route path="/crypto-checkout" component={CryptoCheckout} />
         <Route path="/encrypted-checkout" component={EncryptedCheckout} />
+        
+        {/* Offers & Coupons */}
+        <Route path="/offers" component={OffersPage} />
         
         {/* Authentication & Settings */}
         <Route path="/sign-in" component={SignInPage} />

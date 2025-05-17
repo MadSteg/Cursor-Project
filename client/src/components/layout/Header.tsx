@@ -23,7 +23,9 @@ import {
   XCircle,
   Key,
   Image,
-  Images
+  Images,
+  Gift,
+  Ticket
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useWeb3 } from "@/contexts/Web3Context";
@@ -64,6 +66,13 @@ const Header: React.FC = () => {
             <Link href="/nft-catalog">
               <span className={`text-sm font-medium ${currentLocation === "/nft-catalog" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
                 <Images className="h-4 w-4 mr-1.5" /> NFT Gallery
+              </span>
+            </Link>
+            
+            {/* Offers & Coupons */}
+            <Link href="/offers">
+              <span className={`text-sm font-medium ${currentLocation === "/offers" ? "text-primary" : "text-dark hover:text-primary"} cursor-pointer flex items-center`}>
+                <Gift className="h-4 w-4 mr-1.5" /> Offers & Coupons
               </span>
             </Link>
             
@@ -170,6 +179,11 @@ const Header: React.FC = () => {
                     <Link href="/nft-catalog">
                       <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
                         <Images className="h-5 w-5" /> NFT Gallery
+                      </span>
+                    </Link>
+                    <Link href="/offers">
+                      <span className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                        <Gift className="h-5 w-5" /> Offers & Coupons
                       </span>
                     </Link>
                     <Link href="/receipt-keys">
