@@ -10,13 +10,13 @@ import thresholdReceiptRoutes from "./routes/threshold-receipt";
 import encryptedPaymentRoutes from "./routes/encrypted-payments";
 import encryptionRoutes from "./routes/encryption";
 import tacoRoutes from "./routes/taco";
-import receiptEncryptionRoutes from "./routes/receiptEncryption";
 import cryptoRoutes from "./routes/crypto";
 import inventoryRoutes from "./routes/inventory";
 import merchantPluginRoutes from "./routes/merchant-plugin";
 // New product catalog routes
 import productsRoutes from "./routes/products";
-import merchantsRoutes from "./routes/merchants";
+// Import merchant registry routes
+import { merchantRoutes } from "./routes/merchants";
 import nftReceiptsRoutes from "./routes/nft-receipts";
 // Metadata access control routes
 import metadataRoutes from "./routes/metadata";
@@ -54,7 +54,6 @@ import walletTacoRoutes from "./routes/wallet";
 // Import wallet authentication routes
 import walletAuthRoutes from "./routes/wallet";
 // Import receipt encryption routes with TaCo
-import receiptEncryptionRoutes from "./routes/receiptEncryption";
 // Import test upload route
 import testUploadRoutes from "./routes/testUpload";
 // Import coupon routes
@@ -97,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/taco', tacoRoutes);
   
   // Register receipt encryption routes with TaCo
-  app.use('/api/receipt-encryption', receiptEncryptionRoutes);
+  // app.use('/api/receipt-encryption', receiptEncryptionRoutes);
   
   // Register crypto payment routes
   app.use('/api/crypto', cryptoRoutes);
@@ -110,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register new catalog routes
   app.use('/api/products', productsRoutes);
-  app.use('/api/merchants', merchantsRoutes);
+  app.use('/api/merchants', merchantRoutes);
   app.use('/api/nft-receipts', nftReceiptsRoutes);
   
   // Register metadata access control routes

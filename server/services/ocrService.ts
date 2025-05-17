@@ -12,6 +12,7 @@ import { createWorker } from 'tesseract.js';
 import { OpenAI } from 'openai';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { logger } from '../utils/logger';
+import { merchantService } from './merchantService';
 
 export interface LineItem {
   name: string;
@@ -30,6 +31,8 @@ export interface ReceiptData {
   rawText?: string;
   confidence?: number;
   ocrProvider?: string;  // Indicates which OCR service was used
+  merchantId?: number;   // Reference to identified merchant in database
+  merchantConfidence?: number; // Confidence score for merchant identification
 }
 
 /**
@@ -138,6 +141,33 @@ export class OCRService {
       // Add a category if not present
       if (!receiptData.category) {
         receiptData.category = this.inferCategory(receiptData);
+      }
+      
+      // Identify merchant from merchant name
+      if (receiptData.merchantName) {
+        try {
+          logger.info(`Attempting to identify merchant from name: ${receiptData.merchantName}`);
+          const { merchantId, confidence } = await merchantService.identifyMerchantFromReceipt(receiptData.merchantName);
+          
+          if (merchantId) {
+            receiptData.merchantId = merchantId;
+            receiptData.merchantConfidence = confidence;
+            logger.info(`Identified merchant ID ${merchantId} with confidence ${confidence}`);
+            
+            // Get merchant details to enhance receipt data
+            const merchant = await merchantService.getMerchantById(merchantId);
+            if (merchant) {
+              // Use merchant category if available and receipt category is generic
+              if (merchant.category && (!receiptData.category || receiptData.category === 'general')) {
+                receiptData.category = merchant.category;
+              }
+            }
+          } else {
+            logger.info(`No merchant match found for "${receiptData.merchantName}"`);
+          }
+        } catch (err) {
+          logger.warn(`Merchant identification failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
       }
       
       // Cache the result

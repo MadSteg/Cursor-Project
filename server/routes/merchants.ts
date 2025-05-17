@@ -1,75 +1,195 @@
 /**
- * Merchant API Routes
- * Provides endpoints for browsing merchants and their products
+ * Merchant Routes
+ * 
+ * API endpoints for merchant management and vendor metadata
  */
 
 import express from 'express';
-import { 
-  merchants, 
-  getMerchantById, 
-  getProductsByMerchant
-} from '@shared/products';
+import { merchantService } from '../services/merchantService';
+import { couponService } from '../services/couponService';
+import { requireAuth } from '../middleware/requireAuth';
+import { createLogger } from '../logger';
 
+const logger = createLogger('merchant-routes');
 const router = express.Router();
 
-/**
- * @route GET /api/merchants
- * @desc Get all merchants
- */
-router.get('/', (req, res) => {
-  res.json(merchants);
-});
+// Get merchant by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const merchantId = parseInt(req.params.id);
+    if (isNaN(merchantId)) {
+      return res.status(400).json({ success: false, message: 'Invalid merchant ID' });
+    }
 
-/**
- * @route GET /api/merchants/:id
- * @desc Get merchant by ID
- */
-router.get('/:id', (req, res) => {
-  const merchant = getMerchantById(req.params.id);
-  
-  if (!merchant) {
-    return res.status(404).json({ message: 'Merchant not found' });
+    const merchant = await merchantService.getMerchantById(merchantId);
+    if (!merchant) {
+      return res.status(404).json({ success: false, message: 'Merchant not found' });
+    }
+
+    res.json({ success: true, merchant });
+  } catch (error) {
+    logger.error(`Error fetching merchant: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
-  
-  res.json(merchant);
 });
 
-/**
- * @route GET /api/merchants/:id/products
- * @desc Get all products from a specific merchant
- */
-router.get('/:id/products', (req, res) => {
-  const merchant = getMerchantById(req.params.id);
-  
-  if (!merchant) {
-    return res.status(404).json({ message: 'Merchant not found' });
+// Get promotions for a merchant
+router.get('/:id/promotions', async (req, res) => {
+  try {
+    const merchantId = parseInt(req.params.id);
+    if (isNaN(merchantId)) {
+      return res.status(400).json({ success: false, message: 'Invalid merchant ID' });
+    }
+
+    const promotions = await merchantService.getMerchantPromotions(merchantId);
+    res.json({ success: true, promotions });
+  } catch (error) {
+    logger.error(`Error fetching merchant promotions: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
-  
-  const merchantProducts = getProductsByMerchant(req.params.id);
-  
-  // Filter to only available products unless specifically requested
-  const availableOnly = req.query.includeUnavailable !== 'true';
-  const filteredProducts = availableOnly 
-    ? merchantProducts.filter(product => product.available)
-    : merchantProducts;
-  
-  res.json(filteredProducts);
 });
 
-/**
- * @route GET /api/merchants/:id/receipt-templates
- * @desc Get receipt templates for a merchant
- */
-router.get('/:id/receipt-templates', (req, res) => {
-  const merchant = getMerchantById(req.params.id);
-  
-  if (!merchant) {
-    return res.status(404).json({ message: 'Merchant not found' });
+// Get coupons for a merchant
+router.get('/:id/coupons', async (req, res) => {
+  try {
+    const merchantId = parseInt(req.params.id);
+    if (isNaN(merchantId)) {
+      return res.status(400).json({ success: false, message: 'Invalid merchant ID' });
+    }
+
+    const coupons = await couponService.getMerchantCoupons(merchantId);
+    res.json({ success: true, coupons });
+  } catch (error) {
+    logger.error(`Error fetching merchant coupons: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
-  
-  const templates = merchant.nftReceiptTemplates || {};
-  
-  res.json(templates);
 });
 
-export default router;
+// Create a merchant (admin only)
+router.post('/', requireAuth, async (req, res) => {
+  try {
+    const { name, logoUrl, website, category, walletAddress } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Merchant name is required' });
+    }
+    
+    const merchant = await merchantService.addMerchant({
+      name,
+      logoUrl,
+      website,
+      category,
+      walletAddress
+    });
+    
+    res.status(201).json({ success: true, merchant });
+  } catch (error) {
+    logger.error(`Error creating merchant: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Add a merchant name pattern
+router.post('/:id/patterns', requireAuth, async (req, res) => {
+  try {
+    const merchantId = parseInt(req.params.id);
+    if (isNaN(merchantId)) {
+      return res.status(400).json({ success: false, message: 'Invalid merchant ID' });
+    }
+    
+    const { pattern, priority } = req.body;
+    
+    if (!pattern) {
+      return res.status(400).json({ success: false, message: 'Pattern is required' });
+    }
+    
+    const result = await merchantService.addMerchantNamePattern(
+      merchantId,
+      pattern,
+      priority || 0
+    );
+    
+    res.status(201).json({ success: true, pattern: result });
+  } catch (error) {
+    logger.error(`Error adding merchant pattern: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Create a promotion for a merchant
+router.post('/:id/promotions', requireAuth, async (req, res) => {
+  try {
+    const merchantId = parseInt(req.params.id);
+    if (isNaN(merchantId)) {
+      return res.status(400).json({ success: false, message: 'Invalid merchant ID' });
+    }
+    
+    const { 
+      title, 
+      description, 
+      startDate, 
+      endDate, 
+      couponCode, 
+      discount, 
+      minimumPurchase 
+    } = req.body;
+    
+    if (!title || !description || !startDate || !endDate) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Title, description, start date, and end date are required' 
+      });
+    }
+    
+    const promotion = await merchantService.createPromotion({
+      merchantId,
+      title,
+      description,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      couponCode,
+      discount,
+      minimumPurchase
+    });
+    
+    res.status(201).json({ success: true, promotion });
+  } catch (error) {
+    logger.error(`Error creating promotion: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Identify merchant from receipt name
+router.post('/identify', async (req, res) => {
+  try {
+    const { merchantName } = req.body;
+    
+    if (!merchantName) {
+      return res.status(400).json({ success: false, message: 'Merchant name is required' });
+    }
+    
+    const result = await merchantService.identifyMerchantFromReceipt(merchantName);
+    
+    if (result.merchantId) {
+      const merchant = await merchantService.getMerchantById(result.merchantId);
+      res.json({ 
+        success: true, 
+        identified: true,
+        merchantId: result.merchantId,
+        confidence: result.confidence,
+        merchant
+      });
+    } else {
+      res.json({ 
+        success: true, 
+        identified: false,
+        message: 'No matching merchant found'
+      });
+    }
+  } catch (error) {
+    logger.error(`Error identifying merchant: ${error}`);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+export const merchantRoutes = router;
