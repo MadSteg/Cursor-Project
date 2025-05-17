@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from 'wouter';
-import { GitFork, Fingerprint, Lock, Wallet, Shield, Receipt, FileCheck, DollarSign, Scale } from 'lucide-react';
+import { GitFork, Fingerprint, Lock, Wallet, Shield, Receipt, FileCheck, DollarSign, Scale, Clock } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -138,18 +138,23 @@ export default function AboutPage() {
       </div>
 
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 mb-16">
-        <h2 className="text-3xl font-bold mb-6 text-center">For Vendors & Businesses</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">Privacy-First Technology</h2>
+        <p className="text-center text-slate-600 max-w-3xl mx-auto mb-8">
+          BlockReceipt.ai uses advanced Threshold Access Control (TACo) encryption to protect your sensitive receipt data.
+          Your receipts and offers are securely stored on the blockchain with selective disclosure controls.
+        </p>
+        
         <div className="grid md:grid-cols-3 gap-8">
           <Card className="border-0 shadow-md bg-white">
             <CardHeader>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <DollarSign className="h-6 w-6 text-green-600" />
+                <Lock className="h-6 w-6 text-green-600" />
               </div>
-              <CardTitle>Cost-Effective</CardTitle>
+              <CardTitle>Warranty Claims Simplified</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600">
-                Cheaper than thermal paper printing, with no maintenance costs for receipt printers or supplies.
+                Grant temporary access to warranty information when needed without revealing purchase price or other sensitive details. Perfect for electronics, appliances, and high-value purchases.
               </p>
             </CardContent>
           </Card>
@@ -157,13 +162,13 @@ export default function AboutPage() {
           <Card className="border-0 shadow-md bg-white">
             <CardHeader>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="h-6 w-6 text-blue-600" />
+                <Clock className="h-6 w-6 text-blue-600" />
               </div>
-              <CardTitle>Easy Integration</CardTitle>
+              <CardTitle>Time-Limited Promotions</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600">
-                Drop-in replacement for existing receipt systems with simple API integration for point-of-sale systems.
+                Vendors can set expiration dates for promotional offers, but only you control the encryption key through your BlockReceipt. No access to your data without your permission.
               </p>
             </CardContent>
           </Card>
@@ -171,13 +176,13 @@ export default function AboutPage() {
           <Card className="border-0 shadow-md bg-white">
             <CardHeader>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <GitFork className="h-6 w-6 text-purple-600" />
+                <Shield className="h-6 w-6 text-purple-600" />
               </div>
-              <CardTitle>Customer Loyalty</CardTitle>
+              <CardTitle>Tax-Time Data Control</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600">
-                Create digital collectibles and loyalty tie-ins with your NFT receipts to increase customer engagement.
+                Share only tax-relevant receipt data with your accountant or financial advisor, keeping personal purchases private while streamlining tax preparation and expense tracking.
               </p>
             </CardContent>
           </Card>
