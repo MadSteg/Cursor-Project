@@ -1,197 +1,316 @@
-import { createCanvas, loadImage } from 'canvas';
-import { ipfsService } from './ipfsService';
-import path from 'path';
-import fs from 'fs';
+import { createCanvas } from 'canvas';
+import { pinFileToIPFS } from './ipfsService';
+import crypto from 'crypto';
+import { logger } from '../utils/logger';
 
-// Deterministic PRNG for overlays
-function mulberry32(a: number): () => number {
-  return () => {
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-
-// Convert string to numeric seed
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash);
-}
-
-export interface StampOptions {
-  cityCode: string;
-  receiptHash: string;
-  merchantCategory: string;
-  timestamp: number;
-  promoActive: boolean;
-}
-
-// Color palettes for different times of day
-const timeOfDayPalettes = {
-  morning: ['#F9DB6D', '#FFF4D4', '#FFAC4A', '#6BB5FF'],
-  afternoon: ['#5EB0E5', '#FFFFFF', '#87CEEB', '#4682B4'],
-  evening: ['#FF7F50', '#FFA07A', '#FFD700', '#FF6347'],
-  night: ['#1A237E', '#283593', '#3949AB', '#5C6BC0']
+// Stamp generation constants
+const STAMP_SIZE = 400;
+const CITIES = {
+  // Major cities by region with iconic landmarks
+  Americas: ['New York', 'San Francisco', 'Chicago', 'Los Angeles', 'Toronto', 'Mexico City', 'Rio de Janeiro'],
+  Europe: ['London', 'Paris', 'Rome', 'Berlin', 'Barcelona', 'Amsterdam', 'Prague'],
+  Asia: ['Tokyo', 'Hong Kong', 'Singapore', 'Seoul', 'Shanghai', 'Dubai', 'Bangkok'],
+  Africa: ['Cape Town', 'Cairo', 'Marrakech', 'Nairobi', 'Lagos', 'Johannesburg'],
+  Oceania: ['Sydney', 'Melbourne', 'Auckland', 'Wellington']
 };
 
-// Category colors for merchant types
-const categoryColors = {
+// Time of day colors for visually distinct stamps
+const TIME_COLORS = {
+  morning: {
+    primary: '#F9D423',
+    secondary: '#FF4E50',
+    accent: '#E0C3FC',
+    text: '#333333'
+  },
+  afternoon: {
+    primary: '#4CB8C4',
+    secondary: '#3CD3AD',
+    accent: '#24C6DC',
+    text: '#333333'
+  },
+  evening: {
+    primary: '#614385',
+    secondary: '#516395',
+    accent: '#9D50BB',
+    text: '#ffffff'
+  },
+  night: {
+    primary: '#141E30',
+    secondary: '#243B55',
+    accent: '#5F2C82',
+    text: '#ffffff'
+  }
+};
+
+// Merchant category colors
+const CATEGORY_COLORS = {
   food: '#8BC34A',
-  retail: '#FF9800',
-  service: '#03A9F4',
+  retail: '#03A9F4',
+  travel: '#FF9800',
   entertainment: '#9C27B0',
-  travel: '#795548',
+  services: '#FFEB3B',
+  health: '#E91E63',
+  electronics: '#00BCD4',
   default: '#607D8B'
 };
 
-// City emblem lookup
-const cityEmblems: Record<string, string> = {
-  NYC: 'newYork.png',
-  PAR: 'paris.png',
-  LON: 'london.png',
-  TKY: 'tokyo.png',
-  SYD: 'sydney.png',
-  default: 'default.png'
-};
+interface StampOptions {
+  merchantName: string;
+  merchantLocation?: string;
+  category?: string;
+  date: Date;
+  total: number;
+  isPromotional?: boolean;
+  tokenId: string | number;
+}
 
-/**
- * Generates a unique passport stamp based on receipt data
- */
-export async function generatePassportStamp(options: StampOptions): Promise<string> {
-  const { cityCode, receiptHash, merchantCategory, timestamp, promoActive } = options;
-  
-  // Create deterministic random generator from receipt hash
-  const seed = hashString(receiptHash + merchantCategory);
-  const random = mulberry32(seed);
-  
-  // Get time of day
-  const hour = new Date(timestamp).getHours();
-  let timeOfDay = 'afternoon';
-  if (hour < 11) timeOfDay = 'morning';
-  else if (hour >= 16 && hour < 20) timeOfDay = 'evening';
-  else if (hour >= 20 || hour < 6) timeOfDay = 'night';
-  
-  const palette = timeOfDayPalettes[timeOfDay as keyof typeof timeOfDayPalettes];
-  
-  // Create canvas (400x400 square)
-  const canvas = createCanvas(400, 400);
-  const ctx = canvas.getContext('2d');
-  
-  // Fill background
-  ctx.fillStyle = palette[0];
-  ctx.fillRect(0, 0, 400, 400);
-  
-  // Get city emblem or use default
-  const emblemFile = cityEmblems[cityCode] || cityEmblems.default;
-  
-  try {
-    // In production, these would be pinned to IPFS or hosted in a CDN
-    // For development, we'll try to load from local filesystem
-    const emblemPath = path.join(__dirname, '../../assets/cities', emblemFile);
-    
-    // Create assets directory if it doesn't exist
-    const assetsDir = path.join(__dirname, '../../assets/cities');
-    if (!fs.existsSync(assetsDir)) {
-      fs.mkdirSync(assetsDir, { recursive: true });
-      
-      // Create a simple default emblem
-      const defaultCanvas = createCanvas(200, 200);
-      const defaultCtx = defaultCanvas.getContext('2d');
-      defaultCtx.fillStyle = '#FFFFFF';
-      defaultCtx.beginPath();
-      defaultCtx.arc(100, 100, 90, 0, Math.PI * 2);
-      defaultCtx.fill();
-      defaultCtx.fillStyle = '#000000';
-      defaultCtx.font = 'bold 24px Arial';
-      defaultCtx.textAlign = 'center';
-      defaultCtx.fillText('BR', 100, 108);
-      
-      const buffer = defaultCanvas.toBuffer('image/png');
-      fs.writeFileSync(path.join(assetsDir, 'default.png'), buffer);
-    }
-    
-    let cityEmblem;
+export class StampService {
+  /**
+   * Generates a unique passport stamp based on receipt details
+   */
+  async generateStamp(options: StampOptions): Promise<string> {
     try {
-      cityEmblem = await loadImage(emblemPath);
-    } catch (err) {
-      // Fallback to default
-      cityEmblem = await loadImage(path.join(assetsDir, 'default.png'));
-    }
-    
-    // Draw city emblem in the center
-    ctx.drawImage(cityEmblem, 100, 100, 200, 200);
-    
-    // Add dynamic patterns based on seed
-    ctx.strokeStyle = palette[1];
-    ctx.lineWidth = 3;
-    
-    // Draw unique pattern (circles, lines, etc)
-    for (let i = 0; i < 12; i++) {
-      const x = random() * 400;
-      const y = random() * 400;
-      const size = 30 + random() * 100;
+      const { 
+        merchantName, 
+        merchantLocation = this.getRandomCity(), 
+        category = 'default',
+        date, 
+        total, 
+        isPromotional = false,
+        tokenId
+      } = options;
+
+      // Create canvas for the stamp
+      const canvas = createCanvas(STAMP_SIZE, STAMP_SIZE);
+      const ctx = canvas.getContext('2d');
       
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.stroke();
+      // Get time of day from date
+      const hour = date.getHours();
+      const timeOfDay = this.getTimeOfDay(hour);
+      const colors = TIME_COLORS[timeOfDay as keyof typeof TIME_COLORS];
+      
+      // Get color for category
+      const categoryColor = CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] || CATEGORY_COLORS.default;
+      
+      // Generate a unique pattern based on tokenId
+      const pattern = this.generateUniquePattern(tokenId.toString(), colors);
+      
+      // Draw the stamp
+      this.drawStampBackground(ctx, colors);
+      this.drawStampBorder(ctx, isPromotional, categoryColor);
+      this.drawStampPattern(ctx, pattern);
+      this.drawStampInfo(ctx, {
+        merchantName,
+        locationName: merchantLocation,
+        date,
+        total,
+        timeOfDay,
+        colors,
+        tokenId: tokenId.toString()
+      });
+      
+      // Convert canvas to buffer
+      const buffer = canvas.toBuffer('image/png');
+      
+      // Upload to IPFS
+      const result = await pinFileToIPFS(buffer);
+      
+      if (!result || !result.IpfsHash) {
+        throw new Error('Failed to upload stamp to IPFS');
+      }
+      
+      logger.info(`Generated and uploaded stamp for ${merchantName} with IPFS hash: ${result.IpfsHash}`);
+      
+      return `ipfs://${result.IpfsHash}`;
+    } catch (error) {
+      logger.error('Error generating stamp:', error);
+      throw error;
     }
+  }
+  
+  /**
+   * Get random city for stamp if location not provided
+   */
+  private getRandomCity(): string {
+    const regions = Object.keys(CITIES);
+    const randomRegion = regions[Math.floor(Math.random() * regions.length)];
+    const cities = CITIES[randomRegion as keyof typeof CITIES];
+    return cities[Math.floor(Math.random() * cities.length)];
+  }
+  
+  /**
+   * Get time of day based on hour
+   */
+  private getTimeOfDay(hour: number): string {
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 17) return 'afternoon';
+    if (hour >= 17 && hour < 21) return 'evening';
+    return 'night';
+  }
+  
+  /**
+   * Draw stamp background
+   */
+  private drawStampBackground(ctx: CanvasRenderingContext2D, colors: any) {
+    // Create gradient background
+    const gradient = ctx.createRadialGradient(
+      STAMP_SIZE / 2, STAMP_SIZE / 2, 0,
+      STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2
+    );
+    gradient.addColorStop(0, colors.primary);
+    gradient.addColorStop(0.7, colors.secondary);
+    gradient.addColorStop(1, colors.accent);
     
-    // Draw merchant category indicator
-    const categoryColor = categoryColors[merchantCategory as keyof typeof categoryColors] || categoryColors.default;
-    ctx.fillStyle = categoryColor;
+    ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(200, 200, 40, 0, Math.PI * 2);
+    ctx.arc(STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 10, 0, Math.PI * 2);
     ctx.fill();
     
-    // Add promo border if active
-    if (promoActive) {
-      ctx.strokeStyle = '#FFD700'; // Gold
-      ctx.lineWidth = 15;
+    // Add inner circle
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 40, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  
+  /**
+   * Draw stamp border (gold for promotional receipts)
+   */
+  private drawStampBorder(ctx: CanvasRenderingContext2D, isPromotional: boolean, categoryColor: string) {
+    ctx.strokeStyle = isPromotional ? '#FFD700' : categoryColor;
+    ctx.lineWidth = isPromotional ? 12 : 8;
+    ctx.beginPath();
+    ctx.arc(STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 10, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Add decorative elements at cardinal points
+    const points = [
+      { x: STAMP_SIZE / 2, y: 20 },
+      { x: STAMP_SIZE / 2, y: STAMP_SIZE - 20 },
+      { x: 20, y: STAMP_SIZE / 2 },
+      { x: STAMP_SIZE - 20, y: STAMP_SIZE / 2 }
+    ];
+    
+    points.forEach(point => {
+      ctx.fillStyle = isPromotional ? '#FFD700' : categoryColor;
       ctx.beginPath();
-      ctx.rect(10, 10, 380, 380);
-      ctx.stroke();
+      ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+  
+  /**
+   * Generate a unique pattern based on tokenId
+   */
+  private generateUniquePattern(tokenId: string, colors: any): Array<{x: number, y: number, size: number}> {
+    const hash = crypto.createHash('sha256').update(tokenId).digest('hex');
+    const pattern = [];
+    
+    // Generate a series of points based on hash
+    for (let i = 0; i < hash.length; i += 4) {
+      const value = parseInt(hash.substring(i, i + 4), 16);
+      const x = (value % STAMP_SIZE) * 0.8 + STAMP_SIZE * 0.1;
+      const y = ((value >> 8) % STAMP_SIZE) * 0.8 + STAMP_SIZE * 0.1;
+      const size = (value % 8) + 2;
+      
+      pattern.push({ x, y, size });
     }
     
-    // Add receipt code
-    ctx.fillStyle = palette[3];
-    ctx.font = 'bold 12px Courier';
-    ctx.fillText(`RECEIPT: ${receiptHash.substring(0, 12)}...`, 20, 380);
+    return pattern;
+  }
+  
+  /**
+   * Draw the unique pattern on the stamp
+   */
+  private drawStampPattern(ctx: CanvasRenderingContext2D, pattern: Array<{x: number, y: number, size: number}>) {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     
-    // Add timestamp
-    const dateStr = new Date(timestamp).toISOString().split('T')[0];
-    ctx.fillText(`ISSUED: ${dateStr}`, 280, 380);
+    pattern.forEach(point => {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+  
+  /**
+   * Draw text information on the stamp
+   */
+  private drawStampInfo(ctx: CanvasRenderingContext2D, info: any) {
+    const { merchantName, locationName, date, colors, tokenId } = info;
     
-    // Convert canvas to PNG buffer
-    const buffer = canvas.toBuffer('image/png');
+    // Format date
+    const formattedDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
     
-    // Pin image to IPFS
-    const cid = await ipfsService.uploadBuffer(buffer, 'stamp.png');
-    return `ipfs://${cid}`;
-  } catch (err) {
-    console.error('Error generating passport stamp:', err);
-    
-    // Fall back to generating a simple text stamp
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, 400, 400);
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 24px Arial';
+    // Set text color
+    ctx.fillStyle = colors.text;
     ctx.textAlign = 'center';
-    ctx.fillText(`BlockReceipt`, 200, 180);
-    ctx.fillText(`${cityCode || 'GLOBAL'}`, 200, 220);
+    
+    // Draw merchant name
+    ctx.font = 'bold 28px Arial';
+    ctx.fillText(this.truncateText(merchantName, 18), STAMP_SIZE / 2, STAMP_SIZE / 2 - 40);
+    
+    // Draw location
+    ctx.font = '24px Arial';
+    ctx.fillText(locationName, STAMP_SIZE / 2, STAMP_SIZE / 2);
+    
+    // Draw date
     ctx.font = '18px Arial';
-    ctx.fillText(new Date(timestamp).toLocaleDateString(), 200, 260);
+    ctx.fillText(formattedDate, STAMP_SIZE / 2, STAMP_SIZE / 2 + 30);
     
-    // Convert canvas to PNG buffer
-    const buffer = canvas.toBuffer('image/png');
+    // Draw token ID (partially obscured)
+    ctx.font = '14px Arial';
+    ctx.fillText(`#${tokenId.substring(0, 8)}`, STAMP_SIZE / 2, STAMP_SIZE / 2 + 60);
     
-    // Pin image to IPFS
-    const cid = await ipfsService.uploadBuffer(buffer, 'fallback-stamp.png');
-    return `ipfs://${cid}`;
+    // Draw "BLOCKRECEIPT" text around the bottom arc
+    this.drawArcText(ctx, 'BLOCKRECEIPT', STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 25, Math.PI / 2, Math.PI * 3 / 2);
+  }
+  
+  /**
+   * Draw text along an arc
+   */
+  private drawArcText(
+    ctx: CanvasRenderingContext2D, 
+    text: string, 
+    centerX: number, 
+    centerY: number, 
+    radius: number, 
+    startAngle: number, 
+    endAngle: number
+  ) {
+    const textLength = text.length;
+    const angleSize = (endAngle - startAngle) / textLength;
+    
+    ctx.save();
+    ctx.font = 'bold 16px Arial';
+    
+    for (let i = 0; i < textLength; i++) {
+      const angle = startAngle + i * angleSize;
+      
+      ctx.save();
+      ctx.translate(
+        centerX + Math.cos(angle) * radius,
+        centerY + Math.sin(angle) * radius
+      );
+      ctx.rotate(angle + Math.PI / 2);
+      ctx.fillText(text[i], 0, 0);
+      ctx.restore();
+    }
+    
+    ctx.restore();
+  }
+  
+  /**
+   * Truncate text to fit on the stamp
+   */
+  private truncateText(text: string, maxLength: number): string {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
   }
 }
+
+export const stampService = new StampService();

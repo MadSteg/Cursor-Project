@@ -8,7 +8,14 @@
 import fs from 'fs';
 import axios from 'axios';
 import FormData from 'form-data';
-import logger from '../logger';
+import { logger } from '../utils/logger';
+
+// Type definition for pinata response
+interface PinataResponse {
+  IpfsHash: string;
+  PinSize: number;
+  Timestamp: string;
+}
 
 /**
  * IPFS Service Class
@@ -261,6 +268,91 @@ class IPFSService {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(`IPFS JSON retrieval failed: ${message}`);
       throw new Error(`Failed to retrieve JSON from IPFS: ${message}`);
+    }
+  }
+
+  /**
+   * Pin a file to IPFS (uploads file directly to Pinata)
+   * @param fileBuffer The file buffer to upload
+   * @param fileName Optional filename for the file
+   * @returns Object with IPFS hash and other metadata
+   */
+  async pinFileToIPFS(fileBuffer: Buffer, fileName: string = 'file'): Promise<PinataResponse> {
+    try {
+      // For development mode, return a mock response if no API keys
+      if (!this.pinataApiKey && process.env.NODE_ENV === 'development') {
+        logger.warn('Development mode: Returning mock CID for IPFS file upload');
+        const mockHash = `QmMock${Date.now().toString(16)}${Math.random().toString(16).substring(2, 8)}`;
+        return {
+          IpfsHash: mockHash,
+          PinSize: fileBuffer.length,
+          Timestamp: new Date().toISOString()
+        };
+      }
+      
+      logger.info(`Pinning file to IPFS: ${fileName}`);
+      
+      const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+      
+      const formData = new FormData();
+      formData.append('file', fileBuffer, { filename: fileName });
+      
+      const response = await axios.post(url, formData, {
+        maxBodyLength: Infinity,
+        headers: {
+          'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`,
+          'pinata_api_key': this.pinataApiKey,
+          'pinata_secret_api_key': this.pinataSecretApiKey
+        }
+      });
+      
+      logger.info(`File pinned to IPFS with hash: ${response.data.IpfsHash}`);
+      
+      return response.data;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to pin file to IPFS: ${message}`);
+      throw new Error(`Failed to pin file to IPFS: ${message}`);
+    }
+  }
+
+  /**
+   * Pin JSON data to IPFS
+   * @param jsonData The JSON data to upload
+   * @returns Object with IPFS hash and other metadata
+   */
+  async pinJSON(jsonData: any): Promise<PinataResponse> {
+    try {
+      // For development mode, return a mock response if no API keys
+      if (!this.pinataApiKey && process.env.NODE_ENV === 'development') {
+        logger.warn('Development mode: Returning mock CID for IPFS JSON upload');
+        const mockHash = `QmMock${Date.now().toString(16)}${Math.random().toString(16).substring(2, 8)}`;
+        return {
+          IpfsHash: mockHash,
+          PinSize: JSON.stringify(jsonData).length,
+          Timestamp: new Date().toISOString()
+        };
+      }
+      
+      logger.info('Pinning JSON data to IPFS');
+      
+      const url = 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
+      
+      const response = await axios.post(url, jsonData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'pinata_api_key': this.pinataApiKey,
+          'pinata_secret_api_key': this.pinataSecretApiKey
+        }
+      });
+      
+      logger.info(`JSON data pinned to IPFS with hash: ${response.data.IpfsHash}`);
+      
+      return response.data;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to pin JSON to IPFS: ${message}`);
+      throw new Error(`Failed to pin JSON to IPFS: ${message}`);
     }
   }
 }

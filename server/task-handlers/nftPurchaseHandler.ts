@@ -1,111 +1,187 @@
-/**
- * NFT Purchase Handler for BlockReceipt.ai
- * 
- * This handler processes asynchronous NFT purchase requests
- * via the task queue service.
- */
-
-import { Task } from '../services/taskQueueService';
-import { nftMintService } from '../services/nftMintService';
+import { logger } from '../utils/logger';
+import { blockchainEnhancedService } from '../services/blockchainEnhancedService';
+import { stampService } from '../services/stampService';
+import { mockBotWallet } from '../utils/mockBotWallet';
+import { thresholdClient } from '../services/thresholdClient';
 import { ipfsService } from '../services/ipfsService';
-import { thresholdClient } from '../services/tacoService';
-import { generatePassportStamp } from '../services/stampService';
-import logger from '../logger';
+
+interface NFTPurchaseTask {
+  id: string;
+  tokenId?: string;
+  receiptData: {
+    merchantName: string;
+    date: string;
+    total: number;
+    items?: Array<{
+      name: string;
+      price: number;
+      quantity?: number;
+      category?: string;
+    }>;
+    category?: string;
+    subtotal?: number;
+    tax?: number;
+  };
+  walletAddress: string;
+  ipfsHash: string;
+  metadataIpfsHash?: string;
+  policyId?: string;
+  encrypt?: boolean;
+}
 
 /**
- * Handle NFT purchase task
- * @param task Task from queue
- * @returns Task result
+ * Handler for NFT purchase tasks
+ * This processes receipts and mints them as NFTs with passport stamps
  */
-async function handleNftPurchaseTask(task: Task): Promise<any> {
-  const { receipt, wallet, publicKey, encryptMetadata } = task.data;
-  
-  if (!receipt) {
-    throw new Error('Receipt data missing from task');
+class NFTPurchaseHandler {
+  constructor() {
+    logger.info('NFT Bot using random wallet for testing only. No actual purchases will work!');
   }
-  
-  if (!wallet) {
-    throw new Error('Wallet address missing from task');
-  }
-  
-  logger.info(`Processing NFT purchase for receipt ${receipt.id}`);
-  
-  try {
-    // Upload receipt image to IPFS if available
-    let imageCid = '';
-    if (receipt.imageData) {
-      logger.info('Uploading receipt image to IPFS');
-      
-      // Decode base64 image data
-      const imageBuffer = Buffer.from(receipt.imageData, 'base64');
-      
-      // Upload to IPFS
-      const imageResult = await ipfsService.uploadFile(imageBuffer, `receipt_${receipt.id}.jpg`);
-      imageCid = imageResult.cid;
-      
-      logger.info(`Image uploaded to IPFS with CID: ${imageCid}`);
-    }
-    
-    // Add image path to receipt data
-    const receiptWithImage = {
-      ...receipt,
-      imagePath: imageCid || undefined
-    };
-    
-    // Generate passport stamp for the receipt
-    let stampUri = '';
+
+  async processTask(task: NFTPurchaseTask): Promise<any> {
     try {
-      // Determine city code from merchant name or location (simple mock for now)
-      const cityCode = receipt.merchantName ? 
-        receipt.merchantName.slice(0, 3).toUpperCase() : 'NYC';
+      logger.info(`Processing NFT purchase for receipt: ${task.id}, wallet: ${task.walletAddress}`);
       
-      // Generate stamp with our passport stamp service
-      stampUri = await generatePassportStamp({
-        cityCode,
-        receiptHash: receipt.id,
-        merchantCategory: receipt.category || 'retail',
-        timestamp: receipt.date ? new Date(receipt.date).getTime() : Date.now(),
-        promoActive: !!receipt.coupon
+      // 1. Generate the metadata IPFS URI if not already provided
+      let metadataUri = task.metadataIpfsHash 
+        ? `ipfs://${task.metadataIpfsHash}` 
+        : await this.createMetadataUri(task);
+      
+      // 2. Generate a passport stamp for this receipt
+      const stampUri = await this.generateStamp(task);
+      
+      // 3. Mint the NFT with receipt data, metadata, and stamp
+      const mintResult = await blockchainEnhancedService.mintReceipt(
+        task.receiptData,
+        metadataUri,
+        stampUri,
+        task.walletAddress,
+        !!task.encrypt,
+        task.policyId || ''
+      );
+      
+      logger.info(`NFT minted successfully: ${JSON.stringify(mintResult)}`);
+      
+      return {
+        success: true,
+        taskId: task.id,
+        tokenId: mintResult.tokenId,
+        stampUri,
+        metadataUri,
+        transactionHash: mintResult.transactionHash,
+        walletAddress: task.walletAddress,
+        merchantName: task.receiptData.merchantName,
+        totalAmount: task.receiptData.total,
+        encrypted: !!task.encrypt,
+        policyId: task.policyId || '',
+        mockMode: mintResult.mockMode
+      };
+    } catch (error) {
+      logger.error(`Failed to process NFT purchase: ${error.message}`, error);
+      return {
+        success: false,
+        taskId: task.id,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Create metadata URI for the NFT
+   */
+  private async createMetadataUri(task: NFTPurchaseTask): Promise<string> {
+    try {
+      // Prepare metadata object
+      const metadata = {
+        name: `${task.receiptData.merchantName} Receipt`,
+        description: `Receipt from ${task.receiptData.merchantName} dated ${task.receiptData.date}`,
+        image: `ipfs://${task.ipfsHash}`,
+        attributes: [
+          {
+            trait_type: 'Merchant',
+            value: task.receiptData.merchantName
+          },
+          {
+            trait_type: 'Date',
+            value: task.receiptData.date
+          },
+          {
+            trait_type: 'Total',
+            value: task.receiptData.total.toString()
+          },
+          {
+            trait_type: 'Category',
+            value: task.receiptData.category || 'Uncategorized'
+          }
+        ],
+        properties: {
+          receiptData: task.receiptData
+        }
+      };
+      
+      // Encrypt metadata if requested
+      if (task.encrypt && task.policyId) {
+        const encryptedData = await thresholdClient.encryptData(
+          JSON.stringify(metadata),
+          task.walletAddress,
+          task.policyId
+        );
+        
+        // Upload encrypted data
+        const result = await ipfsService.pinJSON({
+          encrypted: true,
+          policyId: task.policyId,
+          data: encryptedData
+        });
+        
+        return `ipfs://${result.IpfsHash}`;
+      }
+      
+      // Otherwise, upload plain metadata
+      const result = await ipfsService.pinJSON(metadata);
+      return `ipfs://${result.IpfsHash}`;
+    } catch (error) {
+      logger.error(`Failed to create metadata URI: ${error.message}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate a passport stamp for the receipt
+   */
+  private async generateStamp(task: NFTPurchaseTask): Promise<string> {
+    try {
+      // Check if we should generate a promotional stamp
+      const isPromotional = !!task.receiptData.items?.some(item => 
+        item.name?.toLowerCase().includes('promo') || 
+        item.category?.toLowerCase().includes('promo')
+      );
+      
+      // Generate stamp with StampService
+      const stampUri = await stampService.generateStamp({
+        merchantName: task.receiptData.merchantName,
+        merchantLocation: task.receiptData.category === 'online' ? 'Online' : undefined,
+        category: task.receiptData.category,
+        date: new Date(task.receiptData.date),
+        total: task.receiptData.total,
+        isPromotional,
+        tokenId: task.tokenId || task.id
       });
       
-      logger.info(`Generated passport stamp: ${stampUri}`);
-    } catch (stampError) {
-      logger.error(`Failed to generate passport stamp: ${stampError}`);
-      // Continue with receipt processing even if stamp generation fails
+      return stampUri;
+    } catch (error) {
+      logger.error(`Failed to generate passport stamp: ${error.message}`, error);
+      // Return default stamp URI if generation fails
+      return 'ipfs://QmdefaultStampHash';
     }
-    
-    // Add stamp to receipt data
-    const receiptWithStamp = {
-      ...receiptWithImage,
-      stampUri
-    };
-    
-    // Mint NFT with encryption if requested
-    const mintResult = await nftMintService.mintReceiptNFT(receiptWithStamp, {
-      encryptedMetadata: encryptMetadata,
-      wallet,
-      recipientPublicKey: publicKey
-    });
-    
-    logger.info(`NFT minted successfully with token ID: ${mintResult.nft.tokenId}`);
-    
-    return {
-      success: true,
-      receipt: {
-        id: receipt.id,
-        merchant: receipt.merchantName,
-        date: receipt.date,
-        total: receipt.total
-      },
-      nft: mintResult.nft,
-      transaction: mintResult.nft.transaction,
-      encryption: mintResult.encryption
-    };
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error(`NFT purchase failed: ${errorMessage}`);
-    throw new Error(`NFT purchase failed: ${errorMessage}`);
+  }
+
+  /**
+   * Get the bot wallet for testing
+   */
+  getBotWallet() {
+    return mockBotWallet.getAddress();
   }
 }
 
-export default handleNftPurchaseTask;
+export const nftPurchaseHandler = new NFTPurchaseHandler();
