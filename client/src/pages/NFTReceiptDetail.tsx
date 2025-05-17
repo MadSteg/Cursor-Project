@@ -252,7 +252,7 @@ export default function NFTReceiptDetail() {
     id: receiptId,
     transactionHash: receipt.transactionHash || 'Not available',
     tokenId: receipt.tokenId || receiptId,
-    tier: receipt.tier || 'standard',
+    // Tier removed as per requirement
     merchantName: receipt.merchantName || 'Unknown Merchant',
     purchaseDate: receipt.createdAt || new Date().toISOString(),
     totalAmount: receipt.amount || receipt.total || 0,
@@ -396,7 +396,7 @@ export default function NFTReceiptDetail() {
                           {new Date(displayData.purchaseDate).toLocaleTimeString()}
                         </CardDescription>
                       </div>
-                      <Badge className="w-fit capitalize">{displayData.tier} Receipt</Badge>
+                      <Badge className="w-fit capitalize">BlockReceipt NFT</Badge>
                     </div>
                   </CardHeader>
                   
