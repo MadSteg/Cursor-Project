@@ -8,110 +8,111 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Book, Sparkles, Shield, Trophy, Star, Clock, LucideIcon } from 'lucide-react';
 
-// Generate pixelated receipt-themed NFT collection data
+// Generate pixelated city-themed NFT collection data
 const generateNFTCollection = () => {
-  // Receipt eras/styles categories
-  const receiptTypes = {
-    'Vintage': [
-      '1950s Diner', 'General Store', 'Film Ticket', 'Telegram', 'Typewriter', 
-      'Jukebox', 'Drive-In', 'Pharmacy', 'Radio Shop', 'Vinyl Record'
+  // World cities grouped by region
+  const cities = {
+    'Asia': [
+      'Tokyo', 'Shanghai', 'Hong Kong', 'Seoul', 'Bangkok', 
+      'Singapore', 'Mumbai', 'Delhi', 'Kyoto', 'Jakarta', 
+      'Beijing', 'Manila', 'Kuala Lumpur', 'Taipei', 'Dubai'
     ],
-    'Retro': [
-      'Arcade Token', 'VHS Rental', 'Cassette', 'Floppy Disk', 'Polaroid', 
-      'Walkman', 'Game Cartridge', 'Neon Sign', 'Payphone', 'Vending Machine'
+    'Europe': [
+      'London', 'Paris', 'Rome', 'Barcelona', 'Amsterdam',
+      'Venice', 'Prague', 'Vienna', 'Athens', 'Berlin', 
+      'Madrid', 'Lisbon', 'Budapest', 'Istanbul', 'Copenhagen'
     ],
-    'Digital': [
-      'E-Commerce', 'App Store', 'Streaming', 'Cloud Service', 'Digital Download', 
-      'Online Marketplace', 'Subscription', 'NFT Purchase', 'Digital Ticket', 'Virtual Good'
+    'Americas': [
+      'New York', 'San Francisco', 'Toronto', 'Chicago', 'Los Angeles', 
+      'Mexico City', 'Rio de Janeiro', 'Buenos Aires', 'Vancouver', 'Miami',
+      'Seattle', 'Montreal', 'São Paulo', 'Austin', 'Boston'
     ],
-    'Future': [
-      'Neural Interface', 'Holo-Purchase', 'Space Commerce', 'Quantum Credit', 'Thought Transaction', 
-      'Biometric Payment', 'AI Generated', 'Reality Augment', 'Virtual World', 'Interplanetary'
+    'Africa': [
+      'Cairo', 'Cape Town', 'Marrakech', 'Nairobi', 'Casablanca',
+      'Lagos', 'Johannesburg', 'Accra', 'Zanzibar', 'Tunis'
     ],
-    'Specialty': [
-      'Luxury Brand', 'Artisan Market', 'Farmers Market', 'Festival Token', 'Museum Pass', 
-      'Limited Edition', 'Collectible', 'Handmade', 'Auction House', 'Craft Fair'
+    'Oceania': [
+      'Sydney', 'Melbourne', 'Auckland', 'Wellington', 'Brisbane',
+      'Perth', 'Queenstown', 'Gold Coast', 'Adelaide', 'Christchurch'
     ]
   };
   
   const rarities = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
   
-  // Receipt paper types and color schemes
-  const paperTypes = {
-    'thermal': 'from-gray-100 to-gray-200', // Modern thermal paper
-    'dotMatrix': 'from-blue-50 to-white', // Dot matrix printer paper with perf edges
-    'carbon': 'from-indigo-100 to-purple-100', // Carbon copy receipts
-    'parchment': 'from-amber-50 to-yellow-100', // Old parchment style
-    'recycled': 'from-green-50 to-emerald-100', // Eco-friendly recycled paper
-    'digital': 'from-cyan-100 to-blue-200', // Digital receipt glow
-    'holographic': 'from-pink-100 to-purple-200', // Futuristic holographic display
-    'ticker': 'from-yellow-50 to-amber-100', // Stock ticker tape style
-    'glossy': 'from-sky-100 to-blue-50', // Glossy coated receipt
-    'vintage': 'from-amber-100 to-yellow-200', // Aged vintage paper
+  // City-themed color schemes that reflect urban environments
+  const colorSchemes = {
+    'dawn': 'from-orange-400 to-pink-500', // Dawn city skyline
+    'sunrise': 'from-amber-300 to-yellow-500', // Sunrise glow on buildings
+    'morning': 'from-blue-400 to-indigo-500', // Morning light on buildings
+    'day': 'from-blue-300 to-sky-500', // Bright day
+    'sunset': 'from-amber-500 to-red-600', // Sunset over skyscrapers
+    'golden': 'from-amber-300 to-amber-500', // Golden hour city view
+    'dusk': 'from-blue-800 to-indigo-900', // Dusk with city lights beginning to shine
+    'night': 'from-indigo-800 to-purple-900', // Night city with lights
+    'neon': 'from-pink-500 to-purple-600', // Neon lights district
+    'rainy': 'from-slate-400 to-slate-600', // Rainy urban scene
+    'foggy': 'from-slate-300 to-slate-500', // Foggy cityscape
+    'snowy': 'from-gray-100 to-blue-100', // Snowy urban landscape
+    'cyberpunk': 'from-cyan-500 to-blue-700', // Futuristic cyberpunk city
+    'retro': 'from-amber-400 to-red-700', // Retro-style city perception
+    'vintage': 'from-sepia to-amber-700', // Vintage look
   };
   
-  // Receipt printing styles
-  const printStyles = ['Inkjet', 'Thermal', 'Handwritten', 'Stamped', 'Embossed'];
+  // Building styles for pixel art representation
+  const buildingStyles = ['Modern', 'Historical', 'Futuristic', 'Industrial', 'Cultural', 'Commercial', 'Art Deco', 'Gothic', 'Neoclassical', 'Brutalist'];
   
-  // Special features that might appear on receipts
-  const specialFeatures = [
-    'Logo', 'Barcode', 'QR Code', 'Loyalty Points', 'Coupon', 
-    'Tax Info', 'Serial Number', 'Timestamp', 'Currency Symbol', 'Signature',
-    'Return Policy', 'Survey Code', 'Cashier ID', 'Location', 'Membership'
+  // Famous landmarks or features to include in the pixel art
+  const landmarks = [
+    'Tower', 'Bridge', 'Cathedral', 'Skyscraper', 'Market', 
+    'Harbor', 'Park', 'Station', 'Museum', 'Stadium',
+    'Palace', 'Temple', 'Castle', 'Square', 'Monument',
+    'Opera House', 'River', 'Fountain', 'Arena', 'Memorial'
   ];
   
-  // Time periods for receipt styles
-  const timePeriods = ['Dawn', 'Day', 'Dusk', 'Night', 'Retro', 'Future', 'Digital', 'Classic', 'Minimal', 'Maximalist'];
+  // Weather conditions to apply to the city view
+  const weatherConditions = ['Clear', 'Cloudy', 'Rainy', 'Snowy', 'Foggy', 'Stormy', 'Windy'];
   
-  // Flatten categories and receipt types into arrays
-  const allCategories = Object.keys(receiptTypes);
-  const allReceiptTypes = Object.values(receiptTypes).flat();
+  // Flatten categories and cities into arrays
+  const allCategories = Object.keys(cities);
+  const allCities = Object.values(cities).flat();
   
-  // Generate 100 receipt-themed NFTs
+  // Generate 100 city-themed NFTs
   const collection = Array.from({ length: 100 }, (_, index) => {
     const category = allCategories[Math.floor(Math.random() * allCategories.length)];
-    const availableTypes = receiptTypes[category];
-    const receiptStyle = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    const availableCities = cities[category];
+    const city = availableCities[Math.floor(Math.random() * availableCities.length)];
     const rarity = rarities[Math.floor(Math.random() * rarities.length)];
     
-    const timePeriod = timePeriods[Math.floor(Math.random() * timePeriods.length)];
-    const paperType = Object.keys(paperTypes)[Math.floor(Math.random() * Object.keys(paperTypes).length)];
-    const paperColor = paperTypes[paperType];
+    const timeOfDay = Object.keys(colorSchemes)[Math.floor(Math.random() * Object.keys(colorSchemes).length)];
+    const colorScheme = colorSchemes[timeOfDay];
     
-    const printStyle = printStyles[Math.floor(Math.random() * printStyles.length)];
-    const feature = specialFeatures[Math.floor(Math.random() * specialFeatures.length)];
+    const buildingStyle = buildingStyles[Math.floor(Math.random() * buildingStyles.length)];
+    const cityLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
+    const weather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
     
-    // Generate a random year between 1950 and 2035
-    const year = Math.floor(Math.random() * (2035 - 1950) + 1950);
-    
-    // Generate a random merchant name
-    const merchantPrefix = ['Super', 'Mega', 'Ultra', 'Global', 'Royal', 'Prime', 'Elite', 'Express', 'Smart', 'Direct'];
-    const merchantSuffix = ['Mart', 'Shop', 'Store', 'Market', 'Depot', 'Emporium', 'Bazaar', 'Corner', 'Outlet', 'Center'];
-    const merchantName = `${merchantPrefix[Math.floor(Math.random() * merchantPrefix.length)]}${merchantSuffix[Math.floor(Math.random() * merchantSuffix.length)]}`;
-    
-    // Generate a random price between $0.99 and $999.99
-    const price = (Math.random() * (999 - 0.99) + 0.99).toFixed(2);
+    const population = Math.floor(Math.random() * 20) + 1; // City density/population factor (1-20)
+    const elevation = Math.floor(Math.random() * 10) + 1; // City terrain elevation factor (1-10)
     
     const owned = Math.random() > 0.7; // 30% chance to own the NFT
+    const interactive = Math.random() > 0.7; // 30% chance to be interactive
     
     return {
       id: `nft-${index + 1}`,
-      name: `${receiptStyle} Receipt`,
-      description: `${year} ${receiptStyle} receipt with ${feature} using ${printStyle} on ${paperType} paper`,
+      name: `${city} #${index + 1}`,
+      description: `${timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)} in ${city} featuring ${buildingStyle} ${cityLandmark}`,
       category,
-      receiptStyle,
-      year,
-      merchantName,
-      price,
+      city,
       rarity,
-      paperColor,
-      paperType,
-      timePeriod,
-      printStyle,
-      feature,
+      colorScheme,
+      timeOfDay,
+      buildingStyle,
+      landmark: cityLandmark,
+      weather,
+      population,
+      elevation,
       owned,
       animation: Math.random() > 0.5 ? 'float' : 'pulse',
-      interactive: Math.random() > 0.7, // 30% chance to be interactive
+      interactive,
     };
   });
   
@@ -135,99 +136,188 @@ const groupByCategory = (collection) => {
 
 const categorizedNFTs = groupByCategory(nftCollection);
 
-// Pixel Art Receipt NFT Component
+// High-resolution Pixel Art City NFT Component
 const PixelNFT = ({ nft }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [timeState, setTimeState] = useState(nft.timePeriod);
+  const [timeState, setTimeState] = useState(nft.timeOfDay);
   
-  // Create a receipt-themed pixel art
-  const generateReceiptGrid = () => {
+  // Create a detailed city-themed pixel art with 1000 pixels (32x32 grid)
+  const generateCityGrid = () => {
     const grid = [];
-    const rows = 12; // Larger grid for more detail
-    const cols = 10;
-    
-    // Generate a receipt shape and contents based on NFT properties
-    // Base pattern will be determined by receipt type, era, and other factors
+    const rows = 32; // Larger grid for much more detail
+    const cols = 32;
     
     // Get a seed from the NFT ID for deterministic but unique generation
     const nftNum = parseInt(nft.id.split('-')[1]);
     
-    // Generate header height based on receipt style
-    const headerHeight = Math.max(2, Math.min(4, nft.receiptStyle.length % 4 + 1));
+    // Create a skyline profile based on nft properties
+    const skylineProfile = [];
     
-    // Generate receipt content based on features and style
+    // Generate a more varied and interesting skyline profile
+    for (let col = 0; col < cols; col++) {
+      // Use sine waves of different frequencies to create natural-looking skylines
+      const baseHeight = Math.max(
+        4, 
+        Math.floor(
+          8 + // Base height offset
+          6 * Math.sin(col / 3 + nftNum % 5) + // Primary wave
+          3 * Math.sin(col / 7 + nftNum % 3) + // Secondary wave
+          2 * Math.cos(col / 2 + nftNum % 7)   // Tertiary wave
+        )
+      );
+      
+      // Adjust height based on city population and landmark
+      const heightMod = Math.floor(nft.population / 4) + 
+                      (nft.landmark === 'Skyscraper' ? 4 : 
+                       nft.landmark === 'Tower' ? 3 :
+                       nft.landmark === 'Cathedral' ? 2 : 0);
+                       
+      const finalHeight = Math.min(rows - 4, baseHeight + heightMod);
+      skylineProfile.push(finalHeight);
+    }
+    
+    // Find the landmark position (usually near the center with some variation)
+    const landmarkPosition = Math.floor(cols / 2) + (nftNum % 7) - 3;
+    
+    // Add special height for the landmark
+    if (nft.landmark === 'Tower' || nft.landmark === 'Skyscraper') {
+      // Make the landmark taller
+      for (let i = -2; i <= 2; i++) {
+        const pos = landmarkPosition + i;
+        if (pos >= 0 && pos < cols) {
+          skylineProfile[pos] = Math.min(rows - 2, skylineProfile[pos] + 5 - Math.abs(i * 2));
+        }
+      }
+    }
+    
+    // Generate grid with sky and buildings
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        // Determine what each pixel represents
+        // For each cell, determine what it represents
         
-        // Paper texture/background (always present)
-        const isPaper = true;
+        // Sky area (above buildings)
+        const isSky = row < rows - skylineProfile[col];
         
-        // Header section of receipt (store name, logo, date, etc.)
-        const isHeader = row < headerHeight;
+        // Ground/street level (below buildings)
+        const isGround = row >= rows - 2;
         
-        // Footer section (tax info, barcode, thank you message)
-        const isFooter = row > rows - 3;
+        // Building area (between sky and ground)
+        const isBuilding = !isSky && !isGround;
         
-        // Text lines (items, prices, etc.) - appear in the middle
-        const isTextLine = !isHeader && !isFooter && 
-                          (row % 2 === 0 || (nft.printStyle === 'Dot Matrix' && row % 3 === 0));
+        // Landmark feature
+        const isLandmark = isBuilding && 
+                        Math.abs(col - landmarkPosition) < 3 && 
+                        row < rows - skylineProfile[col] + 5;
         
-        // Prices typically on the right side
-        const isPrice = isTextLine && col > cols - 3;
+        // Generate specialized buildings based on styles
+        const isModernBuilding = isBuilding && 
+                               !isLandmark &&
+                               nft.buildingStyle === 'Modern' && 
+                               (col % 5 === 0 || col % 5 === 1);
         
-        // Special feature elements (logo, barcode, QR code, etc.)
-        const isSpecialFeature = (
-          // Logo placement
-          (nft.feature === 'Logo' && isHeader && col > 1 && col < cols - 2) ||
-          // Barcode at bottom
-          (nft.feature === 'Barcode' && isFooter && col % 2 === 0) ||
-          // QR Code bottom right
-          (nft.feature === 'QR Code' && isFooter && row > rows - 3 && col > cols - 4) ||
-          // Coupon typically shown at the bottom with a dashed line
-          (nft.feature === 'Coupon' && row === rows - 4 && col % 2 === 0) ||
-          // Serial Number at the very bottom
-          (nft.feature === 'Serial Number' && row === rows - 1 && col > 1 && col < cols - 1)
-        );
+        const isHistoricalBuilding = isBuilding && 
+                                   !isLandmark &&
+                                   nft.buildingStyle === 'Historical' && 
+                                   (col % 4 === 0 || col % 4 === 1);
         
-        // Dotted separators between sections
-        const isDivider = ((row === headerHeight || row === rows - 3) && col % 2 === 0) || 
-                        (nft.feature === 'Coupon' && row === rows - 5 && col % 2 === 0);
+        const isFuturisticBuilding = isBuilding && 
+                                   !isLandmark &&
+                                   nft.buildingStyle === 'Futuristic' && 
+                                   (col % 3 === 0 || col % 3 === 1);
         
-        // Determine if this cell is a perforation (for certain receipt types)
-        const isPerforation = (
-          // Side perforation for continuous feed paper
-          nft.paperType === 'dotMatrix' && (col === 0 || col === cols - 1) && row % 2 === 0
-        );
+        const isArtDecoBuilding = isBuilding && 
+                                !isLandmark &&
+                                nft.buildingStyle === 'Art Deco' && 
+                                (col % 6 === 0 || col % 6 === 1);
         
-        // Timestamp or date usually found at the top of receipt
-        const isDate = isHeader && row === 1 && col > 1 && col < cols - 2;
+        // Add windows to buildings with different patterns based on time of day
+        // Windows appear more frequently at night
+        const isNightTime = timeState === 'night' || timeState === 'dusk' || timeState === 'neon';
+        const windowProbability = isNightTime ? 0.4 : 0.7;
+        const hasWindow = isBuilding && 
+                        !isGround && 
+                        row % 3 === 1 && // Window rows
+                        col % 2 === 1 && // Window columns
+                        Math.random() > windowProbability;
         
-        // Interactive elements that light up/animate based on time period
+        // Create special areas for different landmarks
+        const hasBridge = isGround && 
+                      nft.landmark === 'Bridge' && 
+                      col > cols / 3 && 
+                      col < 2 * cols / 3;
+                      
+        const hasFountain = isGround && 
+                         nft.landmark === 'Fountain' && 
+                         Math.abs(col - cols / 2) < 3;
+                         
+        const hasRiver = (row >= rows - 4) && 
+                      nft.landmark === 'River' && 
+                      row >= rows - 4 - Math.floor(Math.sin(col / 5) * 2);
+                         
+        // Weather effects
+        const hasCloud = isSky && 
+                     (nft.weather === 'Cloudy' || nft.weather === 'Rainy' || nft.weather === 'Stormy') && 
+                     Math.random() > 0.8 &&
+                     row > rows / 8 && row < rows / 2;
+                     
+        const hasRain = isSky && 
+                     (nft.weather === 'Rainy' || nft.weather === 'Stormy') && 
+                     Math.random() > 0.85 &&
+                     col % 4 === (Math.floor(row / 2) % 4);
+                     
+        const hasSnow = (isSky || isGround) && 
+                     nft.weather === 'Snowy' && 
+                     Math.random() > 0.9;
+                     
+        const hasFog = isSky && 
+                    nft.weather === 'Foggy' && 
+                    row > rows / 3 &&
+                    Math.random() > 0.7;
+                    
+        // Add city-specific decorations
+        const hasPalm = isGround && 
+                     (nft.city === 'Miami' || nft.city === 'Dubai' || nft.city === 'Los Angeles') &&
+                     col % 7 === 0;
+                     
+        const hasSnowCap = isBuilding && 
+                        (nft.weather === 'Snowy') &&
+                        row === rows - skylineProfile[col];
+                        
+        // Interactive elements that change with time
         const isInteractiveElement = nft.interactive && (
-          // Interactive elements vary by receipt type
-          (nft.category === 'Digital' && row % 3 === 0 && col % 3 === 0) ||
-          (nft.category === 'Future' && row % 4 === 0 && col % 2 === 0) ||
-          (isSpecialFeature && nft.category === 'Retro') ||
-          (nft.feature === 'QR Code' && row > rows - 3 && col > cols - 4)
+          // Windows at night
+          (isNightTime && hasWindow) ||
+          // Neon signs
+          (timeState === 'neon' && isBuilding && col % 5 === 0 && row % 4 === 0) ||
+          // Landmark lighting
+          (isLandmark && isNightTime)
         );
         
         // Push all these cell properties
         grid.push({
           row,
           col,
-          isPaper,
-          isHeader,
-          isFooter,
-          isTextLine,
-          isPrice,
-          isSpecialFeature,
-          isDivider,
-          isPerforation,
-          isDate,
+          isSky,
+          isGround,
+          isBuilding,
+          isLandmark,
+          isModernBuilding,
+          isHistoricalBuilding,
+          isFuturisticBuilding,
+          isArtDecoBuilding,
+          hasWindow,
+          hasBridge,
+          hasFountain,
+          hasRiver,
+          hasCloud,
+          hasRain,
+          hasSnow,
+          hasFog,
+          hasPalm,
+          hasSnowCap,
           isInteractiveElement,
-          // Randomize some pixels for texture
-          noisy: Math.random() > 0.9
+          // Randomize some pixels for details
+          detail: Math.random()
         });
       }
     }
@@ -235,80 +325,266 @@ const PixelNFT = ({ nft }) => {
     return grid;
   };
   
-  // Get paper background based on paper type and time period
-  const getPaperColor = (paperType, timePeriod) => {
-    // Base colors
-    switch(paperType) {
-      case 'thermal': return timePeriod === 'Night' ? 'bg-gray-200' : 'bg-gray-100';
-      case 'dotMatrix': return 'bg-blue-50';
-      case 'carbon': return 'bg-indigo-100';
-      case 'parchment': return timePeriod === 'Retro' ? 'bg-amber-100' : 'bg-amber-50';
-      case 'recycled': return 'bg-green-50';
-      case 'digital': return timePeriod === 'Night' ? 'bg-cyan-200' : 'bg-cyan-100';
-      case 'holographic': return timePeriod === 'Night' ? 'bg-purple-200' : 'bg-pink-100';
-      case 'ticker': return 'bg-yellow-50';
-      case 'glossy': return 'bg-sky-100';
-      case 'vintage': return timePeriod === 'Retro' ? 'bg-amber-200' : 'bg-amber-100';
-      default: return 'bg-white';
+  // Get sky color based on time of day
+  const getSkyColor = (timeOfDay) => {
+    switch(timeOfDay) {
+      case 'dawn': return 'bg-gradient-to-b from-indigo-800 via-pink-400 to-orange-300';
+      case 'sunrise': return 'bg-gradient-to-b from-indigo-500 via-orange-300 to-yellow-200';
+      case 'morning': return 'bg-gradient-to-b from-blue-400 to-blue-200';
+      case 'day': return 'bg-gradient-to-b from-blue-500 to-blue-300';
+      case 'sunset': return 'bg-gradient-to-b from-blue-400 via-orange-400 to-red-500';
+      case 'golden': return 'bg-gradient-to-b from-blue-300 via-amber-300 to-amber-400';
+      case 'dusk': return 'bg-gradient-to-b from-indigo-800 via-purple-600 to-purple-900';
+      case 'night': return 'bg-gradient-to-b from-gray-900 via-indigo-900 to-purple-900';
+      case 'neon': return 'bg-gradient-to-b from-gray-900 via-purple-900 to-pink-900';
+      case 'rainy': return 'bg-gradient-to-b from-gray-700 to-gray-500';
+      case 'foggy': return 'bg-gradient-to-b from-gray-400 to-gray-300';
+      case 'snowy': return 'bg-gradient-to-b from-gray-200 to-blue-100';
+      case 'cyberpunk': return 'bg-gradient-to-b from-blue-900 via-purple-800 to-cyan-700';
+      case 'retro': return 'bg-gradient-to-b from-amber-700 via-orange-600 to-red-700';
+      case 'vintage': return 'bg-gradient-to-b from-sepia via-amber-700 to-amber-800';
+      default: return 'bg-blue-400';
     }
   };
   
-  // Get text element color based on time period and type
-  const getTextColor = (isSpecial, timePeriod) => {
-    if (isSpecial) {
-      switch(timePeriod) {
-        case 'Dawn': return 'bg-amber-800';
-        case 'Day': return 'bg-indigo-900';
-        case 'Dusk': return 'bg-purple-900';
-        case 'Night': return 'bg-indigo-800';
-        case 'Retro': return 'bg-amber-900';
-        case 'Future': return 'bg-cyan-800';
-        case 'Digital': return 'bg-blue-800';
-        default: return 'bg-gray-800';
+  // Get building color based on style and time of day
+  const getBuildingColor = (buildingType, timeOfDay) => {
+    // Base colors for different building types
+    const styleBases = {
+      landmark: {
+        dawn: 'bg-amber-700',
+        sunrise: 'bg-amber-600',
+        morning: 'bg-amber-500',
+        day: 'bg-amber-500',
+        sunset: 'bg-amber-600',
+        golden: 'bg-amber-500',
+        dusk: 'bg-amber-800',
+        night: 'bg-amber-900',
+        neon: 'bg-amber-800',
+        rainy: 'bg-amber-800',
+        foggy: 'bg-amber-700',
+        snowy: 'bg-amber-700',
+        cyberpunk: 'bg-amber-700',
+        retro: 'bg-amber-600',
+        vintage: 'bg-amber-800',
+      },
+      modern: {
+        dawn: 'bg-gray-700',
+        sunrise: 'bg-gray-600',
+        morning: 'bg-gray-500',
+        day: 'bg-gray-400',
+        sunset: 'bg-gray-500',
+        golden: 'bg-gray-500',
+        dusk: 'bg-gray-700',
+        night: 'bg-gray-800',
+        neon: 'bg-gray-800',
+        rainy: 'bg-gray-700',
+        foggy: 'bg-gray-600',
+        snowy: 'bg-gray-400',
+        cyberpunk: 'bg-gray-800',
+        retro: 'bg-gray-600',
+        vintage: 'bg-gray-700',
+      },
+      historical: {
+        dawn: 'bg-stone-700',
+        sunrise: 'bg-stone-600',
+        morning: 'bg-stone-500',
+        day: 'bg-stone-500',
+        sunset: 'bg-stone-600',
+        golden: 'bg-stone-600',
+        dusk: 'bg-stone-700',
+        night: 'bg-stone-800',
+        neon: 'bg-stone-800',
+        rainy: 'bg-stone-700',
+        foggy: 'bg-stone-600',
+        snowy: 'bg-stone-600',
+        cyberpunk: 'bg-stone-700',
+        retro: 'bg-stone-600',
+        vintage: 'bg-stone-700',
+      },
+      futuristic: {
+        dawn: 'bg-slate-700',
+        sunrise: 'bg-slate-600',
+        morning: 'bg-slate-500',
+        day: 'bg-slate-400',
+        sunset: 'bg-slate-500',
+        golden: 'bg-slate-600',
+        dusk: 'bg-slate-700',
+        night: 'bg-slate-800',
+        neon: 'bg-slate-900',
+        rainy: 'bg-slate-700',
+        foggy: 'bg-slate-600',
+        snowy: 'bg-slate-500',
+        cyberpunk: 'bg-slate-800',
+        retro: 'bg-slate-600',
+        vintage: 'bg-slate-700',
+      },
+      artDeco: {
+        dawn: 'bg-amber-800',
+        sunrise: 'bg-amber-700',
+        morning: 'bg-amber-600',
+        day: 'bg-amber-600',
+        sunset: 'bg-amber-700',
+        golden: 'bg-amber-600',
+        dusk: 'bg-amber-800',
+        night: 'bg-amber-900',
+        neon: 'bg-amber-800',
+        rainy: 'bg-amber-800',
+        foggy: 'bg-amber-700',
+        snowy: 'bg-amber-700',
+        cyberpunk: 'bg-amber-800',
+        retro: 'bg-amber-700',
+        vintage: 'bg-amber-900',
+      },
+      default: {
+        dawn: 'bg-gray-800',
+        sunrise: 'bg-gray-700',
+        morning: 'bg-gray-600',
+        day: 'bg-gray-500',
+        sunset: 'bg-gray-600',
+        golden: 'bg-gray-600',
+        dusk: 'bg-gray-700',
+        night: 'bg-gray-900',
+        neon: 'bg-gray-900',
+        rainy: 'bg-gray-800',
+        foggy: 'bg-gray-700',
+        snowy: 'bg-gray-600',
+        cyberpunk: 'bg-gray-900',
+        retro: 'bg-gray-700',
+        vintage: 'bg-gray-800',
       }
-    } else {
-      return 'bg-gray-900';
+    };
+    
+    // Choose base style
+    let style = styleBases.default;
+    if (buildingType === 'landmark') style = styleBases.landmark;
+    else if (buildingType === 'modern') style = styleBases.modern;
+    else if (buildingType === 'historical') style = styleBases.historical;
+    else if (buildingType === 'futuristic') style = styleBases.futuristic;
+    else if (buildingType === 'artDeco') style = styleBases.artDeco;
+    
+    // Return color for current time of day
+    return style[timeOfDay] || style.day;
+  };
+  
+  // Get window color based on time of day
+  const getWindowColor = (timeOfDay) => {
+    switch(timeOfDay) {
+      case 'dawn': return 'bg-orange-200';
+      case 'sunrise': return 'bg-amber-100';
+      case 'morning': return 'bg-white/70';
+      case 'day': return 'bg-sky-100/70';
+      case 'sunset': return 'bg-amber-200';
+      case 'golden': return 'bg-amber-200';
+      case 'dusk': return 'bg-amber-400';
+      case 'night': return 'bg-yellow-300';
+      case 'neon': return 'bg-pink-300';
+      case 'rainy': return 'bg-yellow-100';
+      case 'foggy': return 'bg-white/40';
+      case 'snowy': return 'bg-white/70';
+      case 'cyberpunk': return 'bg-cyan-300';
+      case 'retro': return 'bg-amber-300';
+      case 'vintage': return 'bg-amber-200';
+      default: return 'bg-white/60';
     }
   };
   
-  // Get interactive element color (elements that light up)
-  const getInteractiveColor = (timePeriod) => {
-    switch(timePeriod) {
-      case 'Dawn': return 'bg-amber-400';
-      case 'Day': return 'bg-blue-400';
-      case 'Dusk': return 'bg-purple-400';
-      case 'Night': return 'bg-amber-300';
-      case 'Retro': return 'bg-red-400';
-      case 'Future': return 'bg-cyan-400';
-      case 'Digital': return 'bg-emerald-400';
-      default: return 'bg-white';
+  // Get color for special elements
+  const getSpecialColor = (elementType, timeOfDay) => {
+    const specialColors = {
+      cloud: 'bg-white/70',
+      rain: 'bg-blue-300/40',
+      snow: 'bg-white',
+      fog: 'bg-white/30',
+      ground: {
+        dawn: 'bg-gray-700',
+        day: 'bg-gray-600',
+        night: 'bg-gray-900',
+        default: 'bg-gray-700'
+      },
+      river: {
+        dawn: 'bg-blue-400',
+        day: 'bg-blue-500',
+        night: 'bg-blue-900',
+        default: 'bg-blue-600'
+      },
+      fountain: {
+        dawn: 'bg-blue-300',
+        day: 'bg-blue-400',
+        night: 'bg-blue-800',
+        default: 'bg-blue-500'
+      },
+      bridge: {
+        dawn: 'bg-stone-700',
+        day: 'bg-stone-600',
+        night: 'bg-stone-900',
+        default: 'bg-stone-700'
+      },
+      palm: 'bg-green-600',
+      snowCap: 'bg-white'
+    };
+    
+    // Return appropriate color
+    if (elementType === 'cloud') return specialColors.cloud;
+    if (elementType === 'rain') return specialColors.rain;
+    if (elementType === 'snow') return specialColors.snow;
+    if (elementType === 'fog') return specialColors.fog;
+    if (elementType === 'ground') {
+      if (timeOfDay in specialColors.ground) {
+        return specialColors.ground[timeOfDay];
+      }
+      return specialColors.ground.default;
     }
+    if (elementType === 'river') {
+      if (timeOfDay in specialColors.river) {
+        return specialColors.river[timeOfDay];
+      }
+      return specialColors.river.default;
+    }
+    if (elementType === 'fountain') {
+      if (timeOfDay in specialColors.fountain) {
+        return specialColors.fountain[timeOfDay];
+      }
+      return specialColors.fountain.default;
+    }
+    if (elementType === 'bridge') {
+      if (timeOfDay in specialColors.bridge) {
+        return specialColors.bridge[timeOfDay];
+      }
+      return specialColors.bridge.default;
+    }
+    if (elementType === 'palm') return specialColors.palm;
+    if (elementType === 'snowCap') return specialColors.snowCap;
+    
+    return 'bg-transparent';
   };
   
   // Animation class for interactive elements
-  const getAnimationClass = (timePeriod) => {
-    switch(timePeriod) {
-      case 'Dawn': 
-      case 'Dusk': return 'animate-pulse';
-      case 'Night':
-      case 'Digital': return 'animate-ping';
-      case 'Future': return 'animate-bounce';
-      case 'Retro': return 'animate-pulse';
+  const getAnimationClass = (timeOfDay) => {
+    switch(timeOfDay) {
+      case 'neon': return 'animate-pulse';
+      case 'cyberpunk': return 'animate-pulse';
+      case 'night': return 'animate-pulse';
+      case 'storm': return 'animate-ping';
       default: return 'animate-none';
     }
   };
   
-  // Generate receipt grid
-  const receiptGrid = generateReceiptGrid();
+  // Generate city grid
+  const cityGrid = generateCityGrid();
   
-  // Function to cycle through time periods when interacting
+  // Function to cycle through time periods when clicked
   const cycleTimePeriod = () => {
     if (!nft.interactive) return;
     
-    const periods = ['Dawn', 'Day', 'Dusk', 'Night', 'Retro', 'Future', 'Digital'];
-    const currentIndex = periods.indexOf(timeState);
-    const nextIndex = (currentIndex + 1) % periods.length;
-    setTimeState(periods[nextIndex]);
+    const times = [
+      'dawn', 'sunrise', 'morning', 'day', 
+      'sunset', 'golden', 'dusk', 'night', 
+      'neon', 'cyberpunk'
+    ];
+    const currentIndex = times.indexOf(timeState);
+    const nextIndex = (currentIndex + 1) % times.length;
+    setTimeState(times[nextIndex]);
   };
   
   return (
@@ -318,62 +594,72 @@ const PixelNFT = ({ nft }) => {
       onMouseLeave={() => setIsHovered(false)}
       onClick={cycleTimePeriod}
     >
-      {/* Larger pixelated receipt NFT artwork */}
+      {/* High-resolution pixelated city NFT artwork */}
       <div 
         className={`
-          w-32 h-40 rounded-lg overflow-hidden border-2 
+          w-44 h-44 rounded-lg overflow-hidden border-2 
           ${nft.owned ? 'border-amber-500 shadow-lg shadow-amber-200/50' : 'border-gray-400'}
           transition-all transform hover:scale-105 cursor-pointer
           ${nft.interactive ? 'hover:ring-2 hover:ring-purple-400' : ''}
         `}
       >
-        {/* Generate a pixel art receipt */}
-        <div className={`w-full h-full grid grid-cols-10 grid-rows-12 ${getPaperColor(nft.paperType, timeState)}`}>
-          {receiptGrid.map((cell, i) => (
-            <div 
-              key={i} 
-              className={`
-                ${cell.isPaper ? 'bg-opacity-100' : 'bg-opacity-0'}
-                ${cell.isHeader && cell.isSpecialFeature ? getTextColor(true, timeState) : ''}
-                ${cell.isTextLine && !cell.isPrice ? getTextColor(false, timeState) : ''}
-                ${cell.isPrice ? 'bg-gray-800' : ''}
-                ${cell.isDivider ? 'bg-gray-400' : ''}
-                ${cell.isPerforation ? 'bg-white' : ''}
-                ${cell.isSpecialFeature && !cell.isHeader ? 'bg-gray-700' : ''}
-                ${cell.isDate ? 'bg-gray-600' : ''}
-                ${cell.noisy && !cell.isInteractiveElement ? 'bg-opacity-10' : ''}
-                ${cell.isInteractiveElement ? `${getInteractiveColor(timeState)} ${getAnimationClass(timeState)}` : ''}
-                ${nft.interactive && cell.isInteractiveElement ? 'animate-duration-[1500ms]' : ''}
-                relative
-              `}
-              style={{
-                animationDelay: cell.isInteractiveElement ? `${(i % 7) * 0.2}s` : '',
-              }}
-            >
-              {/* Add fine-grain texture and details */}
-              {cell.isPerforation && (
-                <div className="absolute inset-0 bg-gray-200 rounded-full"></div>
-              )}
-            </div>
-          ))}
+        {/* Sky background */}
+        <div className={`w-full h-full ${getSkyColor(timeState)}`}>
+          {/* Pixel grid */}
+          <div className="w-full h-full grid grid-cols-32 grid-rows-32">
+            {cityGrid.map((cell, i) => (
+              <div 
+                key={i} 
+                className={`
+                  ${cell.isSky && !cell.hasCloud && !cell.hasRain && !cell.hasSnow && !cell.hasFog ? 'bg-transparent' : ''}
+                  ${cell.isGround ? getSpecialColor('ground', timeState) : ''}
+                  ${cell.isBuilding && !cell.isLandmark && !cell.isModernBuilding && !cell.isHistoricalBuilding && 
+                    !cell.isFuturisticBuilding && !cell.isArtDecoBuilding ? 
+                      getBuildingColor('default', timeState) : ''}
+                  ${cell.isLandmark ? getBuildingColor('landmark', timeState) : ''}
+                  ${cell.isModernBuilding ? getBuildingColor('modern', timeState) : ''}
+                  ${cell.isHistoricalBuilding ? getBuildingColor('historical', timeState) : ''}
+                  ${cell.isFuturisticBuilding ? getBuildingColor('futuristic', timeState) : ''}
+                  ${cell.isArtDecoBuilding ? getBuildingColor('artDeco', timeState) : ''}
+                  ${cell.hasWindow ? 'relative' : ''}
+                  ${cell.hasCloud ? getSpecialColor('cloud', timeState) : ''}
+                  ${cell.hasRain ? getSpecialColor('rain', timeState) : ''}
+                  ${cell.hasSnow ? getSpecialColor('snow', timeState) : ''}
+                  ${cell.hasFog ? getSpecialColor('fog', timeState) : ''}
+                  ${cell.hasBridge ? getSpecialColor('bridge', timeState) : ''}
+                  ${cell.hasFountain ? getSpecialColor('fountain', timeState) : ''}
+                  ${cell.hasRiver ? getSpecialColor('river', timeState) : ''}
+                  ${cell.hasPalm ? getSpecialColor('palm', timeState) : ''}
+                  ${cell.hasSnowCap ? getSpecialColor('snowCap', timeState) : ''}
+                  ${cell.isInteractiveElement ? getAnimationClass(timeState) : ''}
+                  ${nft.interactive && cell.isInteractiveElement ? 'animate-duration-[1500ms]' : ''}
+                `}
+              >
+                {/* Add window lights */}
+                {cell.hasWindow && (
+                  <div className={`absolute inset-[25%] ${getWindowColor(timeState)}`}></div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
         
-        {/* Receipt style label */}
-        <div className="absolute bottom-1 left-1 right-1 text-[8px] leading-tight font-mono bg-black/70 text-white px-1 rounded truncate flex justify-between items-center">
-          <span>{nft.receiptStyle}</span>
-          <span>${nft.price}</span>
+        {/* City name badge */}
+        <div className="absolute bottom-1 left-1 right-1 text-[9px] leading-tight font-mono bg-black/70 text-white px-1 rounded truncate">
+          {nft.city}
         </div>
         
-        {/* Time period indicator when interactive */}
+        {/* Time of day indicator when interactive */}
         {nft.interactive && isHovered && (
-          <div className="absolute top-1 right-1 text-[7px] leading-tight font-mono bg-purple-900/80 text-white px-1 py-0.5 rounded-sm">
-            <Clock className="h-2 w-2 inline-block mr-0.5" /> {timeState}
+          <div className="absolute top-1 right-1 text-[8px] leading-tight font-mono bg-purple-900/80 text-white px-1 py-0.5 rounded-sm">
+            <Clock className="h-2.5 w-2.5 inline-block mr-0.5" /> 
+            {timeState.charAt(0).toUpperCase() + timeState.slice(1)}
           </div>
         )}
         
-        {/* Year display */}
-        <div className="absolute top-1 left-1 text-[7px] leading-tight font-mono bg-black/60 text-white px-1 rounded">
-          {nft.year}
+        {/* Weather display */}
+        <div className="absolute top-1 left-1 text-[8px] leading-tight font-mono bg-black/60 text-white px-1 rounded">
+          {nft.weather}
         </div>
       </div>
       
@@ -524,66 +810,67 @@ const NFTCatalogPage: React.FC = () => {
         ))}
       </Tabs>
       
-      {/* Receipt Aesthetics Collection Section */}
+      {/* City Explorer Section */}
       <div className="mt-12">
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950 rounded-xl p-6 border border-amber-200 dark:border-amber-900">
+        <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-950 dark:to-blue-950 rounded-xl p-6 border border-indigo-200 dark:border-indigo-900">
           <h2 className="text-2xl font-bold mb-4 flex items-center">
-            <Book className="h-6 w-6 mr-3 text-amber-600 dark:text-amber-400" />
-            <span>Receipt Aesthetics Collection</span>
+            <Book className="h-6 w-6 mr-3 text-indigo-600 dark:text-indigo-400" />
+            <span>BlockReceipt City Explorer</span>
           </h2>
           
           <p className="text-slate-600 dark:text-slate-400 max-w-3xl mb-6">
-            Each BlockReceipt NFT transforms transaction data into beautiful pixel art inspired by receipt designs across history.
-            From vintage paper slips to futuristic holo-receipts, collect these financial artifacts in your digital vault.
+            Each BlockReceipt NFT showcases a unique cityscape from around the world, rendered in beautiful ultra-detailed pixel art. 
+            Discover iconic skylines from all continents with 1000-pixel resolution and interactive time-of-day effects.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Interactive NFTs */}
+            {/* Interactive Cities Feature */}
             <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-purple-100 dark:border-purple-900">
               <h3 className="font-medium text-lg mb-3 flex items-center">
                 <Sparkles className="h-5 w-5 mr-2 text-purple-500" /> 
-                <span>Interactive Receipts</span>
+                <span>Interactive Cityscapes</span>
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Special interactive NFTs respond to clicks and change their appearance based on time period.
-                Click on any receipt with the ⚡ symbol to see it transform through different visual styles.
+                Special interactive NFTs change appearance based on time of day. Click on any city with the ⚡ symbol 
+                to cycle through dawn, day, sunset, night and more unique lighting conditions.
               </p>
               <div className="flex justify-center mb-2">
                 <Badge className="bg-purple-100 text-purple-800 border-purple-200">30% of Collection</Badge>
               </div>
             </div>
             
-            {/* Time Period Features */}
+            {/* Time of Day Features */}
             <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-blue-100 dark:border-blue-900">
               <h3 className="font-medium text-lg mb-3 flex items-center">
                 <Clock className="h-5 w-5 mr-2 text-blue-500" /> 
-                <span>Era-Spanning Designs</span>
+                <span>Dynamic Lighting</span>
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Each receipt captures a different era of transaction history - from classic paper receipts to 
-                futuristic digital interfaces and everything in between.
+                Each city is captured at different times of day - from sunrise to neon-lit night. 
+                The lighting, mood, and animation changes to create a unique cityscape experience.
               </p>
               <div className="flex flex-wrap justify-center gap-2 mb-2">
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200">Vintage</Badge>
-                <Badge className="bg-orange-100 text-orange-800 border-orange-200">Retro</Badge>
-                <Badge className="bg-blue-100 text-blue-800 border-blue-200">Digital</Badge>
-                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">Future</Badge>
+                <Badge className="bg-orange-100 text-orange-800 border-orange-200">Dawn</Badge>
+                <Badge className="bg-blue-100 text-blue-800 border-blue-200">Day</Badge>
+                <Badge className="bg-amber-100 text-amber-800 border-amber-200">Sunset</Badge>
+                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">Night</Badge>
+                <Badge className="bg-pink-100 text-pink-800 border-pink-200">Neon</Badge>
               </div>
             </div>
             
-            {/* Rarity Tiers */}
+            {/* World Cities Showcase */}
             <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-amber-100 dark:border-amber-900">
               <h3 className="font-medium text-lg mb-3 flex items-center">
                 <Star className="h-5 w-5 mr-2 text-amber-500" /> 
-                <span>Receipt Rarities</span>
+                <span>Global Landmarks</span>
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Collect special receipts with rare features like vintage telegram receipts, 
-                limited edition event tickets, or futuristic neural interface transactions.
+                Collect cities with iconic landmarks from every continent. From towering skyscrapers to 
+                historic monuments, each NFT captures the unique architecture and atmosphere of world-famous cities.
               </p>
               <div className="flex justify-center mb-2">
                 <Button variant="outline" size="sm" className="text-xs">
-                  <Trophy className="h-3.5 w-3.5 mr-1.5" /> View Rarity Guide
+                  <Trophy className="h-3.5 w-3.5 mr-1.5" /> View Collection Map
                 </Button>
               </div>
             </div>
