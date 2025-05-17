@@ -70,7 +70,7 @@ taskQueueService.registerHandler('nft-purchase', nftPurchaseHandler);
  * Flow: Upload → OCR → IPFS → Encrypt → Mint
  */
 router.post(
-  '/upload-and-mint',
+  '/',
   upload.single('receiptImage'),
   async (req, res) => {
     try {
