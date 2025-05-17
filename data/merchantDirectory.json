@@ -24,39 +24,39 @@
     "defaultPromoTemplate": "COSTCO25"
   },
   {
-    "merchantId": "AMAZON",
-    "regex": "AMAZON\\.COM",
-    "cityCode": "US_AMZN",
-    "defaultPromoTemplate": "PRIME15"
-  },
-  {
     "merchantId": "BESTBUY",
-    "regex": "BEST ?BUY",
+    "regex": "BEST BUY|BESTBUY",
     "cityCode": "US_BBY",
-    "defaultPromoTemplate": "BBSAVE20"
+    "defaultPromoTemplate": "TOTALTECH10"
   },
   {
-    "merchantId": "HOMEDEPOT",
-    "regex": "HOME ?DEPOT",
-    "cityCode": "US_HD",
-    "defaultPromoTemplate": "HD10OFF"
+    "merchantId": "APPLE",
+    "regex": "APPLE STORE|APPLE INC",
+    "cityCode": "US_AAPL",
+    "defaultPromoTemplate": "APPLECARE20"
   },
   {
     "merchantId": "WHOLEFDS",
-    "regex": "WHOLE ?FOODS",
+    "regex": "WHOLE FOODS|WHOLEFDS",
     "cityCode": "US_WFM",
-    "defaultPromoTemplate": "WFDEAL"
+    "defaultPromoTemplate": "PRIME10"
   },
   {
     "merchantId": "STARBUCKS",
-    "regex": "STARBUCKS",
+    "regex": "STARBUCKS|SBUX",
     "cityCode": "US_SBUX",
-    "defaultPromoTemplate": "SBUXSTAR"
+    "defaultPromoTemplate": "STARS150"
   },
   {
     "merchantId": "MCDONALDS",
-    "regex": "MCDONALD'?S",
+    "regex": "MCDONALD'?S|MCD",
     "cityCode": "US_MCD",
-    "defaultPromoTemplate": "MCDAPP"
+    "defaultPromoTemplate": "MCVALUE"
+  },
+  {
+    "merchantId": "HOMEDEPOT",
+    "regex": "HOME DEPOT|HOMEDEPOT",
+    "cityCode": "US_HD",
+    "defaultPromoTemplate": "HDPRO15"
   }
 ]

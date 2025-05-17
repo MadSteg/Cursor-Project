@@ -1,75 +1,70 @@
-import { Router } from 'express';
-import { createLogger } from '../logger';
+import express from 'express';
 import crypto from 'crypto';
+import { merchantMatchingService } from '../services/merchantMatchingService';
 
-const router = Router();
-const logger = createLogger('pos-webhook');
+const router = express.Router();
 
-// Simple in-memory storage for POS orders - in production this would use the database
-const posOrders = new Map<string, any>();
+// In-memory store for POS orders (in production, use a database)
+const posOrders = new Map();
 
 /**
  * Verify Toast POS signature
  */
 function verifyToastSignature(req: any, res: any, next: any) {
-  const toastSignature = req.headers['x-toast-signature'];
-  const secret = process.env.TOAST_WEBHOOK_SECRET || 'devSecretToast123'; // Use environment variable in production
-  
-  if (!toastSignature) {
-    logger.warn('Missing Toast signature');
-    return res.status(401).json({ success: false, message: 'Missing signature' });
+  try {
+    const toastSignature = req.headers['toast-signature'];
+    
+    if (!toastSignature) {
+      return res.status(401).json({ message: 'Missing Toast signature' });
+    }
+    
+    // In production, retrieve this from environment variables or secure storage
+    const toastSecret = process.env.TOAST_WEBHOOK_SECRET || 'toast-test-secret';
+    
+    // Create HMAC
+    const hmac = crypto.createHmac('sha256', toastSecret);
+    hmac.update(JSON.stringify(req.body));
+    const expectedSignature = hmac.digest('hex');
+    
+    if (toastSignature !== expectedSignature) {
+      return res.status(401).json({ message: 'Invalid Toast signature' });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Error verifying Toast signature:', error);
+    res.status(500).json({ message: 'Error verifying webhook signature' });
   }
-  
-  // Get the raw body
-  const body = JSON.stringify(req.body);
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(body);
-  const calculatedSignature = hmac.digest('hex');
-  
-  // In development mode, we'll bypass signature verification
-  if (process.env.NODE_ENV === 'development') {
-    logger.info('Development mode: Bypassing signature verification');
-    return next();
-  }
-  
-  if (calculatedSignature !== toastSignature) {
-    logger.warn('Invalid Toast signature');
-    return res.status(401).json({ success: false, message: 'Invalid signature' });
-  }
-  
-  next();
 }
 
 /**
  * Verify Square signature
  */
 function verifySquareSignature(req: any, res: any, next: any) {
-  const squareSignature = req.headers['x-square-signature'];
-  const secret = process.env.SQUARE_WEBHOOK_SECRET || 'devSecretSquare123';
-  
-  if (!squareSignature) {
-    logger.warn('Missing Square signature');
-    return res.status(401).json({ success: false, message: 'Missing signature' });
+  try {
+    const squareSignature = req.headers['square-signature'];
+    
+    if (!squareSignature) {
+      return res.status(401).json({ message: 'Missing Square signature' });
+    }
+    
+    // In production, retrieve this from environment variables or secure storage
+    const squareSecret = process.env.SQUARE_WEBHOOK_SECRET || 'square-test-secret';
+    
+    // Create HMAC
+    const hmac = crypto.createHmac('sha256', squareSecret);
+    hmac.update(JSON.stringify(req.body));
+    const expectedSignature = hmac.digest('hex');
+    
+    if (squareSignature !== expectedSignature) {
+      return res.status(401).json({ message: 'Invalid Square signature' });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Error verifying Square signature:', error);
+    res.status(500).json({ message: 'Error verifying webhook signature' });
   }
-  
-  // Get the raw body
-  const body = JSON.stringify(req.body);
-  const hmac = crypto.createHmac('sha1', secret);
-  hmac.update(body);
-  const calculatedSignature = hmac.digest('hex');
-  
-  // In development mode, we'll bypass signature verification
-  if (process.env.NODE_ENV === 'development') {
-    logger.info('Development mode: Bypassing signature verification');
-    return next();
-  }
-  
-  if (calculatedSignature !== squareSignature) {
-    logger.warn('Invalid Square signature');
-    return res.status(401).json({ success: false, message: 'Invalid signature' });
-  }
-  
-  next();
 }
 
 /**
@@ -78,34 +73,39 @@ function verifySquareSignature(req: any, res: any, next: any) {
  */
 router.post('/webhook/toast', verifyToastSignature, async (req, res) => {
   try {
-    const { merchantId, orderId, total, subtotal, lineItems, timestamp } = req.body;
+    const { event, data } = req.body;
     
-    // Generate a unique key for this order
-    const orderKey = `${merchantId}:${orderId}`;
-    
-    // Store the order data for later verification
-    posOrders.set(orderKey, {
-      merchantId,
-      orderId,
-      total,
-      subtotal,
-      lineItems,
-      timestamp: timestamp || Date.now(),
-      source: 'toast'
-    });
-    
-    logger.info(`Received Toast order: ${orderKey}`);
-    
-    res.status(200).json({
-      success: true,
-      message: 'Order received'
-    });
+    if (event === 'order.created' || event === 'order.updated') {
+      // Extract relevant data from Toast order
+      const order = {
+        id: data.guid,
+        merchantId: 'TOAST_' + (data.restaurantGuid || 'UNKNOWN'),
+        timestamp: new Date(data.createdDate).getTime(),
+        total: data.totalAmount,
+        subtotal: data.subtotalAmount,
+        items: data.items?.map((item: any) => ({
+          name: item.name,
+          price: item.totalAmount,
+          quantity: item.quantity
+        })) || []
+      };
+      
+      // Store the order
+      posOrders.set(order.id, {
+        ...order,
+        source: 'toast',
+        rawData: data
+      });
+      
+      console.log(`[POS] Received Toast order: ${order.id}`);
+      
+      res.status(200).json({ status: 'success', orderId: order.id });
+    } else {
+      res.status(200).json({ status: 'ignored', event });
+    }
   } catch (error) {
-    logger.error('Error processing Toast webhook:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error processing webhook'
-    });
+    console.error('Error processing Toast webhook:', error);
+    res.status(500).json({ message: 'Error processing webhook' });
   }
 });
 
@@ -115,37 +115,41 @@ router.post('/webhook/toast', verifyToastSignature, async (req, res) => {
  */
 router.post('/webhook/square', verifySquareSignature, async (req, res) => {
   try {
-    const { merchant_id, order_id, total_money, line_items, created_at } = req.body.data.object;
+    const { type, data } = req.body;
     
-    // Square uses cents, so convert to dollars
-    const total = total_money ? total_money.amount / 100 : 0;
-    
-    // Generate a unique key for this order
-    const orderKey = `${merchant_id}:${order_id}`;
-    
-    // Store the order data for later verification
-    posOrders.set(orderKey, {
-      merchantId: merchant_id,
-      orderId: order_id,
-      total,
-      subtotal: total, // Square doesn't always provide subtotal separately
-      lineItems: line_items,
-      timestamp: created_at ? new Date(created_at).getTime() : Date.now(),
-      source: 'square'
-    });
-    
-    logger.info(`Received Square order: ${orderKey}`);
-    
-    res.status(200).json({
-      success: true,
-      message: 'Order received'
-    });
+    if (type === 'order.created' || type === 'order.updated') {
+      const orderData = data.object.order;
+      
+      // Extract relevant data from Square order
+      const order = {
+        id: orderData.id,
+        merchantId: 'SQUARE_' + (orderData.location_id || 'UNKNOWN'),
+        timestamp: new Date(orderData.created_at).getTime(),
+        total: parseFloat(orderData.total_money.amount) / 100, // Square amounts are in cents
+        subtotal: parseFloat(orderData.total_money.amount - (orderData.total_tax_money?.amount || 0)) / 100,
+        items: orderData.line_items?.map((item: any) => ({
+          name: item.name,
+          price: parseFloat(item.total_money.amount) / 100,
+          quantity: item.quantity
+        })) || []
+      };
+      
+      // Store the order
+      posOrders.set(order.id, {
+        ...order,
+        source: 'square',
+        rawData: orderData
+      });
+      
+      console.log(`[POS] Received Square order: ${order.id}`);
+      
+      res.status(200).json({ status: 'success', orderId: order.id });
+    } else {
+      res.status(200).json({ status: 'ignored', type });
+    }
   } catch (error) {
-    logger.error('Error processing Square webhook:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error processing webhook'
-    });
+    console.error('Error processing Square webhook:', error);
+    res.status(500).json({ message: 'Error processing webhook' });
   }
 });
 
@@ -155,34 +159,41 @@ router.post('/webhook/square', verifySquareSignature, async (req, res) => {
  */
 router.post('/webhook/clover', async (req, res) => {
   try {
-    const { merchantId, orderId, total, lineItems, timestamp } = req.body;
+    const { type, merchants, payload } = req.body;
     
-    // Generate a unique key for this order
-    const orderKey = `${merchantId}:${orderId}`;
-    
-    // Store the order data for later verification
-    posOrders.set(orderKey, {
-      merchantId,
-      orderId,
-      total,
-      subtotal: total, // Clover doesn't always provide subtotal
-      lineItems,
-      timestamp: timestamp || Date.now(),
-      source: 'clover'
-    });
-    
-    logger.info(`Received Clover order: ${orderKey}`);
-    
-    res.status(200).json({
-      success: true,
-      message: 'Order received'
-    });
+    if (type === 'ORDER_CREATED' || type === 'ORDER_UPDATED') {
+      const orderData = payload;
+      
+      // Extract relevant data from Clover order
+      const order = {
+        id: orderData.id,
+        merchantId: 'CLOVER_' + (merchants[0] || 'UNKNOWN'),
+        timestamp: orderData.createdTime,
+        total: orderData.total / 100, // Clover amounts are in cents
+        subtotal: (orderData.total - (orderData.taxAmount || 0)) / 100,
+        items: orderData.lineItems?.elements?.map((item: any) => ({
+          name: item.name,
+          price: item.price / 100,
+          quantity: item.quantity
+        })) || []
+      };
+      
+      // Store the order
+      posOrders.set(order.id, {
+        ...order,
+        source: 'clover',
+        rawData: orderData
+      });
+      
+      console.log(`[POS] Received Clover order: ${order.id}`);
+      
+      res.status(200).json({ status: 'success', orderId: order.id });
+    } else {
+      res.status(200).json({ status: 'ignored', type });
+    }
   } catch (error) {
-    logger.error('Error processing Clover webhook:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error processing webhook'
-    });
+    console.error('Error processing Clover webhook:', error);
+    res.status(500).json({ message: 'Error processing webhook' });
   }
 });
 
@@ -194,16 +205,28 @@ router.post('/webhook/clover', async (req, res) => {
  * @returns Matching POS order or undefined
  */
 export function findMatchingPOSOrder(merchantId: string, total: number, timestamp: number): any {
-  // Look for an order from this merchant with matching total within 5 minutes of the timestamp
-  // This is a simple heuristic for demo purposes - production would need more robust matching
-  const timeWindow = 5 * 60 * 1000; // 5 minutes in milliseconds
+  // Allow for some timestamp variance (within 15 minutes)
+  const timestampVariance = 15 * 60 * 1000; // 15 minutes in milliseconds
+  const minTimestamp = timestamp - timestampVariance;
+  const maxTimestamp = timestamp + timestampVariance;
   
-  for (const [, order] of posOrders) {
-    if (
-      order.merchantId === merchantId &&
-      Math.abs(order.total - total) < 0.01 && // Allow small difference in total due to rounding
-      Math.abs(order.timestamp - timestamp) < timeWindow
-    ) {
+  // Allow for slight total variance (1%)
+  const maxTotalVariance = 0.01;
+  
+  for (const [_, order] of posOrders) {
+    // Check if merchant IDs match (partially)
+    const merchantMatch = order.merchantId.includes(merchantId) || 
+                          merchantId.includes(order.merchantId);
+                         
+    // Check if totals are close enough
+    const totalDiff = Math.abs(order.total - total) / total;
+    const totalMatch = totalDiff <= maxTotalVariance;
+    
+    // Check if timestamps are close enough
+    const timestampMatch = order.timestamp >= minTimestamp && 
+                           order.timestamp <= maxTimestamp;
+    
+    if (merchantMatch && totalMatch && timestampMatch) {
       return order;
     }
   }
@@ -215,29 +238,41 @@ export function findMatchingPOSOrder(merchantId: string, total: number, timestam
  * Get webhook setup URLs for POS integrations
  * GET /api/pos/webhook-urls
  */
-router.get('/webhook-urls', (req, res) => {
-  // Get the base URL from the request
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
-  
-  res.json({
-    toast: `${baseUrl}/api/pos/webhook/toast`,
-    square: `${baseUrl}/api/pos/webhook/square`,
-    clover: `${baseUrl}/api/pos/webhook/clover`
-  });
+router.get('/webhook-urls', async (req, res) => {
+  try {
+    const host = req.headers.host || 'localhost';
+    const protocol = req.protocol || 'https';
+    
+    const webhookUrls = {
+      toast: `${protocol}://${host}/api/pos/webhook/toast`,
+      square: `${protocol}://${host}/api/pos/webhook/square`,
+      clover: `${protocol}://${host}/api/pos/webhook/clover`
+    };
+    
+    res.json(webhookUrls);
+  } catch (error) {
+    console.error('Error generating webhook URLs:', error);
+    res.status(500).json({ message: 'Error generating webhook URLs' });
+  }
 });
 
 /**
  * Get all stored POS orders (for debugging)
  * GET /api/pos/orders
  */
-router.get('/orders', (req, res) => {
-  const orders = Array.from(posOrders.entries()).map(([key, value]) => ({
-    key,
-    ...value
-  }));
-  
-  res.json(orders);
+router.get('/orders', async (req, res) => {
+  try {
+    const orders = Array.from(posOrders.values()).map(order => {
+      // Don't return raw data in the response
+      const { rawData, ...orderData } = order;
+      return orderData;
+    });
+    
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching POS orders:', error);
+    res.status(500).json({ message: 'Error fetching POS orders' });
+  }
 });
 
-export { posOrders };
 export default router;

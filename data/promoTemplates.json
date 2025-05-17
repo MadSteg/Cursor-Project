@@ -3,120 +3,130 @@
     "merchantId": "WALMART",
     "title": "10% Rollback Savings",
     "code": "ROLLBACK10",
-    "rules": { 
+    "rules": {
       "category": "Any",
       "minSpend": 25
     },
     "percentOff": 10,
+    "description": "Get 10% off your next purchase at Walmart.",
     "expiresDays": 14,
     "isActive": true
   },
   {
     "merchantId": "CVS",
-    "title": "$3 Off Shampoo",
+    "title": "$3 Off Hair Care",
     "code": "CVS3OFF",
-    "rules": { 
+    "rules": {
       "category": "HairCare",
       "minSpend": 5
     },
     "amountOff": 3,
+    "description": "Save $3 on any Hair Care purchase of $5 or more.",
     "expiresDays": 14,
     "isActive": true
   },
   {
     "merchantId": "TARGET",
-    "title": "Target Circle 15% Off",
+    "title": "5% Circle Savings",
     "code": "CIRCLESAVE",
-    "rules": { 
-      "category": "Apparel",
-      "minSpend": 40
+    "rules": {
+      "category": "Any",
+      "minSpend": 20
     },
-    "percentOff": 15,
+    "percentOff": 5,
+    "description": "Target Circle members save an extra 5% on qualifying purchases.",
     "expiresDays": 30,
     "isActive": true
   },
   {
     "merchantId": "COSTCO",
-    "title": "$25 Off $150 or more",
+    "title": "$25 Off $250+ Purchase",
     "code": "COSTCO25",
-    "rules": { 
+    "rules": {
       "category": "Any",
-      "minSpend": 150
+      "minSpend": 250
     },
     "amountOff": 25,
-    "expiresDays": 30,
-    "isActive": true
-  },
-  {
-    "merchantId": "AMAZON",
-    "title": "Prime 15% Off Electronics",
-    "code": "PRIME15",
-    "rules": { 
-      "category": "Electronics",
-      "minSpend": 50
-    },
-    "percentOff": 15,
-    "expiresDays": 7,
+    "description": "Take $25 off your next purchase of $250 or more at Costco.",
+    "expiresDays": 45,
     "isActive": true
   },
   {
     "merchantId": "BESTBUY",
-    "title": "Save $20 on PC Accessories",
-    "code": "BBSAVE20",
-    "rules": { 
-      "category": "Computers",
-      "minSpend": 75
+    "title": "TotalTech 10% Discount",
+    "code": "TOTALTECH10",
+    "rules": {
+      "category": "Electronics",
+      "minSpend": 100
     },
-    "amountOff": 20,
-    "expiresDays": 21,
+    "percentOff": 10,
+    "description": "TotalTech members save 10% on qualifying electronics purchases.",
+    "expiresDays": 30,
     "isActive": true
   },
   {
-    "merchantId": "HOMEDEPOT",
-    "title": "10% Off Tools",
-    "code": "HD10OFF",
-    "rules": { 
-      "category": "Tools",
+    "merchantId": "APPLE",
+    "title": "20% Off AppleCare+",
+    "code": "APPLECARE20",
+    "rules": {
+      "category": "AppleCare",
       "minSpend": 50
     },
-    "percentOff": 10,
-    "expiresDays": 14,
+    "percentOff": 20,
+    "description": "Purchase AppleCare+ and save 20% on your next accessory purchase.",
+    "expiresDays": 60,
     "isActive": true
   },
   {
     "merchantId": "WHOLEFDS",
-    "title": "$10 Off Fresh Produce",
-    "code": "WFDEAL",
-    "rules": { 
-      "category": "Produce",
-      "minSpend": 30
+    "title": "Prime Members Save 10%",
+    "code": "PRIME10",
+    "rules": {
+      "category": "Grocery",
+      "minSpend": 50
     },
-    "amountOff": 10,
-    "expiresDays": 7,
+    "percentOff": 10,
+    "description": "Amazon Prime members save an additional 10% on eligible items.",
+    "expiresDays": 14,
     "isActive": true
   },
   {
     "merchantId": "STARBUCKS",
-    "title": "Free Drink with Stars",
-    "code": "SBUXSTAR",
-    "rules": { 
-      "category": "Beverages",
+    "title": "150 Bonus Stars",
+    "code": "STARS150",
+    "rules": {
+      "category": "Coffee",
       "minSpend": 15
     },
-    "description": "Free drink up to $6 value with 150 Stars in your account",
-    "expiresDays": 10,
+    "bonusRewards": "150 Starbucks Stars",
+    "description": "Earn 150 bonus Stars on your next purchase of $15 or more.",
+    "expiresDays": 7,
     "isActive": true
   },
   {
     "merchantId": "MCDONALDS",
-    "title": "Free Fries with App Order",
-    "code": "MCDAPP",
-    "rules": { 
+    "title": "Free Medium Fries",
+    "code": "MCVALUE",
+    "rules": {
       "category": "Food",
       "minSpend": 5
     },
-    "description": "Free medium fries with any purchase over $5 through the McDonald's app",
+    "freeItem": "Medium Fries",
+    "description": "Receive free medium fries with any purchase of $5 or more.",
     "expiresDays": 7,
+    "isActive": true
+  },
+  {
+    "merchantId": "HOMEDEPOT",
+    "title": "Pro Xtra 15% Discount",
+    "code": "HDPRO15",
+    "rules": {
+      "category": "Tools",
+      "minSpend": 100
+    },
+    "percentOff": 15,
+    "description": "Pro Xtra members save 15% on qualifying tool purchases over $100.",
+    "expiresDays": 30,
     "isActive": true
   }
 ]

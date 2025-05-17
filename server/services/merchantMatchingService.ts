@@ -1,8 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { createLogger } from '../logger';
-
-const logger = createLogger('merchant-matching');
 
 export interface Merchant {
   merchantId: string;
@@ -21,6 +18,8 @@ export interface PromoTemplate {
   };
   percentOff?: number;
   amountOff?: number;
+  bonusRewards?: string;
+  freeItem?: string;
   description?: string;
   expiresDays: number;
   isActive: boolean;
@@ -30,6 +29,7 @@ export interface ReceiptFingerprint {
   merchantName: string;
   storeNumber?: string;
   subtotal: number;
+  total: number;
   timestamp: number;
   items?: Array<{
     name: string;
@@ -50,34 +50,28 @@ class MerchantMatchingService {
 
   private loadData() {
     try {
-      const merchantsPath = path.join(process.cwd(), 'data', 'merchantDirectory.json');
-      const promoTemplatesPath = path.join(process.cwd(), 'data', 'promoTemplates.json');
-      
       // Load merchant directory
+      const merchantsPath = path.join(process.cwd(), 'data', 'merchantDirectory.json');
       if (fs.existsSync(merchantsPath)) {
-        const data = fs.readFileSync(merchantsPath, 'utf8');
-        this.merchants = JSON.parse(data);
+        const merchantData = fs.readFileSync(merchantsPath, 'utf-8');
+        this.merchants = JSON.parse(merchantData);
       } else {
-        logger.warn('Merchant directory file not found');
-        this.merchants = [];
+        console.warn('[MerchantMatching] Merchant directory file not found:', merchantsPath);
       }
-      
+
       // Load promo templates
-      if (fs.existsSync(promoTemplatesPath)) {
-        const data = fs.readFileSync(promoTemplatesPath, 'utf8');
-        this.promoTemplates = JSON.parse(data);
+      const promosPath = path.join(process.cwd(), 'data', 'promoTemplates.json');
+      if (fs.existsSync(promosPath)) {
+        const promoData = fs.readFileSync(promosPath, 'utf-8');
+        this.promoTemplates = JSON.parse(promoData);
       } else {
-        logger.warn('Promo templates file not found');
-        this.promoTemplates = [];
+        console.warn('[MerchantMatching] Promo templates file not found:', promosPath);
       }
-      
+
       this.initialized = true;
-      logger.info(`Initialized merchant matching service with ${this.merchants.length} merchants and ${this.promoTemplates.length} promo templates`);
+      console.log(`[MerchantMatching] Service initialized with ${this.merchants.length} merchants and ${this.promoTemplates.length} promo templates`);
     } catch (error) {
-      logger.error('Error loading merchant data:', error);
-      this.merchants = [];
-      this.promoTemplates = [];
-      this.initialized = false;
+      console.error('[MerchantMatching] Error loading merchant data:', error);
     }
   }
 
@@ -87,28 +81,25 @@ class MerchantMatchingService {
    * @returns The matched merchant or null if no match found
    */
   public matchMerchant(merchantName: string): Merchant | null {
-    if (!this.initialized) {
-      this.loadData();
-    }
-    
-    if (!merchantName) {
+    if (!this.initialized || !merchantName) {
       return null;
     }
-    
-    // Normalize merchant name for matching
+
+    // Normalize the merchant name for better matching
     const normalizedName = merchantName.trim().toUpperCase();
-    
-    // Try to find a match using the regex patterns
+
+    // Try to find a match using regex patterns
     for (const merchant of this.merchants) {
-      const regex = new RegExp(merchant.regex, 'i'); // Case insensitive match
-      
-      if (regex.test(normalizedName)) {
-        logger.info(`Matched merchant: ${merchant.merchantId} for receipt from "${merchantName}"`);
-        return merchant;
+      try {
+        const regex = new RegExp(merchant.regex, 'i');
+        if (regex.test(normalizedName)) {
+          return merchant;
+        }
+      } catch (error) {
+        console.error(`[MerchantMatching] Invalid regex pattern for ${merchant.merchantId}:`, error);
       }
     }
-    
-    logger.info(`No merchant match found for receipt from "${merchantName}"`);
+
     return null;
   }
 
@@ -119,62 +110,62 @@ class MerchantMatchingService {
    * @returns The matched promo template or null if no match found
    */
   public findApplicablePromo(merchantId: string, receiptData?: ReceiptFingerprint): PromoTemplate | null {
-    if (!this.initialized) {
-      this.loadData();
-    }
-    
-    if (!merchantId) {
+    if (!this.initialized || !merchantId) {
       return null;
     }
-    
-    // Find all active promo templates for this merchant
+
+    // Filter promos by merchant and active status
     const merchantPromos = this.promoTemplates.filter(
       promo => promo.merchantId === merchantId && promo.isActive
     );
-    
+
     if (merchantPromos.length === 0) {
-      logger.info(`No active promos found for merchant: ${merchantId}`);
       return null;
     }
-    
-    // If receipt data is available, try to match based on rules
+
+    // If receipt data is provided, try to match based on rules
     if (receiptData) {
-      for (const promo of merchantPromos) {
-        // Check minimum spend rule
-        if (receiptData.subtotal >= promo.rules.minSpend) {
-          // Check category rule if we have items with categories
-          if (promo.rules.category !== 'Any' && receiptData.items) {
-            // For simplicity, if any item matches the category, we'll match the promo
-            const hasMatchingCategory = receiptData.items.some(
-              item => item.category?.toLowerCase() === promo.rules.category.toLowerCase()
-            );
-            
-            if (hasMatchingCategory) {
-              logger.info(`Matched promo: ${promo.code} for merchant: ${merchantId} based on category and minimum spend`);
-              return promo;
-            }
-          } else {
-            // If category is "Any" or we don't have item categories, just match on minimum spend
-            logger.info(`Matched promo: ${promo.code} for merchant: ${merchantId} based on minimum spend`);
-            return promo;
-          }
+      // First try to match rules (category & min spend)
+      const matchingPromos = merchantPromos.filter(promo => {
+        // Check for minimum spend requirement
+        if (receiptData.total < promo.rules.minSpend) {
+          return false;
         }
+
+        // If category is "Any" or receipt items match category
+        if (promo.rules.category.toLowerCase() === 'any') {
+          return true;
+        }
+
+        // If we have receipt items with categories, try to match them
+        if (receiptData.items && receiptData.items.length > 0) {
+          return receiptData.items.some(item => 
+            item.category && 
+            item.category.toLowerCase().includes(promo.rules.category.toLowerCase())
+          );
+        }
+
+        return false;
+      });
+
+      if (matchingPromos.length > 0) {
+        // Return the first matching promo, or we could add logic to return the "best" one
+        return matchingPromos[0];
       }
     }
-    
-    // If no rule-based match or no receipt data, return the default promo
+
+    // If no specific matching promo found or no receipt data provided, 
+    // return the merchant's default promo template
     const merchant = this.merchants.find(m => m.merchantId === merchantId);
     if (merchant) {
-      const defaultPromo = merchantPromos.find(p => p.code === merchant.defaultPromoTemplate);
-      if (defaultPromo) {
-        logger.info(`Using default promo: ${defaultPromo.code} for merchant: ${merchantId}`);
-        return defaultPromo;
-      }
+      const defaultPromo = this.promoTemplates.find(
+        p => p.code === merchant.defaultPromoTemplate && p.isActive
+      );
+      return defaultPromo || null;
     }
-    
-    // If we have any promos but none matched rules, return the first active one
-    logger.info(`Using first available promo for merchant: ${merchantId}`);
-    return merchantPromos[0];
+
+    // As a last resort, return the first active promo for this merchant
+    return merchantPromos[0] || null;
   }
 
   /**
@@ -183,27 +174,25 @@ class MerchantMatchingService {
    * @returns A coupon with expiration date
    */
   public createCouponFromTemplate(promoTemplate: PromoTemplate): any {
-    const now = new Date();
-    const expirationDate = new Date(now.getTime() + (promoTemplate.expiresDays * 24 * 60 * 60 * 1000));
-    
+    if (!promoTemplate) {
+      return null;
+    }
+
+    const now = Date.now();
+    const expiration = now + (promoTemplate.expiresDays * 24 * 60 * 60 * 1000); // Convert days to ms
+
     return {
-      id: `${promoTemplate.merchantId}_${promoTemplate.code}_${Date.now()}`,
       merchantId: promoTemplate.merchantId,
       title: promoTemplate.title,
       code: promoTemplate.code,
-      description: promoTemplate.description || 
-        (promoTemplate.percentOff ? `${promoTemplate.percentOff}% off your purchase` :
-         promoTemplate.amountOff ? `$${promoTemplate.amountOff} off your purchase` : 
-         'Special offer'),
-      discount: promoTemplate.percentOff,
+      percentOff: promoTemplate.percentOff,
       amountOff: promoTemplate.amountOff,
-      minimumPurchase: promoTemplate.rules.minSpend,
-      validUntil: Math.floor(expirationDate.getTime() / 1000),
-      terms: `Valid for purchases of $${promoTemplate.rules.minSpend} or more.${
-        promoTemplate.rules.category !== 'Any' ? ` Only applicable to ${promoTemplate.rules.category} products.` : ''
-      } Expires on ${expirationDate.toLocaleDateString()}.`,
-      isActive: true,
-      category: promoTemplate.rules.category
+      bonusRewards: promoTemplate.bonusRewards,
+      freeItem: promoTemplate.freeItem,
+      description: promoTemplate.description,
+      issuedAt: now,
+      expiresAt: expiration,
+      used: false
     };
   }
 
@@ -213,26 +202,38 @@ class MerchantMatchingService {
    * @returns A receipt fingerprint for merchant matching
    */
   public createReceiptFingerprint(ocrData: any): ReceiptFingerprint {
-    // Extract basic receipt data
+    // Extract basic info
     const merchantName = ocrData.merchantName || '';
-    const storeNumber = ocrData.storeNumber || undefined;
-    const subtotal = ocrData.subtotal || ocrData.total || 0;
-    const timestamp = ocrData.timestamp || ocrData.date ? new Date(ocrData.date).getTime() : Date.now();
-    
-    // Extract item data if available
-    const items = ocrData.items?.map((item: any) => ({
-      name: item.name || '',
-      price: item.price || 0,
-      quantity: item.quantity || 1,
-      category: item.category || undefined
-    })) || [];
-    
+    const subtotal = ocrData.subtotal || 0;
+    const total = ocrData.total || 0;
+    const timestamp = ocrData.timestamp || Date.now();
+
+    // Extract store number if available
+    let storeNumber = undefined;
+    if (ocrData.storeNumber) {
+      storeNumber = ocrData.storeNumber;
+    } else if (ocrData.storeId) {
+      storeNumber = ocrData.storeId;
+    }
+
+    // Extract item info if available
+    let items = undefined;
+    if (ocrData.items && Array.isArray(ocrData.items)) {
+      items = ocrData.items.map((item: any) => ({
+        name: item.name || 'Unknown Item',
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        category: item.category || undefined
+      }));
+    }
+
     return {
       merchantName,
       storeNumber,
       subtotal,
+      total,
       timestamp,
-      items: items.length > 0 ? items : undefined
+      items
     };
   }
 
@@ -242,23 +243,50 @@ class MerchantMatchingService {
    * @returns Applicable coupons for this receipt
    */
   public processReceiptForCoupons(receiptData: any): any[] {
-    const fingerprint = this.createReceiptFingerprint(receiptData);
-    const merchant = this.matchMerchant(fingerprint.merchantName);
-    
-    if (!merchant) {
-      logger.info(`No merchant matched for receipt, cannot generate coupons`);
+    if (!receiptData || !receiptData.merchantName) {
       return [];
     }
-    
+
+    const fingerprint = this.createReceiptFingerprint(receiptData);
+    const merchant = this.matchMerchant(fingerprint.merchantName);
+
+    if (!merchant) {
+      return [];
+    }
+
     const promoTemplate = this.findApplicablePromo(merchant.merchantId, fingerprint);
     
     if (!promoTemplate) {
-      logger.info(`No applicable promo found for merchant ${merchant.merchantId}`);
       return [];
     }
-    
+
     const coupon = this.createCouponFromTemplate(promoTemplate);
-    return [coupon];
+    return coupon ? [coupon] : [];
+  }
+
+  /**
+   * Get all merchants in the directory
+   * @returns Array of all merchants
+   */
+  public getAllMerchants(): Merchant[] {
+    return [...this.merchants];
+  }
+
+  /**
+   * Get all promo templates
+   * @returns Array of all promo templates
+   */
+  public getAllPromoTemplates(): PromoTemplate[] {
+    return [...this.promoTemplates];
+  }
+
+  /**
+   * Get promo templates for a specific merchant
+   * @param merchantId The merchant ID
+   * @returns Array of promo templates for the merchant
+   */
+  public getMerchantPromoTemplates(merchantId: string): PromoTemplate[] {
+    return this.promoTemplates.filter(promo => promo.merchantId === merchantId);
   }
 }
 
