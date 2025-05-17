@@ -74,6 +74,12 @@ router.post(
   upload.single('receiptImage'),
   async (req, res) => {
     try {
+      // Log request details to debug upload issues
+      console.log('Upload request received:');
+      console.log('- Body fields:', Object.keys(req.body || {}));
+      console.log('- File:', req.file ? req.file.fieldname : 'No file received');
+      console.log('- Files:', req.files ? Object.keys(req.files) : 'No files');
+      
       let { walletAddress, encryptMetadata } = req.body;
       
       if (!walletAddress) {
