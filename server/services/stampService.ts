@@ -1,315 +1,398 @@
-import { createCanvas } from 'canvas';
-import { pinFileToIPFS } from './ipfsService';
-import crypto from 'crypto';
+import { Canvas, createCanvas } from 'canvas';
+import { ipfsService } from './ipfsService';
 import { logger } from '../utils/logger';
 
-// Stamp generation constants
-const STAMP_SIZE = 400;
-const CITIES = {
-  // Major cities by region with iconic landmarks
-  Americas: ['New York', 'San Francisco', 'Chicago', 'Los Angeles', 'Toronto', 'Mexico City', 'Rio de Janeiro'],
-  Europe: ['London', 'Paris', 'Rome', 'Berlin', 'Barcelona', 'Amsterdam', 'Prague'],
-  Asia: ['Tokyo', 'Hong Kong', 'Singapore', 'Seoul', 'Shanghai', 'Dubai', 'Bangkok'],
-  Africa: ['Cape Town', 'Cairo', 'Marrakech', 'Nairobi', 'Lagos', 'Johannesburg'],
-  Oceania: ['Sydney', 'Melbourne', 'Auckland', 'Wellington']
-};
-
-// Time of day colors for visually distinct stamps
-const TIME_COLORS = {
-  morning: {
-    primary: '#F9D423',
-    secondary: '#FF4E50',
-    accent: '#E0C3FC',
-    text: '#333333'
-  },
-  afternoon: {
-    primary: '#4CB8C4',
-    secondary: '#3CD3AD',
-    accent: '#24C6DC',
-    text: '#333333'
-  },
-  evening: {
-    primary: '#614385',
-    secondary: '#516395',
-    accent: '#9D50BB',
-    text: '#ffffff'
-  },
-  night: {
-    primary: '#141E30',
-    secondary: '#243B55',
-    accent: '#5F2C82',
-    text: '#ffffff'
-  }
-};
-
-// Merchant category colors
-const CATEGORY_COLORS = {
-  food: '#8BC34A',
-  retail: '#03A9F4',
-  travel: '#FF9800',
-  entertainment: '#9C27B0',
-  services: '#FFEB3B',
-  health: '#E91E63',
-  electronics: '#00BCD4',
-  default: '#607D8B'
-};
-
-interface StampOptions {
-  merchantName: string;
-  merchantLocation?: string;
-  category?: string;
-  date: Date;
-  total: number;
-  isPromotional?: boolean;
-  tokenId: string | number;
+// Define city colors and themes
+interface CityColors {
+  sky: string;
+  building: string;
+  landmark: string;
+  ground: string;
+  window: string;
+  cloud: string;
+  special: string;
 }
 
-export class StampService {
-  /**
-   * Generates a unique passport stamp based on receipt details
-   */
-  async generateStamp(options: StampOptions): Promise<string> {
-    try {
-      const { 
-        merchantName, 
-        merchantLocation = this.getRandomCity(), 
-        category = 'default',
-        date, 
-        total, 
-        isPromotional = false,
-        tokenId
-      } = options;
+type TimeOfDayColors = {
+  [key: string]: CityColors;
+};
 
-      // Create canvas for the stamp
-      const canvas = createCanvas(STAMP_SIZE, STAMP_SIZE);
-      const ctx = canvas.getContext('2d');
+/**
+ * Service to generate passport stamps for receipts
+ */
+export class StampService {
+  private canvas: Canvas;
+  private ctx: CanvasRenderingContext2D;
+  
+  // City theme colors based on time of day
+  private timeColors: TimeOfDayColors = {
+    dawn: {
+      sky: '#7088b0',
+      building: '#344861',
+      landmark: '#e2a85e',
+      ground: '#5a6b87',
+      window: '#f5edbe',
+      cloud: '#f8c1c0',
+      special: '#a3abc0'
+    },
+    day: {
+      sky: '#87ceeb',
+      building: '#607d8b',
+      landmark: '#ffd54f',
+      ground: '#8d6e63',
+      window: '#ffffff',
+      cloud: '#f5f5f5',
+      special: '#4fc3f7'
+    },
+    sunset: {
+      sky: '#ff9e80',
+      building: '#546e7a',
+      landmark: '#ffab40',
+      ground: '#795548',
+      window: '#ffe0b2',
+      cloud: '#ffccbc',
+      special: '#ff8a65'
+    },
+    dusk: {
+      sky: '#5c6bc0',
+      building: '#37474f',
+      landmark: '#ffb74d',
+      ground: '#4e342e',
+      window: '#fff9c4',
+      cloud: '#b39ddb',
+      special: '#9575cd'
+    },
+    night: {
+      sky: '#263238',
+      building: '#1a237e',
+      landmark: '#ffd600',
+      ground: '#212121',
+      window: '#ffeb3b',
+      cloud: '#4527a0',
+      special: '#7986cb'
+    },
+    neon: {
+      sky: '#0D0221',
+      building: '#0F0326',
+      landmark: '#FF2975',
+      ground: '#190633',
+      window: '#18FFE5',
+      cloud: '#261447',
+      special: '#721B91'
+    }
+  };
+
+  constructor() {
+    // Create canvas for stamp generation
+    this.canvas = createCanvas(200, 200);
+    this.ctx = this.canvas.getContext('2d');
+  }
+
+  /**
+   * Generate a stamp for a receipt and upload to IPFS
+   * @param receiptData The receipt data
+   * @param promotional Whether this is a promotional receipt
+   * @returns URI for the uploaded stamp
+   */
+  async generateStamp(
+    receiptData: { 
+      merchantName: string; 
+      date: string; 
+      total: number;
+      category?: string;
+    },
+    promotional: boolean = false
+  ): Promise<string> {
+    try {
+      // Clear canvas
+      this.ctx.clearRect(0, 0, 200, 200);
       
-      // Get time of day from date
+      // Get time of day from receipt date
+      const date = new Date(receiptData.date);
       const hour = date.getHours();
-      const timeOfDay = this.getTimeOfDay(hour);
-      const colors = TIME_COLORS[timeOfDay as keyof typeof TIME_COLORS];
+      let timeOfDay = 'day';
       
-      // Get color for category
-      const categoryColor = CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] || CATEGORY_COLORS.default;
+      if (hour < 6) timeOfDay = 'dawn';
+      else if (hour < 11) timeOfDay = 'day';
+      else if (hour < 17) timeOfDay = 'sunset';
+      else if (hour < 21) timeOfDay = 'dusk';
+      else timeOfDay = 'night';
       
-      // Generate a unique pattern based on tokenId
-      const pattern = this.generateUniquePattern(tokenId.toString(), colors);
+      // If promotional, use neon theme
+      if (promotional) timeOfDay = 'neon';
       
-      // Draw the stamp
-      this.drawStampBackground(ctx, colors);
-      this.drawStampBorder(ctx, isPromotional, categoryColor);
-      this.drawStampPattern(ctx, pattern);
-      this.drawStampInfo(ctx, {
-        merchantName,
-        locationName: merchantLocation,
-        date,
-        total,
-        timeOfDay,
-        colors,
-        tokenId: tokenId.toString()
-      });
+      // Draw base circle
+      this.drawStampCircle(this.ctx, timeOfDay);
       
-      // Convert canvas to buffer
-      const buffer = canvas.toBuffer('image/png');
+      // Draw merchant initial in the center
+      this.drawMerchantInitial(this.ctx, receiptData.merchantName, timeOfDay);
       
-      // Upload to IPFS
-      const result = await pinFileToIPFS(buffer);
+      // Draw city skyline based on receipt category
+      this.drawCitySkyline(this.ctx, receiptData.category || 'general', timeOfDay);
       
-      if (!result || !result.IpfsHash) {
-        throw new Error('Failed to upload stamp to IPFS');
-      }
+      // Draw date stamp at the bottom
+      this.drawDateStamp(this.ctx, receiptData.date);
       
-      logger.info(`Generated and uploaded stamp for ${merchantName} with IPFS hash: ${result.IpfsHash}`);
+      // Add price indicator stars
+      const stars = Math.min(5, Math.max(1, Math.ceil(receiptData.total / 20)));
+      this.drawPriceStars(this.ctx, stars, timeOfDay);
       
-      return `ipfs://${result.IpfsHash}`;
+      // Upload to IPFS and return URI
+      const stampBuffer = this.canvas.toBuffer('image/png');
+      const response = await ipfsService.pinFileToIPFS(stampBuffer, `receipt_stamp_${Date.now()}.png`);
+      
+      const stampUri = `ipfs://${response.IpfsHash}`;
+      logger.info(`Generated stamp and uploaded to IPFS: ${stampUri}`);
+      
+      return stampUri;
     } catch (error) {
-      logger.error('Error generating stamp:', error);
-      throw error;
+      logger.error(`Failed to generate stamp: ${error instanceof Error ? error.message : String(error)}`);
+      // Return default stamp if there's an error
+      return 'ipfs://QmdefaultStampHash';
     }
   }
   
   /**
-   * Get random city for stamp if location not provided
+   * Draw the base circle of the stamp
    */
-  private getRandomCity(): string {
-    const regions = Object.keys(CITIES);
-    const randomRegion = regions[Math.floor(Math.random() * regions.length)];
-    const cities = CITIES[randomRegion as keyof typeof CITIES];
-    return cities[Math.floor(Math.random() * cities.length)];
-  }
-  
-  /**
-   * Get time of day based on hour
-   */
-  private getTimeOfDay(hour: number): string {
-    if (hour >= 5 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 17) return 'afternoon';
-    if (hour >= 17 && hour < 21) return 'evening';
-    return 'night';
-  }
-  
-  /**
-   * Draw stamp background
-   */
-  private drawStampBackground(ctx: CanvasRenderingContext2D, colors: any) {
-    // Create gradient background
-    const gradient = ctx.createRadialGradient(
-      STAMP_SIZE / 2, STAMP_SIZE / 2, 0,
-      STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2
-    );
-    gradient.addColorStop(0, colors.primary);
-    gradient.addColorStop(0.7, colors.secondary);
-    gradient.addColorStop(1, colors.accent);
+  private drawStampCircle(ctx: CanvasRenderingContext2D, timeOfDay: string): void {
+    const colors = this.timeColors[timeOfDay];
     
-    ctx.fillStyle = gradient;
+    // Outer circle
     ctx.beginPath();
-    ctx.arc(STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 10, 0, Math.PI * 2);
+    ctx.arc(100, 100, 95, 0, Math.PI * 2);
+    ctx.strokeStyle = colors.building;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    
+    // Inner circle
+    ctx.beginPath();
+    ctx.arc(100, 100, 90, 0, Math.PI * 2);
+    ctx.fillStyle = colors.sky;
     ctx.fill();
     
-    // Add inner circle
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 40, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  
-  /**
-   * Draw stamp border (gold for promotional receipts)
-   */
-  private drawStampBorder(ctx: CanvasRenderingContext2D, isPromotional: boolean, categoryColor: string) {
-    ctx.strokeStyle = isPromotional ? '#FFD700' : categoryColor;
-    ctx.lineWidth = isPromotional ? 12 : 8;
-    ctx.beginPath();
-    ctx.arc(STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 10, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    // Add decorative elements at cardinal points
-    const points = [
-      { x: STAMP_SIZE / 2, y: 20 },
-      { x: STAMP_SIZE / 2, y: STAMP_SIZE - 20 },
-      { x: 20, y: STAMP_SIZE / 2 },
-      { x: STAMP_SIZE - 20, y: STAMP_SIZE / 2 }
-    ];
-    
-    points.forEach(point => {
-      ctx.fillStyle = isPromotional ? '#FFD700' : categoryColor;
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-  
-  /**
-   * Generate a unique pattern based on tokenId
-   */
-  private generateUniquePattern(tokenId: string, colors: any): Array<{x: number, y: number, size: number}> {
-    const hash = crypto.createHash('sha256').update(tokenId).digest('hex');
-    const pattern = [];
-    
-    // Generate a series of points based on hash
-    for (let i = 0; i < hash.length; i += 4) {
-      const value = parseInt(hash.substring(i, i + 4), 16);
-      const x = (value % STAMP_SIZE) * 0.8 + STAMP_SIZE * 0.1;
-      const y = ((value >> 8) % STAMP_SIZE) * 0.8 + STAMP_SIZE * 0.1;
-      const size = (value % 8) + 2;
+    // Perforated edge
+    for (let i = 0; i < 36; i++) {
+      const angle = (i * 10) * Math.PI / 180;
+      const x1 = 100 + 95 * Math.cos(angle);
+      const y1 = 100 + 95 * Math.sin(angle);
+      const x2 = 100 + 100 * Math.cos(angle);
+      const y2 = 100 + 100 * Math.sin(angle);
       
-      pattern.push({ x, y, size });
-    }
-    
-    return pattern;
-  }
-  
-  /**
-   * Draw the unique pattern on the stamp
-   */
-  private drawStampPattern(ctx: CanvasRenderingContext2D, pattern: Array<{x: number, y: number, size: number}>) {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    
-    pattern.forEach(point => {
       ctx.beginPath();
-      ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = colors.building;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
   }
   
   /**
-   * Draw text information on the stamp
+   * Draw the merchant's initial in the center
    */
-  private drawStampInfo(ctx: CanvasRenderingContext2D, info: any) {
-    const { merchantName, locationName, date, colors, tokenId } = info;
+  private drawMerchantInitial(ctx: CanvasRenderingContext2D, merchantName: string, timeOfDay: string): void {
+    const colors = this.timeColors[timeOfDay];
+    const initial = merchantName.charAt(0).toUpperCase();
     
-    // Format date
-    const formattedDate = date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-    
-    // Set text color
-    ctx.fillStyle = colors.text;
+    ctx.font = 'bold 60px Arial';
+    ctx.fillStyle = colors.landmark;
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initial, 100, 100);
     
-    // Draw merchant name
-    ctx.font = 'bold 28px Arial';
-    ctx.fillText(this.truncateText(merchantName, 18), STAMP_SIZE / 2, STAMP_SIZE / 2 - 40);
+    // Add subtle shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
     
-    // Draw location
-    ctx.font = '24px Arial';
-    ctx.fillText(locationName, STAMP_SIZE / 2, STAMP_SIZE / 2);
-    
-    // Draw date
-    ctx.font = '18px Arial';
-    ctx.fillText(formattedDate, STAMP_SIZE / 2, STAMP_SIZE / 2 + 30);
-    
-    // Draw token ID (partially obscured)
-    ctx.font = '14px Arial';
-    ctx.fillText(`#${tokenId.substring(0, 8)}`, STAMP_SIZE / 2, STAMP_SIZE / 2 + 60);
-    
-    // Draw "BLOCKRECEIPT" text around the bottom arc
-    this.drawArcText(ctx, 'BLOCKRECEIPT', STAMP_SIZE / 2, STAMP_SIZE / 2, STAMP_SIZE / 2 - 25, Math.PI / 2, Math.PI * 3 / 2);
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
   }
   
   /**
-   * Draw text along an arc
+   * Draw a minimalist city skyline based on category
    */
-  private drawArcText(
-    ctx: CanvasRenderingContext2D, 
-    text: string, 
-    centerX: number, 
-    centerY: number, 
-    radius: number, 
-    startAngle: number, 
-    endAngle: number
-  ) {
-    const textLength = text.length;
-    const angleSize = (endAngle - startAngle) / textLength;
+  private drawCitySkyline(ctx: CanvasRenderingContext2D, category: string, timeOfDay: string): void {
+    const colors = this.timeColors[timeOfDay];
     
-    ctx.save();
-    ctx.font = 'bold 16px Arial';
+    // Define unique skyline based on category hash
+    const categoryHash = this.hashString(category);
     
-    for (let i = 0; i < textLength; i++) {
-      const angle = startAngle + i * angleSize;
+    // Draw ground
+    ctx.fillStyle = colors.ground;
+    ctx.fillRect(25, 130, 150, 20);
+    
+    // Draw buildings
+    for (let i = 0; i < 10; i++) {
+      const x = 30 + i * 15;
+      const heightSeed = (categoryHash + i) % 40;
+      const height = 30 + heightSeed;
       
-      ctx.save();
-      ctx.translate(
-        centerX + Math.cos(angle) * radius,
-        centerY + Math.sin(angle) * radius
-      );
-      ctx.rotate(angle + Math.PI / 2);
-      ctx.fillText(text[i], 0, 0);
-      ctx.restore();
+      ctx.fillStyle = colors.building;
+      ctx.fillRect(x, 130 - height, 10, height);
+      
+      // Draw windows
+      const windowCount = Math.max(1, Math.floor(height / 10));
+      for (let j = 0; j < windowCount; j++) {
+        ctx.fillStyle = colors.window;
+        ctx.fillRect(x + 3, 125 - height + (j * 10) + 3, 4, 4);
+      }
     }
     
-    ctx.restore();
+    // Draw landmark based on category
+    const landmarkX = 85 + (categoryHash % 30);
+    const landmarkHeight = 50 + (categoryHash % 30);
+    ctx.fillStyle = colors.landmark;
+    
+    // Different landmark styles
+    switch (categoryHash % 5) {
+      case 0: // Tower
+        ctx.fillRect(landmarkX, 130 - landmarkHeight, 15, landmarkHeight);
+        ctx.beginPath();
+        ctx.moveTo(landmarkX, 130 - landmarkHeight);
+        ctx.lineTo(landmarkX + 7.5, 130 - landmarkHeight - 15);
+        ctx.lineTo(landmarkX + 15, 130 - landmarkHeight);
+        ctx.fill();
+        break;
+      case 1: // Dome
+        ctx.fillRect(landmarkX, 130 - landmarkHeight + 20, 20, landmarkHeight - 20);
+        ctx.beginPath();
+        ctx.arc(landmarkX + 10, 130 - landmarkHeight + 20, 10, Math.PI, 0);
+        ctx.fill();
+        break;
+      case 2: // Modern building
+        ctx.fillRect(landmarkX, 130 - landmarkHeight, 20, landmarkHeight);
+        ctx.fillStyle = colors.window;
+        for (let i = 0; i < 5; i++) {
+          for (let j = 0; j < 3; j++) {
+            ctx.fillRect(landmarkX + 3 + (j * 6), 130 - landmarkHeight + 5 + (i * 10), 3, 5);
+          }
+        }
+        break;
+      case 3: // Pagoda
+        for (let i = 0; i < 3; i++) {
+          const width = 20 - (i * 4);
+          const height = 15;
+          const y = 130 - height * (i + 1);
+          const x = landmarkX + (i * 2);
+          ctx.fillRect(x, y, width, height);
+        }
+        break;
+      case 4: // Bridge
+        ctx.beginPath();
+        ctx.moveTo(landmarkX - 10, 130 - 20);
+        ctx.quadraticCurveTo(landmarkX + 15, 130 - 50, landmarkX + 40, 130 - 20);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = colors.landmark;
+        ctx.stroke();
+        
+        // Pillars
+        ctx.fillStyle = colors.landmark;
+        ctx.fillRect(landmarkX, 130 - 20, 5, 20);
+        ctx.fillRect(landmarkX + 25, 130 - 20, 5, 20);
+        break;
+    }
+    
+    // Draw clouds if daytime
+    if (['dawn', 'day', 'sunset'].includes(timeOfDay)) {
+      for (let i = 0; i < 3; i++) {
+        const x = 40 + (i * 50) + (categoryHash % 20);
+        const y = 50 + (i * 5);
+        this.drawCloud(ctx, x, y, colors.cloud);
+      }
+    } else if (timeOfDay === 'night' || timeOfDay === 'neon') {
+      // Draw stars/lights at night
+      for (let i = 0; i < 20; i++) {
+        const x = 30 + (categoryHash + i * 7) % 140;
+        const y = 30 + (categoryHash + i * 11) % 60;
+        ctx.fillStyle = colors.window;
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   }
   
   /**
-   * Truncate text to fit on the stamp
+   * Draw a simple cloud
    */
-  private truncateText(text: string, maxLength: number): string {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength - 3) + '...';
+  private drawCloud(ctx: CanvasRenderingContext2D, x: number, y: number, color: string): void {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.arc(x + 10, y - 2, 9, 0, Math.PI * 2);
+    ctx.arc(x + 20, y, 7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  /**
+   * Draw date stamp at the bottom
+   */
+  private drawDateStamp(ctx: CanvasRenderingContext2D, dateString: string): void {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: '2-digit',
+      year: 'numeric'
+    });
+    
+    ctx.font = 'bold 14px Arial';
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(formattedDate, 100, 160);
+  }
+  
+  /**
+   * Draw price indicator stars
+   */
+  private drawPriceStars(ctx: CanvasRenderingContext2D, count: number, timeOfDay: string): void {
+    const colors = this.timeColors[timeOfDay];
+    
+    for (let i = 0; i < count; i++) {
+      const x = 50 + i * 25;
+      const y = 175;
+      this.drawStar(ctx, x, y, 5, colors.special);
+    }
+  }
+  
+  /**
+   * Draw a star shape
+   */
+  private drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number, color: string): void {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.PI * 2 * i / 10 - Math.PI / 2;
+      const radius = i % 2 === 0 ? size : size / 2;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+      
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  /**
+   * Simple string hashing function to get consistent results
+   */
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
   }
 }
 

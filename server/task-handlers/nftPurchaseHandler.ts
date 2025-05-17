@@ -1,9 +1,10 @@
-import { logger } from '../utils/logger';
+import { v4 as uuidv4 } from 'uuid';
 import { blockchainEnhancedService } from '../services/blockchainEnhancedService';
-import { stampService } from '../services/stampService';
+import { ipfsService } from '../services/ipfsService';
 import { mockBotWallet } from '../utils/mockBotWallet';
 import { thresholdClient } from '../services/thresholdClient';
-import { ipfsService } from '../services/ipfsService';
+import { stampService } from '../services/stampService';
+import { logger } from '../utils/logger';
 
 interface NFTPurchaseTask {
   id: string;
@@ -40,49 +41,61 @@ class NFTPurchaseHandler {
 
   async processTask(task: NFTPurchaseTask): Promise<any> {
     try {
-      logger.info(`Processing NFT purchase for receipt: ${task.id}, wallet: ${task.walletAddress}`);
-      
-      // 1. Generate the metadata IPFS URI if not already provided
-      let metadataUri = task.metadataIpfsHash 
-        ? `ipfs://${task.metadataIpfsHash}` 
-        : await this.createMetadataUri(task);
-      
-      // 2. Generate a passport stamp for this receipt
+      logger.info(`Processing NFT purchase task: ${task.id}`);
+
+      // Generate metadata URI
+      const metadataUri = await this.createMetadataUri(task);
+      logger.info(`Created metadata URI: ${metadataUri}`);
+
+      // Generate passport stamp
       const stampUri = await this.generateStamp(task);
-      
-      // 3. Mint the NFT with receipt data, metadata, and stamp
+      logger.info(`Created stamp URI: ${stampUri}`);
+
+      // Create receipt hash for verification
+      const receiptHash = blockchainEnhancedService.createReceiptHash({
+        id: task.id,
+        merchantName: task.receiptData.merchantName,
+        date: task.receiptData.date,
+        total: task.receiptData.total,
+        items: task.receiptData.items,
+        category: task.receiptData.category,
+        subtotal: task.receiptData.subtotal,
+        tax: task.receiptData.tax
+      });
+
+      // Mint the NFT 
       const mintResult = await blockchainEnhancedService.mintReceipt(
-        task.receiptData,
+        {
+          id: task.id,
+          merchantName: task.receiptData.merchantName,
+          date: task.receiptData.date,
+          total: task.receiptData.total,
+          items: task.receiptData.items,
+          category: task.receiptData.category,
+          subtotal: task.receiptData.subtotal,
+          tax: task.receiptData.tax
+        },
         metadataUri,
         stampUri,
         task.walletAddress,
-        !!task.encrypt,
+        task.encrypt || false,
         task.policyId || ''
       );
-      
+
       logger.info(`NFT minted successfully: ${JSON.stringify(mintResult)}`);
-      
+
       return {
-        success: true,
-        taskId: task.id,
+        ...task,
         tokenId: mintResult.tokenId,
-        stampUri,
         metadataUri,
+        stampUri,
+        receiptHash,
         transactionHash: mintResult.transactionHash,
-        walletAddress: task.walletAddress,
-        merchantName: task.receiptData.merchantName,
-        totalAmount: task.receiptData.total,
-        encrypted: !!task.encrypt,
-        policyId: task.policyId || '',
-        mockMode: mintResult.mockMode
+        status: 'completed'
       };
     } catch (error) {
-      logger.error(`Failed to process NFT purchase: ${error.message}`, error);
-      return {
-        success: false,
-        taskId: task.id,
-        error: error.message
-      };
+      logger.error(`Error processing NFT purchase task: ${error instanceof Error ? error.message : String(error)}`);
+      throw error;
     }
   }
 
@@ -91,10 +104,17 @@ class NFTPurchaseHandler {
    */
   private async createMetadataUri(task: NFTPurchaseTask): Promise<string> {
     try {
-      // Prepare metadata object
+      // Get current date for display
+      const displayDate = new Date(task.receiptData.date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      // Create metadata JSON
       const metadata = {
-        name: `${task.receiptData.merchantName} Receipt`,
-        description: `Receipt from ${task.receiptData.merchantName} dated ${task.receiptData.date}`,
+        name: `${task.receiptData.merchantName} Receipt - ${displayDate}`,
+        description: `Digital receipt from ${task.receiptData.merchantName} for a purchase of $${task.receiptData.total.toFixed(2)} on ${displayDate}`,
         image: `ipfs://${task.ipfsHash}`,
         attributes: [
           {
@@ -103,46 +123,37 @@ class NFTPurchaseHandler {
           },
           {
             trait_type: 'Date',
-            value: task.receiptData.date
+            value: displayDate
           },
           {
             trait_type: 'Total',
-            value: task.receiptData.total.toString()
-          },
-          {
-            trait_type: 'Category',
-            value: task.receiptData.category || 'Uncategorized'
+            value: `$${task.receiptData.total.toFixed(2)}`
           }
-        ],
-        properties: {
-          receiptData: task.receiptData
-        }
+        ]
       };
-      
-      // Encrypt metadata if requested
-      if (task.encrypt && task.policyId) {
-        const encryptedData = await thresholdClient.encryptData(
-          JSON.stringify(metadata),
-          task.walletAddress,
-          task.policyId
-        );
-        
-        // Upload encrypted data
-        const result = await ipfsService.pinJSON({
-          encrypted: true,
-          policyId: task.policyId,
-          data: encryptedData
+
+      // Add category if available
+      if (task.receiptData.category) {
+        metadata.attributes.push({
+          trait_type: 'Category',
+          value: task.receiptData.category
         });
-        
-        return `ipfs://${result.IpfsHash}`;
       }
-      
-      // Otherwise, upload plain metadata
-      const result = await ipfsService.pinJSON(metadata);
-      return `ipfs://${result.IpfsHash}`;
+
+      // Add items if available
+      if (task.receiptData.items && task.receiptData.items.length > 0) {
+        metadata.attributes.push({
+          trait_type: 'Items',
+          value: task.receiptData.items.length.toString()
+        });
+      }
+
+      // Upload metadata to IPFS and get URI
+      const response = await ipfsService.pinJSON(metadata);
+      return `ipfs://${response.IpfsHash}`;
     } catch (error) {
-      logger.error(`Failed to create metadata URI: ${error.message}`, error);
-      throw error;
+      logger.error(`Error creating metadata URI: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to create metadata URI: ${error}`);
     }
   }
 
@@ -151,27 +162,25 @@ class NFTPurchaseHandler {
    */
   private async generateStamp(task: NFTPurchaseTask): Promise<string> {
     try {
-      // Check if we should generate a promotional stamp
-      const isPromotional = !!task.receiptData.items?.some(item => 
-        item.name?.toLowerCase().includes('promo') || 
-        item.category?.toLowerCase().includes('promo')
+      // Check if this is a promotional receipt (for demonstration, we'll consider
+      // purchases over $100 as promotional)
+      const isPromotional = task.receiptData.total > 100;
+
+      // Generate stamp using the stamp service
+      const stampUri = await stampService.generateStamp(
+        {
+          merchantName: task.receiptData.merchantName,
+          date: task.receiptData.date,
+          total: task.receiptData.total,
+          category: task.receiptData.category
+        },
+        isPromotional
       );
-      
-      // Generate stamp with StampService
-      const stampUri = await stampService.generateStamp({
-        merchantName: task.receiptData.merchantName,
-        merchantLocation: task.receiptData.category === 'online' ? 'Online' : undefined,
-        category: task.receiptData.category,
-        date: new Date(task.receiptData.date),
-        total: task.receiptData.total,
-        isPromotional,
-        tokenId: task.tokenId || task.id
-      });
-      
+
       return stampUri;
     } catch (error) {
-      logger.error(`Failed to generate passport stamp: ${error.message}`, error);
-      // Return default stamp URI if generation fails
+      logger.error(`Error generating stamp: ${error instanceof Error ? error.message : String(error)}`);
+      // Return default stamp URI if there's an error
       return 'ipfs://QmdefaultStampHash';
     }
   }
@@ -180,7 +189,7 @@ class NFTPurchaseHandler {
    * Get the bot wallet for testing
    */
   getBotWallet() {
-    return mockBotWallet.getAddress();
+    return mockBotWallet;
   }
 }
 
