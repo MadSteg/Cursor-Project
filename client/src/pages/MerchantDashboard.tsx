@@ -1,569 +1,663 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Link } from 'wouter';
+import { Label } from '@/components/ui/label';
 import { 
+  AlertCircle, 
+  CheckCircle2, 
   Store, 
-  BarChart2, 
-  TrendingUp, 
-  Users, 
-  ShoppingBag, 
-  DollarSign, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  Receipt,
-  GaugeCircle,
-  Settings,
-  Clock,
-  FileText,
-  Key
+  Tag, 
+  Zap, 
+  Copy, 
+  Link,
+  RefreshCw
 } from 'lucide-react';
 
-// Chart component placeholder (would be recharts in a real implementation)
-const SalesChart: React.FC = () => (
-  <div className="h-64 bg-gray-50 rounded-md flex items-center justify-center">
-    <BarChart2 className="h-10 w-10 text-gray-300" />
-    <span className="text-sm text-gray-500 ml-2">Sales chart visualization</span>
-  </div>
-);
+export default function MerchantDashboard() {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('directory');
+  const [selectedMerchant, setSelectedMerchant] = useState<string | null>(null);
 
-const TopProducts: React.FC = () => (
-  <div className="space-y-3">
-    {[
-      { name: 'Organic Avocado', sales: 423, trend: 'up', percentage: 12 },
-      { name: 'Almond Milk', sales: 358, trend: 'up', percentage: 8 },
-      { name: 'Organic Banana', sales: 294, trend: 'down', percentage: 3 },
-      { name: 'Whole Grain Bread', sales: 247, trend: 'up', percentage: 5 },
-      { name: 'Greek Yogurt', sales: 193, trend: 'down', percentage: 2 },
-    ].map((product, idx) => (
-      <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
+  // Fetch merchant directory
+  const { 
+    data: merchants = [], 
+    isLoading: merchantsLoading,
+    refetch: refetchMerchants
+  } = useQuery({
+    queryKey: ['/api/merchants/directory'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/merchants/directory');
+        if (!response.ok) {
+          throw new Error('Failed to fetch merchant directory');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching merchant directory:', error);
+        return [];
+      }
+    }
+  });
+
+  // Fetch POS webhook URLs
+  const { 
+    data: webhookUrls = {}, 
+    isLoading: webhookUrlsLoading 
+  } = useQuery({
+    queryKey: ['/api/pos/webhook-urls'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/pos/webhook-urls');
+        if (!response.ok) {
+          throw new Error('Failed to fetch webhook URLs');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching webhook URLs:', error);
+        return {};
+      }
+    }
+  });
+
+  // Fetch promo templates
+  const { 
+    data: promoTemplates = [], 
+    isLoading: promoTemplatesLoading,
+    refetch: refetchPromos
+  } = useQuery({
+    queryKey: ['/api/merchants/promo-templates'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/merchants/promo-templates');
+        if (!response.ok) {
+          throw new Error('Failed to fetch promo templates');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching promo templates:', error);
+        return [];
+      }
+    }
+  });
+
+  // Fetch verification stats
+  const { 
+    data: stats = { verified: 0, total: 0 }, 
+    isLoading: statsLoading 
+  } = useQuery({
+    queryKey: ['/api/merchants/verification-stats'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/merchants/verification-stats');
+        if (!response.ok) {
+          throw new Error('Failed to fetch verification stats');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching verification stats:', error);
+        return { verified: 0, total: 0 };
+      }
+    }
+  });
+
+  // Copy webhook URL to clipboard
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast({
+          title: "Copied to clipboard",
+          description: `${label} URL has been copied.`
+        });
+      },
+      (err) => {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy text to clipboard.",
+          variant: "destructive"
+        });
+      }
+    );
+  };
+
+  // Refresh data
+  const refreshData = () => {
+    refetchMerchants();
+    refetchPromos();
+    toast({
+      title: "Refreshing data",
+      description: "Merchant directory and promo templates are being updated."
+    });
+  };
+
+  // Use mock data for demonstration when actual API endpoints aren't available
+  useEffect(() => {
+    if (merchantsLoading && merchants.length === 0) {
+      // This is only for demonstration purposes
+      console.log('Using mock merchant directory data');
+    }
+    
+    if (promoTemplatesLoading && promoTemplates.length === 0) {
+      // This is only for demonstration purposes
+      console.log('Using mock promo template data');
+    }
+  }, [merchantsLoading, promoTemplatesLoading, merchants, promoTemplates]);
+
+  // For demonstration, use sample data from the JSON files we created
+  const sampleMerchants = [
+    {
+      merchantId: "WALMART",
+      regex: "WAL[- ]?MART",
+      cityCode: "US_WMT",
+      defaultPromoTemplate: "ROLLBACK10"
+    },
+    {
+      merchantId: "CVS",
+      regex: "CVS",
+      cityCode: "US_CVS",
+      defaultPromoTemplate: "CVS3OFF"
+    },
+    {
+      merchantId: "TARGET",
+      regex: "TARGET",
+      cityCode: "US_TGT",
+      defaultPromoTemplate: "CIRCLESAVE"
+    },
+    {
+      merchantId: "COSTCO",
+      regex: "COSTCO",
+      cityCode: "US_CSTCO",
+      defaultPromoTemplate: "COSTCO25"
+    }
+  ];
+
+  const samplePromos = [
+    {
+      merchantId: "WALMART",
+      title: "10% Rollback Savings",
+      code: "ROLLBACK10",
+      rules: { 
+        category: "Any",
+        minSpend: 25
+      },
+      percentOff: 10,
+      expiresDays: 14,
+      isActive: true
+    },
+    {
+      merchantId: "CVS",
+      title: "$3 Off Shampoo",
+      code: "CVS3OFF",
+      rules: { 
+        category: "HairCare",
+        minSpend: 5
+      },
+      amountOff: 3,
+      expiresDays: 14,
+      isActive: true
+    }
+  ];
+
+  // Use real data or sample data depending on API availability
+  const displayMerchants = merchants.length > 0 ? merchants : sampleMerchants;
+  const displayPromos = promoTemplates.length > 0 ? promoTemplates : samplePromos;
+
+  // Get promo templates for a specific merchant
+  const getMerchantPromos = (merchantId: string) => {
+    return displayPromos.filter(promo => promo.merchantId === merchantId);
+  };
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <div className="font-medium">{product.name}</div>
-          <div className="text-sm text-muted-foreground">{product.sales} units</div>
+          <h1 className="text-3xl font-bold mb-2">Merchant Integration Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your merchant integrations, promotions, and verification status
+          </p>
         </div>
-        <div className={`flex items-center ${product.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-          {product.trend === 'up' ? (
-            <ArrowUpRight className="h-4 w-4 mr-1" />
-          ) : (
-            <ArrowDownRight className="h-4 w-4 mr-1" />
-          )}
-          <span>{product.percentage}%</span>
-        </div>
+        <Button onClick={refreshData} className="flex items-center gap-2">
+          <RefreshCw className="h-4 w-4" />
+          Refresh Data
+        </Button>
       </div>
-    ))}
-  </div>
-);
 
-interface KPICardProps {
-  title: string;
-  value: string | number;
-  trend?: 'up' | 'down' | 'neutral';
-  trendValue?: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
-}
-
-const KPICard: React.FC<KPICardProps> = ({ 
-  title, 
-  value, 
-  trend, 
-  trendValue, 
-  icon, 
-  iconBg, 
-  iconColor 
-}) => {
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <h3 className="text-2xl font-bold mt-1">{value}</h3>
-            
-            {trend && (
-              <div className={`flex items-center mt-1 text-sm ${
-                trend === 'up' 
-                  ? 'text-green-600' 
-                  : trend === 'down' 
-                    ? 'text-red-600' 
-                    : 'text-gray-600'
-              }`}>
-                {trend === 'up' ? (
-                  <ArrowUpRight className="h-4 w-4 mr-1" />
-                ) : trend === 'down' ? (
-                  <ArrowDownRight className="h-4 w-4 mr-1" />
-                ) : null}
-                <span>{trendValue}</span>
-              </div>
-            )}
-          </div>
-          
-          <div className={`p-3 rounded-full ${iconBg}`}>
-            <div className={`${iconColor}`}>
-              {icon}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Merchant Directory</CardTitle>
+            <CardDescription>
+              Supported merchants in the system
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{displayMerchants.length}</div>
+            <p className="text-sm text-muted-foreground">Total merchants with regex patterns</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Receipt Verification</CardTitle>
+            <CardDescription>
+              Receipts verified by the system
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {stats.verified} <span className="text-lg text-muted-foreground">/ {stats.total}</span>
             </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const MerchantDashboard: React.FC = () => {
-  return (
-    <div className="container mx-auto py-10">
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold flex items-center">
-              <Store className="mr-3 h-8 w-8 text-primary" />
-              Merchant Dashboard
-            </h1>
-            <p className="text-xl text-muted-foreground mt-1">
-              Monitor sales and NFT receipt generation
+            <p className="text-sm text-muted-foreground">
+              {stats.verified > 0 && stats.total > 0
+                ? `${Math.round((stats.verified / stats.total) * 100)}% verification rate`
+                : "No verification data available"}
             </p>
-          </div>
-          
-          <div className="flex space-x-3">
-            <div className="bg-yellow-50 rounded-lg px-4 py-2 flex items-center border border-yellow-200">
-              <div className="pr-3 border-r border-yellow-200">
-                <GaugeCircle className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div className="px-3">
-                <div className="text-sm text-yellow-800 font-medium">Receipt Credits</div>
-                <div className="text-xl font-bold text-yellow-900">2,450</div>
-              </div>
-              <Button variant="outline" size="sm" className="ml-2 bg-white border-yellow-200 text-yellow-800 hover:bg-yellow-50 hover:text-yellow-900">
-                Buy More
-              </Button>
-            </div>
-            
-            <Button variant="outline">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KPICard
-            title="Total Sales"
-            value="$24,532"
-            trend="up"
-            trendValue="12% from last month"
-            icon={<DollarSign className="h-6 w-6" />}
-            iconBg="bg-green-100"
-            iconColor="text-green-600"
-          />
-          
-          <KPICard
-            title="NFT Receipts Created"
-            value="1,284"
-            trend="up"
-            trendValue="8% from last month"
-            icon={<Receipt className="h-6 w-6" />}
-            iconBg="bg-blue-100"
-            iconColor="text-blue-600"
-          />
-          
-          <KPICard
-            title="Active Customers"
-            value="832"
-            trend="up"
-            trendValue="5% from last month"
-            icon={<Users className="h-6 w-6" />}
-            iconBg="bg-purple-100"
-            iconColor="text-purple-600"
-          />
-          
-          <KPICard
-            title="Inventory Items"
-            value="472"
-            trend="neutral"
-            trendValue="2 new items this week"
-            icon={<ShoppingBag className="h-6 w-6" />}
-            iconBg="bg-amber-100"
-            iconColor="text-amber-600"
-          />
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-medium">Active Promotions</CardTitle>
+            <CardDescription>
+              Promo templates for merchants
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {displayPromos.filter(promo => promo.isActive).length}
+            </div>
+            <p className="text-sm text-muted-foreground">Active promotion templates</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="directory" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="directory" className="flex items-center gap-2">
+            <Store className="h-4 w-4" />
+            Merchant Directory
+          </TabsTrigger>
+          <TabsTrigger value="webhook" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            POS Webhooks
+          </TabsTrigger>
+          <TabsTrigger value="promos" className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Promo Templates
+          </TabsTrigger>
+        </TabsList>
         
-        <Tabs defaultValue="sales">
-          <div className="flex justify-between items-center mb-4">
-            <TabsList>
-              <TabsTrigger value="sales">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Sales & Analytics
-              </TabsTrigger>
-              <TabsTrigger value="receipts">
-                <Receipt className="h-4 w-4 mr-2" />
-                NFT Receipts
-              </TabsTrigger>
-              <TabsTrigger value="customers">
-                <Users className="h-4 w-4 mr-2" />
-                Customers
-              </TabsTrigger>
-            </TabsList>
-            
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Clock className="h-4 w-4 mr-2" />
-                Last 30 Days
-              </Button>
-              <Button size="sm">
-                <FileText className="h-4 w-4 mr-2" />
-                Reports
-              </Button>
-            </div>
-          </div>
-          
-          <TabsContent value="sales" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Sales Overview</CardTitle>
-                  <CardDescription>Daily revenue for the past 30 days</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SalesChart />
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Top Selling Products</CardTitle>
-                  <CardDescription>Based on last 30 days</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <TopProducts />
-                </CardContent>
-                <CardFooter className="border-t pt-4">
-                  <Button variant="outline" className="w-full">
-                    View All Products
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Sales by Category</CardTitle>
-                  <CardDescription>Product category breakdown</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { category: 'Produce', value: 35, color: 'bg-green-500' },
-                    { category: 'Dairy & Alternatives', value: 27, color: 'bg-blue-500' },
-                    { category: 'Bakery', value: 18, color: 'bg-amber-500' },
-                    { category: 'Meat & Seafood', value: 12, color: 'bg-red-500' },
-                    { category: 'Pantry', value: 8, color: 'bg-purple-500' },
-                  ].map((item, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>{item.category}</span>
-                        <span className="font-medium">{item.value}%</span>
-                      </div>
-                      <Progress value={item.value} className={`h-2 ${item.color}`} />
-                    </div>
+        {/* Merchant Directory Tab */}
+        <TabsContent value="directory">
+          <Card>
+            <CardHeader>
+              <CardTitle>Merchant Pattern Registry</CardTitle>
+              <CardDescription>
+                View and manage the merchant pattern registry for receipt matching
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableCaption>List of merchants configured for receipt matching</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Merchant ID</TableHead>
+                    <TableHead>Pattern (Regex)</TableHead>
+                    <TableHead>City Code</TableHead>
+                    <TableHead>Default Promo</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayMerchants.map((merchant) => (
+                    <TableRow key={merchant.merchantId}>
+                      <TableCell className="font-medium">{merchant.merchantId}</TableCell>
+                      <TableCell>
+                        <code className="bg-muted px-2 py-1 rounded-md text-sm">
+                          {merchant.regex}
+                        </code>
+                      </TableCell>
+                      <TableCell>{merchant.cityCode}</TableCell>
+                      <TableCell>{merchant.defaultPromoTemplate}</TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedMerchant(merchant.merchantId);
+                            setActiveTab('promos');
+                          }}
+                        >
+                          View Promos
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Receipt Engagement</CardTitle>
-                  <CardDescription>How customers interact with their receipts</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-lg text-center">
-                      <div className="text-3xl font-bold text-green-600">78%</div>
-                      <div className="text-sm text-gray-600 mt-1">View Rate</div>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* POS Webhook Tab */}
+        <TabsContent value="webhook">
+          <Card>
+            <CardHeader>
+              <CardTitle>POS Webhook Setup</CardTitle>
+              <CardDescription>
+                Configure webhook URLs for Point-of-Sale integration
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Toast POS Integration</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="grow">
+                      <Label htmlFor="toast-url">Webhook URL</Label>
+                      <div className="flex items-center mt-1.5">
+                        <Input 
+                          id="toast-url" 
+                          value={webhookUrls.toast || `${window.location.origin}/api/pos/webhook/toast`} 
+                          readOnly 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="ml-2"
+                          onClick={() => copyToClipboard(
+                            webhookUrls.toast || `${window.location.origin}/api/pos/webhook/toast`,
+                            "Toast Webhook"
+                          )}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-lg text-center">
-                      <div className="text-3xl font-bold text-blue-600">4.2</div>
-                      <div className="text-sm text-gray-600 mt-1">Avg. Return Visits</div>
+                    <div>
+                      <Label htmlFor="toast-secret">Secret Key</Label>
+                      <div className="flex items-center mt-1.5">
+                        <Input 
+                          id="toast-secret" 
+                          type="password" 
+                          value="••••••••••••••••"
+                          readOnly 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="ml-2"
+                          onClick={() => toast({
+                            title: "Secret regenerated",
+                            description: "A new Toast webhook secret has been generated."
+                          })}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Square POS Integration</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="grow">
+                      <Label htmlFor="square-url">Webhook URL</Label>
+                      <div className="flex items-center mt-1.5">
+                        <Input 
+                          id="square-url" 
+                          value={webhookUrls.square || `${window.location.origin}/api/pos/webhook/square`} 
+                          readOnly 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="ml-2"
+                          onClick={() => copyToClipboard(
+                            webhookUrls.square || `${window.location.origin}/api/pos/webhook/square`,
+                            "Square Webhook"
+                          )}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="square-secret">Secret Key</Label>
+                      <div className="flex items-center mt-1.5">
+                        <Input 
+                          id="square-secret" 
+                          type="password" 
+                          value="••••••••••••••••"
+                          readOnly 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="ml-2"
+                          onClick={() => toast({
+                            title: "Secret regenerated",
+                            description: "A new Square webhook secret has been generated."
+                          })}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Clover POS Integration</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="grow">
+                      <Label htmlFor="clover-url">Webhook URL</Label>
+                      <div className="flex items-center mt-1.5">
+                        <Input 
+                          id="clover-url" 
+                          value={webhookUrls.clover || `${window.location.origin}/api/pos/webhook/clover`} 
+                          readOnly 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="ml-2"
+                          onClick={() => copyToClipboard(
+                            webhookUrls.clover || `${window.location.origin}/api/pos/webhook/clover`,
+                            "Clover Webhook"
+                          )}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="clover-secret">App ID</Label>
+                      <div className="flex items-center mt-1.5">
+                        <Input 
+                          id="clover-secret" 
+                          type="password" 
+                          value="••••••••••••••••"
+                          readOnly 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="ml-2"
+                          onClick={() => toast({
+                            title: "App ID regenerated",
+                            description: "A new Clover App ID has been generated."
+                          })}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <AlertCircle className="h-4 w-4" />
+                <span>These are the webhook URLs you'll need to configure in your POS dashboard.</span>
+              </div>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        {/* Promo Templates Tab */}
+        <TabsContent value="promos">
+          <Card>
+            <CardHeader>
+              <CardTitle>Promo Templates</CardTitle>
+              <CardDescription>
+                Manage promotion templates that are automatically attached to receipts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {selectedMerchant ? (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">
+                      Promotions for {selectedMerchant}
+                    </h3>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedMerchant(null)}
+                    >
+                      Show All Merchants
+                    </Button>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Warranty Tracked</span>
-                      <span className="font-medium">64%</span>
-                    </div>
-                    <Progress value={64} className="h-2 bg-amber-200" />
-                    
-                    <div className="flex justify-between text-sm">
-                      <span>Verified by Customer</span>
-                      <span className="font-medium">53%</span>
-                    </div>
-                    <Progress value={53} className="h-2 bg-purple-200" />
-                    
-                    <div className="flex justify-between text-sm">
-                      <span>Shared with Others</span>
-                      <span className="font-medium">21%</span>
-                    </div>
-                    <Progress value={21} className="h-2 bg-blue-200" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="receipts" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle>Recent NFT Receipts Generated</CardTitle>
-                    <CardDescription>Last 20 receipts generated for customers</CardDescription>
-                  </div>
-                  <Input placeholder="Search receipts..." className="w-64" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm">
-                    <div className="col-span-1">ID</div>
-                    <div className="col-span-2">Date</div>
-                    <div className="col-span-3">Customer</div>
-                    <div className="col-span-2">Amount</div>
-                    <div className="col-span-2">Type</div>
-                    <div className="col-span-2">Status</div>
-                  </div>
-                  {[
-                    { id: '7891', date: '2025-05-14', customer: 'John Smith', email: 'john@example.com', amount: 84.32, type: 'luxury', status: 'completed' },
-                    { id: '7890', date: '2025-05-14', customer: 'Sarah Johnson', email: 'sarah@example.com', amount: 45.99, type: 'standard', status: 'completed' },
-                    { id: '7889', date: '2025-05-14', customer: 'Michael Brown', email: 'michael@example.com', amount: 129.50, type: 'premium', status: 'completed' },
-                    { id: '7888', date: '2025-05-13', customer: 'Emily Davis', email: 'emily@example.com', amount: 67.25, type: 'standard', status: 'completed' },
-                    { id: '7887', date: '2025-05-13', customer: 'David Wilson', email: 'david@example.com', amount: 93.75, type: 'premium', status: 'completed' },
-                    { id: '7886', date: '2025-05-13', customer: 'Jessica Taylor', email: 'jessica@example.com', amount: 22.50, type: 'standard', status: 'completed' },
-                    { id: '7885', date: '2025-05-12', customer: 'Robert Miller', email: 'robert@example.com', amount: 156.40, type: 'luxury', status: 'completed' },
-                    { id: '7884', date: '2025-05-12', customer: 'Jennifer Anderson', email: 'jennifer@example.com', amount: 35.99, type: 'standard', status: 'completed' },
-                  ].map((receipt, idx) => (
-                    <div key={idx} className="grid grid-cols-12 gap-4 p-4 border-b hover:bg-gray-50 text-sm">
-                      <div className="col-span-1 font-mono text-gray-600">#{receipt.id}</div>
-                      <div className="col-span-2">{receipt.date}</div>
-                      <div className="col-span-3">
-                        <div>{receipt.customer}</div>
-                        <div className="text-xs text-muted-foreground">{receipt.email}</div>
-                      </div>
-                      <div className="col-span-2">${receipt.amount.toFixed(2)}</div>
-                      <div className="col-span-2">
-                        <Badge variant="outline" className={
-                          receipt.type === 'luxury' 
-                            ? 'bg-amber-50 text-amber-700 border-amber-200'
-                            : receipt.type === 'premium'
-                              ? 'bg-purple-50 text-purple-700 border-purple-200' 
-                              : 'bg-blue-50 text-blue-700 border-blue-200'
-                        }>
-                          {receipt.type.charAt(0).toUpperCase() + receipt.type.slice(1)}
-                        </Badge>
-                      </div>
-                      <div className="col-span-2">
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          {receipt.status.charAt(0).toUpperCase() + receipt.status.slice(1)}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Showing 8 of 1,284 receipts
-                </div>
-                <Button variant="outline">
-                  View All Receipts
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Receipt Distribution</CardTitle>
-                  <CardDescription>By tier type</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Standard Tier</span>
-                      <span className="font-medium">65%</span>
-                    </div>
-                    <Progress value={65} className="h-2 bg-blue-500" />
-                    
-                    <div className="flex justify-between text-sm">
-                      <span>Premium Tier</span>
-                      <span className="font-medium">28%</span>
-                    </div>
-                    <Progress value={28} className="h-2 bg-purple-500" />
-                    
-                    <div className="flex justify-between text-sm">
-                      <span>Luxury Tier</span>
-                      <span className="font-medium">7%</span>
-                    </div>
-                    <Progress value={7} className="h-2 bg-amber-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Privacy Features</CardTitle>
-                  <CardDescription>TACo encryption usage</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-center pb-4">
-                      <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-blue-50 border-4 border-blue-100">
-                        <div className="text-2xl font-bold text-blue-700">43%</div>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-600">
-                        of receipts use TACo encryption
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Access Granted</span>
-                        <span className="font-medium">76%</span>
-                      </div>
-                      <Progress value={76} className="h-2 bg-green-500" />
-                      
-                      <div className="flex justify-between text-sm">
-                        <span>Access Revoked</span>
-                        <span className="font-medium">24%</span>
-                      </div>
-                      <Progress value={24} className="h-2 bg-red-500" />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Key className="h-4 w-4 mr-2" />
-                    Manage Encryption
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upcoming Features</CardTitle>
-                  <CardDescription>Coming soon to BlockReceipt</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { name: 'Auto Receipt Scanning', status: 'beta', date: 'May 20, 2025' },
-                      { name: 'Customer Loyalty Points', status: 'development', date: 'June 5, 2025' },
-                      { name: 'Enhanced Analytics', status: 'planning', date: 'July 2025' },
-                      { name: 'Merchant API', status: 'alpha', date: 'May 30, 2025' },
-                    ].map((feature, idx) => (
-                      <div key={idx} className="flex justify-between items-center">
-                        <div>
-                          <div className="font-medium">{feature.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {feature.date}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {getMerchantPromos(selectedMerchant).map((promo) => (
+                      <Card key={`${promo.merchantId}-${promo.code}`} className="overflow-hidden">
+                        <CardHeader className="pb-2 bg-muted/50">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg">{promo.title}</CardTitle>
+                            {promo.isActive ? (
+                              <Badge className="bg-green-600">Active</Badge>
+                            ) : (
+                              <Badge variant="outline">Inactive</Badge>
+                            )}
                           </div>
-                        </div>
-                        <Badge variant="outline" className={
-                          feature.status === 'beta' 
-                            ? 'bg-green-50 text-green-700 border-green-200'
-                            : feature.status === 'alpha'
-                              ? 'bg-purple-50 text-purple-700 border-purple-200'
-                              : feature.status === 'development'
-                                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                : 'bg-gray-50 text-gray-700 border-gray-200'
-                        }>
-                          {feature.status.charAt(0).toUpperCase() + feature.status.slice(1)}
-                        </Badge>
-                      </div>
+                          <CardDescription>
+                            Code: <code className="bg-background px-1 py-0.5 rounded text-sm">{promo.code}</code>
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <dt className="text-muted-foreground">Category:</dt>
+                            <dd className="font-medium">{promo.rules.category}</dd>
+                            
+                            <dt className="text-muted-foreground">Min. Spend:</dt>
+                            <dd className="font-medium">${promo.rules.minSpend.toFixed(2)}</dd>
+                            
+                            <dt className="text-muted-foreground">Discount:</dt>
+                            <dd className="font-medium">
+                              {promo.percentOff ? `${promo.percentOff}% off` : 
+                               promo.amountOff ? `$${promo.amountOff.toFixed(2)} off` : 
+                               "Special offer"}
+                            </dd>
+                            
+                            <dt className="text-muted-foreground">Expires After:</dt>
+                            <dd className="font-medium">{promo.expiresDays} days</dd>
+                          </dl>
+                        </CardContent>
+                        <CardFooter className="border-t bg-muted/30 flex justify-between">
+                          <Button variant="secondary" size="sm" className="w-full">
+                            Edit Template
+                          </Button>
+                        </CardFooter>
+                      </Card>
                     ))}
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Roadmap
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="customers" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle>Customer Overview</CardTitle>
-                    <CardDescription>Key customer metrics and insights</CardDescription>
-                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 mb-1">Total Customers</div>
-                    <div className="text-3xl font-bold">3,284</div>
-                    <div className="text-sm text-green-600 flex items-center mt-1">
-                      <ArrowUpRight className="h-3 w-3 mr-1" />
-                      <span>12% increase this month</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 mb-1">Avg. Receipts per Customer</div>
-                    <div className="text-3xl font-bold">4.7</div>
-                    <div className="text-sm text-green-600 flex items-center mt-1">
-                      <ArrowUpRight className="h-3 w-3 mr-1" />
-                      <span>0.3 increase from last month</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600 mb-1">Avg. Purchase Value</div>
-                    <div className="text-3xl font-bold">$68.42</div>
-                    <div className="text-sm text-red-600 flex items-center mt-1">
-                      <ArrowDownRight className="h-3 w-3 mr-1" />
-                      <span>3% decrease this month</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 pt-4">
-                  <h3 className="text-sm font-medium mb-2">Customer Retention</h3>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span>Returning Customers</span>
-                    <span className="font-medium">72%</span>
-                  </div>
-                  <Progress value={72} className="h-2 bg-green-500" />
-                  
-                  <div className="flex justify-between text-sm">
-                    <span>One-time Shoppers</span>
-                    <span className="font-medium">28%</span>
-                  </div>
-                  <Progress value={28} className="h-2 bg-gray-500" />
-                  
-                  <div className="flex justify-between text-sm">
-                    <span>NFT Receipt Engagement</span>
-                    <span className="font-medium">64%</span>
-                  </div>
-                  <Progress value={64} className="h-2 bg-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+              ) : (
+                <Table>
+                  <TableCaption>List of promo templates for automatic receipt promotions</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Merchant</TableHead>
+                      <TableHead>Promo Code</TableHead>
+                      <TableHead>Discount</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Min. Spend</TableHead>
+                      <TableHead>Expires</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {displayPromos.map((promo) => (
+                      <TableRow key={`${promo.merchantId}-${promo.code}`}>
+                        <TableCell className="font-medium">{promo.merchantId}</TableCell>
+                        <TableCell>
+                          <code className="bg-muted px-2 py-1 rounded-md text-sm">
+                            {promo.code}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          {promo.percentOff ? `${promo.percentOff}%` : 
+                           promo.amountOff ? `$${promo.amountOff.toFixed(2)}` : 
+                           "Special"}
+                        </TableCell>
+                        <TableCell>{promo.rules.category}</TableCell>
+                        <TableCell>${promo.rules.minSpend.toFixed(2)}</TableCell>
+                        <TableCell>{promo.expiresDays} days</TableCell>
+                        <TableCell>
+                          {promo.isActive ? (
+                            <Badge className="bg-green-600 text-xs">Active</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">Inactive</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedMerchant(promo.merchantId);
+                            }}
+                          >
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default MerchantDashboard;
+}

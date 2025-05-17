@@ -17,6 +17,8 @@ import merchantPluginRoutes from "./routes/merchant-plugin";
 import productsRoutes from "./routes/products";
 // Import merchant registry routes
 import { merchantRoutes } from "./routes/merchants";
+// POS webhook integration routes
+import posWebhookRoutes from "./routes/posWebhook";
 import nftReceiptsRoutes from "./routes/nft-receipts";
 // Metadata access control routes
 import metadataRoutes from "./routes/metadata";
@@ -189,6 +191,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register NFT metadata routes for dual metadata structure
   app.use('/api/nft-metadata', nftMetadataRoutes);
   console.log('[express] NFT metadata routes registered successfully');
+
+  // Register POS webhook routes for merchant integration
+  app.use('/api/pos', posWebhookRoutes);
+  console.log('[express] POS webhook routes registered successfully');
   
 
   
