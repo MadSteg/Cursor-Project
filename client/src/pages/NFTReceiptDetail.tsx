@@ -69,9 +69,9 @@ export default function NFTReceiptDetail() {
   
   // Fetch coupons associated with this NFT's vendor metadata
   const { data: coupons = [], isLoading: couponsLoading } = useQuery({
-    queryKey: [`/api/nfts/${receiptId}/coupons`],
+    queryKey: [`/api/nfts/${receiptId}/merchant-coupons`],
     queryFn: async () => {
-      if (!receiptId || !nftData?.merchantName) return [];
+      if (!receiptId || !data?.merchantName) return [];
       
       // We need the merchant data from the NFT to fetch relevant coupons
       const response = await apiRequest('GET', `/api/nfts/${receiptId}/merchant-coupons`);
@@ -84,8 +84,8 @@ export default function NFTReceiptDetail() {
       // Return only coupons that are available and based on live merchant data
       return response.json();
     },
-    // Only run this query when we have both the receipt ID and the merchant data
-    enabled: !!receiptId && !!nftData?.merchantName
+    // Only run this query when we have both the receipt ID and the merchant data from live sources
+    enabled: !!receiptId && !!data?.merchantName
   });
   
   // Mutation for decrypting metadata
@@ -615,9 +615,9 @@ export default function NFTReceiptDetail() {
               <TabsContent value="coupons" className="pt-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Available Coupons & Promotions</CardTitle>
+                    <CardTitle>Available Merchant Offers</CardTitle>
                     <CardDescription>
-                      Exclusive offers available with this receipt
+                      Auto-generated promotions from vendor metadata in BlockReceipts
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -630,9 +630,9 @@ export default function NFTReceiptDetail() {
                     ) : coupons.length === 0 ? (
                       <div className="text-center py-8 space-y-4">
                         <Tag className="h-12 w-12 mx-auto text-muted-foreground" />
-                        <h3 className="text-lg font-medium">No Coupons Available</h3>
+                        <h3 className="text-lg font-medium">No Merchant Offers Available</h3>
                         <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                          There are no promotional offers available for this receipt at this time.
+                          We couldn't find any current promotions from this vendor's metadata in the blockchain.
                         </p>
                       </div>
                     ) : (
@@ -640,14 +640,14 @@ export default function NFTReceiptDetail() {
                         {coupons.map((coupon: any) => (
                           <div key={coupon.id} className="border rounded-md p-4">
                             <div className="flex items-center justify-between mb-3">
-                              <h3 className="font-bold text-lg">{coupon.code || coupon.name}</h3>
+                              <h3 className="font-bold text-lg">{coupon.title || coupon.code}</h3>
                               {coupon.validUntil && (
                                 <Badge variant="outline">
                                   Expires: {new Date(coupon.validUntil * 1000).toLocaleDateString()}
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm mb-3">{coupon.description || `${coupon.percentOff || 0}% off your next purchase`}</p>
+                            <p className="text-sm mb-3">{coupon.description || `${coupon.discount || 0}% off your next purchase`}</p>
                             
                             <div className="flex items-center gap-2 mt-3">
                               <Button

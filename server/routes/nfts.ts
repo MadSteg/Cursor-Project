@@ -79,6 +79,58 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * Get merchant-specific coupons for an NFT receipt
+ * GET /api/nfts/:id/merchant-coupons
+ */
+router.get('/:id/merchant-coupons', async (req, res) => {
+  try {
+    const receiptId = req.params.id;
+    
+    // In a real implementation, fetch the NFT receipt details first
+    // For demo, we'll use mock data to simulate an NFT with merchant data
+    const nft = {
+      id: receiptId,
+      metadata: {
+        merchantName: "Costco", // For testing purposes
+        total: 149.99,
+        date: new Date().toISOString()
+      }
+    };
+    
+    if (!nft || !nft.metadata?.merchantName) {
+      return res.status(404).json({
+        success: false,
+        message: 'NFT not found or missing merchant data'
+      });
+    }
+    
+    // Extract merchant name from NFT metadata
+    const merchantName = nft.metadata.merchantName;
+    
+    // Identify merchant from name and get active promotions
+    const { merchantId, confidence } = await merchantService.identifyMerchantFromReceipt(merchantName);
+    
+    // If we found a merchant match with high confidence
+    if (merchantId && confidence > 0.6) {
+      // Get live promotions/coupons from the merchant registry
+      const merchantCoupons = await couponService.getMerchantCoupons(merchantId);
+      
+      return res.json(merchantCoupons);
+    }
+    
+    // If no merchant match found with sufficient confidence, return empty array
+    return res.json([]);
+    
+  } catch (error) {
+    logger.error(`Error fetching merchant coupons for NFT: ${error}`);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching merchant coupons'
+    });
+  }
+});
+
+/**
  * Get NFTs with coupon data
  * GET /api/nfts/with-coupons
  */
