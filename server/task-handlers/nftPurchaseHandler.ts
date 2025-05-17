@@ -8,7 +8,8 @@
 import { Task } from '../services/taskQueueService';
 import { nftMintService } from '../services/nftMintService';
 import { ipfsService } from '../services/ipfsService';
-import { tacoService } from '../services/tacoService';
+import { thresholdClient } from '../services/tacoService';
+import { generatePassportStamp } from '../services/stampService';
 import logger from '../logger';
 
 /**
