@@ -229,6 +229,8 @@ export function ImprovedReceiptUploader() {
       
       // Handle completion
       xhr.onload = () => {
+        console.log('Response received:', xhr.status, xhr.responseText);
+        
         if (xhr.status >= 200 && xhr.status < 300) {
           setUploadProgress(100);
           setUploadStatus('success');
@@ -295,14 +297,14 @@ export function ImprovedReceiptUploader() {
       };
       
       // Handle errors
-      xhr.onerror = () => {
-        console.error('Network error during upload');
+      xhr.onerror = (event) => {
+        console.error('Network error during upload:', event);
         setUploadStatus('error');
         setErrorMessage('Network error: Failed to connect to the server');
         
         toast({
           title: 'Network Error',
-          description: 'Failed to connect to the server',
+          description: 'Failed to connect to the server. Check console for details.',
           variant: 'destructive',
         });
       };
