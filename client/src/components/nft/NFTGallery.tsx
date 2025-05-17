@@ -19,6 +19,7 @@ interface NFT {
   contractAddress?: string;
   name?: string;
   imageUrl: string;
+  stampUri?: string; // Passport stamp URI
   isLocked: boolean;
   hasMetadata: boolean;
   preview?: any;
@@ -187,6 +188,7 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
             onClick={() => handleNftClick(nft)}
           >
             <div className="relative">
+              {/* Main receipt image */}
               <img 
                 src={nft.imageUrl} 
                 alt={nft.name || `NFT ${nft.tokenId}`} 
@@ -195,6 +197,20 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
                   (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
                 }}
               />
+              
+              {/* Passport stamp thumbnail if available */}
+              {nft.stampUri && (
+                <div className="absolute bottom-2 right-2 w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md">
+                  <img 
+                    src={nft.stampUri.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')} 
+                    alt="Stamp" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/nft-images/default-stamp.svg';
+                    }}
+                  />
+                </div>
+              )}
               {nft.hasMetadata && (
                 <div className="absolute top-2 right-2">
                   <Badge variant="secondary" className="flex items-center gap-1 bg-black/70 text-white">
@@ -275,14 +291,34 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6">
               <div className="md:w-1/3">
-                <img 
-                  src={selectedNft.imageUrl} 
-                  alt={selectedNft.name || `NFT ${selectedNft.tokenId}`} 
-                  className="w-full h-auto rounded-md"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
-                  }}
-                />
+                {/* Display receipt image */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium mb-2">Receipt Image</h4>
+                  <img 
+                    src={selectedNft.imageUrl} 
+                    alt={selectedNft.name || `NFT ${selectedNft.tokenId}`} 
+                    className="w-full h-auto rounded-md"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/nft-images/default-receipt.svg';
+                    }}
+                  />
+                </div>
+                
+                {/* Display passport stamp if available */}
+                {selectedNft.stampUri && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Passport Stamp</h4>
+                    <img 
+                      src={selectedNft.stampUri.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')} 
+                      alt="Receipt Passport Stamp" 
+                      className="w-full h-auto rounded-md border border-muted"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/nft-images/default-stamp.svg';
+                      }}
+                    />
+                  </div>
+                )}
+                
                 <div className="mt-4 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Token ID:</span>

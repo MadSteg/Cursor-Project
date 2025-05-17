@@ -52,8 +52,36 @@ async function handleNftPurchaseTask(task: Task): Promise<any> {
       imagePath: imageCid || undefined
     };
     
+    // Generate passport stamp for the receipt
+    let stampUri = '';
+    try {
+      // Determine city code from merchant name or location (simple mock for now)
+      const cityCode = receipt.merchantName ? 
+        receipt.merchantName.slice(0, 3).toUpperCase() : 'NYC';
+      
+      // Generate stamp with our passport stamp service
+      stampUri = await generatePassportStamp({
+        cityCode,
+        receiptHash: receipt.id,
+        merchantCategory: receipt.category || 'retail',
+        timestamp: receipt.date ? new Date(receipt.date).getTime() : Date.now(),
+        promoActive: !!receipt.coupon
+      });
+      
+      logger.info(`Generated passport stamp: ${stampUri}`);
+    } catch (stampError) {
+      logger.error(`Failed to generate passport stamp: ${stampError}`);
+      // Continue with receipt processing even if stamp generation fails
+    }
+    
+    // Add stamp to receipt data
+    const receiptWithStamp = {
+      ...receiptWithImage,
+      stampUri
+    };
+    
     // Mint NFT with encryption if requested
-    const mintResult = await nftMintService.mintReceiptNFT(receiptWithImage, {
+    const mintResult = await nftMintService.mintReceiptNFT(receiptWithStamp, {
       encryptedMetadata: encryptMetadata,
       wallet,
       recipientPublicKey: publicKey
