@@ -97,8 +97,10 @@ router.post(
       
       const file = req.file;
       if (!file) {
+        logger.error('No file received in request');
         return res.status(400).json({
-          error: 'Receipt image is required'
+          success: false,
+          message: 'Receipt image is required'
         });
       }
       
@@ -213,9 +215,17 @@ router.post(
         encryptMetadata: encryptMetadata === 'true' || encryptMetadata === true
       });
       
-      // Return task ID to client for status polling
-      return res.status(202).json({
+      // Return success response with data in the expected format for the client
+      return res.status(200).json({
+        success: true,
         message: 'Receipt processing initiated',
+        data: {
+          ...receiptWithImage,
+          isEncrypted: encryptMetadata === 'true' || encryptMetadata === true,
+          nftGift: {
+            taskId: task.id
+          }
+        },
         taskId: task.id,
         receiptId: uniqueId,
         status: task.status
