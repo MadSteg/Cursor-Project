@@ -188,10 +188,10 @@ export function ImprovedReceiptUploader() {
       // This eliminates redundant wallet connection prompts when already authenticated
       
       const formData = new FormData();
-      formData.append('receipt', selectedFile);
+      formData.append('receiptImage', selectedFile);
       
       // Add encryption flag to the form data
-      formData.append('encryptData', encryptionEnabled ? 'true' : 'false');
+      formData.append('encryptMetadata', encryptionEnabled ? 'true' : 'false');
       
       // If encryption is enabled, add the public key to the form data
       if (encryptionEnabled && publicKey) {

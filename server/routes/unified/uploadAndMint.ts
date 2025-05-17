@@ -83,7 +83,8 @@ router.post(
           routeLogger.info(`Using default development wallet: ${walletAddress}`);
         } else {
           return res.status(400).json({
-            error: 'Wallet address is required'
+            success: false,
+            message: 'Wallet address is required'
           });
         }
       }
