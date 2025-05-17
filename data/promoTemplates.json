@@ -1,0 +1,122 @@
+[
+  {
+    "merchantId": "WALMART",
+    "title": "10% Rollback Savings",
+    "code": "ROLLBACK10",
+    "rules": { 
+      "category": "Any",
+      "minSpend": 25
+    },
+    "percentOff": 10,
+    "expiresDays": 14,
+    "isActive": true
+  },
+  {
+    "merchantId": "CVS",
+    "title": "$3 Off Shampoo",
+    "code": "CVS3OFF",
+    "rules": { 
+      "category": "HairCare",
+      "minSpend": 5
+    },
+    "amountOff": 3,
+    "expiresDays": 14,
+    "isActive": true
+  },
+  {
+    "merchantId": "TARGET",
+    "title": "Target Circle 15% Off",
+    "code": "CIRCLESAVE",
+    "rules": { 
+      "category": "Apparel",
+      "minSpend": 40
+    },
+    "percentOff": 15,
+    "expiresDays": 30,
+    "isActive": true
+  },
+  {
+    "merchantId": "COSTCO",
+    "title": "$25 Off $150 or more",
+    "code": "COSTCO25",
+    "rules": { 
+      "category": "Any",
+      "minSpend": 150
+    },
+    "amountOff": 25,
+    "expiresDays": 30,
+    "isActive": true
+  },
+  {
+    "merchantId": "AMAZON",
+    "title": "Prime 15% Off Electronics",
+    "code": "PRIME15",
+    "rules": { 
+      "category": "Electronics",
+      "minSpend": 50
+    },
+    "percentOff": 15,
+    "expiresDays": 7,
+    "isActive": true
+  },
+  {
+    "merchantId": "BESTBUY",
+    "title": "Save $20 on PC Accessories",
+    "code": "BBSAVE20",
+    "rules": { 
+      "category": "Computers",
+      "minSpend": 75
+    },
+    "amountOff": 20,
+    "expiresDays": 21,
+    "isActive": true
+  },
+  {
+    "merchantId": "HOMEDEPOT",
+    "title": "10% Off Tools",
+    "code": "HD10OFF",
+    "rules": { 
+      "category": "Tools",
+      "minSpend": 50
+    },
+    "percentOff": 10,
+    "expiresDays": 14,
+    "isActive": true
+  },
+  {
+    "merchantId": "WHOLEFDS",
+    "title": "$10 Off Fresh Produce",
+    "code": "WFDEAL",
+    "rules": { 
+      "category": "Produce",
+      "minSpend": 30
+    },
+    "amountOff": 10,
+    "expiresDays": 7,
+    "isActive": true
+  },
+  {
+    "merchantId": "STARBUCKS",
+    "title": "Free Drink with Stars",
+    "code": "SBUXSTAR",
+    "rules": { 
+      "category": "Beverages",
+      "minSpend": 15
+    },
+    "description": "Free drink up to $6 value with 150 Stars in your account",
+    "expiresDays": 10,
+    "isActive": true
+  },
+  {
+    "merchantId": "MCDONALDS",
+    "title": "Free Fries with App Order",
+    "code": "MCDAPP",
+    "rules": { 
+      "category": "Food",
+      "minSpend": 5
+    },
+    "description": "Free medium fries with any purchase over $5 through the McDonald's app",
+    "expiresDays": 7,
+    "isActive": true
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "merchantId": "WALMART",
+    "regex": "WAL[- ]?MART",
+    "cityCode": "US_WMT",
+    "defaultPromoTemplate": "ROLLBACK10"
+  },
+  {
+    "merchantId": "CVS",
+    "regex": "CVS",
+    "cityCode": "US_CVS",
+    "defaultPromoTemplate": "CVS3OFF"
+  },
+  {
+    "merchantId": "TARGET",
+    "regex": "TARGET",
+    "cityCode": "US_TGT",
+    "defaultPromoTemplate": "CIRCLESAVE"
+  },
+  {
+    "merchantId": "COSTCO",
+    "regex": "COSTCO",
+    "cityCode": "US_CSTCO",
+    "defaultPromoTemplate": "COSTCO25"
+  },
+  {
+    "merchantId": "AMAZON",
+    "regex": "AMAZON\\.COM",
+    "cityCode": "US_AMZN",
+    "defaultPromoTemplate": "PRIME15"
+  },
+  {
+    "merchantId": "BESTBUY",
+    "regex": "BEST ?BUY",
+    "cityCode": "US_BBY",
+    "defaultPromoTemplate": "BBSAVE20"
+  },
+  {
+    "merchantId": "HOMEDEPOT",
+    "regex": "HOME ?DEPOT",
+    "cityCode": "US_HD",
+    "defaultPromoTemplate": "HD10OFF"
+  },
+  {
+    "merchantId": "WHOLEFDS",
+    "regex": "WHOLE ?FOODS",
+    "cityCode": "US_WFM",
+    "defaultPromoTemplate": "WFDEAL"
+  },
+  {
+    "merchantId": "STARBUCKS",
+    "regex": "STARBUCKS",
+    "cityCode": "US_SBUX",
+    "defaultPromoTemplate": "SBUXSTAR"
+  },
+  {
+    "merchantId": "MCDONALDS",
+    "regex": "MCDONALD'?S",
+    "cityCode": "US_MCD",
+    "defaultPromoTemplate": "MCDAPP"
+  }
+]
