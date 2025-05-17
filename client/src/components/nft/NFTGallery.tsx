@@ -93,11 +93,17 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
     if (nft.hasMetadata) {
       // If the NFT has private metadata, ask if the user wants to view it
       const viewPrivateData = window.confirm(
-        "This BlockReceipt contains private receipt metadata obtained via OCR. Would you like to view this private data?"
+        "This BlockReceipt contains private merchant receipt metadata with potentially sensitive information. This data is protected with Threshold encryption (TACo PRE). Would you like to view this private data?"
       );
       
       if (!viewPrivateData) {
-        // If user declines, just navigate to the receipt detail without metadata focus
+        // If user declines, show a toast message about respecting privacy
+        toast({
+          title: "Privacy Protected",
+          description: "You chose not to view private merchant receipt data. Your privacy preference has been respected.",
+        });
+        
+        // Navigate to the receipt detail without metadata focus
         navigate(`/nft-receipts/${nft.tokenId}`);
         return;
       }
