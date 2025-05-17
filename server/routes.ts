@@ -55,6 +55,8 @@ import walletTacoRoutes from "./routes/wallet";
 import walletAuthRoutes from "./routes/wallet";
 // Import receipt encryption routes with TaCo
 import receiptEncryptionRoutes from "./routes/receiptEncryption";
+// Import test upload route
+import testUploadRoutes from "./routes/testUpload";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -153,6 +155,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Hot Wallet routes with TACo encryption
   app.use('/api/wallet', walletTacoRoutes);
+  
+  // Register test upload route (for debugging file upload issues)
+  app.use('/api', testUploadRoutes);
   
   // Register wallet authentication routes
   app.use('/api/wallet-auth', walletAuthRoutes);

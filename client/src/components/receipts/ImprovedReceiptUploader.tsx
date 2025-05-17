@@ -212,7 +212,9 @@ export function ImprovedReceiptUploader() {
       
       // Create XHR for progress tracking
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload-and-mint');
+      
+      // Temporarily change to use the test upload endpoint
+      xhr.open('POST', '/api/test-upload');
       
       // Track upload progress
       xhr.upload.addEventListener('progress', (event) => {
