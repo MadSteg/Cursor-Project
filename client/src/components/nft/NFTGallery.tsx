@@ -88,10 +88,10 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
     }
   });
   
-  // Handle NFT click - show details and decrypted data if available
+  // Handle NFT click - navigate to the detail page
   const handleNftClick = (nft: NFT) => {
-    setSelectedNft(nft);
-    setDecryptedData(null); // Reset decrypted data when selecting a new NFT
+    // Navigate to the detail page for this NFT
+    navigate(`/nft-receipts/${nft.tokenId}`);
   };
   
   // Handle unlock button click
