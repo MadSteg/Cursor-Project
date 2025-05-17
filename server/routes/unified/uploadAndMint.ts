@@ -147,20 +147,41 @@ router.post(
       let encryptedData = null;
       if (encryptMetadata === 'true' || encryptMetadata === true) {
         try {
-          const publicKey = req.body.publicKey;
+          // For development mode, use a default public key if not provided
+          let publicKey = req.body.publicKey;
           
-          if (!publicKey) {
+          if (!publicKey && process.env.NODE_ENV === 'development') {
+            publicKey = 'devPublicKey123'; // Default development public key
+            routeLogger.info('Using default development public key for encryption');
+          } else if (!publicKey) {
             return res.status(400).json({
               error: 'Public key is required for metadata encryption'
             });
           }
           
-          encryptedData = await tacoService.encryptReceiptMetadata(
-            receiptWithImage,
-            publicKey
-          );
+          // For development mode, we'll use the entire receipt for encryption
+          // In a production environment, we would format this according to TaCo requirements
+          
+          // Modified approach for development to ensure proper handling
+          if (process.env.NODE_ENV === 'development') {
+            // Use a simplified mock encryption in development mode
+            encryptedData = {
+              available: true,
+              encryptedData: Buffer.from(JSON.stringify(receiptWithImage)).toString('base64'),
+              capsule: `capsule_${Date.now()}`,
+              publicKey: publicKey
+            };
+            routeLogger.info('Using development mode mock encryption');
+          } else {
+            // In production, use the actual TaCo service
+            encryptedData = await tacoService.encryptReceiptMetadata(
+              [receiptWithImage], // Wrap in array as the service expects an array
+              walletAddress,      // Pass the wallet address as the second parameter
+              publicKey           // Pass the public key as the third parameter
+            );
+          }
         } catch (encryptionError) {
-          logger.error(`Metadata encryption failed: ${encryptionError}`);
+          routeLogger.error(`Metadata encryption failed: ${encryptionError}`);
           return res.status(500).json({
             error: 'Failed to encrypt receipt metadata',
             details: encryptionError instanceof Error ? encryptionError.message : String(encryptionError)
