@@ -1,6 +1,6 @@
 import { nftRepository } from '../repositories/nftRepository';
 import { blockchainService } from './blockchainService';
-import { tacoService } from './tacoService';
+import { thresholdClient, decryptData } from './tacoService';
 
 /**
  * Service for the NFT Gallery
@@ -107,34 +107,34 @@ export class GalleryService {
         return null;
       }
       
-      // Try to parse the encrypted data
-      let encryptedData;
-      try {
-        encryptedData = JSON.parse(metadata.encryptedData);
-      } catch (parseError) {
-        console.warn('Error parsing encrypted data JSON, using raw string:', parseError);
-        encryptedData = metadata.encryptedData;
-      }
+      // Get the encrypted user data from the metadata
+      // With our dual metadata structure, the user data is stored separately from promotional data
+      const userData = metadata.userData;
       
       // Attempt to decrypt using TaCo service
       try {
-        // If encrypted data is in the expected format with capsuleId, etc.
-        if (encryptedData && typeof encryptedData === 'object' && encryptedData.ciphertext) {
-          // Using the old signature format (backwards compatibility)
-          const decryptedData = await tacoService.decryptData(
-            encryptedData.ciphertext, 
-            tokenId, 
-            walletAddress
-          );
+        // Check if we have userData in the expected format
+        if (userData && typeof userData === 'object' && userData.ciphertext) {
+          // Using our new thresholdClient implementation with userData
+          const decryptedData = await decryptData({
+            encryptedData: userData,
+            recipientPublicKey: walletAddress
+          });
           return decryptedData;
         } else {
-          // For simple mock format - just pass the whole encrypted string
-          const decryptedData = await tacoService.decryptData(
-            metadata.encryptedData,
-            tokenId,
-            walletAddress 
-          );
-          return decryptedData;
+          // For our updated dual metadata structure
+          // Assuming metadata.userData contains the encrypted user data
+          if (metadata.userData) {
+            const decryptedData = await decryptData({
+              encryptedData: metadata.userData,
+              recipientPublicKey: walletAddress
+            });
+            return decryptedData;
+          } else {
+            // Fall back to development mode mock data
+            console.warn('No userData found for NFT with tokenId:', tokenId);
+            return null;
+          }
         }
       } catch (error) {
         console.error('Failed to decrypt metadata:', error);

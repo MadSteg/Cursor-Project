@@ -252,12 +252,26 @@ export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
   revokedAt: true,
 });
 
-// Encrypted Metadata Table (for NFT receipts)
+// Encrypted Metadata Table (for NFT receipts with dual metadata structure)
 export const encryptedMetadata = pgTable('encrypted_metadata', {
   id: serial('id').primaryKey(),
   tokenId: text('token_id').notNull().unique(),
-  encryptedData: text('encrypted_data').notNull(),
-  dataHash: text('data_hash').notNull(), // Hash of the encrypted data for verification
+  // User-controlled private receipt data
+  userData: json('user_data').notNull().$type<{
+    capsule: string;
+    ciphertext: string;
+    policyId: string;
+  }>(),
+  userDataHash: text('user_data_hash').notNull(), // Hash of the user encrypted data for verification
+  
+  // Vendor-controlled promotion data (optional)
+  promoData: json('promo_data').$type<{
+    capsule: string;
+    ciphertext: string;
+    policyId: string;
+    expiresAt: number; // Unix timestamp for expiration
+  }>(),
+  
   unencryptedPreview: json('unencrypted_preview'), // Public preview data
   ownerAddress: text('owner_address').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),

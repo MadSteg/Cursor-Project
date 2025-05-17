@@ -5,7 +5,7 @@
  * including encryption, decryption, granting and revoking access.
  */
 import express from 'express';
-import { tacoService } from '../services/tacoService';
+import { thresholdClient, encryptData, decryptData, grantAccess, revokeAccess } from '../services/tacoService';
 import { isAuthenticated } from '../auth';
 
 const router = express.Router();
@@ -46,10 +46,11 @@ router.post('/encrypt', isAuthenticated, async (req, res) => {
       category: category || 'Uncategorized'
     };
     
-    // Encrypt metadata
-    const encryptedData = await tacoService.encryptReceiptMetadata(
-      metadata,
-      publicKey // Optional, will use default key if not provided
+    // Encrypt metadata using our new thresholdClient implementation
+    const serializedMetadata = JSON.stringify(metadata);
+    const encryptedData = await encryptData(
+      serializedMetadata,
+      publicKey // Recipient's public key
     );
     
     res.json({
@@ -87,8 +88,8 @@ router.post('/decrypt', isAuthenticated, async (req, res) => {
       });
     }
     
-    // Decrypt metadata
-    const decryptedData = await tacoService.decryptReceiptMetadata(
+    // Decrypt metadata using our thresholdClient implementation
+    const decryptedData = await decryptData(
       encryptedData,
       publicKey
     );
@@ -128,10 +129,10 @@ router.post('/grant-access', isAuthenticated, async (req, res) => {
       });
     }
     
-    // Re-encrypt for recipient
-    const reEncryptedData = await tacoService.grantReceiptAccess(
-      encryptedData,
-      ownerPublicKey,
+    // Grant access using our thresholdClient implementation
+    const policyId = encryptedData.policyId || `receipt-${Date.now()}`;
+    const reEncryptedData = await grantAccess(
+      policyId,
       recipientPublicKey
     );
     
@@ -170,9 +171,9 @@ router.post('/revoke-access', isAuthenticated, async (req, res) => {
       });
     }
     
-    // Revoke access
-    const success = await tacoService.revokeReceiptAccess(
-      receiptId,
+    // Revoke access using our thresholdClient implementation
+    const success = await revokeAccess(
+      receiptId, // Using receiptId as the policy ID
       recipientPublicKey
     );
     

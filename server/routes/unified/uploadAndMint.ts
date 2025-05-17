@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ocrService } from '../../services/ocrService';
 import { ipfsService } from '../../services/ipfsService';
-import { tacoService } from '../../services/tacoService';
+import { thresholdClient } from '../../services/tacoService';
 import { nftMintService } from '../../services/nftMintService';
 import { couponService } from '../../services/couponService';
 import { taskQueueService, TaskStatus } from '../../services/taskQueueService';
@@ -26,7 +26,7 @@ import logger from '../../logger';
 import { createLogger } from '../../logger';
 const routeLogger = createLogger('upload-mint');
 import { validateReceipt } from '../../utils/receiptUtils';
-import { requireAuth } from '../../middleware/auth';
+import { requireAuth } from '../../middleware/requireAuth';
 
 // Setup multer for image uploads
 const upload = multer({
@@ -183,14 +183,14 @@ router.post(
             };
             routeLogger.info('Using development mode mock encryption');
           } else {
-            // In production, use the actual TaCo service
-            // Since we've renamed our service methods, we need to use the new method
+            // Use the ThresholdClient for encryption with dual metadata structure
             const serializedData = JSON.stringify([receiptWithImage]);
-            const encryptResult = await tacoService.encryptData(
-              serializedData,
-              `receipt-${walletAddress}-${Date.now()}`, // Policy name
-              null                                      // No expiration
-            );
+            
+            // Use our new thresholdClient encryption interface
+            const encryptResult = await thresholdClient.encrypt({
+              recipientPublicKey: walletAddress,
+              data: Buffer.from(serializedData)
+            });
             
             encryptedData = {
               available: true,

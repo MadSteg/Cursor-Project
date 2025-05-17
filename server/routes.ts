@@ -61,6 +61,9 @@ import testUploadRoutes from "./routes/testUpload";
 import couponRoutes from "./routes/coupons";
 // Import NFT routes
 import nftRoutes from "./routes/nfts";
+// Import dual-metadata related routes
+import promotionsRoutes from "./routes/promotions";
+import nftMetadataRoutes from "./routes/nftMetadata";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -179,6 +182,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register NFT routes
   app.use('/api/nfts', nftRoutes);
   console.log('[express] NFT routes registered successfully');
+  
+  // Register promotion routes for vendor-controlled promotional metadata
+  app.use('/api/promotions', promotionsRoutes);
+  console.log('[express] Promotions routes registered successfully');
+  
+  // Register NFT metadata routes for dual metadata structure
+  app.use('/api/nft-metadata', nftMetadataRoutes);
+  console.log('[express] NFT metadata routes registered successfully');
   
 
   

@@ -1,7 +1,7 @@
 /**
  * Utility to encrypt receipt line items using TaCo threshold encryption
  */
-import { tacoService } from '../services/tacoService';
+import { thresholdClient } from '../services/tacoService';
 import { logger } from './logger';
 
 interface LineItem {
@@ -27,8 +27,11 @@ export async function encryptLineItems(walletAddress: string, items: LineItem[])
       return `${item.name || 'Item'} - $${item.price} - ${item.category || 'Other'}`;
     }).join('\n');
     
-    // Encrypt the data using TaCo service
-    const encryptedData = await tacoService.encryptData(itemsText, walletAddress);
+    // Encrypt the data using ThresholdClient
+    const encryptedData = await thresholdClient.encrypt({
+      recipientPublicKey: walletAddress,
+      data: Buffer.from(itemsText)
+    });
     
     return {
       encryptedText: encryptedData,

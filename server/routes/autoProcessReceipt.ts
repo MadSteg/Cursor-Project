@@ -15,7 +15,7 @@ import { logger } from '../utils/logger';
 import { encryptLineItems } from '../utils/encryptLineItems';
 import { createNFTPurchaseTask } from '../services/taskQueue';
 import { metadataService } from '../services/metadataService';
-import { tacoService } from '../services/tacoService';
+import { thresholdClient } from '../services/tacoService';
 
 const router = express.Router();
 
@@ -120,16 +120,20 @@ router.post('/auto-process', (req: Request, res: Response) => {
       // Create encrypted metadata for TACo
       let encryptedData = null;
       try {
-        if (tacoService) {
-          encryptedData = await tacoService.encryptReceiptMetadata({
-            items: receiptData.items,
-            merchantName: receiptData.merchantName,
-            date: receiptData.date,
-            total: receiptData.total,
-            subtotal: receiptData.subtotal,
-            tax: receiptData.tax
-          });
-        }
+        // Encrypt the metadata using ThresholdClient
+        const metadataToEncrypt = JSON.stringify({
+          items: receiptData.items,
+          merchantName: receiptData.merchantName,
+          date: receiptData.date,
+          total: receiptData.total,
+          subtotal: receiptData.subtotal,
+          tax: receiptData.tax
+        });
+        
+        encryptedData = await thresholdClient.encrypt({
+          recipientPublicKey: walletAddress,
+          data: Buffer.from(metadataToEncrypt)
+        });
       } catch (encryptionError) {
         console.error('Error encrypting receipt data:', encryptionError);
         // Continue without encryption if it fails
@@ -151,7 +155,7 @@ router.post('/auto-process', (req: Request, res: Response) => {
       };
 
       // Encrypt line items (for privacy)
-      const encryptedItems = await encryptLineItems(walletAddress, receiptData);
+      const encryptedItems = await encryptLineItems(walletAddress, receiptData.items || []);
       
       // Status for NFT gift - assume eligible
       let nftGiftStatus = {

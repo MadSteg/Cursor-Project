@@ -8,7 +8,61 @@ import crypto from 'crypto';
  */
 export class MetadataService {
   /**
-   * Store encrypted metadata for an NFT
+   * Store dual encrypted metadata for an NFT (user data and promo data)
+   * @param tokenId The NFT token ID
+   * @param ownerAddress The wallet address of the NFT owner
+   * @param userData The encrypted user-controlled receipt data
+   * @param promoData Optional encrypted vendor-controlled promotion data
+   * @param unencryptedPreview Optional unencrypted preview data
+   */
+  async storeNFTMetadata(
+    tokenId: string,
+    ownerAddress: string,
+    userData: {
+      capsule: string;
+      ciphertext: string;
+      policyId: string;
+    },
+    promoData?: {
+      capsule: string;
+      ciphertext: string;
+      policyId: string;
+      expiresAt: number;
+    },
+    unencryptedPreview?: any
+  ): Promise<boolean> {
+    try {
+      // Generate a hash of the user data for verification
+      const userDataString = JSON.stringify(userData);
+      const userDataHash = crypto.createHash('sha256').update(userDataString).digest('hex');
+      
+      // Create the metadata record
+      const metadataRecord: InsertEncryptedMetadata = {
+        tokenId,
+        userData,
+        userDataHash,
+        ownerAddress,
+        unencryptedPreview
+      };
+      
+      // Add promo data if available
+      if (promoData) {
+        metadataRecord.promoData = promoData;
+      }
+      
+      // Store in the database using the repository
+      await nftRepository.storeEncryptedMetadata(metadataRecord);
+      
+      console.log(`Stored dual encrypted metadata for token ${tokenId} owned by ${ownerAddress}`);
+      return true;
+    } catch (error: any) {
+      console.error(`Error storing encrypted metadata for token ${tokenId}:`, error);
+      return false;
+    }
+  }
+  
+  /**
+   * Store encrypted metadata for an NFT (legacy method, for backward compatibility)
    * @param tokenId The NFT token ID
    * @param ownerAddress The wallet address of the NFT owner
    * @param encryptedData The encrypted data as a string
@@ -24,11 +78,18 @@ export class MetadataService {
       // Generate a hash of the encrypted data for verification
       const dataHash = crypto.createHash('sha256').update(encryptedData).digest('hex');
       
+      // Convert to the new format
+      const userData = {
+        capsule: '',  // Will need to be provided by TACo service
+        ciphertext: encryptedData,
+        policyId: ''  // Will need to be provided by TACo service
+      };
+      
       // Create the metadata record
       const metadataRecord: InsertEncryptedMetadata = {
         tokenId,
-        encryptedData,
-        dataHash,
+        userData,
+        userDataHash: dataHash,
         ownerAddress,
         unencryptedPreview
       };

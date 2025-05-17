@@ -5,7 +5,7 @@
  * using Threshold PRE encryption for secure access control
  */
 
-import { tacoService, TacoEncryptedData } from './tacoService';
+import { thresholdClient, EncryptedData } from './tacoService';
 import { createLogger } from '../logger';
 
 const logger = createLogger('coupon-service');
@@ -87,19 +87,18 @@ class CouponService {
   /**
    * Encrypt coupon data using TACo
    * @param couponData - The coupon data to encrypt
-   * @returns TacoEncryptedData with capsule, ciphertext and policyId
+   * @returns EncryptedData with capsule, ciphertext and policyId
    */
-  private async encryptCouponData(couponData: CouponData): Promise<TacoEncryptedData> {
+  private async encryptCouponData(couponData: CouponData): Promise<EncryptedData> {
     // Serialize the coupon data to a string
     const serializedData = JSON.stringify(couponData);
     
-    // Use TACo service to encrypt the data with a time-based policy
-    // that automatically expires after the coupon's validity period
-    return await tacoService.encryptData(
-      serializedData,
-      `coupon-${couponData.merchantId}-${Date.now()}`, // Policy name
-      couponData.validUntil // Time-based expiration
-    );
+    // Use TaCo client to encrypt the data
+    // Mock policy will be created by the thresholdClient
+    return await thresholdClient.encrypt({
+      recipientPublicKey: `coupon-${couponData.merchantId}-${Date.now()}`,
+      data: Buffer.from(serializedData)
+    });
   }
   
   /**
@@ -120,12 +119,14 @@ class CouponService {
       // Check validity using TACo service
       const currentTime = Date.now();
       
-      // Attempt to decrypt using TACo
-      const decryptedData = await tacoService.decryptData({
+      // Attempt to decrypt using ThresholdClient
+      const decryptedResult = await thresholdClient.decrypt({
         capsule,
         ciphertext,
         policyId
       });
+      
+      const decryptedData = decryptedResult.toString();
       
       if (!decryptedData) {
         return {

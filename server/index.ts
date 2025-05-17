@@ -3,7 +3,7 @@ import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeStripeService } from "./services/stripeService";
-import { tacoService } from "./services/tacoService";
+import { thresholdClient } from "./services/tacoService";
 import dotenv from 'dotenv';
 
 // Ensure environment variables are loaded
@@ -56,14 +56,9 @@ app.use((req, res, next) => {
 });
 
 // Initialize services
-log("Initializing Taco threshold encryption service...");
-tacoService.initialize().then(success => {
-  if (success) {
-    log("Taco service initialized successfully", "taco");
-  } else {
-    log("Using mock Taco service", "taco");
-  }
-});
+log("Using Threshold Client encryption service...");
+// ThresholdClient is already initialized in its module
+log("Threshold Client service ready", "taco");
 
 log("Initializing Stripe payment service...");
 initializeStripeService();

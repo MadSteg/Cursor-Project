@@ -11,7 +11,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { insertUserSchema } from "@shared/schema";
 import { AuthService } from "../services/authService";
-import { tacoService } from "../services/tacoService";
+import { thresholdClient } from "../services/tacoService";
 import { WalletService } from "../services/walletService";
 
 // Extend insertUserSchema for signup with wallet creation
@@ -34,7 +34,7 @@ export default authRouter;
 
 // Initialize services
 const walletService = new WalletService();
-const authService = new AuthService(tacoService, walletService);
+const authService = new AuthService(thresholdClient, walletService);
 
 // Check authentication status
 authRouter.get("/status", (req: Request, res: Response) => {
