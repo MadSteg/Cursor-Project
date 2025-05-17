@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Lock, Unlock, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Lock, Unlock, ShieldCheck, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/contexts/WalletContext';
 
@@ -32,6 +33,7 @@ export default function NFTGallery({ walletAddress, nfts }: NFTGalleryProps) {
   const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
   const [decryptedData, setDecryptedData] = useState<any | null>(null);
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   
   // Use the passed wallet address or the connected wallet address
   const effectiveWalletAddress = walletAddress || connectedAddress;
