@@ -10,7 +10,7 @@
 import { amoyBlockchainService } from './amoyBlockchainService';
 import { ipfsService } from './ipfsService';
 import { tacoService } from './tacoService';
-import { determineReceiptTier } from '../utils/receiptUtils';
+import { determineReceiptTier } from './ocrService';
 import logger from '../logger';
 
 interface ReceiptItem {

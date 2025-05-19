@@ -1,41 +1,13 @@
 import express from 'express';
 import crypto from 'crypto';
 import { merchantMatchingService } from '../services/merchantMatchingService';
+import { verifyToastSignature } from '../middleware/verifyToastSignature';
+import { logger } from '../utils/logger';
 
 const router = express.Router();
 
 // In-memory store for POS orders (in production, use a database)
 const posOrders = new Map();
-
-/**
- * Verify Toast POS signature
- */
-function verifyToastSignature(req: any, res: any, next: any) {
-  try {
-    const toastSignature = req.headers['toast-signature'];
-    
-    if (!toastSignature) {
-      return res.status(401).json({ message: 'Missing Toast signature' });
-    }
-    
-    // In production, retrieve this from environment variables or secure storage
-    const toastSecret = process.env.TOAST_WEBHOOK_SECRET || 'toast-test-secret';
-    
-    // Create HMAC
-    const hmac = crypto.createHmac('sha256', toastSecret);
-    hmac.update(JSON.stringify(req.body));
-    const expectedSignature = hmac.digest('hex');
-    
-    if (toastSignature !== expectedSignature) {
-      return res.status(401).json({ message: 'Invalid Toast signature' });
-    }
-    
-    next();
-  } catch (error) {
-    console.error('Error verifying Toast signature:', error);
-    res.status(500).json({ message: 'Error verifying webhook signature' });
-  }
-}
 
 /**
  * Verify Square signature

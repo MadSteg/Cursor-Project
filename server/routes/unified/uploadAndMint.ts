@@ -24,7 +24,7 @@ import { taskQueueService, TaskStatus } from '../../services/taskQueueService';
 import { nftPurchaseHandler } from '../../task-handlers/nftPurchaseHandler';
 import { logger, createLogger } from '../../utils/logger';
 const routeLogger = createLogger('upload-mint');
-import { validateReceipt } from '../../utils/receiptUtils';
+import { validateReceipt } from '../../services/ocrService';
 import { requireAuth } from '../../middleware/requireAuth';
 
 // Setup multer for image uploads

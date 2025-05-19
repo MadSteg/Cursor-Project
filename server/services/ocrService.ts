@@ -1,436 +1,288 @@
 /**
  * OCR Service for BlockReceipt.ai
  * 
- * This service provides optical character recognition (OCR) capabilities
- * for extracting structured data from receipt images.
+ * This module provides OCR functionality using Google Cloud Vision API
+ * for extracting and processing receipt data.
  */
 
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { createWorker } from 'tesseract.js';
-import { OpenAI } from 'openai';
-import { ImageAnnotatorClient } from '@google-cloud/vision';
+import vision from '@google-cloud/vision';
 import { logger } from '../utils/logger';
-import { merchantService } from './merchantService';
 
-export interface LineItem {
+// Initialize Google Cloud Vision client
+const visionClient = new vision.ImageAnnotatorClient();
+
+// Export the OCR service object with all methods
+export const ocrService = {
+  extractReceipt,
+  parseReceipt,
+  cleanMerchantName,
+  formatCurrency,
+  formatDate,
+  calculateTax,
+  validateReceipt
+};
+
+/**
+ * Determine receipt tier based on total amount spent
+ * @param total Total receipt amount
+ * @returns Tier object with ID, name, and benefits
+ */
+export function determineReceiptTier(total: number): {
+  id: string;
   name: string;
-  price: number;
-  quantity: number;
-}
-
-export interface ReceiptData {
-  merchantName: string;
-  date: string;
-  total: number;
-  subtotal?: number;
-  tax?: number;
-  items?: LineItem[];
-  category?: string;
-  rawText?: string;
-  confidence?: number;
-  ocrProvider?: string;  // Indicates which OCR service was used
-  merchantId?: number;   // Reference to identified merchant in database
-  merchantConfidence?: number; // Confidence score for merchant identification
+  benefits: string[];
+} {
+  // Default to bronze tier
+  let tier = {
+    id: 'bronze',
+    name: 'Bronze',
+    benefits: ['Basic receipt storage', 'PDF exports']
+  };
+  
+  // Determine tier based on total amount
+  if (total >= 100) {
+    tier = {
+      id: 'platinum',
+      name: 'Platinum',
+      benefits: ['Premium receipt storage', 'Priority support', 'Analytics dashboard', 'API access', 'Warranty tracking']
+    };
+  } else if (total >= 50) {
+    tier = {
+      id: 'gold',
+      name: 'Gold',
+      benefits: ['Enhanced receipt storage', 'Priority support', 'Analytics dashboard', 'API access']
+    };
+  } else if (total >= 20) {
+    tier = {
+      id: 'silver',
+      name: 'Silver',
+      benefits: ['Enhanced receipt storage', 'Priority support', 'Analytics dashboard']
+    };
+  }
+  
+  return tier;
 }
 
 /**
- * OCR Service Class
+ * Extracts receipt data from an image using Google Cloud Vision
+ * @param buffer The image buffer to analyze
+ * @returns Parsed receipt data
  */
-export class OCRService {
-  private cacheDir: string;
-  private openai: OpenAI | null = null;
-  private googleVision: ImageAnnotatorClient | null = null;
-  
-  constructor() {
-    this.cacheDir = path.join(process.cwd(), 'data', 'ocr-cache');
-    
-    // Create cache directory if it doesn't exist
-    if (!fs.existsSync(this.cacheDir)) {
-      fs.mkdirSync(this.cacheDir, { recursive: true });
-    }
-    
-    // Initialize OpenAI if API key is available
-    if (process.env.OPENAI_API_KEY) {
-      this.openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
-      });
-    }
-    
-    // Initialize Google Vision if credentials are available
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      this.googleVision = new ImageAnnotatorClient();
-    }
-  }
-  
-  /**
-   * Process a receipt image with OCR
-   */
-  async processReceipt(imagePath: string): Promise<ReceiptData> {
-    try {
-      logger.info(`Processing receipt image: ${imagePath}`);
-      
-      // Check if file exists
-      if (!fs.existsSync(imagePath)) {
-        throw new Error(`Image file not found: ${imagePath}`);
-      }
-      
-      // Calculate file hash for caching
-      const fileHash = this.calculateFileHash(imagePath);
-      const cacheFilePath = path.join(this.cacheDir, `${fileHash}.json`);
-      
-      // Check if result is cached
-      const bypassCache = process.env.BYPASS_OCR_CACHE === 'true';
-      if (!bypassCache && fs.existsSync(cacheFilePath)) {
-        logger.info(`Using cached OCR result for ${imagePath}`);
-        const cachedData = JSON.parse(fs.readFileSync(cacheFilePath, 'utf8'));
-        return cachedData;
-      }
-      
-      // Create a basic receipt data object based on file information
-      const filename = path.basename(imagePath).toLowerCase();
-      const currentDate = new Date().toISOString().split('T')[0];
-      
-      // Default receipt data
-      let receiptData: ReceiptData = {
-        merchantName: "Unknown Merchant",
-        date: currentDate,
-        total: 0,
-        ocrProvider: 'fallback'
-      };
-      
-      // Try OpenAI Vision API if available
-      if (this.openai) {
-        try {
-          logger.info("Attempting to process receipt with OpenAI Vision API");
-          const data = await this.processWithOpenAI(imagePath);
-          if (data) {
-            receiptData = data;
-            logger.info("Successfully processed receipt with OpenAI Vision API");
-          }
-        } catch (err) {
-          logger.warn(`OpenAI Vision processing failed: ${err instanceof Error ? err.message : String(err)}`);
-        }
-      } else {
-        logger.info("OpenAI API not configured, skipping vision analysis");
-      }
-      
-      // If OpenAI failed, try Google Vision API
-      if (receiptData.ocrProvider === 'fallback' && this.googleVision) {
-        try {
-          logger.info("Attempting to process receipt with Google Vision API");
-          const data = await this.processWithGoogleVision(imagePath);
-          if (data) {
-            receiptData = data;
-            logger.info("Successfully processed receipt with Google Vision API");
-          }
-        } catch (err) {
-          logger.warn(`Google Vision processing failed: ${err instanceof Error ? err.message : String(err)}`);
-        }
-      } else if (!this.googleVision) {
-        logger.info("Google Vision API not configured, skipping text detection");
-      }
-      
-      // If all OCR services failed, use fallback mode
-      if (receiptData.ocrProvider === 'fallback') {
-        logger.info("Using fallback receipt processing");
-        receiptData = this.createFallbackReceipt(imagePath, fileHash);
-      }
-      
-      // Add a category if not present
-      if (!receiptData.category) {
-        receiptData.category = this.inferCategory(receiptData);
-      }
-      
-      // Identify merchant from merchant name
-      if (receiptData.merchantName) {
-        try {
-          logger.info(`Attempting to identify merchant from name: ${receiptData.merchantName}`);
-          const { merchantId, confidence } = await merchantService.identifyMerchantFromReceipt(receiptData.merchantName);
-          
-          if (merchantId) {
-            receiptData.merchantId = merchantId;
-            receiptData.merchantConfidence = confidence;
-            logger.info(`Identified merchant ID ${merchantId} with confidence ${confidence}`);
-            
-            // Get merchant details to enhance receipt data
-            const merchant = await merchantService.getMerchantById(merchantId);
-            if (merchant) {
-              // Use merchant category if available and receipt category is generic
-              if (merchant.category && (!receiptData.category || receiptData.category === 'general')) {
-                receiptData.category = merchant.category;
-              }
-            }
-          } else {
-            logger.info(`No merchant match found for "${receiptData.merchantName}"`);
-          }
-        } catch (err) {
-          logger.warn(`Merchant identification failed: ${err instanceof Error ? err.message : String(err)}`);
-        }
-      }
-      
-      // Cache the result
-      fs.writeFileSync(cacheFilePath, JSON.stringify(receiptData));
-      
-      return receiptData;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error(`Receipt processing failed: ${message}`);
-      throw new Error(`Failed to process receipt: ${message}`);
-    }
-  }
-  
-  /**
-   * Process a receipt image with OpenAI Vision API
-   */
-  private async processWithOpenAI(imagePath: string): Promise<ReceiptData | null> {
-    if (!this.openai) {
-      return null;
-    }
-    
-    // Read image as base64
-    const imageBuffer = fs.readFileSync(imagePath);
-    const base64Image = imageBuffer.toString('base64');
-    
-    // Call OpenAI API
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "system",
-          content: "You are a receipt data extraction expert. Extract structured data from the receipt image including merchant name, date, total amount, subtotal if available, tax if available, and line items if visible. Format your response as a JSON object."
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: "Extract the following information from this receipt in JSON format with these fields exactly: merchantName, date (YYYY-MM-DD format), total (number), subtotal (number, optional), tax (number, optional), items (array of objects with name, quantity, and price, optional)."
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`
-              }
-            }
-          ]
-        }
-      ]
+async function extractReceipt(buffer: Buffer) {
+  try {
+    // Call Google Cloud Vision API for document text detection
+    const [result] = await visionClient.documentTextDetection({ 
+      image: { content: buffer } 
     });
     
-    const result = response.choices[0].message.content;
+    // Extract the full text from the response
+    const text = result.fullTextAnnotation?.text || '';
+    logger.info(`Google Vision extracted ${text.length} characters of text`);
     
-    if (!result) {
-      return null;
-    }
-    
-    try {
-      const parsedData = JSON.parse(result);
-      
-      // Validate required fields
-      if (!parsedData.merchantName || !parsedData.date || parsedData.total === undefined) {
-        return null;
-      }
-      
-      return {
-        ...parsedData,
-        rawText: result,
-        confidence: 0.9,
-        ocrProvider: 'openai'
-      };
-    } catch (error) {
-      logger.warn(`Failed to parse OpenAI response as JSON: ${result}`);
-      return null;
-    }
-  }
-  
-  /**
-   * Process a receipt image with Google Vision API
-   */
-  private async processWithGoogleVision(imagePath: string): Promise<ReceiptData | null> {
-    if (!this.googleVision) {
-      return null;
-    }
-    
-    // Call Google Vision API
-    const [result] = await this.googleVision.textDetection(imagePath);
-    const detections = result.textAnnotations;
-    
-    if (!detections || detections.length === 0) {
-      return null;
-    }
-    
-    // Get full text
-    const fullText = detections[0].description || '';
-    
-    if (!fullText) {
-      return null;
-    }
-    
-    // Extract structured data from text
-    const lines = fullText.split('\n').map(line => line.trim()).filter(Boolean);
-    
-    // Extract merchant name (usually first non-empty line)
-    const merchantName = lines[0] || 'Unknown Merchant';
-    
-    // Extract date (basic implementation)
-    const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
-    let date = new Date().toISOString().split('T')[0]; // Default to today
-    
-    for (const line of lines) {
-      if (line.toLowerCase().includes('date') || dateRegex.test(line)) {
-        const match = line.match(dateRegex);
-        if (match) {
-          try {
-            // Attempt to parse the date
-            const dateObj = new Date(line);
-            if (!isNaN(dateObj.getTime())) {
-              date = dateObj.toISOString().split('T')[0];
-              break;
-            }
-          } catch (e) {
-            // Continue with default date
-          }
-        }
-      }
-    }
-    
-    // Extract total (basic implementation)
-    let total = 0;
-    const moneyRegex = /\$?\s*(\d+\.\d{2}|\d+)/;
-    
-    for (let i = lines.length - 1; i >= 0; i--) {
-      const line = lines[i].toLowerCase();
-      if (line.includes('total') || line.includes('amount') || line.includes('balance')) {
-        const match = line.match(moneyRegex);
-        if (match) {
-          total = parseFloat(match[1]);
-          break;
-        }
-      }
-    }
-    
-    // If no total found, make a last attempt
-    if (total === 0) {
-      for (let i = lines.length - 1; i >= 0; i--) {
-        const match = lines[i].match(moneyRegex);
-        if (match) {
-          total = parseFloat(match[1]);
-          break;
-        }
-      }
-    }
-    
-    return {
-      merchantName,
-      date,
-      total,
-      rawText: fullText,
-      confidence: 0.7,
-      ocrProvider: 'google-vision'
-    };
-  }
-  
-  /**
-   * Create a fallback receipt when OCR services fail
-   */
-  private createFallbackReceipt(imagePath: string, fileHash: string): ReceiptData {
-    const filename = path.basename(imagePath).toLowerCase();
-    
-    // Generate merchant name based on filename or hash
-    let merchantName = "Unknown Merchant";
-    let category = "general";
-    
-    if (filename.includes("grocery")) {
-      merchantName = "City Grocery";
-      category = "grocery";
-    } else if (filename.includes("restaurant")) {
-      merchantName = "Downtown Diner";
-      category = "restaurant";
-    } else if (filename.includes("tech")) {
-      merchantName = "Tech Store";
-      category = "electronics";
-    } else {
-      // Use hash to select a consistent merchant name
-      const merchantOptions = ["Central Market", "Urban Cafe", "Metro Shop", "Family Store", "City Mart"];
-      const nameIndex = parseInt(fileHash.substring(0, 2), 16) % merchantOptions.length;
-      merchantName = merchantOptions[nameIndex];
-    }
-    
-    // Current date
-    const date = new Date().toISOString().split('T')[0];
-    
-    // Generate total based on hash for consistency
-    const total = parseFloat((parseInt(fileHash.substring(0, 4), 16) % 100).toFixed(2)) + 0.99;
-    const subtotal = parseFloat((total * 0.9).toFixed(2));
-    const tax = parseFloat((total * 0.1).toFixed(2));
-    
-    // Generate line items
-    const items = [
-      {
-        name: `Item ${fileHash.substring(0, 4)}`,
-        quantity: 1,
-        price: parseFloat((total * 0.6).toFixed(2))
-      },
-      {
-        name: `Item ${fileHash.substring(4, 8)}`,
-        quantity: 2,
-        price: parseFloat((total * 0.2).toFixed(2))
-      }
-    ];
-    
-    return {
-      merchantName,
-      date,
-      total,
-      subtotal,
-      tax,
-      items,
-      category,
-      rawText: `Fallback processing for file: ${filename}`,
-      confidence: 0.5,
-      ocrProvider: 'fallback'
-    };
-  }
-  
-  /**
-   * Calculate MD5 hash of a file
-   */
-  private calculateFileHash(filePath: string): string {
-    const fileBuffer = fs.readFileSync(filePath);
-    const hashSum = crypto.createHash('md5');
-    hashSum.update(fileBuffer);
-    return hashSum.digest('hex');
-  }
-  
-  /**
-   * Infer receipt category based on merchant name
-   */
-  private inferCategory(receiptData: ReceiptData): string {
-    const merchantName = receiptData.merchantName.toLowerCase();
-    const rawText = receiptData.rawText ? receiptData.rawText.toLowerCase() : '';
-    
-    const categories = {
-      'grocery': ['grocery', 'market', 'food', 'supermarket'],
-      'restaurant': ['restaurant', 'cafe', 'diner', 'eatery'],
-      'electronics': ['electronics', 'tech', 'computer', 'digital'],
-      'clothing': ['clothing', 'apparel', 'fashion', 'wear'],
-      'travel': ['travel', 'hotel', 'flight', 'airline'],
-      'entertainment': ['cinema', 'movie', 'theater', 'ticket'],
-      'home': ['home', 'furniture', 'decor', 'household']
-    };
-    
-    for (const [category, keywords] of Object.entries(categories)) {
-      if (keywords.some(keyword => merchantName.includes(keyword) || 
-                         (rawText && rawText.includes(keyword)))) {
-        return category;
-      }
-    }
-    
-    return 'general';
+    // Parse the extracted text into structured receipt data
+    return parseReceipt(text);
+  } catch (error) {
+    logger.error('Error in Google Vision OCR:', error);
+    // Re-throw the error for the caller to handle
+    throw new Error('OCR processing failed: ' + (error as Error).message);
   }
 }
 
-export const ocrService = new OCRService();
+/**
+ * Parse raw receipt text into structured data
+ * @param text Raw text from receipt
+ * @returns Structured receipt data
+ */
+function parseReceipt(text: string) {
+  // Split text into lines for processing
+  const lines = text.split('\n').filter(line => line.trim() !== '');
+  
+  // Extract merchant name (usually first line or two)
+  const merchantName = lines[0]?.trim() || 'Unknown Merchant';
+  
+  // Look for date
+  const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
+  const dateMatch = text.match(dateRegex);
+  const date = dateMatch ? new Date(dateMatch[0]) : new Date();
+  
+  // Look for totals
+  const totalRegex = /(?:total|amount|sum)[:\s]*[$]?(\d+\.\d{2})/i;
+  const totalMatch = text.match(totalRegex);
+  const total = totalMatch ? parseFloat(totalMatch[1]) : 0;
+  
+  // Look for tax
+  const taxRegex = /(?:tax|vat|gst)[:\s]*[$]?(\d+\.\d{2})/i;
+  const taxMatch = text.match(taxRegex);
+  const tax = taxMatch ? parseFloat(taxMatch[1]) : 0;
+  
+  // Calculate subtotal
+  const subtotal = total - tax;
+  
+  // Extract potential items
+  const items = extractItems(lines);
+  
+  return {
+    merchantName: cleanMerchantName(merchantName),
+    date: date.toISOString().split('T')[0],
+    total,
+    subtotal,
+    tax,
+    items
+  };
+}
+
+/**
+ * Extract line items from receipt text lines
+ * @param lines Lines of text from receipt
+ * @returns Array of items with name, price, and quantity
+ */
+function extractItems(lines: string[]) {
+  const items: { name: string; price: number; quantity: number }[] = [];
+  
+  // Simple regex to find item lines (item followed by quantity and price)
+  const itemRegex = /(.+?)\s+(\d+(\.\d+)?)\s+[x@]\s+(\d+(\.\d+)?)/i;
+  
+  for (const line of lines) {
+    const match = line.match(itemRegex);
+    if (match) {
+      items.push({
+        name: match[1].trim(),
+        quantity: parseFloat(match[2]),
+        price: parseFloat(match[4])
+      });
+    }
+  }
+  
+  return items;
+}
+
+/**
+ * Clean and normalize merchant name
+ * @param name Raw merchant name
+ * @returns Cleaned and normalized merchant name
+ */
+function cleanMerchantName(name: string): string {
+  // Convert to uppercase
+  let cleanName = name.toUpperCase();
+  
+  // Remove common suffixes
+  const suffixes = [
+    'INC', 'LLC', 'LTD', 'CORP', 'CORPORATION', 'CO', 'COMPANY',
+    'INCORPORATED', 'LIMITED', 'INTERNATIONAL', 'INTL', 'ENTERPRISES',
+    'HOLDINGS', 'GROUP', 'WORLDWIDE'
+  ];
+  
+  suffixes.forEach(suffix => {
+    const regex = new RegExp(`\\s+${suffix}(\\.)?\\s*$`, 'i');
+    cleanName = cleanName.replace(regex, '');
+  });
+  
+  // Replace multiple spaces with a single space
+  cleanName = cleanName.replace(/\s+/g, ' ').trim();
+  
+  // Convert back to title case
+  cleanName = cleanName
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+  
+  return cleanName;
+}
+
+/**
+ * Format currency amount
+ * @param amount Amount to format
+ * @param currency Currency code (default: USD)
+ * @returns Formatted currency string
+ */
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency
+  }).format(amount);
+}
+
+/**
+ * Format date
+ * @param date Date to format
+ * @param format Format type (default: 'short')
+ * @returns Formatted date string
+ */
+export function formatDate(date: Date | string, format: 'short' | 'long' = 'short'): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  if (format === 'long') {
+    return dateObj.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  
+  return dateObj.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/**
+ * Calculate tax amount from subtotal and tax rate
+ * @param subtotal Subtotal amount
+ * @param taxRate Tax rate as decimal (e.g., 0.0825 for 8.25%)
+ * @returns Calculated tax amount
+ */
+export function calculateTax(subtotal: number, taxRate: number): number {
+  return subtotal * taxRate;
+}
+
+/**
+ * Validate receipt data
+ * @param receipt Receipt data to validate
+ * @returns Validation result
+ */
+export function validateReceipt(receipt: any): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  // Check for required fields
+  if (!receipt.merchantName) {
+    errors.push('Merchant name is required');
+  }
+  
+  if (!receipt.date) {
+    errors.push('Date is required');
+  } else {
+    // Validate date format
+    const dateObj = new Date(receipt.date);
+    if (isNaN(dateObj.getTime())) {
+      errors.push('Invalid date format');
+    }
+  }
+  
+  if (typeof receipt.total !== 'number' || isNaN(receipt.total)) {
+    errors.push('Total amount is required and must be a number');
+  }
+  
+  // Validate items array if present
+  if (receipt.items && Array.isArray(receipt.items)) {
+    receipt.items.forEach((item: any, index: number) => {
+      if (!item.name) {
+        errors.push(`Item #${index + 1}: Name is required`);
+      }
+      
+      if (typeof item.price !== 'number' || isNaN(item.price)) {
+        errors.push(`Item #${index + 1}: Price must be a number`);
+      }
+      
+      if (typeof item.quantity !== 'number' || isNaN(item.quantity)) {
+        errors.push(`Item #${index + 1}: Quantity must be a number`);
+      }
+    });
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}

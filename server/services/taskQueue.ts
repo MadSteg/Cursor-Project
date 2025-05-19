@@ -6,7 +6,7 @@
  */
 
 import { nftPurchaseBot } from './nftPurchaseBot';
-import { encryptLineItems } from '../utils/encryptLineItems';
+import { encryptLineItems } from './tpreService';
 import { metadataService } from './metadataService';
 
 type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed';

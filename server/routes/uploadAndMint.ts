@@ -8,7 +8,7 @@ import { ipfsService } from '../services/ipfsService';
 import { metadataService } from '../services/metadataService';
 import { blockchainService } from '../services/blockchainService';
 import taskQueueService from '../services/taskQueue';
-import { determineReceiptTier } from '../utils/receiptUtils';
+import { determineReceiptTier } from '../services/ocrService';
 import { logger } from '../utils/logger';
 
 const router = express.Router();

@@ -12,7 +12,7 @@ import fs from 'fs';
 // Import our enhanced OCR service with multi-engine support
 import { ocrService } from '../services/ocrService';
 import { logger } from '../utils/logger';
-import { encryptLineItems } from '../utils/encryptLineItems';
+import { encryptLineItems } from '../services/tpreService';
 import { createNFTPurchaseTask } from '../services/taskQueue';
 import { metadataService } from '../services/metadataService';
 import { thresholdClient } from '../services/tacoService';
