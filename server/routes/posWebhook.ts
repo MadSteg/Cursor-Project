@@ -63,7 +63,7 @@ router.post('/webhook/toast', verifyToastSignature, async (req, res) => {
       };
       
       // Store the order
-      posOrders.set(order.id, {
+      posOrders.set(order.id.toString(), {
         ...order,
         source: 'toast',
         rawData: data

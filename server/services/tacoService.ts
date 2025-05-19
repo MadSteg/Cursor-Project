@@ -10,6 +10,8 @@ import { ethers } from 'ethers';
 import { Domain } from '@nucypher/shared';
 import { logger } from '../utils/logger';
 
+// Will be defined later in the file
+
 // Create a provider instance
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.POLYGON_MUMBAI_RPC_URL || 'https://mumbai.rpc.thirdweb.com/'

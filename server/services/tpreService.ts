@@ -2,7 +2,7 @@
  * Utility to encrypt receipt line items using TaCo threshold encryption
  */
 import { thresholdClient } from '../services/tacoService';
-import { logger } from './logger';
+import { logger } from '../utils/logger';
 
 interface LineItem {
   category?: string;

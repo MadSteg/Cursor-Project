@@ -10,6 +10,13 @@ import axios from 'axios';
 // Public IPFS gateway - we'll use this for retrieving content
 const PUBLIC_GATEWAY = 'https://ipfs.io/ipfs/';
 
+// IPFS service singleton for use throughout the application
+export const ipfsService = {
+  getIpfsUrl,
+  getFromIPFS,
+  pinToIPFS
+};
+
 /**
  * Get a formatted IPFS URL from a CID
  * @param cid Content Identifier

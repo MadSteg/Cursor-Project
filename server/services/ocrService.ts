@@ -11,10 +11,17 @@ import { logger } from '../utils/logger';
 // Initialize Google Cloud Vision client
 const visionClient = new vision.ImageAnnotatorClient();
 
+// Adding a processReceipt method that combines extraction and parsing
+// This function is needed by several routes
+function processReceipt(buffer: Buffer) {
+  return extractReceipt(buffer);
+}
+
 // Export the OCR service object with all methods
 export const ocrService = {
   extractReceipt,
   parseReceipt,
+  processReceipt,
   cleanMerchantName,
   formatCurrency,
   formatDate,

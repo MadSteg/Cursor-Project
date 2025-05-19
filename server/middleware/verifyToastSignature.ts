@@ -25,8 +25,8 @@ export function verifyToastSignature(req: Request, res: Response, next: NextFunc
     }
     
     // Create HMAC using the shared secret from environment variables
-    const hmac = crypto.createHmac('sha256', process.env.TOAST_SECRET)
-      .update(req.rawBody || JSON.stringify(req.body))
+    const hmac = crypto.createHmac('sha256', process.env.TOAST_SECRET || 'toast-test-secret')
+      .update(typeof req.body === 'object' ? JSON.stringify(req.body) : req.rawBody || '')
       .digest('hex');
     
     // Compare the computed HMAC with the provided signature

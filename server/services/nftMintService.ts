@@ -11,7 +11,7 @@ import { amoyBlockchainService } from './amoyBlockchainService';
 import { ipfsService } from './ipfsService';
 import { tacoService } from './tacoService';
 import { determineReceiptTier } from './ocrService';
-import logger from '../logger';
+import { logger } from '../utils/logger';
 
 interface ReceiptItem {
   name: string;
