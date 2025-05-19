@@ -25,7 +25,7 @@ import metadataRoutes from "./routes/metadata";
 // OCR receipt scanning routes
 import ocrRoutes from "./routes/ocr";
 // OCR test tool routes
-import ocrTestRoutes from "./routes/ocr-test";
+import ocrTestRoutes from "./routes/ocrTest";
 // Receipt upload routes
 // Import the uploadReceipt routes
 import uploadReceiptRoutes from "./routes/uploadReceipt";
