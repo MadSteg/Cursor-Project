@@ -1,148 +1,82 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Web3Provider } from "@/contexts/Web3Context";
-import { WalletProvider } from "@/contexts/WalletContext";
-
-// Core pages
-import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/Dashboard";
-import HomePage from "@/pages/HomePage";
-import AboutPage from "@/pages/AboutPage";
-// NFT Catalog
-import NFTCatalogPage from "@/pages/NFTCatalogPage";
-
-// NFT Receipt Features (New Focus)
-import UserNFTWallet from "@/pages/UserNFTWallet";
-import NFTReceiptDetail from "@/pages/NFTReceiptDetail";
-import ScanReceipt from "@/pages/ScanReceiptPage";
-import VerifyReceipt from "@/pages/VerifyReceipt";
-import UploadReceiptPage from "@/pages/UploadReceiptPage";
-import ReceiptGalleryPage from "@/pages/ReceiptGalleryPage";
-import MerchantDashboard from "@/pages/MerchantDashboard";
-import ImprovedReceiptPage from "@/pages/ImprovedReceiptPage";
-import TestNFTPage from "@/pages/TestNFTPage";
-
-// Analytics & Inventory (now integrated with NFT Wallet)
-import Analytics from "@/pages/Analytics";
-import Inventory from "@/pages/Inventory";
-import InventoryDetail from "@/pages/InventoryDetail";
-import InventoryUpload from "@/pages/InventoryUpload";
-
-// Traditional Receipts Features
-import Receipts from "@/pages/Receipts";
-import ReceiptDetail from "@/pages/ReceiptDetail";
-
-// E-commerce related
-import ProductCatalog from "@/pages/ProductCatalog";
-import ProductDetail from "@/pages/ProductDetail";
-import Checkout from "@/pages/Checkout";
-import CryptoCheckout from "@/pages/CryptoCheckout";
-import EncryptedCheckout from "@/pages/EncryptedCheckout";
-
-// Offers & Coupons
-import OffersPage from "@/pages/OffersPage";
-
-// Settings & Admin
-import EncryptionSettings from "@/pages/EncryptionSettings";
-import SignInPage from "@/pages/SignInPage";
-import SignOutPage from "@/pages/SignOutPage";
-import WalletPage from "@/pages/WalletPage";
-import Admin from "@/pages/Admin";
-import ThemePreview from "@/pages/ThemePreview";
-
-// Development Testing Pages
-import TaskStatusTestPage from "@/pages/TaskStatusTestPage";
-import AutoProcessReceiptPage from "@/pages/AutoProcessReceiptPage";
-import TacoTestPage from "@/pages/tacoTest";
-
-// Layout components
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-
-function Router() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <Switch>
-        {/* Core pages */}
-        <Route path="/" component={HomePage} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/about" component={AboutPage} />
-        <Route path="/nft-catalog" component={NFTCatalogPage} />
-        
-        {/* Core Receipt Features */}
-        <Route path="/scan-receipt" component={ScanReceipt} />
-        <Route path="/mint-blockreceipt" component={ImprovedReceiptPage} />
-        <Route path="/upload-receipt" component={ImprovedReceiptPage} /> {/* Keep for backward compatibility */}
-        <Route path="/receipt-gallery" component={ReceiptGalleryPage} />
-        <Route path="/receipt-gallery/:address" component={ReceiptGalleryPage} />
-        <Route path="/verify-receipt" component={VerifyReceipt} />
-        <Route path="/merchant-dashboard" component={MerchantDashboard} />
-        <Route path="/new-receipt" component={ImprovedReceiptPage} /> {/* New improved receipt uploader */}
-        
-        {/* NFT Receipt Features */}
-        {/* <Route path="/nft-wallet" component={UserNFTWallet} /> */}
-        <Route path="/nft-receipts/:id" component={NFTReceiptDetail} />
-        
-        {/* Routes now accessible via NFT Wallet tabs - Commented out as requested, but kept for future development */}
-        {/* <Route path="/nft-wallet/analytics" component={Analytics} /> */}
-        {/* <Route path="/nft-wallet/inventory" component={Inventory} /> */}
-        {/* <Route path="/nft-wallet/inventory/:id" component={InventoryDetail} /> */}
-        {/* <Route path="/nft-wallet/inventory/:id/edit" component={InventoryUpload} /> */}
-        {/* <Route path="/nft-wallet/inventory-upload" component={InventoryUpload} /> */}
-        
-        {/* Traditional Receipts (Legacy) */}
-        <Route path="/receipts" component={Receipts} />
-        <Route path="/receipts/:id" component={ReceiptDetail} />
-        
-        {/* E-commerce */}
-        <Route path="/products" component={ProductCatalog} />
-        <Route path="/product/:id" component={ProductDetail} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/crypto-checkout" component={CryptoCheckout} />
-        <Route path="/encrypted-checkout" component={EncryptedCheckout} />
-        
-        {/* Offers & Coupons */}
-        <Route path="/offers" component={OffersPage} />
-        
-        {/* Authentication & Settings */}
-        <Route path="/sign-in" component={SignInPage} />
-        <Route path="/sign-out" component={SignOutPage} />
-        <Route path="/encryption-settings" component={EncryptionSettings} />
-        <Route path="/wallet" component={WalletPage} />
-        <Route path="/wallet-settings" component={WalletPage} />
-        <Route path="/admin" component={Admin} />
-        <Route path="/theme-preview" component={ThemePreview} />
-        
-        {/* Development Testing Pages */}
-        <Route path="/test/task-status" component={TaskStatusTestPage} />
-        <Route path="/test/auto-process" component={AutoProcessReceiptPage} />
-        <Route path="/test/taco" component={TacoTestPage} />
-        <Route path="/test/nft" component={TestNFTPage} />
-        
-        {/* 404 Page */}
-        <Route component={NotFound} />
-      </Switch>
-      <Footer />
-    </div>
-  );
-}
+import React, { useState } from 'react';
+import { Route, Switch } from 'wouter';
+import ReceiptUploader from './components/ReceiptUploader';
+import Header from './components/Header';
+import Dashboard from './pages/Dashboard';
+import Wallet from './pages/Wallet';
+import OCRTestPage from './pages/OCRTestPage';
 
 function App() {
+  const [isConnected, setIsConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+
+  // Simulating wallet connection
+  const connectWallet = () => {
+    const mockWalletAddress = '0x' + Math.random().toString(36).substring(2, 15);
+    setWalletAddress(mockWalletAddress);
+    setIsConnected(true);
+  };
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <Web3Provider>
-        <WalletProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </WalletProvider>
-      </Web3Provider>
-    </QueryClientProvider>
+    <div className="min-h-screen bg-background">
+      <Header 
+        isConnected={isConnected} 
+        walletAddress={walletAddress} 
+        connectWallet={connectWallet} 
+      />
+      
+      <main className="container mx-auto px-4 py-8">
+        <Switch>
+          <Route path="/">
+            <div className="max-w-5xl mx-auto">
+              <section className="text-center mb-12">
+                <h1 className="text-4xl font-bold mb-4 brand-gradient-text">
+                  Transform Receipts into Digital Assets
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  Upload, categorize, and manage receipts with blockchain-powered security and privacy
+                </p>
+              </section>
+              
+              {isConnected ? (
+                <ReceiptUploader walletAddress={walletAddress} />
+              ) : (
+                <div className="text-center p-12 border rounded-lg bg-card shadow-sm">
+                  <h2 className="text-2xl font-semibold mb-4">Connect Your Wallet to Start</h2>
+                  <p className="mb-6 text-muted-foreground">
+                    To upload receipts and access your digital assets, you need to connect your wallet.
+                  </p>
+                  <button 
+                    onClick={connectWallet}
+                    className="brand-gradient-bg text-white font-medium px-6 py-3 rounded-md"
+                  >
+                    Connect Wallet
+                  </button>
+                </div>
+              )}
+            </div>
+          </Route>
+          
+          <Route path="/dashboard">
+            <Dashboard />
+          </Route>
+          
+          <Route path="/wallet">
+            <Wallet />
+          </Route>
+          
+          <Route path="/ocr-test">
+            <OCRTestPage />
+          </Route>
+        </Switch>
+      </main>
+      
+      <footer className="mt-16 py-8 bg-muted">
+        <div className="container mx-auto px-4 text-center text-muted-foreground">
+          <p>BlockReceipt.ai - Secure and private receipt management on the blockchain</p>
+        </div>
+      </footer>
+    </div>
   );
 }
 

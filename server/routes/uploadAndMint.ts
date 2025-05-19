@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const extension = path.extname(file.originalname);
+    const extension = path.extname(file.originalname) || '.jpg';
     cb(null, `receipt-${uniqueSuffix}${extension}`);
   }
 });
@@ -33,9 +33,10 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max size
   fileFilter: (req, file, cb) => {
+    logger.info(`Received file upload: ${file.originalname}, mimetype: ${file.mimetype}`);
     // Accept images and PDFs
     const filetypes = /jpeg|jpg|png|gif|pdf/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase() || '.jpg');
     const mimetype = filetypes.test(file.mimetype);
     
     if (mimetype && extname) {
@@ -44,7 +45,7 @@ const upload = multer({
       cb(new Error('Only images and PDF files are allowed'));
     }
   }
-}).single('receipt');
+}).single('receiptImage'); // Changed from 'receipt' to 'receiptImage' to match frontend
 
 // Main unified upload and mint route
 router.post('/', (req, res) => {
