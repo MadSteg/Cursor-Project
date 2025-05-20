@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
 import OCRTestPage from "./pages/OCRTestPage";
 import Upload from "./pages/Upload";
+import Gallery from "./pages/Gallery";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
@@ -38,6 +39,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/wallet">
             <Wallet />
+          </Route>
+          
+          <Route path="/gallery">
+            <Gallery />
           </Route>
           
           <Route path="/ocr-test">
