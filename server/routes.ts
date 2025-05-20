@@ -67,8 +67,7 @@ import promotionsRoutes from "./routes/promotions";
 import nftMetadataRoutes from "./routes/nftMetadata";
 // Import cloud storage routes for accessing images
 import cloudStorageRoutes from "./routes/cloudStorage";
-// Import NFT generator routes
-import nftGeneratorRoutes from "./routes/nftGenerator";
+// Import routes for core functionalities
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -204,9 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/storage', cloudStorageRoutes);
   console.log('[express] Cloud storage routes registered successfully');
   
-  // Register NFT generator routes
-  app.use('/api/nft-generator', nftGeneratorRoutes);
-  console.log('[express] NFT generator routes registered successfully');
+
   
 
   

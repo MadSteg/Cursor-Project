@@ -12,7 +12,6 @@ import NFTTutorial from "./components/NFTTutorial";
 import Home from "./pages/Home";
 import CloudStorageDemo from "./pages/CloudStorageDemo";
 import CloudStorageExplorer from "./pages/CloudStorageExplorer";
-import NFTGenerator from "./pages/NFTGenerator";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
@@ -63,10 +62,6 @@ const AppContent: React.FC = () => {
           
           <Route path="/cloud-explorer">
             <CloudStorageExplorer />
-          </Route>
-          
-          <Route path="/nft-generator">
-            <NFTGenerator />
           </Route>
           
           <Route>
