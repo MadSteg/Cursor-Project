@@ -363,7 +363,7 @@ const Upload: React.FC = () => {
         
         {/* Expanded Privacy Explainer */}
         <div className="p-5 mb-6 border border-indigo-200 dark:border-indigo-800/30 rounded-lg bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10">
-          <h3 className="text-lg font-medium mb-3 text-center brand-gradient-text">Privacy-First Receipt Storage</h3>
+          <h3 className="text-lg font-medium mb-3 text-center brand-gradient-text">How Your Data Stays Private</h3>
           <p className="text-sm text-muted-foreground mb-4">
             BlockReceipt.ai uses Threshold Network's TACo PRE technology to ensure that your receipt data remains private,
             even though it's stored on a public blockchain. Here's how it works:
