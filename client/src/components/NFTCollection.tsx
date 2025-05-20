@@ -1,171 +1,13 @@
 import React, { useState } from 'react';
 import { useWallet } from '../contexts/WalletContext';
+import { useLocation } from 'wouter';
+import { NFT } from '../types/nft';
+import Confetti from './Confetti';
 
-// Define the NFT type structure
-interface NFT {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  attributes: {
-    trait_type: string;
-    value: string;
-  }[];
+interface NFTCollectionProps {
+  nfts: NFT[];
+  mintedNFTs: string[];
 }
-
-// Collection of Bulldog NFTs
-const bulldogNFTs: NFT[] = [
-  {
-    id: 'bulldog-cowboy',
-    name: 'Cowboy Bulldog',
-    description: 'A cool cowboy bulldog with a stylish hat and plaid shirt.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.19 AM.png',
-    rarity: 'rare',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Cowboy' },
-      { trait_type: 'Hat', value: 'Cowboy Hat' },
-      { trait_type: 'Personality', value: 'Adventurous' }
-    ]
-  },
-  {
-    id: 'bulldog-hoodie',
-    name: 'Hoodie Bulldog',
-    description: 'A relaxed bulldog wearing a comfortable green hoodie.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.25 AM.png',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Hoodie' },
-      { trait_type: 'Hat', value: 'Hood' },
-      { trait_type: 'Personality', value: 'Chill' }
-    ]
-  },
-  {
-    id: 'bulldog-tophat',
-    name: 'Dapper Bulldog',
-    description: 'An elegant bulldog with a top hat and bow tie.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.32 AM.png',
-    rarity: 'uncommon',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Striped Shirt' },
-      { trait_type: 'Hat', value: 'Top Hat' },
-      { trait_type: 'Accessory', value: 'Bow Tie' },
-      { trait_type: 'Personality', value: 'Sophisticated' }
-    ]
-  },
-  {
-    id: 'bulldog-angel',
-    name: 'Angel Bulldog',
-    description: 'A heavenly bulldog with angel wings and a halo.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.27.03 AM.png',
-    rarity: 'legendary',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Striped Shirt' },
-      { trait_type: 'Accessory', value: 'Angel Wings' },
-      { trait_type: 'Accessory', value: 'Halo' },
-      { trait_type: 'Personality', value: 'Pure' }
-    ]
-  },
-  {
-    id: 'bulldog-cow',
-    name: 'Cow Bulldog',
-    description: 'A bulldog with cow spots and small horns.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.43 AM.png',
-    rarity: 'rare',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Casual' },
-      { trait_type: 'Pattern', value: 'Cow Spots' },
-      { trait_type: 'Accessory', value: 'Horns' },
-      { trait_type: 'Personality', value: 'Playful' }
-    ]
-  },
-  {
-    id: 'bulldog-newsboy',
-    name: 'Newsboy Bulldog',
-    description: 'A vintage-styled bulldog with a classic newsboy cap.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.49 AM.png',
-    rarity: 'uncommon',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Jacket' },
-      { trait_type: 'Hat', value: 'Newsboy Cap' },
-      { trait_type: 'Personality', value: 'Classic' }
-    ]
-  },
-  {
-    id: 'bulldog-beer',
-    name: 'Social Bulldog',
-    description: 'A friendly bulldog enjoying a cold beer.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.53 AM.png',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Jersey' },
-      { trait_type: 'Accessory', value: 'Beer Mug' },
-      { trait_type: 'Personality', value: 'Social' }
-    ]
-  },
-  {
-    id: 'bulldog-stripes',
-    name: 'Striped Bulldog',
-    description: 'A sporty bulldog in a green and white striped jersey.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.25.54 AM.png',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Striped Jersey' },
-      { trait_type: 'Team', value: 'Green Stars' },
-      { trait_type: 'Personality', value: 'Sporty' }
-    ]
-  },
-  {
-    id: 'bulldog-soccer',
-    name: 'Soccer Bulldog',
-    description: 'A sporty bulldog with a soccer ball and athletic jersey.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.00 AM.png',
-    rarity: 'uncommon',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Soccer Jersey' },
-      { trait_type: 'Hat', value: 'Cap' },
-      { trait_type: 'Accessory', value: 'Soccer Ball' },
-      { trait_type: 'Personality', value: 'Athletic' }
-    ]
-  },
-  {
-    id: 'bulldog-casual',
-    name: 'Urban Bulldog',
-    description: 'A city-dwelling bulldog with a casual blue outfit.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.06 AM.png',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Blue Sweater' },
-      { trait_type: 'Hat', value: 'Beanie' },
-      { trait_type: 'Personality', value: 'Urban' }
-    ]
-  },
-  {
-    id: 'bulldog-captain',
-    name: 'Captain Bulldog',
-    description: 'A distinguished bulldog in a naval captain uniform.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.57 AM.png',
-    rarity: 'epic',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Naval Uniform' },
-      { trait_type: 'Hat', value: 'Captain Hat' },
-      { trait_type: 'Rank', value: 'Captain' },
-      { trait_type: 'Personality', value: 'Authoritative' }
-    ]
-  },
-  {
-    id: 'bulldog-dad',
-    name: 'Daddy Bulldog',
-    description: 'A caring bulldog dad with his bulldog teddy.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.12 AM.png',
-    rarity: 'rare',
-    attributes: [
-      { trait_type: 'Outfit', value: 'Striped Jersey' },
-      { trait_type: 'Accessory', value: 'Teddy Bear' },
-      { trait_type: 'Personality', value: 'Caring' }
-    ]
-  },
-];
 
 // Get rarity color
 const getRarityColor = (rarity: string) => {
@@ -189,7 +31,7 @@ const getRarityColor = (rarity: string) => {
 const NFTCard: React.FC<{ nft: NFT; onClick: () => void }> = ({ nft, onClick }) => {
   return (
     <div 
-      className="bg-card rounded-lg overflow-hidden border border-border shadow-sm nft-card cursor-pointer"
+      className="bg-card rounded-lg overflow-hidden border border-border shadow-sm nft-card cursor-pointer hover:shadow-md transition-shadow"
       onClick={onClick}
     >
       <div className="relative">
@@ -287,16 +129,18 @@ const NFTDetailModal: React.FC<{ nft: NFT; onClose: () => void; onMint: () => vo
 };
 
 // Main NFT Collection Component
-const NFTCollection: React.FC = () => {
+const NFTCollection: React.FC<NFTCollectionProps> = ({ nfts, mintedNFTs: initialMintedNFTs }) => {
   const { isConnected } = useWallet();
+  const [, navigate] = useLocation();
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [mintingNFT, setMintingNFT] = useState<string | null>(null);
-  const [mintedNFTs, setMintedNFTs] = useState<string[]>([]);
+  const [mintedNFTs, setMintedNFTs] = useState<string[]>(initialMintedNFTs || []);
+  const [showConfetti, setShowConfetti] = useState(false);
   
   // Filter NFTs based on criteria
-  const filteredNFTs = bulldogNFTs.filter(nft => {
+  const filteredNFTs = nfts.filter(nft => {
     const matchesFilter = filter === 'all' || nft.rarity === filter;
     const matchesSearch = nft.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          nft.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -316,40 +160,9 @@ const NFTCollection: React.FC = () => {
       setSelectedNFT(null);
       
       // Show confetti for successful mint
-      triggerConfetti();
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
     }, 2000);
-  };
-  
-  // Create and animate confetti elements
-  const triggerConfetti = () => {
-    const container = document.createElement('div');
-    container.className = 'confetti-container';
-    document.body.appendChild(container);
-    
-    const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
-    
-    for (let i = 0; i < 100; i++) {
-      const confetti = document.createElement('div');
-      confetti.className = 'confetti';
-      
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const leftPos = Math.random() * 100;
-      const fallDuration = (Math.random() * 3) + 2;
-      const shakeDuration = (Math.random() * 0.5) + 0.5;
-      const shakeDistance = (Math.random() * 15) - 7.5;
-      
-      confetti.style.setProperty('--color', color);
-      confetti.style.setProperty('--fall-duration', `${fallDuration}s`);
-      confetti.style.setProperty('--shake-duration', `${shakeDuration}s`);
-      confetti.style.setProperty('--shake-distance', `${shakeDistance}px`);
-      confetti.style.left = `${leftPos}%`;
-      
-      container.appendChild(confetti);
-    }
-    
-    setTimeout(() => {
-      document.body.removeChild(container);
-    }, 5000);
   };
   
   // Not connected
@@ -359,11 +172,9 @@ const NFTCollection: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-3xl font-bold mb-6 brand-gradient-text">Bulldog NFT Collection</h1>
           
-          <div className="bg-card shadow-sm rounded-lg p-8 border animate-pulse-custom">
+          <div className="bg-card shadow-sm rounded-lg p-8 border animate-pulse-subtle">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-muted-foreground mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="2" y="6" width="20" height="12" rx="2" />
-              <path d="M14 12h4" />
-              <path d="M6 12h4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
             <h2 className="text-xl font-semibold mb-2">Connect Your Wallet</h2>
             <p className="text-muted-foreground mb-6">
@@ -371,7 +182,7 @@ const NFTCollection: React.FC = () => {
             </p>
             <button
               onClick={() => {}}
-              className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
+              className="px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
             >
               Connect Wallet
             </button>
@@ -382,12 +193,11 @@ const NFTCollection: React.FC = () => {
   }
   
   return (
-    <div className="py-12 px-4">
+    <div className="py-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold brand-gradient-text">Bulldog NFT Collection</h1>
-            <p className="text-muted-foreground mt-1">Exclusive digital collectibles for BlockReceipt users</p>
+            <p className="text-muted-foreground">Exclusive digital collectibles for BlockReceipt users</p>
           </div>
           
           <div className="flex items-center gap-2">
@@ -446,46 +256,44 @@ const NFTCollection: React.FC = () => {
         </div>
         
         {filteredNFTs.length === 0 && (
-          <div className="bg-card shadow-sm rounded-lg p-8 border text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-muted-foreground mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          <div className="text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-muted-foreground mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2 className="text-xl font-semibold mb-2">No NFTs Found</h2>
-            <p className="text-muted-foreground mb-6">
-              No NFTs match your current search criteria. Try adjusting your filters.
-            </p>
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setFilter('all');
-              }}
-              className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
-            >
-              Reset Filters
-            </button>
+            <h3 className="text-lg font-medium mb-1">No matching NFTs found</h3>
+            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
           </div>
         )}
       </div>
       
       {selectedNFT && (
         <NFTDetailModal 
-          nft={selectedNFT} 
-          onClose={() => setSelectedNFT(null)} 
+          nft={selectedNFT}
+          onClose={() => setSelectedNFT(null)}
           onMint={() => handleMint(selectedNFT.id)}
         />
       )}
-      
-      {mintingNFT && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg shadow-xl p-6 max-w-md w-full text-center">
-            <div className="animate-spin w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <h3 className="text-xl font-bold mb-2">Minting Your NFT</h3>
-            <p className="text-muted-foreground">
-              Please wait while we mint your NFT on the blockchain...
-            </p>
+
+      <Confetti active={showConfetti} />
+
+      {/* Progress indicator */}
+      <div className="fixed bottom-6 left-6 bg-card shadow-lg rounded-lg p-4 border">
+        <div className="flex items-center gap-2">
+          <div className="h-10 w-10 brand-gradient-bg rounded-full flex items-center justify-center text-white font-bold">
+            {mintedNFTs.length}
+          </div>
+          <div>
+            <p className="text-sm font-medium">NFTs Collected</p>
+            <p className="text-xs text-muted-foreground">{mintedNFTs.length} of {nfts.length}</p>
           </div>
         </div>
-      )}
+        <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full brand-gradient-bg"
+            style={{ width: `${(mintedNFTs.length / nfts.length) * 100}%` }}
+          ></div>
+        </div>
+      </div>
     </div>
   );
 };
