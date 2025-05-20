@@ -314,25 +314,79 @@ const Upload: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
-            <h3 className="font-medium mb-2">TACo PRE Privacy Protection</h3>
+            <h3 className="font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              TACo PRE Privacy Protection
+            </h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              Your receipt data is encrypted using Threshold Network's TACo PRE (Threshold Access Control Proxy Re-Encryption) technology. 
+              Only you can decrypt and view your complete receipt details.
+            </p>
+            <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+              <li>Access control tied directly to your wallet</li>
+              <li>Encrypted data stored on IPFS and blockchain</li>
+              <li>Selective disclosure for warranty claims</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
+            <h3 className="font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17h6m-3-3v6" />
+              </svg>
+              Automatic Categorization
+            </h3>
             <p className="text-sm text-muted-foreground">
-              Your receipt data is encrypted using Threshold Network's TACo PRE (Proxy Re-Encryption) technology. 
-              Only you control who can access your receipt contents, as the encryption is bound to your wallet address.
+              Our OCR technology extracts and categorizes receipt data while keeping your sensitive information private. The extracted data is encrypted before being stored on the blockchain.
             </p>
           </div>
           
           <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
-            <h3 className="font-medium mb-2">Automatic Categorization</h3>
+            <h3 className="font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              How TACo Protects Your Data
+            </h3>
             <p className="text-sm text-muted-foreground">
-              We automatically categorize your purchases for easy tracking and analysis.
+              1. Your receipt data is encrypted with keys only you control
+              <br />
+              2. A secure policy is created linking to your wallet address
+              <br />
+              3. Only you can decrypt and access the full receipt details
             </p>
           </div>
+        </div>
+        
+        {/* Expanded Privacy Explainer */}
+        <div className="p-5 mb-6 border border-indigo-200 dark:border-indigo-800/30 rounded-lg bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10">
+          <h3 className="text-lg font-medium mb-3 text-center brand-gradient-text">Privacy-First Receipt Storage</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            BlockReceipt.ai uses Threshold Network's TACo PRE technology to ensure that your receipt data remains private,
+            even though it's stored on a public blockchain. Here's how it works:
+          </p>
           
-          <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
-            <h3 className="font-medium mb-2">Warranty Management</h3>
-            <p className="text-sm text-muted-foreground">
-              Keep track of warranties with blockchain verification for your important purchases.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/80 dark:bg-gray-900/60 p-3 rounded-lg">
+              <h4 className="font-medium mb-2 text-sm">What makes TACo PRE special?</h4>
+              <p className="text-xs text-muted-foreground">
+                Unlike traditional encryption where data can only be accessed by the original key holder,
+                TACo's Proxy Re-Encryption allows for <strong>selective, controlled access</strong> to your encrypted data without
+                ever exposing your private keys. This means you remain in complete control of who can view your receipt details.
+              </p>
+            </div>
+            
+            <div className="bg-white/80 dark:bg-gray-900/60 p-3 rounded-lg">
+              <h4 className="font-medium mb-2 text-sm">Public vs. Private Data</h4>
+              <p className="text-xs text-muted-foreground">
+                When you mint a receipt NFT, only basic metadata like the timestamp and merchant name are visible publicly.
+                The detailed receipt contents, purchase information, item details, and financial data remain
+                encrypted and are only accessible to you as the NFT's minter and owner.
+              </p>
+            </div>
           </div>
         </div>
       </div>
