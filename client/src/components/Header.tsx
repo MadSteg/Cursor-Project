@@ -52,16 +52,12 @@ const Header: React.FC = () => {
           </div>
           
           <nav className="hidden md:flex space-x-10">
-            <Link href="/">
-              <a className={`text-base font-medium ${isActive('/') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                Home
-              </a>
+            <Link href="/" className={`text-base font-medium ${isActive('/') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+              Home
             </Link>
             
-            <Link href="/dashboard">
-              <a className={`text-base font-medium ${isActive('/dashboard') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                Dashboard
-              </a>
+            <Link href="/dashboard" className={`text-base font-medium ${isActive('/dashboard') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+              Dashboard
             </Link>
             
             <div className="relative">
