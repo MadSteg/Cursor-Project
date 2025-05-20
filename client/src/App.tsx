@@ -86,6 +86,9 @@ const AppContent: React.FC = () => {
           </p>
         </div>
       </footer>
+      
+      {/* Display the NFT Tutorial for logged-in users */}
+      {isConnected && <NFTTutorial />}
     </div>
   );
 };

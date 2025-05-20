@@ -433,12 +433,14 @@ const NFTCollection: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredNFTs.map((nft) => (
             <div key={nft.id} className="relative">
-              <NFTCard nft={nft} onClick={() => setSelectedNFT(nft)} />
-              {mintedNFTs.includes(nft.id) && (
-                <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-md">
-                  Minted
-                </div>
-              )}
+              <div onClick={() => setSelectedNFT(nft)}>
+                <NFTCard nft={nft} onClick={() => setSelectedNFT(nft)} />
+                {mintedNFTs.includes(nft.id) && (
+                  <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-md">
+                    Minted
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
