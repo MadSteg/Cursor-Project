@@ -21,7 +21,7 @@ const Header: React.FC = () => {
   const isActive = (path: string) => location === path;
 
   return (
-    <header className="bg-card shadow-sm border-b">
+    <header className="bg-card shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
@@ -66,7 +66,9 @@ const Header: React.FC = () => {
             <div className="relative">
               <button
                 type="button"
-                className={`text-base font-medium inline-flex items-center ${isWalletMenuOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`group inline-flex items-center text-base font-medium focus:outline-none ${
+                  isActive('/wallet') || isActive('/wallet/gallery') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }`}
                 onClick={() => {
                   setIsWalletMenuOpen(!isWalletMenuOpen);
                   setIsMerchantMenuOpen(false);
@@ -90,9 +92,9 @@ const Header: React.FC = () => {
               </button>
               
               {isWalletMenuOpen && (
-                <div className="absolute z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-2">
-                  <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                    <div className="relative grid gap-6 bg-white p-6">
+                <div className="absolute z-10 -ml-4 mt-3 transform px-2 w-screen max-w-md sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2">
+                  <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div className="relative grid gap-6 bg-card px-5 py-6 sm:gap-8 sm:p-8">
                       <Link 
                         href="/wallet"
                         className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
@@ -103,22 +105,22 @@ const Header: React.FC = () => {
                             Wallet Manager
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            View your connected wallets and NFTs
+                            Manage your wallet and assets
                           </p>
                         </div>
                       </Link>
                       
                       <Link 
-                        href="/ocr-test"
+                        href="/wallet/gallery"
                         className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
                         onClick={closeAllMenus}
                       >
                         <div className="ml-4">
                           <p className="text-sm font-medium text-foreground">
-                            OCR Test
+                            NFT Gallery
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Test the receipt OCR engines
+                            View your receipt NFTs
                           </p>
                         </div>
                       </Link>
@@ -131,7 +133,9 @@ const Header: React.FC = () => {
             <div className="relative">
               <button
                 type="button"
-                className={`text-base font-medium inline-flex items-center ${isMerchantMenuOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`group inline-flex items-center text-base font-medium focus:outline-none ${
+                  isActive('/merchant') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }`}
                 onClick={() => {
                   setIsMerchantMenuOpen(!isMerchantMenuOpen);
                   setIsWalletMenuOpen(false);
@@ -155,9 +159,9 @@ const Header: React.FC = () => {
               </button>
               
               {isMerchantMenuOpen && (
-                <div className="absolute z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-2">
-                  <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                    <div className="relative grid gap-6 bg-white p-6">
+                <div className="absolute z-10 -ml-4 mt-3 transform px-2 w-screen max-w-md sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2">
+                  <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div className="relative grid gap-6 bg-card px-5 py-6 sm:gap-8 sm:p-8">
                       <Link 
                         href="/merchant/register"
                         className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
@@ -183,7 +187,22 @@ const Header: React.FC = () => {
                             Promotion Management
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Create and manage promotions
+                            Create and manage promotions for your customers
+                          </p>
+                        </div>
+                      </Link>
+                      
+                      <Link 
+                        href="/merchant/pos"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            POS Integration
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Integrate with your POS system
                           </p>
                         </div>
                       </Link>
@@ -196,7 +215,9 @@ const Header: React.FC = () => {
             <div className="relative">
               <button
                 type="button"
-                className={`text-base font-medium inline-flex items-center ${isAdminMenuOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`group inline-flex items-center text-base font-medium focus:outline-none ${
+                  isActive('/admin') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }`}
                 onClick={() => {
                   setIsAdminMenuOpen(!isAdminMenuOpen);
                   setIsWalletMenuOpen(false);
@@ -220,20 +241,20 @@ const Header: React.FC = () => {
               </button>
               
               {isAdminMenuOpen && (
-                <div className="absolute z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-2">
-                  <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                    <div className="relative grid gap-6 bg-white p-6">
+                <div className="absolute z-10 -ml-4 mt-3 transform px-2 w-screen max-w-md sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2">
+                  <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                    <div className="relative grid gap-6 bg-card px-5 py-6 sm:gap-8 sm:p-8">
                       <Link 
-                        href="/admin/nft-pool"
+                        href="/ocr-test"
                         className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
                         onClick={closeAllMenus}
                       >
                         <div className="ml-4">
                           <p className="text-sm font-medium text-foreground">
-                            NFT Pool Management
+                            OCR Test Tool
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Manage the NFT pool for receipts
+                            Test OCR functionality
                           </p>
                         </div>
                       </Link>
@@ -259,34 +280,29 @@ const Header: React.FC = () => {
             </div>
           </nav>
           
+          {/* Wallet Button in Desktop Mode */}
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-            <Link 
-              href="/upload" 
-              className="inline-flex items-center justify-center h-10 px-4 py-2 brand-gradient-bg text-white rounded-md shadow-sm font-medium"
-            >
-              Upload Receipt
-            </Link>
+            <WalletButton className="ml-8" />
           </div>
         </div>
       </div>
-      
+
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="absolute top-0 inset-x-0 p-2 transition transform origin-top-right md:hidden z-50">
-          <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-card divide-y-2 divide-muted">
+          <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-card divide-y-2 divide-gray-50">
             <div className="pt-5 pb-6 px-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="brand-gradient-text font-bold text-xl">
-                    BlockReceipt.ai
-                  </span>
+                  <span className="brand-gradient-text font-bold text-xl">BlockReceipt.ai</span>
                 </div>
                 <div className="-mr-2">
                   <button
                     type="button"
-                    className="rounded-md p-2 inline-flex items-center justify-center text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+                    className="bg-muted rounded-md p-2 inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
                     onClick={() => setIsMenuOpen(false)}
                   >
+                    <span className="sr-only">Close menu</span>
                     <svg
                       className="h-6 w-6"
                       xmlns="http://www.w3.org/2000/svg"
@@ -305,9 +321,15 @@ const Header: React.FC = () => {
                   </button>
                 </div>
               </div>
+              
+              {/* Mobile Menu Wallet Button */}
+              <div className="mt-6">
+                <WalletButton className="w-full" />
+              </div>
+              
               <div className="mt-6">
                 <nav className="grid gap-y-8">
-                  <Link 
+                  <Link
                     href="/"
                     className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
                     onClick={closeAllMenus}
@@ -344,16 +366,6 @@ const Header: React.FC = () => {
                   >
                     <span className="ml-3 text-base font-medium text-foreground">
                       OCR Test
-                    </span>
-                  </Link>
-                  
-                  <Link 
-                    href="/upload"
-                    className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
-                    onClick={closeAllMenus}
-                  >
-                    <span className="ml-3 text-base font-medium text-foreground">
-                      Upload Receipt
                     </span>
                   </Link>
                 </nav>
