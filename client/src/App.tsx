@@ -5,7 +5,6 @@ import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
 import OCRTestPage from "./pages/OCRTestPage";
-import AIFeedback from "./pages/AIFeedback";
 
 const App: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>("0x71C7656EC7ab88b098defB751B7401B5f6d8976F");
@@ -42,10 +41,6 @@ const App: React.FC = () => {
           
           <Route path="/ocr-test">
             <OCRTestPage />
-          </Route>
-          
-          <Route path="/ai-feedback">
-            <AIFeedback />
           </Route>
           
           <Route path="/upload">
