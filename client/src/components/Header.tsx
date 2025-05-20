@@ -19,6 +19,8 @@ const Header: React.FC = () => {
     { name: 'Upload', path: '/upload' },
     { name: 'Gallery', path: '/wallet' },
     { name: 'NFT Collection', path: '/nft-browser' },
+    { name: 'NFT Generator', path: '/nft-generator' },
+    { name: 'Cloud Explorer', path: '/cloud-explorer' },
   ];
   
   return (
