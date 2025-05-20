@@ -1,4 +1,5 @@
 import { NFT } from '../types/nft';
+import { defaultBulldogSvg } from './default-bulldog';
 
 // Sample NFT data for development with original images
 export const sampleNFTs: NFT[] = [
@@ -30,7 +31,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-tophat',
     name: 'Dapper Bulldog',
     description: 'An elegant bulldog with a top hat and bow tie.',
-    image: '/images/bulldogs/bulldog-tophat.svg',
+    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmOGY3ZjciLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMjAiIHI9IjYwIiBmaWxsPSIjYzliMThjIi8+PHJlY3QgeD0iMTIwIiB5PSI1MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMDAwIi8+PHJlY3QgeD0iMTEwIiB5PSI4NSIgd2lkdGg9IjgwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjMDAwIi8+PHBhdGggZD0iTSAxNTAgMTYwIEwgMTM1IDE1MCBMIDM1IDE3MCBaIiBmaWxsPSIjY2MwMDAwIi8+PHBhdGggZD0iTSAxNTAgMTYwIEwgMTY1IDE1MCBMIDE2NSAxNzAgWiIgZmlsbD0iI2NjMDAwMCIvPjxyZWN0IHg9IjE0NyIgeT0iMTU3IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjODgwMDAwIi8+PHJlY3QgeD0iMTIwIiB5PSIxNzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSIzMCIgZmlsbD0iI2YwZjBmMCIvPjxwYXRoIGQ9Ik0gMTIwIDE3NSBoIDYwIE0gMTIwIDE4NSBoIDYwIE0gMTIwIDE5NSBoIDYwIiBzdHJva2U9IiM0NDQiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjEyMCIgY3k9IjExMCIgcj0iMTAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMTgwIiBjeT0iMTEwIiByPSIxMCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMTAiIHI9IjUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMTgwIiBjeT0iMTEwIiByPSI1IiBmaWxsPSJibGFjayIvPjxlbGxpcHNlIGN4PSIxNTAiIGN5PSIxNDAiIHJ4PSIyNSIgcnk9IjEwIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iMTUwIiB5PSIyMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzMzMyI+RGFwcGVyIEJ1bGxkb2c8L3RleHQ+PHRleHQgeD0iMTUwIiB5PSIyNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzJlOGI1NyI+VW5jb21tb248L3RleHQ+PC9zdmc+',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Shirt' },
@@ -56,7 +57,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-cow',
     name: 'Cow Bulldog',
     description: 'A bulldog with cow spots and small horns.',
-    image: '/images/bulldogs/bulldog-default.svg',
+    image: defaultBulldogSvg,
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Casual' },
@@ -69,7 +70,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-newsboy',
     name: 'Newsboy Bulldog',
     description: 'A vintage-styled bulldog with a classic newsboy cap.',
-    image: '/images/bulldogs/bulldog-default.svg',
+    image: defaultBulldogSvg,
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Jacket' },
@@ -81,7 +82,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-beer',
     name: 'Social Bulldog',
     description: 'A friendly bulldog enjoying a cold beer.',
-    image: '/images/bulldogs/bulldog-default.svg',
+    image: defaultBulldogSvg,
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Jersey' },
@@ -93,7 +94,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-stripes',
     name: 'Striped Bulldog',
     description: 'A sporty bulldog in a green and white striped jersey.',
-    image: '/images/bulldogs/bulldog-default.svg',
+    image: defaultBulldogSvg,
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Jersey' },
@@ -105,7 +106,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-soccer',
     name: 'Soccer Bulldog',
     description: 'A sporty bulldog with a soccer ball and athletic jersey.',
-    image: '/images/bulldogs/bulldog-default.svg',
+    image: defaultBulldogSvg,
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Soccer Jersey' },
@@ -118,7 +119,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-casual',
     name: 'Urban Bulldog',
     description: 'A city-dwelling bulldog with a casual blue outfit.',
-    image: '/images/bulldogs/bulldog-default.svg',
+    image: defaultBulldogSvg,
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Blue Sweater' },
@@ -130,7 +131,7 @@ export const sampleNFTs: NFT[] = [
     id: 'bulldog-captain',
     name: 'Captain Bulldog',
     description: 'A distinguished bulldog in a naval captain uniform.',
-    image: '/images/bulldogs/bulldog-captain.svg',
+    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmMGY1ZmYiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMjAiIHI9IjYwIiBmaWxsPSIjYzRiMDkxIi8+PHBhdGggZD0iTSAxMTAgNzUgUSAxNTAgNjAgMTkwIDc1IEwgMTk1IDg1IFEgMTUwIDcwIDEwNSA4NSBaIiBmaWxsPSIjMDAyMDViIi8+PHBhdGggZD0iTSAxMDUgODUgTCAxOTUgODUgTCAxODUgOTUgTCAxMTUgOTUgWiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNIDExNSA5NSBMIDE4NSA5NSBMIDE3NSAxMDUgTCAxMjUgMTA1IFoiIGZpbGw9IiMwMDIwNWIiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSI4NSIgcj0iMTAiIGZpbGw9IiNmZmQ3MDAiLz48cGF0aCBkPSJNIDE1MCA4MCBMIjUzIDg4IEwgMTYyIDg4IEwgMTU1IDkzIEwgMTU4IDEwMCBMIDE1MCA5NSBMIDE0MiAxMDAgTCAxNDUgOTMgTCAxMzggODggTCAxNDcgODggWiIgZmlsbD0iIzAwMjA1YiIvPjxyZWN0IHg9IjEyMCIgeT0iMTY1IiB3aWR0aD0iNjAiIGhlaWdodD0iNDAiIGZpbGw9IiMwMDIwNWIiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMTAiIHI9IjEwIiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjE4MCIgY3k9IjExMCIgcj0iMTAiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMTIwIiBjeT0iMTEwIiByPSI1IiBmaWxsPSJibGFjayIvPjxjaXJjbGUgY3g9IjE4MCIgY3k9IjExMCIgcj0iNSIgZmlsbD0iYmxhY2siLz48ZWxsaXBzZSBjeD0iMTUwIiBjeT0iMTQwIiByeD0iMjUiIHJ5PSIxMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjE1MCIgeT0iMjMwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMzMzMiPkNhcHRhaW4gQnVsbGRvZzwvdGV4dD48dGV4dCB4PSIxNTAiIHk9IjI2MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOGEyYmUyIj5FcGljPC90ZXh0Pjwvc3ZnPg==',
     rarity: 'epic',
     attributes: [
       { trait_type: 'Outfit', value: 'Naval Uniform' },
