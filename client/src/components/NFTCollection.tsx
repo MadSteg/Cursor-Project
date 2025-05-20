@@ -20,7 +20,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-cowboy',
     name: 'Cowboy Bulldog',
     description: 'A cool cowboy bulldog with a stylish hat and plaid shirt.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.19 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.19 AM.png',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Cowboy' },
@@ -32,7 +32,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-hoodie',
     name: 'Hoodie Bulldog',
     description: 'A relaxed bulldog wearing a comfortable green hoodie.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.25 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.25 AM.png',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Hoodie' },
@@ -44,7 +44,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-tophat',
     name: 'Dapper Bulldog',
     description: 'An elegant bulldog with a top hat and bow tie.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.32 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.32 AM.png',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Shirt' },
@@ -57,7 +57,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-angel',
     name: 'Angel Bulldog',
     description: 'A heavenly bulldog with angel wings and a halo.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.27.03 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.27.03 AM.png',
     rarity: 'legendary',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Shirt' },
@@ -70,7 +70,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-cow',
     name: 'Cow Bulldog',
     description: 'A bulldog with cow spots and small horns.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.43 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.43 AM.png',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Casual' },
@@ -83,7 +83,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-newsboy',
     name: 'Newsboy Bulldog',
     description: 'A vintage-styled bulldog with a classic newsboy cap.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.49 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.49 AM.png',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Jacket' },
@@ -95,7 +95,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-beer',
     name: 'Social Bulldog',
     description: 'A friendly bulldog enjoying a cold beer.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.53 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.53 AM.png',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Jersey' },
@@ -107,7 +107,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-stripes',
     name: 'Striped Bulldog',
     description: 'A sporty bulldog in a green and white striped jersey.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.25.54 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.25.54 AM.png',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Jersey' },
@@ -119,7 +119,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-soccer',
     name: 'Soccer Bulldog',
     description: 'A sporty bulldog with a soccer ball and athletic jersey.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.00 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.00 AM.png',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Soccer Jersey' },
@@ -132,7 +132,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-casual',
     name: 'Urban Bulldog',
     description: 'A city-dwelling bulldog with a casual blue outfit.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.06 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.06 AM.png',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Blue Sweater' },
@@ -144,7 +144,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-captain',
     name: 'Captain Bulldog',
     description: 'A distinguished bulldog in a naval captain uniform.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.57 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.57 AM.png',
     rarity: 'epic',
     attributes: [
       { trait_type: 'Outfit', value: 'Naval Uniform' },
@@ -157,7 +157,7 @@ const bulldogNFTs: NFT[] = [
     id: 'bulldog-dad',
     name: 'Daddy Bulldog',
     description: 'A caring bulldog dad with his bulldog teddy.',
-    image: '/src/assets/Screenshot 2025-05-20 at 12.26.12 AM.png',
+    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.12 AM.png',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Jersey' },

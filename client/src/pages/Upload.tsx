@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useWallet } from '../contexts/WalletContext';
+import NFTRewardPreview from '../components/NFTRewardPreview';
 
 interface UploadProgressProps {
   step: 'uploading' | 'processing' | 'minting' | 'success' | 'error';
@@ -301,9 +302,9 @@ const Upload: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Upload Receipt</h1>
+      <h1 className="text-3xl font-bold mb-6 brand-gradient-text">Upload Receipt</h1>
       
-      <div className="bg-card shadow-sm rounded-lg p-6 border mb-8">
+      <div className="bg-card shadow-sm rounded-lg p-6 border mb-8 animate-fade-in">
         <h2 className="text-xl font-semibold mb-4">Converting Receipts to NFTs</h2>
         <p className="text-muted-foreground mb-6">
           BlockReceipt.ai uses OCR technology to extract information from your receipts and 
@@ -312,21 +313,21 @@ const Upload: React.FC = () => {
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="p-4 border rounded-lg bg-background">
+          <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
             <h3 className="font-medium mb-2">Privacy Protection</h3>
             <p className="text-sm text-muted-foreground">
               Your receipt data is encrypted and secure. Only you control who can access it.
             </p>
           </div>
           
-          <div className="p-4 border rounded-lg bg-background">
+          <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
             <h3 className="font-medium mb-2">Automatic Categorization</h3>
             <p className="text-sm text-muted-foreground">
               We automatically categorize your purchases for easy tracking and analysis.
             </p>
           </div>
           
-          <div className="p-4 border rounded-lg bg-background">
+          <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
             <h3 className="font-medium mb-2">Warranty Management</h3>
             <p className="text-sm text-muted-foreground">
               Keep track of warranties with blockchain verification for your important purchases.
@@ -335,18 +336,55 @@ const Upload: React.FC = () => {
         </div>
       </div>
       
-      {uploadStep === 'idle' ? (
-        <Dropzone onUpload={handleUpload} isConnected={isConnected} />
-      ) : (
-        <UploadProgress 
-          step={uploadStep}
-          progress={uploadProgress}
-          error={uploadError}
-          previewUrl={previewUrl}
-          receipt={receipt}
-          onRetry={handleRetry}
-        />
-      )}
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="lg:w-3/5">
+          {uploadStep === 'idle' ? (
+            <Dropzone onUpload={handleUpload} isConnected={isConnected} />
+          ) : (
+            <UploadProgress 
+              step={uploadStep}
+              progress={uploadProgress}
+              error={uploadError}
+              previewUrl={previewUrl}
+              receipt={receipt}
+              onRetry={handleRetry}
+            />
+          )}
+        </div>
+        
+        <div className="lg:w-2/5">
+          {isConnected && (
+            <div className="animate-slide-up">
+              <NFTRewardPreview 
+                merchantName={receipt?.merchantName} 
+                category={receipt?.category} 
+                total={receipt?.total || 0} 
+              />
+            </div>
+          )}
+          
+          {/* Show completed collection progress when connected */}
+          {isConnected && (
+            <div className="mt-6 p-6 border rounded-lg bg-card animate-fade-in">
+              <h3 className="text-lg font-semibold mb-4">Collection Progress</h3>
+              <div className="flex items-center mb-4">
+                <div className="w-full bg-secondary rounded-full h-2.5">
+                  <div className="brand-gradient-bg h-2.5 rounded-full" style={{ width: '35%' }}></div>
+                </div>
+                <span className="ml-2 text-sm font-medium">35%</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                You've collected 7 out of 20 Bulldog NFTs in this collection!
+              </p>
+              <div className="mt-3">
+                <a href="/nft-browser" className="text-sm text-primary hover:underline">
+                  View your collection →
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
