@@ -15,10 +15,11 @@ class GoogleStorageService {
     try {
       // Check if we have the required environment variables
       const credentials = process.env.GOOGLE_CLOUD_CREDENTIALS;
-      this.bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || '';
+      // Override with the correct bucket name
+      this.bucketName = "blockreceipt";
       
-      if (!credentials || !this.bucketName) {
-        logger.warn('[google-storage] Missing Google Cloud Storage credentials or bucket name');
+      if (!credentials) {
+        logger.warn('[google-storage] Missing Google Cloud Storage credentials');
         return;
       }
       
