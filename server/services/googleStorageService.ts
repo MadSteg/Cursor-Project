@@ -9,7 +9,7 @@ const logger = createLogger('google-storage');
  */
 class GoogleStorageService {
   private storage: Storage;
-  private bucketName: string;
+  private bucketName: string = 'blockreceipt-images'; // Default bucket name
   private isInitialized: boolean = false;
 
   constructor() {

@@ -65,6 +65,8 @@ import nftRoutes from "./routes/nfts";
 // Import dual-metadata related routes
 import promotionsRoutes from "./routes/promotions";
 import nftMetadataRoutes from "./routes/nftMetadata";
+// Import cloud storage routes for accessing images
+import cloudStorageRoutes from "./routes/cloudStorage";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -195,6 +197,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register POS webhook routes for merchant integration
   app.use('/api/pos', posWebhookRoutes);
   console.log('[express] POS webhook routes registered successfully');
+  
+  // Register cloud storage routes for accessing images from Google Cloud
+  app.use('/api/storage', cloudStorageRoutes);
+  console.log('[express] Cloud storage routes registered successfully');
   
 
   
