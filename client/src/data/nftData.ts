@@ -5,8 +5,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-cowboy',
     name: 'Cowboy Bulldog',
-    description: 'A cool cowboy bulldog with a stylish hat and plaid shirt. Earned from fashion purchases over $50.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.19 AM.png',
+    description: 'A cool cowboy bulldog with a stylish hat and plaid shirt.',
+    image: '/images/bulldogs/bulldog-cowboy.svg',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Cowboy' },
@@ -17,8 +17,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-hoodie',
     name: 'Hoodie Bulldog',
-    description: 'A relaxed bulldog wearing a comfortable green hoodie. Perfect for casual purchases at convenience stores.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.25 AM.png',
+    description: 'A relaxed bulldog wearing a comfortable green hoodie.',
+    image: '/images/bulldogs/bulldog-hoodie.svg',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Hoodie' },
@@ -29,8 +29,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-tophat',
     name: 'Dapper Bulldog',
-    description: 'An elegant bulldog with a top hat and bow tie. Earned from luxury purchases over $150.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.32 AM.png',
+    description: 'An elegant bulldog with a top hat and bow tie.',
+    image: '/images/bulldogs/bulldog-tophat.svg',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Shirt' },
@@ -42,8 +42,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-angel',
     name: 'Angel Bulldog',
-    description: 'A heavenly bulldog with angel wings and a halo. Earned from charitable donations over $100.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.27.03 AM.png',
+    description: 'A heavenly bulldog with angel wings and a halo.',
+    image: '/images/bulldogs/bulldog-angel.svg',
     rarity: 'legendary',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Shirt' },
@@ -55,8 +55,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-cow',
     name: 'Cow Bulldog',
-    description: 'A bulldog with cow spots and small horns. Earned from grocery shopping at farmers markets.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.43 AM.png',
+    description: 'A bulldog with cow spots and small horns.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Casual' },
@@ -68,8 +68,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-newsboy',
     name: 'Newsboy Bulldog',
-    description: 'A vintage-styled bulldog with a classic newsboy cap. Earned from magazine or book purchases.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.49 AM.png',
+    description: 'A vintage-styled bulldog with a classic newsboy cap.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Jacket' },
@@ -80,8 +80,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-beer',
     name: 'Social Bulldog',
-    description: 'A friendly bulldog enjoying a cold beer. Earned from purchases at bars and restaurants.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.53 AM.png',
+    description: 'A friendly bulldog enjoying a cold beer.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Jersey' },
