@@ -197,7 +197,7 @@ const NFTCollection: React.FC<NFTCollectionProps> = ({ nfts, mintedNFTs: initial
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <p className="text-muted-foreground">Exclusive digital collectibles for BlockReceipt users</p>
+            <p className="text-muted-foreground">Exclusive digital collectibles with randomly assigned rarity when you upload receipts</p>
           </div>
           
           <div className="flex items-center gap-2">

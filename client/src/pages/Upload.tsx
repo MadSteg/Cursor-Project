@@ -314,9 +314,10 @@ const Upload: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
-            <h3 className="font-medium mb-2">Privacy Protection</h3>
+            <h3 className="font-medium mb-2">TACo PRE Privacy Protection</h3>
             <p className="text-sm text-muted-foreground">
-              Your receipt data is encrypted and secure. Only you control who can access it.
+              Your receipt data is encrypted using Threshold Network's TACo PRE (Proxy Re-Encryption) technology. 
+              Only you control who can access your receipt contents, as the encryption is bound to your wallet address.
             </p>
           </div>
           

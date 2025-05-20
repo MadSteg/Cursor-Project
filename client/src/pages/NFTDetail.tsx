@@ -42,7 +42,7 @@ const bulldogNFTs: Record<string, NFT> = {
   'bulldog-cowboy': {
     id: 'bulldog-cowboy',
     name: 'Cowboy Bulldog',
-    description: 'A cool cowboy bulldog with a stylish hat and plaid shirt. This NFT is earned by making fashion purchases over $50.',
+    description: 'A cool cowboy bulldog with a stylish hat and plaid shirt. This rare collectible has a unique Western style.',
     image: '/attached_assets/Screenshot 2025-05-20 at 12.26.19 AM.png',
     rarity: 'rare',
     attributes: [
@@ -60,7 +60,7 @@ const bulldogNFTs: Record<string, NFT> = {
   'bulldog-angel': {
     id: 'bulldog-angel',
     name: 'Angel Bulldog',
-    description: 'A heavenly bulldog with angel wings and a halo. This legendary NFT is earned by making charitable donations over $100.',
+    description: 'A heavenly bulldog with angel wings and a halo. This legendary NFT is extremely rare and features unique celestial elements.',
     image: '/attached_assets/Screenshot 2025-05-20 at 12.27.03 AM.png',
     rarity: 'legendary',
     attributes: [
@@ -155,7 +155,7 @@ const NFTDetail: React.FC = () => {
   
   return (
     <div className="container mx-auto py-12 px-4">
-      {showConfetti && <Confetti duration={5000} />}
+      {showConfetti && <Confetti active={true} duration={5000} />}
       
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold brand-gradient-text">NFT Detail</h1>
