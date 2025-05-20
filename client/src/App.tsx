@@ -9,6 +9,7 @@ import Gallery from "./pages/Gallery";
 import NFTBrowser from "./pages/NFTBrowser";
 import NFTDetail from "./pages/NFTDetail";
 import NFTTutorial from "./components/NFTTutorial";
+import Home from "./pages/Home";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
@@ -22,18 +23,7 @@ const AppContent: React.FC = () => {
       <main className="py-8 px-4 container mx-auto">
         <Switch>
           <Route path="/">
-            <div className="max-w-4xl mx-auto space-y-8">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold mb-4 brand-gradient-text">
-                  BlockReceipt.ai
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                  Transform paper and email receipts into secure, verifiable NFTs with enhanced privacy controls.
-                </p>
-              </div>
-              
-              <Upload />
-            </div>
+            <Home />
           </Route>
           
           <Route path="/dashboard">
