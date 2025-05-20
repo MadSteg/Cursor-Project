@@ -116,6 +116,17 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       setStatus('connecting');
       setError(null);
 
+      // Check if MetaMask is installed
+      if (!window.ethereum) {
+        // If MetaMask is not detected, provide instructions to install
+        setError('MetaMask not detected! Please install MetaMask to continue.');
+        setStatus('error');
+        
+        // Open MetaMask install page in a new tab
+        window.open('https://metamask.io/download.html', '_blank');
+        return;
+      }
+
       // Default to MetaMask if available and no provider specified
       const finalProvider = requestedProvider === 'none' && hasMetaMask 
         ? 'metamask' 
@@ -125,47 +136,53 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
       // Connect to MetaMask
       if (finalProvider === 'metamask') {
-        if (!hasMetaMask) {
-          throw new Error('MetaMask is not installed');
+        try {
+          // Request accounts
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          
+          if (accounts.length === 0) {
+            throw new Error('Please select an account in MetaMask');
+          }
+          
+          // Get the network ID
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+          const networkId = parseInt(chainId, 16);
+          
+          // Set the network information
+          setNetwork({
+            chainId: networkId,
+            name: getNetworkName(networkId),
+          });
+          
+          // Set the wallet address
+          setWalletAddress(accounts[0]);
+          
+          // Get the balance
+          const balanceHex = await window.ethereum.request({
+            method: 'eth_getBalance',
+            params: [accounts[0], 'latest'],
+          });
+          
+          // Convert the balance from wei to ether
+          const balanceInWei = parseInt(balanceHex, 16);
+          const balanceInEther = balanceInWei / 1e18;
+          setBalance(balanceInEther.toFixed(4));
+          
+          // Set the status
+          setStatus('connected');
+          
+          // Save the connection in local storage
+          localStorage.setItem('walletProvider', finalProvider);
+          localStorage.setItem('walletConnected', 'true');
+          localStorage.setItem('walletAddress', accounts[0]);
+        } catch (metaMaskError: any) {
+          // Handle user rejection
+          if (metaMaskError.code === 4001) {
+            throw new Error('Please connect to MetaMask.');
+          } else {
+            throw metaMaskError;
+          }
         }
-
-        // Request accounts
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        
-        if (accounts.length === 0) {
-          throw new Error('No accounts found');
-        }
-        
-        // Get the network ID
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        const networkId = parseInt(chainId, 16);
-        
-        // Set the network information
-        setNetwork({
-          chainId: networkId,
-          name: getNetworkName(networkId),
-        });
-        
-        // Set the wallet address
-        setWalletAddress(accounts[0]);
-        
-        // Get the balance
-        const balanceHex = await window.ethereum.request({
-          method: 'eth_getBalance',
-          params: [accounts[0], 'latest'],
-        });
-        
-        // Convert the balance from wei to ether
-        const balanceInWei = parseInt(balanceHex, 16);
-        const balanceInEther = balanceInWei / 1e18;
-        setBalance(balanceInEther.toFixed(4));
-        
-        // Set the status
-        setStatus('connected');
-        
-        // Save the connection in local storage
-        localStorage.setItem('walletProvider', finalProvider);
-        localStorage.setItem('walletConnected', 'true');
       } 
       // Add support for other wallets here as needed
       else {
@@ -188,6 +205,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       // Clear local storage
       localStorage.removeItem('walletProvider');
       localStorage.removeItem('walletConnected');
+      localStorage.removeItem('walletAddress');
     }
   };
 
