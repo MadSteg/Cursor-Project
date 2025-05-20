@@ -1,0 +1,7 @@
+{
+  "name": "temp-ipfs-installer",
+  "version": "1.0.0",
+  "dependencies": {
+    "ipfs-http-client": "39.0.2"
+  }
+}
