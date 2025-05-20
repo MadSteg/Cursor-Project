@@ -1,6 +1,6 @@
-import { Storage } from '@google-cloud/storage';
-import { v4 as uuidv4 } from 'uuid';
-import { logger } from '../utils/logger';
+const { Storage } = require('@google-cloud/storage');
+const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger').logger;
 
 /**
  * Google Cloud Storage Service
@@ -9,11 +9,9 @@ import { logger } from '../utils/logger';
  * and retrieving images and other files.
  */
 class GoogleStorageService {
-  private storage!: Storage;
-  private bucketName: string = '';
-  private initialized: boolean = false;
-
   constructor() {
+    this.initialized = false;
+    
     try {
       // Check if we have the required environment variables
       const credentials = process.env.GOOGLE_CLOUD_CREDENTIALS;
@@ -39,34 +37,34 @@ class GoogleStorageService {
   /**
    * Check if the service is properly initialized
    */
-  isInitialized(): boolean {
+  isInitialized() {
     return this.initialized;
   }
 
   /**
    * Get the public URL for a file
-   * @param fileName - The name of the file in the bucket
-   * @returns The public URL for the file
+   * @param {string} fileName - The name of the file in the bucket
+   * @returns {string} The public URL for the file
    */
-  getPublicUrl(fileName: string): string {
+  getPublicUrl(fileName) {
     return `https://storage.googleapis.com/${this.bucketName}/${fileName}`;
   }
 
   /**
    * Generate a signed URL for a file with read access
-   * @param fileName - The name of the file in the bucket
-   * @param expiresIn - How long (in minutes) the signed URL should be valid (default: 15 minutes)
-   * @returns A promise resolving to the signed URL
+   * @param {string} fileName - The name of the file in the bucket
+   * @param {number} expiresIn - How long (in minutes) the signed URL should be valid (default: 15 minutes)
+   * @returns {Promise<string>} A promise resolving to the signed URL
    */
-  async getSignedUrl(fileName: string, expiresIn: number = 15): Promise<string> {
+  async getSignedUrl(fileName, expiresIn = 15) {
     if (!this.initialized) {
       throw new Error('Google Storage service not initialized');
     }
 
     try {
       const options = {
-        version: 'v4' as const,
-        action: 'read' as const,
+        version: 'v4',
+        action: 'read',
         expires: Date.now() + expiresIn * 60 * 1000, // Convert minutes to milliseconds
       };
 
@@ -84,16 +82,12 @@ class GoogleStorageService {
 
   /**
    * Upload a file to Google Cloud Storage
-   * @param fileBuffer - The file buffer to upload
-   * @param originalFileName - The original name of the file
-   * @param folderPath - Optional folder path in the bucket (e.g., 'receipts/')
-   * @returns A promise resolving to the uploaded file details
+   * @param {Buffer} fileBuffer - The file buffer to upload
+   * @param {string} originalFileName - The original name of the file
+   * @param {string} folderPath - Optional folder path in the bucket (e.g., 'receipts/')
+   * @returns {Promise<Object>} A promise resolving to the uploaded file details
    */
-  async uploadFile(
-    fileBuffer: Buffer, 
-    originalFileName: string, 
-    folderPath: string = ''
-  ): Promise<{ fileName: string; publicUrl: string }> {
+  async uploadFile(fileBuffer, originalFileName, folderPath = '') {
     if (!this.initialized) {
       throw new Error('Google Storage service not initialized');
     }
@@ -128,10 +122,10 @@ class GoogleStorageService {
 
   /**
    * List files in a folder in the bucket
-   * @param folderPath - The folder path to list files from (e.g., 'receipts/')
-   * @returns A promise resolving to an array of file names
+   * @param {string} folderPath - The folder path to list files from (e.g., 'receipts/')
+   * @returns {Promise<Array<string>>} A promise resolving to an array of file names
    */
-  async listFiles(folderPath: string): Promise<string[]> {
+  async listFiles(folderPath) {
     if (!this.initialized) {
       throw new Error('Google Storage service not initialized');
     }
@@ -150,10 +144,10 @@ class GoogleStorageService {
 
   /**
    * Check if a file exists in the bucket
-   * @param fileName - The name of the file to check
-   * @returns A promise resolving to a boolean indicating if the file exists
+   * @param {string} fileName - The name of the file to check
+   * @returns {Promise<boolean>} A promise resolving to a boolean indicating if the file exists
    */
-  async fileExists(fileName: string): Promise<boolean> {
+  async fileExists(fileName) {
     if (!this.initialized) {
       throw new Error('Google Storage service not initialized');
     }
@@ -173,10 +167,10 @@ class GoogleStorageService {
 
   /**
    * Delete a file from the bucket
-   * @param fileName - The name of the file to delete
-   * @returns A promise that resolves when the file is deleted
+   * @param {string} fileName - The name of the file to delete
+   * @returns {Promise<void>} A promise that resolves when the file is deleted
    */
-  async deleteFile(fileName: string): Promise<void> {
+  async deleteFile(fileName) {
     if (!this.initialized) {
       throw new Error('Google Storage service not initialized');
     }
@@ -196,10 +190,10 @@ class GoogleStorageService {
   
   /**
    * List NFT images from a specific folder
-   * @param folderPath - The folder path to list NFT images from (default: 'bulldogs/')
-   * @returns A promise resolving to an array of NFT image details
+   * @param {string} folderPath - The folder path to list NFT images from (default: 'bulldogs/')
+   * @returns {Promise<Array<Object>>} A promise resolving to an array of NFT image details
    */
-  async listNftImages(folderPath: string = 'bulldogs/'): Promise<Array<{ fileName: string; id: string; url: string }>> {
+  async listNftImages(folderPath = 'bulldogs/') {
     try {
       const fileNames = await this.listFiles(folderPath);
       
@@ -225,4 +219,6 @@ class GoogleStorageService {
 }
 
 // Export a singleton instance
-export const googleStorageService = new GoogleStorageService();
+const googleStorageService = new GoogleStorageService();
+
+module.exports = { googleStorageService };

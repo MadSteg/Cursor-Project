@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { googleStorageService } from '../services/googleStorageService';
-import multer from 'multer';
-import { logger } from '../utils/logger';
+const { Router } = require('express');
+const { googleStorageService } = require('../services/googleStorageService');
+const multer = require('multer');
+const logger = require('../utils/logger').logger;
 
 // Configure multer for memory storage
 const upload = multer({ 
@@ -35,7 +35,7 @@ router.get('/status', (req, res) => {
  */
 router.get('/file', async (req, res) => {
   try {
-    const fileName = req.query.fileName as string;
+    const fileName = req.query.fileName;
     
     if (!fileName) {
       return res.status(400).json({ error: 'Missing fileName parameter' });
@@ -75,14 +75,14 @@ router.get('/file', async (req, res) => {
  */
 router.get('/nft-images', async (req, res) => {
   try {
-    const folderPath = (req.query.folder as string) || 'bulldogs/';
+    const folderPath = req.query.folder || 'bulldogs/';
     
     if (!googleStorageService.isInitialized()) {
       return res.status(503).json({ error: 'Google Cloud Storage not initialized' });
     }
     
     // Get list of NFT images
-    const images = await googleStorageService.listNftImages(folderPath === undefined ? 'bulldogs/' : folderPath);
+    const images = await googleStorageService.listNftImages(folderPath);
     
     res.json({
       count: images.length,
@@ -142,7 +142,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
  */
 router.delete('/file', async (req, res) => {
   try {
-    const fileName = req.query.fileName as string;
+    const fileName = req.query.fileName;
     
     if (!fileName) {
       return res.status(400).json({ error: 'Missing fileName parameter' });
@@ -176,4 +176,4 @@ router.delete('/file', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
