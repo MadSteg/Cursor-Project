@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
+import WalletButton from './WalletButton';
+import { useWallet } from '../contexts/WalletContext';
 
 const Header: React.FC = () => {
   const [location] = useLocation();
@@ -246,21 +248,6 @@ const Header: React.FC = () => {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             View blockchain network status
-                          </p>
-                        </div>
-                      </Link>
-                      
-                      <Link 
-                        href="/ai-feedback"
-                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                        onClick={closeAllMenus}
-                      >
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-foreground">
-                            ChatGPT Integration
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Track progress and get AI feedback
                           </p>
                         </div>
                       </Link>
