@@ -90,36 +90,34 @@ const Header: React.FC = () => {
                 <div className="absolute z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-2">
                   <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                     <div className="relative grid gap-6 bg-white p-6">
-                      <Link href="/wallet">
-                        <a 
-                          className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                          onClick={closeAllMenus}
-                        >
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-foreground">
-                              Wallet Manager
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              View your connected wallets and NFTs
-                            </p>
-                          </div>
-                        </a>
+                      <Link 
+                        href="/wallet"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            Wallet Manager
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            View your connected wallets and NFTs
+                          </p>
+                        </div>
                       </Link>
                       
-                      <Link href="/ocr-test">
-                        <a 
-                          className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                          onClick={closeAllMenus}
-                        >
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-foreground">
-                              OCR Test
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Test the receipt OCR engines
-                            </p>
-                          </div>
-                        </a>
+                      <Link 
+                        href="/ocr-test"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            OCR Test
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Test the receipt OCR engines
+                          </p>
+                        </div>
                       </Link>
                     </div>
                   </div>
@@ -157,36 +155,34 @@ const Header: React.FC = () => {
                 <div className="absolute z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-2">
                   <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                     <div className="relative grid gap-6 bg-white p-6">
-                      <Link href="/merchant/register">
-                        <a 
-                          className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                          onClick={closeAllMenus}
-                        >
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-foreground">
-                              Merchant Registration
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Register as a merchant to issue receipts
-                            </p>
-                          </div>
-                        </a>
+                      <Link 
+                        href="/merchant/register"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            Merchant Registration
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Register as a merchant to issue receipts
+                          </p>
+                        </div>
                       </Link>
                       
-                      <Link href="/merchant/promo">
-                        <a 
-                          className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                          onClick={closeAllMenus}
-                        >
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-foreground">
-                              Promotion Management
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Create and manage promotions
-                            </p>
-                          </div>
-                        </a>
+                      <Link 
+                        href="/merchant/promo"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            Promotion Management
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Create and manage promotions
+                          </p>
+                        </div>
                       </Link>
                     </div>
                   </div>
@@ -224,36 +220,34 @@ const Header: React.FC = () => {
                 <div className="absolute z-10 mt-3 w-screen max-w-xs -translate-x-1/2 transform px-2">
                   <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                     <div className="relative grid gap-6 bg-white p-6">
-                      <Link href="/admin/nft-pool">
-                        <a 
-                          className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                          onClick={closeAllMenus}
-                        >
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-foreground">
-                              NFT Pool Management
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Manage the NFT pool for receipts
-                            </p>
-                          </div>
-                        </a>
+                      <Link 
+                        href="/admin/nft-pool"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            NFT Pool Management
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Manage the NFT pool for receipts
+                          </p>
+                        </div>
                       </Link>
                       
-                      <Link href="/admin/blockchain">
-                        <a 
-                          className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
-                          onClick={closeAllMenus}
-                        >
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-foreground">
-                              Blockchain Status
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              View blockchain network status
-                            </p>
-                          </div>
-                        </a>
+                      <Link 
+                        href="/admin/blockchain"
+                        className="flex items-center p-2 -m-3 transition duration-150 ease-in-out rounded-lg hover:bg-muted"
+                        onClick={closeAllMenus}
+                      >
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-foreground">
+                            Blockchain Status
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            View blockchain network status
+                          </p>
+                        </div>
                       </Link>
                     </div>
                   </div>
@@ -263,10 +257,11 @@ const Header: React.FC = () => {
           </nav>
           
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-            <Link href="/upload">
-              <a className="inline-flex items-center justify-center h-10 px-4 py-2 brand-gradient-bg text-white rounded-md shadow-sm font-medium">
-                Upload Receipt
-              </a>
+            <Link 
+              href="/upload" 
+              className="inline-flex items-center justify-center h-10 px-4 py-2 brand-gradient-bg text-white rounded-md shadow-sm font-medium"
+            >
+              Upload Receipt
             </Link>
           </div>
         </div>
@@ -309,59 +304,54 @@ const Header: React.FC = () => {
               </div>
               <div className="mt-6">
                 <nav className="grid gap-y-8">
-                  <Link href="/">
-                    <a
-                      className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
-                      onClick={closeAllMenus}
-                    >
-                      <span className="ml-3 text-base font-medium text-foreground">
-                        Home
-                      </span>
-                    </a>
+                  <Link 
+                    href="/"
+                    className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
+                    onClick={closeAllMenus}
+                  >
+                    <span className="ml-3 text-base font-medium text-foreground">
+                      Home
+                    </span>
                   </Link>
                   
-                  <Link href="/dashboard">
-                    <a
-                      className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
-                      onClick={closeAllMenus}
-                    >
-                      <span className="ml-3 text-base font-medium text-foreground">
-                        Dashboard
-                      </span>
-                    </a>
+                  <Link 
+                    href="/dashboard"
+                    className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
+                    onClick={closeAllMenus}
+                  >
+                    <span className="ml-3 text-base font-medium text-foreground">
+                      Dashboard
+                    </span>
                   </Link>
                   
-                  <Link href="/wallet">
-                    <a
-                      className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
-                      onClick={closeAllMenus}
-                    >
-                      <span className="ml-3 text-base font-medium text-foreground">
-                        Wallet Manager
-                      </span>
-                    </a>
+                  <Link 
+                    href="/wallet"
+                    className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
+                    onClick={closeAllMenus}
+                  >
+                    <span className="ml-3 text-base font-medium text-foreground">
+                      Wallet Manager
+                    </span>
                   </Link>
                   
-                  <Link href="/ocr-test">
-                    <a
-                      className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
-                      onClick={closeAllMenus}
-                    >
-                      <span className="ml-3 text-base font-medium text-foreground">
-                        OCR Test
-                      </span>
-                    </a>
+                  <Link 
+                    href="/ocr-test"
+                    className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
+                    onClick={closeAllMenus}
+                  >
+                    <span className="ml-3 text-base font-medium text-foreground">
+                      OCR Test
+                    </span>
                   </Link>
                   
-                  <Link href="/upload">
-                    <a
-                      className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
-                      onClick={closeAllMenus}
-                    >
-                      <span className="ml-3 text-base font-medium text-foreground">
-                        Upload Receipt
-                      </span>
-                    </a>
+                  <Link 
+                    href="/upload"
+                    className="-m-3 p-3 flex items-center rounded-md hover:bg-muted"
+                    onClick={closeAllMenus}
+                  >
+                    <span className="ml-3 text-base font-medium text-foreground">
+                      Upload Receipt
+                    </span>
                   </Link>
                 </nav>
               </div>
