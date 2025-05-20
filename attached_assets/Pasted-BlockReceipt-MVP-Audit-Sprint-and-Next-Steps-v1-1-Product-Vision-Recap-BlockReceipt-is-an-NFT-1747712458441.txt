@@ -1,0 +1,127 @@
+BlockReceipt MVP Audit, Sprint, and Next Steps (v1)
+
+1. Product Vision Recap
+
+BlockReceipt is an NFT-powered digital receipt and loyalty platform.
+
+User Flow: Receipt upload → NFT minting with categorized contents via OCR and encrypted metadata using Threshold Proxy Re-encryption (TPRE).
+
+Merchant Flow: Vendors create custom NFTs and manage promotions with expiration.
+
+POS Integration: Future POS integrations for seamless minting.
+
+Gallery: Collectible NFTs, scalable for millions of mints.
+
+2. Audit Summary
+
+Strengths
+
+Modular code structure.
+
+No secrets in Git; good .gitignore usage.
+
+Basic NFT minting and OCR functionality in place.
+
+Weaknesses/Blockers
+
+Wallet connectivity issues (duplicate prompts, inconsistent state).
+
+Fragmented NFT gallery code.
+
+Incomplete end-to-end NFT minting and TPRE encryption integration.
+
+Promotional metadata logic needs refinement.
+
+Cluttered repository structure with unused assets and scripts.
+
+3. Next Sprint Tasks
+
+I. Frontend/UI Overhaul
+
+Modern design using shadcn/ui or Chakra UI.
+
+Sticky top navigation with clear wallet connection.
+
+Enhanced upload experience (animated drag-and-drop, progress bar, NFT preview).
+
+Unified NFT Gallery (hover/click interactions, badges for promotions).
+
+Responsive mobile-friendly layout.
+
+Dedicated Vendors/Sponsored page with featured partners.
+
+II. Wallet Connection Logic
+
+Centralized wallet connection management.
+
+Remove redundant login prompts.
+
+Consistent wallet state across app.
+
+III. NFT Minting & TPRE Integration
+
+Automated OCR and content categorization.
+
+Encrypt metadata before minting using Threshold TPRE.
+
+Assign random or user-selected NFT art during minting.
+
+Robust error handling and retry mechanisms.
+
+IV. Vendor/Partner Integration
+
+Dynamic vendor showcase with API stubs for partner data.
+
+Demo custom vendor NFT collections.
+
+Simulated POS mint button with future webhook placeholders.
+
+Promotion and expiry management via encrypted metadata.
+
+V. Promotion Logic
+
+Encrypted promotional metadata with unlock capability.
+
+UI for promotion reveal and expiration indicators.
+
+VI. Gallery Code Consolidation
+
+Single canonical NFT gallery.
+
+Remove redundant and unused gallery code and assets.
+
+VII. Security & Housekeeping
+
+Run secrets audit; maintain secrets only in Replit Secrets.
+
+Replace console.log with structured logging.
+
+Clean up old scripts, demos, and unnecessary files.
+
+VIII. Testing & Deployment Readiness
+
+Comprehensive E2E testing: Receipt upload → NFT mint → Gallery interaction.
+
+Establish basic testing suite and GitHub Actions CI pipeline.
+
+4. Key Features for Vision Alignment
+
+Instant NFT minting with OCR categorization and secure metadata.
+
+Vendor integration for custom NFT collections and promotions.
+
+User-friendly UX with secure and collectible NFT experience.
+
+Scalable for extensive adoption.
+
+5. Go-Live Checklist
+
+Functional E2E NFT minting on Polygon Amoy testnet.
+
+Secure management of API keys and secrets.
+
+Polished UI/UX and responsive design.
+
+Operational partner and vendor demo capabilities.
+
+Completed testing suite and continuous integration setup.

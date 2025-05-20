@@ -1,184 +1,140 @@
 import express from 'express';
-import { openaiService } from '../services/openaiService';
-import { logger } from '../utils/logger';
+import openaiService from '../services/openaiService';
 
 const router = express.Router();
 
-// Initialize the OpenAI service on route import
-const isInitialized = openaiService.initialize();
+// Check if the OpenAI API key is set
+if (!process.env.OPENAI_API_KEY) {
+  console.warn('[OpenAI] Warning: OPENAI_API_KEY environment variable is not set.');
+}
 
-// Track progress
+/**
+ * Get project state
+ * GET /api/openai/state
+ */
+router.get('/state', async (req, res) => {
+  try {
+    const state = await openaiService.getProjectState();
+    res.json({ success: true, data: state });
+  } catch (error) {
+    console.error('[OpenAI] Error getting project state:', error);
+    res.status(500).json({ success: false, message: 'Failed to get project state' });
+  }
+});
+
+/**
+ * Track project progress
+ * POST /api/openai/track-progress
+ */
 router.post('/track-progress', async (req, res) => {
   try {
     const { task, status, details } = req.body;
     
     if (!task || !status) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Missing required fields: task and status are required' 
-      });
+      return res.status(400).json({ success: false, message: 'Task and status are required' });
     }
     
-    if (!['completed', 'in-progress', 'planned'].includes(status)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Status must be one of: completed, in-progress, planned' 
-      });
+    if (!['planned', 'in-progress', 'completed'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Status must be one of: planned, in-progress, completed' });
     }
     
-    openaiService.trackProgress(task, status, details);
-    
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Progress tracked successfully' 
+    const progressItem = await openaiService.trackProgress({
+      task,
+      status: status as 'planned' | 'in-progress' | 'completed',
+      details
     });
+    
+    res.json({ success: true, data: progressItem });
   } catch (error) {
-    logger.error(`Error tracking progress: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to track progress',
-      error: (error as Error).message 
-    });
+    console.error('[OpenAI] Error tracking progress:', error);
+    res.status(500).json({ success: false, message: 'Failed to track progress' });
   }
 });
 
-// Track feedback
+/**
+ * Track project feedback
+ * POST /api/openai/track-feedback
+ */
 router.post('/track-feedback', async (req, res) => {
   try {
     const { type, message, context } = req.body;
     
     if (!type || !message) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Missing required fields: type and message are required' 
-      });
+      return res.status(400).json({ success: false, message: 'Type and message are required' });
     }
     
     if (!['error', 'suggestion', 'feedback'].includes(type)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Type must be one of: error, suggestion, feedback' 
-      });
+      return res.status(400).json({ success: false, message: 'Type must be one of: error, suggestion, feedback' });
     }
     
-    openaiService.trackFeedback(type, message, context);
+    const feedbackItem = await openaiService.trackFeedback({
+      type: type as 'error' | 'suggestion' | 'feedback',
+      message,
+      context
+    });
     
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Feedback tracked successfully' 
-    });
+    res.json({ success: true, data: feedbackItem });
   } catch (error) {
-    logger.error(`Error tracking feedback: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to track feedback',
-      error: (error as Error).message 
-    });
+    console.error('[OpenAI] Error tracking feedback:', error);
+    res.status(500).json({ success: false, message: 'Failed to track feedback' });
   }
 });
 
-// Sync with OpenAI to get AI feedback
+/**
+ * Sync with OpenAI to get feedback
+ * POST /api/openai/sync
+ */
 router.post('/sync', async (req, res) => {
   try {
-    if (!isInitialized) {
-      return res.status(503).json({
-        success: false,
-        message: 'OpenAI service is not initialized. Check if the API key is present.'
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'OpenAI API key is not set. Please set the OPENAI_API_KEY environment variable.'
       });
     }
     
-    const feedback = await openaiService.syncWithOpenAI();
-    
-    if (!feedback) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to sync with OpenAI'
-      });
-    }
-    
-    return res.status(200).json({
-      success: true,
-      data: feedback
-    });
+    const aiResponse = await openaiService.syncWithOpenAI();
+    res.json({ success: true, data: aiResponse });
   } catch (error) {
-    logger.error(`Error syncing with OpenAI: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to sync with OpenAI',
-      error: (error as Error).message 
-    });
+    console.error('[OpenAI] Error syncing with OpenAI:', error);
+    res.status(500).json({ success: false, message: 'Failed to sync with OpenAI' });
   }
 });
 
-// Get current project state
-router.get('/state', (req, res) => {
+/**
+ * Clear all tracked data
+ * DELETE /api/openai/clear
+ */
+router.delete('/clear', async (req, res) => {
   try {
-    const state = openaiService.getProjectState();
-    return res.status(200).json({
-      success: true,
-      data: state
-    });
+    await openaiService.clearTrackedData();
+    res.json({ success: true, message: 'All tracked data cleared successfully' });
   } catch (error) {
-    logger.error(`Error getting project state: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to get project state',
-      error: (error as Error).message 
-    });
+    console.error('[OpenAI] Error clearing tracked data:', error);
+    res.status(500).json({ success: false, message: 'Failed to clear tracked data' });
   }
 });
 
-// Get tracked progress
-router.get('/progress', (req, res) => {
+/**
+ * Initialize status endpoint
+ * GET /api/openai/status
+ */
+router.get('/status', async (req, res) => {
   try {
-    const progress = openaiService.getTrackedProgress();
-    return res.status(200).json({
-      success: true,
-      data: progress
+    // Check if OpenAI API key is set
+    const isConfigured = !!process.env.OPENAI_API_KEY;
+    res.json({ 
+      success: true, 
+      data: { 
+        configured: isConfigured,
+        message: isConfigured 
+          ? 'OpenAI integration is configured and active' 
+          : 'OpenAI integration is not fully configured. Please set the OPENAI_API_KEY environment variable.'
+      } 
     });
   } catch (error) {
-    logger.error(`Error getting tracked progress: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to get tracked progress',
-      error: (error as Error).message 
-    });
-  }
-});
-
-// Get tracked feedback
-router.get('/feedback', (req, res) => {
-  try {
-    const feedback = openaiService.getTrackedFeedback();
-    return res.status(200).json({
-      success: true,
-      data: feedback
-    });
-  } catch (error) {
-    logger.error(`Error getting tracked feedback: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to get tracked feedback',
-      error: (error as Error).message 
-    });
-  }
-});
-
-// Clear tracked data
-router.delete('/clear', (req, res) => {
-  try {
-    openaiService.clearTrackedData();
-    return res.status(200).json({
-      success: true,
-      message: 'Cleared all tracked data'
-    });
-  } catch (error) {
-    logger.error(`Error clearing tracked data: ${error}`);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to clear tracked data',
-      error: (error as Error).message 
-    });
+    console.error('[OpenAI] Error checking status:', error);
+    res.status(500).json({ success: false, message: 'Failed to check OpenAI integration status' });
   }
 });
 

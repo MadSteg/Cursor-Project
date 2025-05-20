@@ -1,201 +1,349 @@
+import fs from 'fs';
+import path from 'path';
 import OpenAI from 'openai';
-import { logger } from '../utils/logger';
+import { promisify } from 'util';
 
-// Store the OpenAI instance globally
-let openai: OpenAI | null = null;
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
+const mkdir = promisify(fs.mkdir);
 
-// Track project progress
-interface ProgressItem {
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Define data storage paths
+const DATA_DIR = path.join(process.cwd(), 'data');
+const PROGRESS_FILE = path.join(DATA_DIR, 'progress.json');
+const FEEDBACK_FILE = path.join(DATA_DIR, 'feedback.json');
+const STATE_FILE = path.join(DATA_DIR, 'state.json');
+
+// Data types
+export interface ProgressItem {
   timestamp: string;
   task: string;
   status: 'completed' | 'in-progress' | 'planned';
   details?: string;
 }
 
-// Track errors and feedback
-interface FeedbackItem {
+export interface FeedbackItem {
   timestamp: string;
   type: 'error' | 'suggestion' | 'feedback';
   message: string;
   context?: string;
 }
 
-// Main tracking state
-const projectState = {
-  progress: [] as ProgressItem[],
-  feedback: [] as FeedbackItem[],
-  lastSyncTime: null as Date | null,
-};
+export interface AIFeedback {
+  feedback: string;
+  suggestions: string[];
+  nextSteps: string[];
+}
+
+interface ProjectState {
+  progress: ProgressItem[];
+  feedback: FeedbackItem[];
+  lastSyncTime: string | null;
+}
 
 /**
- * Initialize the OpenAI service
+ * Ensure the data directory exists
  */
-export function initializeOpenAIService(): boolean {
+async function ensureDataDir() {
   try {
-    // Check if API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      logger.warn('[OpenAI] No API key found. OpenAI integration disabled.');
-      return false;
+    if (!fs.existsSync(DATA_DIR)) {
+      await mkdir(DATA_DIR, { recursive: true });
     }
-
-    // Create OpenAI client
-    // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    logger.info('[OpenAI] Service initialized successfully.');
-    return true;
   } catch (error) {
-    logger.error(`[OpenAI] Failed to initialize service: ${error}`);
-    return false;
+    console.error('[OpenAI] Failed to create data directory:', error);
+    throw error;
+  }
+}
+
+/**
+ * Initialize the project state files if they don't exist
+ */
+async function initializeFiles() {
+  try {
+    await ensureDataDir();
+    
+    // Initialize progress file if it doesn't exist
+    if (!fs.existsSync(PROGRESS_FILE)) {
+      await writeFile(PROGRESS_FILE, JSON.stringify([], null, 2));
+    }
+    
+    // Initialize feedback file if it doesn't exist
+    if (!fs.existsSync(FEEDBACK_FILE)) {
+      await writeFile(FEEDBACK_FILE, JSON.stringify([], null, 2));
+    }
+    
+    // Initialize state file if it doesn't exist
+    if (!fs.existsSync(STATE_FILE)) {
+      const initialState: ProjectState = {
+        progress: [],
+        feedback: [],
+        lastSyncTime: null
+      };
+      await writeFile(STATE_FILE, JSON.stringify(initialState, null, 2));
+    }
+  } catch (error) {
+    console.error('[OpenAI] Failed to initialize files:', error);
+    throw error;
   }
 }
 
 /**
  * Track project progress
  */
-export function trackProgress(task: string, status: 'completed' | 'in-progress' | 'planned', details?: string): void {
-  if (!openai) {
-    // Don't report anything if OpenAI is not initialized
-    return;
-  }
-
-  const progressItem: ProgressItem = {
-    timestamp: new Date().toISOString(),
-    task,
-    status,
-    details,
-  };
-
-  projectState.progress.push(progressItem);
-  logger.info(`[OpenAI] Tracked progress: ${task} (${status})`);
-}
-
-/**
- * Track feedback or errors
- */
-export function trackFeedback(type: 'error' | 'suggestion' | 'feedback', message: string, context?: string): void {
-  if (!openai) {
-    // Don't report anything if OpenAI is not initialized
-    return;
-  }
-
-  const feedbackItem: FeedbackItem = {
-    timestamp: new Date().toISOString(),
-    type,
-    message,
-    context,
-  };
-
-  projectState.feedback.push(feedbackItem);
-  logger.info(`[OpenAI] Tracked ${type}: ${message}`);
-}
-
-/**
- * Sync project state with OpenAI to get feedback and suggestions
- */
-export async function syncWithOpenAI(): Promise<{
-  feedback: string;
-  suggestions: string[];
-  nextSteps: string[];
-} | null> {
-  if (!openai) {
-    logger.warn('[OpenAI] Cannot sync with OpenAI: Service not initialized');
-    return null;
-  }
-
+export async function trackProgress(progressItem: Omit<ProgressItem, 'timestamp'>): Promise<ProgressItem> {
   try {
-    // Format the project state as a structured message
-    const projectStateText = JSON.stringify(projectState, null, 2);
+    await ensureDataDir();
     
-    // Create system message that explains the project context
-    const systemMessage = `You are analyzing the progress of BlockReceipt.ai, a blockchain-powered digital receipt platform. 
-    The platform transforms financial transactions into secure, interactive, and privacy-preserving experiences using 
-    blockchain technology, OCR processing, and Threshold Network's TACo PRE for access control.
+    // Read existing progress
+    let progress: ProgressItem[] = [];
+    if (fs.existsSync(PROGRESS_FILE)) {
+      const content = await readFile(PROGRESS_FILE, 'utf-8');
+      progress = JSON.parse(content);
+    }
     
-    Provide concise feedback on progress, specific suggestions for improvement, and recommended next steps.`;
+    // Add new progress item
+    const newItem: ProgressItem = {
+      ...progressItem,
+      timestamp: new Date().toISOString()
+    };
+    
+    progress.push(newItem);
+    
+    // Write updated progress
+    await writeFile(PROGRESS_FILE, JSON.stringify(progress, null, 2));
+    
+    // Update state
+    await updateState();
+    
+    return newItem;
+  } catch (error) {
+    console.error('[OpenAI] Failed to track progress:', error);
+    throw error;
+  }
+}
 
-    const userMessage = `Here is the current project state:\n${projectStateText}\n\nPlease analyze this data and provide:
-    1. Brief feedback on current progress
-    2. 1-3 specific suggestions for improvement 
-    3. 1-3 recommended next steps in priority order`;
+/**
+ * Track project feedback
+ */
+export async function trackFeedback(feedbackItem: Omit<FeedbackItem, 'timestamp'>): Promise<FeedbackItem> {
+  try {
+    await ensureDataDir();
+    
+    // Read existing feedback
+    let feedback: FeedbackItem[] = [];
+    if (fs.existsSync(FEEDBACK_FILE)) {
+      const content = await readFile(FEEDBACK_FILE, 'utf-8');
+      feedback = JSON.parse(content);
+    }
+    
+    // Add new feedback item
+    const newItem: FeedbackItem = {
+      ...feedbackItem,
+      timestamp: new Date().toISOString()
+    };
+    
+    feedback.push(newItem);
+    
+    // Write updated feedback
+    await writeFile(FEEDBACK_FILE, JSON.stringify(feedback, null, 2));
+    
+    // Update state
+    await updateState();
+    
+    return newItem;
+  } catch (error) {
+    console.error('[OpenAI] Failed to track feedback:', error);
+    throw error;
+  }
+}
 
+/**
+ * Update the project state
+ */
+async function updateState(): Promise<ProjectState> {
+  try {
+    await ensureDataDir();
+    
+    // Read progress
+    let progress: ProgressItem[] = [];
+    if (fs.existsSync(PROGRESS_FILE)) {
+      const content = await readFile(PROGRESS_FILE, 'utf-8');
+      progress = JSON.parse(content);
+    }
+    
+    // Read feedback
+    let feedback: FeedbackItem[] = [];
+    if (fs.existsSync(FEEDBACK_FILE)) {
+      const content = await readFile(FEEDBACK_FILE, 'utf-8');
+      feedback = JSON.parse(content);
+    }
+    
+    // Create state
+    const state: ProjectState = {
+      progress,
+      feedback,
+      lastSyncTime: fs.existsSync(STATE_FILE) 
+        ? JSON.parse(await readFile(STATE_FILE, 'utf-8')).lastSyncTime 
+        : null
+    };
+    
+    // Write state
+    await writeFile(STATE_FILE, JSON.stringify(state, null, 2));
+    
+    return state;
+  } catch (error) {
+    console.error('[OpenAI] Failed to update state:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get the current project state
+ */
+export async function getProjectState(): Promise<ProjectState> {
+  try {
+    await ensureDataDir();
+    
+    if (!fs.existsSync(STATE_FILE)) {
+      await updateState();
+    }
+    
+    const content = await readFile(STATE_FILE, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('[OpenAI] Failed to get project state:', error);
+    throw error;
+  }
+}
+
+/**
+ * Clear all tracked data
+ */
+export async function clearTrackedData(): Promise<void> {
+  try {
+    await ensureDataDir();
+    
+    // Clear progress
+    await writeFile(PROGRESS_FILE, JSON.stringify([], null, 2));
+    
+    // Clear feedback
+    await writeFile(FEEDBACK_FILE, JSON.stringify([], null, 2));
+    
+    // Update state
+    const state: ProjectState = {
+      progress: [],
+      feedback: [],
+      lastSyncTime: null
+    };
+    
+    await writeFile(STATE_FILE, JSON.stringify(state, null, 2));
+  } catch (error) {
+    console.error('[OpenAI] Failed to clear tracked data:', error);
+    throw error;
+  }
+}
+
+/**
+ * Sync with OpenAI to get feedback
+ */
+export async function syncWithOpenAI(): Promise<AIFeedback> {
+  try {
+    // Get project state
+    const state = await getProjectState();
+    
+    // Prepare the prompt
+    const prompt = generatePrompt(state);
+    
     // Call OpenAI API
+    // The newest OpenAI model is "gpt-4o" which was released May 13, 2024
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: userMessage }
+        {
+          role: "system",
+          content: "You are an expert software development assistant helping analyze project progress and providing feedback. You should analyze progress data and feedback to give insights on the project status, suggest improvements, and recommend next steps."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
       ],
-      temperature: 0.7,
       response_format: { type: "json_object" }
     });
-
+    
     // Parse the response
-    const responseText = response.choices[0].message.content;
-    if (!responseText) {
-      throw new Error('Empty response from OpenAI');
-    }
-
-    // Parse the JSON response
-    const parsedResponse = JSON.parse(responseText);
+    const content = response.choices[0].message.content;
+    const aiResponse = JSON.parse(content) as AIFeedback;
     
-    // Update the last sync time
-    projectState.lastSyncTime = new Date();
-    
-    // Return the feedback, suggestions, and next steps
-    return {
-      feedback: parsedResponse.feedback || 'No feedback provided',
-      suggestions: parsedResponse.suggestions || [],
-      nextSteps: parsedResponse.nextSteps || []
+    // Update last sync time
+    const updatedState: ProjectState = {
+      ...state,
+      lastSyncTime: new Date().toISOString()
     };
+    
+    await writeFile(STATE_FILE, JSON.stringify(updatedState, null, 2));
+    
+    return aiResponse;
   } catch (error) {
-    logger.error(`[OpenAI] Error syncing with OpenAI: ${error}`);
-    return null;
+    console.error('[OpenAI] Failed to sync with OpenAI:', error);
+    throw error;
   }
 }
 
 /**
- * Get all tracked progress
+ * Generate a prompt for OpenAI based on the project state
  */
-export function getTrackedProgress(): ProgressItem[] {
-  return [...projectState.progress];
+function generatePrompt(state: ProjectState): string {
+  const progressData = state.progress
+    .map(item => `- ${item.timestamp} [${item.status}] ${item.task}${item.details ? `: ${item.details}` : ''}`)
+    .join('\n');
+  
+  const feedbackData = state.feedback
+    .map(item => `- ${item.timestamp} [${item.type}] ${item.message}${item.context ? ` (Context: ${item.context})` : ''}`)
+    .join('\n');
+  
+  return `
+Please analyze the following project data and provide feedback in JSON format with three sections: 
+1. A general feedback summary analyzing the current state 
+2. Specific suggestions for improvement
+3. Recommended next steps in priority order
+
+Progress Data:
+${progressData || 'No progress data available.'}
+
+Feedback Data:
+${feedbackData || 'No feedback data available.'}
+
+Context:
+BlockReceipt.ai is a blockchain-based digital receipt platform that transforms financial transactions into secure, interactive NFTs, and preserves privacy using Threshold encryption.
+
+Respond in this exact JSON format:
+{
+  "feedback": "Your overall analysis of project progress and status",
+  "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"],
+  "nextSteps": ["Step 1", "Step 2", "Step 3", "Step 4"]
+}
+  `.trim();
 }
 
-/**
- * Get all tracked feedback
- */
-export function getTrackedFeedback(): FeedbackItem[] {
-  return [...projectState.feedback];
-}
+// Initialize on module load
+(async () => {
+  try {
+    await initializeFiles();
+    console.log('[2025-05-20T01:50:04.406Z] [INFO] [OpenAI] Service initialized successfully.');
+  } catch (error) {
+    console.error('[OpenAI] Initialization failed:', error);
+  }
+})();
 
-/**
- * Get the full project state
- */
-export function getProjectState() {
-  return {
-    ...projectState,
-    lastSyncTime: projectState.lastSyncTime?.toISOString() || null,
-  };
-}
-
-// Clear all tracked data
-export function clearTrackedData(): void {
-  projectState.progress = [];
-  projectState.feedback = [];
-  projectState.lastSyncTime = null;
-  logger.info('[OpenAI] Cleared all tracked data');
-}
-
-// Export the service
-export const openaiService = {
-  initialize: initializeOpenAIService,
+export default {
   trackProgress,
   trackFeedback,
-  syncWithOpenAI,
-  getTrackedProgress,
-  getTrackedFeedback,
   getProjectState,
   clearTrackedData,
+  syncWithOpenAI
 };
