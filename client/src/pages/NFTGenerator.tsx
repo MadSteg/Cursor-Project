@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 
+interface CloudImage {
+  name: string;
+  publicUrl: string;
+}
+
 interface Layer {
   name: string;
   traits: {
@@ -8,6 +13,7 @@ interface Layer {
     file: File | null;
     preview: string;
     weight?: number;
+    cloudUrl?: string;
   }[];
 }
 
@@ -35,6 +41,12 @@ const NFTGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResults, setGenerationResults] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [cloudFolders, setCloudFolders] = useState<string[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<string>('');
+  const [cloudImages, setCloudImages] = useState<CloudImage[]>([]);
+  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [showCloudBrowser, setShowCloudBrowser] = useState(false);
 
   // Function to add a new layer
   const addLayer = () => {
@@ -149,6 +161,38 @@ const NFTGenerator: React.FC = () => {
     });
   };
 
+  // Function to fetch folders from Google Cloud Storage
+  const fetchFolders = async () => {
+    try {
+      const response = await fetch('/api/nft-generator/folders');
+      if (!response.ok) {
+        throw new Error('Failed to fetch folders');
+      }
+      const data = await response.json();
+      return data.folders || [];
+    } catch (error) {
+      console.error('Error fetching folders:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch folders');
+      return [];
+    }
+  };
+
+  // Function to fetch images from a specific folder
+  const fetchImagesInFolder = async (folder: string) => {
+    try {
+      const response = await fetch(`/api/nft-generator/images/${folder}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
+      const data = await response.json();
+      return data.images || [];
+    } catch (error) {
+      console.error('Error fetching images:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch images');
+      return [];
+    }
+  };
+  
   // Function to handle file drag-and-drop
   const handleDrop = (layerIndex: number, e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -161,6 +205,34 @@ const NFTGenerator: React.FC = () => {
         }
       });
     }
+  };
+  
+  // Function to add a cloud image as a trait
+  const addCloudImageAsTrait = (layerIndex: number, imageUrl: string, imageName: string) => {
+    // Create a preview directly from the cloud URL
+    setConfig(prev => {
+      const newLayers = [...prev.layers];
+      const newTraits = [...newLayers[layerIndex].traits];
+      
+      // Get trait name from the image name (remove path and extension)
+      const fileName = imageName.split('/').pop() || '';
+      const traitName = fileName.replace(/\.[^/.]+$/, "");
+      
+      newTraits.push({
+        name: traitName,
+        file: null, // No local file since it's from cloud
+        preview: imageUrl,
+        weight: 100,
+        cloudUrl: imageUrl
+      });
+      
+      newLayers[layerIndex] = {
+        ...newLayers[layerIndex],
+        traits: newTraits
+      };
+      
+      return { ...prev, layers: newLayers };
+    });
   };
 
   // Function to handle file selection
@@ -190,6 +262,45 @@ const NFTGenerator: React.FC = () => {
     return null;
   };
 
+  // Function to load cloud folders when component mounts
+  useEffect(() => {
+    const loadFolders = async () => {
+      setIsLoadingFolders(true);
+      try {
+        const folders = await fetchFolders();
+        setCloudFolders(folders);
+      } catch (error) {
+        console.error('Error loading folders:', error);
+      } finally {
+        setIsLoadingFolders(false);
+      }
+    };
+    
+    loadFolders();
+  }, []);
+  
+  // Function to load cloud images when folder is selected
+  useEffect(() => {
+    if (!selectedFolder) {
+      setCloudImages([]);
+      return;
+    }
+    
+    const loadImages = async () => {
+      setIsLoadingImages(true);
+      try {
+        const images = await fetchImagesInFolder(selectedFolder);
+        setCloudImages(images);
+      } catch (error) {
+        console.error('Error loading images:', error);
+      } finally {
+        setIsLoadingImages(false);
+      }
+    };
+    
+    loadImages();
+  }, [selectedFolder]);
+
   // Function to generate NFTs
   const generateNFTs = async () => {
     const validationError = validateConfig();
@@ -202,40 +313,48 @@ const NFTGenerator: React.FC = () => {
     setError(null);
     
     try {
-      // Prepare form data with all files and configuration
-      const formData = new FormData();
-      formData.append('config', JSON.stringify({
+      // Prepare configuration with cloud images
+      const configData = {
         collectionName: config.collectionName,
         description: config.description,
         size: config.size,
         width: config.width,
         height: config.height,
-        layers: config.layers.map(layer => ({
-          name: layer.name,
-          traits: layer.traits.map(trait => ({
-            name: trait.name,
-            weight: trait.weight || 100
-          }))
-        }))
-      }));
+        folders: [], // We'll fill this from cloud folders
+        useCloudImages: true
+      };
       
-      // Add all trait files
-      config.layers.forEach((layer, layerIndex) => {
-        layer.traits.forEach((trait, traitIndex) => {
-          if (trait.file) {
-            formData.append(
-              `trait_${layerIndex}_${traitIndex}`, 
-              trait.file, 
-              `${layer.name}/${trait.name}.${trait.file.name.split('.').pop()}`
-            );
+      // Add folder names to include in generation
+      const usedFolders = new Set<string>();
+      
+      // Add images from traits that have cloudUrl
+      config.layers.forEach(layer => {
+        layer.traits.forEach(trait => {
+          if (trait.cloudUrl) {
+            // Extract folder name from the image path (assuming format folder/image.png)
+            const parts = trait.cloudUrl.split('/');
+            if (parts.length >= 2) {
+              const folderName = parts[parts.length - 2];
+              usedFolders.add(folderName);
+            }
           }
         });
       });
       
+      configData.folders = Array.from(usedFolders);
+      
+      // If no cloud folders were detected, use selected folder
+      if (configData.folders.length === 0 && selectedFolder) {
+        configData.folders = [selectedFolder];
+      }
+      
       // Send to backend for processing
       const response = await fetch('/api/nft-generator/generate', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(configData)
       });
       
       if (!response.ok) {
@@ -244,7 +363,7 @@ const NFTGenerator: React.FC = () => {
       }
       
       const data = await response.json();
-      setGenerationResults(data.results);
+      setGenerationResults(data.nfts || []);
       setStep('results');
     } catch (err) {
       console.error('Error generating NFTs:', err);
@@ -364,6 +483,73 @@ const NFTGenerator: React.FC = () => {
     </div>
   );
 
+  // Render Cloud Image Browser
+  const renderCloudImageBrowser = (layerIndex: number) => (
+    <div className="border rounded-lg p-4 mb-6 bg-gray-50">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-medium">Google Cloud Images</h3>
+        <button
+          onClick={() => setShowCloudBrowser(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          ×
+        </button>
+      </div>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Select Folder</label>
+        <select
+          value={selectedFolder}
+          onChange={(e) => setSelectedFolder(e.target.value)}
+          className="w-full p-2 border rounded"
+          disabled={isLoadingFolders}
+        >
+          <option value="">Select a folder</option>
+          {cloudFolders.map(folder => (
+            <option key={folder} value={folder}>{folder}</option>
+          ))}
+        </select>
+      </div>
+      
+      {isLoadingImages ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500">Loading images...</p>
+        </div>
+      ) : cloudImages.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {cloudImages.map((image, imageIndex) => (
+            <div 
+              key={imageIndex} 
+              className="border rounded-lg overflow-hidden cursor-pointer hover:border-blue-500 transition-colors"
+              onClick={() => addCloudImageAsTrait(layerIndex, image.publicUrl, image.name)}
+            >
+              <div className="aspect-square bg-white relative flex items-center justify-center">
+                <img 
+                  src={image.publicUrl} 
+                  alt={image.name.split('/').pop() || ''}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+              <div className="p-2 bg-white">
+                <p className="text-xs truncate">
+                  {image.name.split('/').pop() || ''}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : selectedFolder ? (
+        <div className="text-center py-8 border-2 border-dashed rounded-lg">
+          <p className="text-gray-500">No images found in this folder</p>
+        </div>
+      ) : (
+        <div className="text-center py-8 border-2 border-dashed rounded-lg">
+          <p className="text-gray-500">Select a folder to view images</p>
+        </div>
+      )}
+    </div>
+  );
+
   // Render traits step
   const renderTraitsStep = () => (
     <div className="space-y-6">
@@ -430,6 +616,17 @@ const NFTGenerator: React.FC = () => {
               
               {currentLayer === layerIndex && (
                 <div className="p-4">
+                  {!showCloudBrowser ? (
+                    <div className="flex justify-between mb-4">
+                      <button
+                        onClick={() => setShowCloudBrowser(true)}
+                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                      >
+                        Browse Google Cloud Images
+                      </button>
+                    </div>
+                  ) : renderCloudImageBrowser(layerIndex)}
+                
                   <div 
                     className="p-6 border-2 border-dashed rounded-lg text-center mb-4"
                     onDragOver={(e) => e.preventDefault()}
@@ -465,6 +662,11 @@ const NFTGenerator: React.FC = () => {
                             >
                               ×
                             </button>
+                            {trait.cloudUrl && (
+                              <div className="absolute bottom-1 left-1 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                                Cloud
+                              </div>
+                            )}
                           </div>
                           <div className="p-2">
                             <input
@@ -491,7 +693,7 @@ const NFTGenerator: React.FC = () => {
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500 text-center py-4">
-                      No traits added yet. Add traits by dragging and dropping image files.
+                      No traits added yet. Add traits by browsing your Google Cloud images or uploading files.
                     </p>
                   )}
                 </div>
