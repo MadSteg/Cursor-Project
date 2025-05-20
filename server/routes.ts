@@ -65,6 +65,8 @@ import nftRoutes from "./routes/nfts";
 // Import dual-metadata related routes
 import promotionsRoutes from "./routes/promotions";
 import nftMetadataRoutes from "./routes/nftMetadata";
+// Import OpenAI ChatGPT integration routes
+import openaiRoutes from "./routes/openai";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -195,6 +197,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register POS webhook routes for merchant integration
   app.use('/api/pos', posWebhookRoutes);
   console.log('[express] POS webhook routes registered successfully');
+  
+  // Register OpenAI ChatGPT integration routes
+  app.use('/api/openai', openaiRoutes);
+  console.log('[express] OpenAI ChatGPT integration routes registered successfully');
   
 
   
