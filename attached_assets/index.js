@@ -1,10 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const { encryptJSON } = require('./utils/aes');
-const { pinJSON } = require('./utils/ipfs');
+const { encryptJSON } = require('./aes');
+const { pinJSON } = require('./ipfs');
 const { ethers } = require('ethers');
-const contractAbi = require('./utils/Receipt1155.json');
+const contractAbi = require('./Receipt1155.json');
 
 const app = express();
 app.use(bodyParser.json());
