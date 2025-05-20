@@ -6,6 +6,7 @@ import Wallet from "./pages/Wallet";
 import OCRTestPage from "./pages/OCRTestPage";
 import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
+import NFTBrowser from "./pages/NFTBrowser";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
@@ -43,6 +44,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/gallery">
             <Gallery />
+          </Route>
+          
+          <Route path="/nft-browser">
+            <NFTBrowser />
           </Route>
           
           <Route path="/ocr-test">

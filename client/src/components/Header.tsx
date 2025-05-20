@@ -18,6 +18,7 @@ const Header: React.FC = () => {
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Upload', path: '/upload' },
     { name: 'Gallery', path: '/wallet' },
+    { name: 'NFT Collection', path: '/nft-browser' },
   ];
   
   return (
