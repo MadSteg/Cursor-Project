@@ -7,11 +7,13 @@ import OCRTestPage from "./pages/OCRTestPage";
 import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import NFTBrowser from "./pages/NFTBrowser";
+import NFTDetail from "./pages/NFTDetail";
+import NFTTutorial from "./components/NFTTutorial";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
 const AppContent: React.FC = () => {
-  const { walletAddress } = useWallet();
+  const { isConnected } = useWallet();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -48,6 +50,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/nft-browser">
             <NFTBrowser />
+          </Route>
+          
+          <Route path="/nft/:id">
+            <NFTDetail />
           </Route>
           
           <Route path="/ocr-test">
