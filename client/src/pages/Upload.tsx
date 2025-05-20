@@ -198,7 +198,7 @@ const Dropzone: React.FC<{ onUpload: (file: File) => void; isConnected: boolean 
         </p>
         <div className="mt-4">
           <label htmlFor="file-upload" className="relative cursor-pointer bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-primary/90 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary">
-            <span>Select file</span>
+            <span>Immortalize Receipt</span>
             <input 
               id="file-upload" 
               name="file-upload" 
@@ -380,7 +380,17 @@ const Upload: React.FC = () => {
             </div>
             
             <div className="bg-white/80 dark:bg-gray-900/60 p-3 rounded-lg">
-              <h4 className="font-medium mb-2 text-sm">Public vs. Private Data</h4>
+              <h4 className="font-medium mb-2 text-sm flex items-center">
+                Public vs. Private Data
+                <span className="ml-2 relative group">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-500 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="absolute left-full ml-2 top-0 w-48 p-2 bg-black/90 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                    Why is this metadata locked? Your data is protected by Threshold TACo technology for maximum privacy.
+                  </span>
+                </span>
+              </h4>
               <p className="text-xs text-muted-foreground">
                 When you mint a receipt NFT, only basic metadata like the timestamp and merchant name are visible publicly.
                 The detailed receipt contents, purchase information, item details, and financial data remain
