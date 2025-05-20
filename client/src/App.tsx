@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
 import OCRTestPage from "./pages/OCRTestPage";
+import Upload from "./pages/Upload";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
@@ -55,18 +56,7 @@ const AppContent: React.FC = () => {
           </Route>
           
           <Route path="/upload">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-3xl font-bold mb-6">Upload Receipt</h1>
-              {walletAddress ? (
-                <ReceiptUploader walletAddress={walletAddress} />
-              ) : (
-                <div className="text-center p-8 border border-dashed border-primary/20 rounded-lg">
-                  <p className="mb-4 text-muted-foreground">
-                    Connect your wallet to upload receipts and mint NFTs
-                  </p>
-                </div>
-              )}
-            </div>
+            <Upload />
           </Route>
           
           <Route>
