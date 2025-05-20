@@ -92,8 +92,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-stripes',
     name: 'Striped Bulldog',
-    description: 'A sporty bulldog in a green and white striped jersey. Earned from purchases at sporting events.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.25.54 AM.png',
+    description: 'A sporty bulldog in a green and white striped jersey.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Jersey' },
@@ -104,8 +104,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-soccer',
     name: 'Soccer Bulldog',
-    description: 'A sporty bulldog with a soccer ball and athletic jersey. Earned from sporting goods purchases over $40.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.00 AM.png',
+    description: 'A sporty bulldog with a soccer ball and athletic jersey.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Outfit', value: 'Soccer Jersey' },
@@ -117,8 +117,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-casual',
     name: 'Urban Bulldog',
-    description: 'A city-dwelling bulldog with a casual blue outfit. Earned from urban coffee shop purchases.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.06 AM.png',
+    description: 'A city-dwelling bulldog with a casual blue outfit.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'common',
     attributes: [
       { trait_type: 'Outfit', value: 'Blue Sweater' },
@@ -129,8 +129,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-captain',
     name: 'Captain Bulldog',
-    description: 'A distinguished bulldog in a naval captain uniform. Earned from travel purchases over $200.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.57 AM.png',
+    description: 'A distinguished bulldog in a naval captain uniform.',
+    image: '/images/bulldogs/bulldog-captain.svg',
     rarity: 'epic',
     attributes: [
       { trait_type: 'Outfit', value: 'Naval Uniform' },
@@ -142,8 +142,8 @@ export const sampleNFTs: NFT[] = [
   {
     id: 'bulldog-dad',
     name: 'Daddy Bulldog',
-    description: 'A caring bulldog dad with his bulldog teddy. Earned from toy or gift purchases for family.',
-    image: '/attached_assets/Screenshot 2025-05-20 at 12.26.12 AM.png',
+    description: 'A caring bulldog dad with his bulldog teddy.',
+    image: '/images/bulldogs/bulldog-default.svg',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Outfit', value: 'Striped Jersey' },
