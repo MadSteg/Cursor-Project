@@ -142,6 +142,36 @@ class GoogleStorageService {
       throw new Error(`Failed to list files: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+  
+  /**
+   * List all files in the bucket with their details
+   * @returns {Promise<Array<Object>>} A promise resolving to an array of file details
+   */
+  async listAllFiles() {
+    if (!this.initialized) {
+      throw new Error('Google Storage service not initialized');
+    }
+
+    try {
+      const [files] = await this.storage.bucket(this.bucketName).getFiles();
+      
+      const fileDetails = await Promise.all(files.map(async (file) => {
+        const [metadata] = await file.getMetadata();
+        return {
+          name: file.name,
+          url: this.getPublicUrl(file.name),
+          size: metadata.size ? parseInt(metadata.size) : undefined,
+          contentType: metadata.contentType,
+          updated: metadata.updated
+        };
+      }));
+      
+      return fileDetails;
+    } catch (error) {
+      logger.error('[google-storage] Error listing all files:', error);
+      return []; // Return empty array on error
+    }
+  }
 
   /**
    * Check if a file exists in the bucket

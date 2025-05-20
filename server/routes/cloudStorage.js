@@ -99,6 +99,32 @@ router.get('/nft-images', async (req, res) => {
 });
 
 /**
+ * GET /api/storage/all-files
+ * Get a list of all files in the Google Cloud Storage bucket
+ */
+router.get('/all-files', async (req, res) => {
+  try {
+    if (!googleStorageService.isInitialized()) {
+      return res.status(503).json({ error: 'Google Cloud Storage not initialized' });
+    }
+    
+    // Get all files using our helper method
+    const files = await googleStorageService.listAllFiles();
+    
+    res.json({
+      count: files.length,
+      files
+    });
+  } catch (error) {
+    logger.error('[cloud-storage-route] Error listing all files:', error);
+    res.status(500).json({ 
+      error: 'Failed to list all files',
+      message: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
+/**
  * POST /api/storage/upload
  * Upload a file to Google Cloud Storage
  */
