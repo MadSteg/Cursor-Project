@@ -68,7 +68,7 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <button
-                onClick={connect}
+                onClick={() => connect('metamask')}
                 className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg transition-colors"
               >
                 Connect Wallet
@@ -151,7 +151,7 @@ const Header: React.FC = () => {
               ) : (
                 <button
                   onClick={() => {
-                    connect();
+                    connect('metamask');
                     setIsOpen(false);
                   }}
                   className="w-full px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
