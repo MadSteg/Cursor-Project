@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#f5f3e6"/>
+  <circle cx="150" cy="120" r="60" fill="#a97142"/>
+  <!-- Cowboy hat -->
+  <path d="M 90 85 Q 150 55 210 85 L 220 75 Q 150 40 80 75 Z" fill="#8B4513"/>
+  <path d="M 85 85 Q 150 100 215 85 L 220 75 Q 150 90 80 75 Z" fill="#a0522d"/>
+  <!-- Plaid pattern -->
+  <rect x="120" y="150" width="60" height="40" fill="#d46a6a"/>
+  <path d="M 120 150 h 60 M 120 160 h 60 M 120 170 h 60 M 120 180 h 60 M 120 190 h 60" stroke="#823b3b" stroke-width="1"/>
+  <path d="M 130 150 v 40 M 140 150 v 40 M 150 150 v 40 M 160 150 v 40 M 170 150 v 40" stroke="#823b3b" stroke-width="1"/>
+  <!-- Face features -->
+  <circle cx="120" cy="110" r="10" fill="white"/>
+  <circle cx="180" cy="110" r="10" fill="white"/>
+  <circle cx="120" cy="110" r="5" fill="black"/>
+  <circle cx="180" cy="110" r="5" fill="black"/>
+  <ellipse cx="150" cy="140" rx="25" ry="10" fill="#333"/>
+  <ellipse cx="110" cy="80" rx="20" ry="15" fill="#a97142"/>
+  <ellipse cx="190" cy="80" rx="20" ry="15" fill="#a97142"/>
+  <text x="150" y="230" font-family="Arial" font-size="20" text-anchor="middle" fill="#333">Cowboy Bulldog</text>
+  <text x="150" y="260" font-family="Arial" font-size="16" text-anchor="middle" fill="#a52a2a">Rare</text>
+</svg>
