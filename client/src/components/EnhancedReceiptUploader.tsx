@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWallet } from '../contexts/WalletContext';
 import UploadDropzone from './UploadDropzone';
+import JSConfetti from 'js-confetti';
 
 interface ReceiptData {
   merchantName: string;
@@ -10,6 +11,12 @@ interface ReceiptData {
   tax?: string;
   category?: string;
   items?: { name: string; price: string; quantity: number }[];
+}
+
+// Set up confetti instance
+let jsConfetti: JSConfetti | null = null;
+if (typeof window !== 'undefined') {
+  jsConfetti = new JSConfetti();
 }
 
 const EnhancedReceiptUploader: React.FC = () => {
@@ -102,6 +109,34 @@ const EnhancedReceiptUploader: React.FC = () => {
     setFile(null);
   };
   
+  // Set up a timeout to move to the next step if processing takes too long
+  useEffect(() => {
+    let timeoutId: number;
+    
+    if (uploadStep === 'processing') {
+      // Add a timeout that moves to minting step after 10 seconds if still processing
+      timeoutId = window.setTimeout(() => {
+        if (uploadStep === 'processing') {
+          setUploadProgress(75);
+          setUploadStep('minting');
+        }
+      }, 10000); // 10 seconds
+    }
+    
+    // Show confetti when upload is successful
+    if (uploadStep === 'success' && jsConfetti) {
+      jsConfetti.addConfetti({
+        confettiColors: ['#7C3AED', '#4F46E5', '#3B82F6', '#3730A3', '#8B5CF6'],
+        confettiRadius: 6,
+        confettiNumber: 200,
+      });
+    }
+    
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [uploadStep]);
+
   // Render upload progress
   const renderUploadProgress = () => {
     return (
@@ -109,8 +144,8 @@ const EnhancedReceiptUploader: React.FC = () => {
         <div className="mb-4">
           <h3 className="text-lg font-medium text-foreground mb-2">
             {uploadStep === 'uploading' && 'Uploading Receipt...'}
-            {uploadStep === 'processing' && 'Processing Receipt...'}
-            {uploadStep === 'minting' && 'Minting NFT Receipt...'}
+            {uploadStep === 'processing' && 'Processing Receipt with OCR...'}
+            {uploadStep === 'minting' && 'Encrypting & Minting NFT Receipt...'}
             {uploadStep === 'success' && 'Receipt Successfully Processed!'}
             {uploadStep === 'error' && 'Error Processing Receipt'}
           </h3>
@@ -126,9 +161,13 @@ const EnhancedReceiptUploader: React.FC = () => {
           
           <p className="text-sm text-muted-foreground">
             {uploadStep === 'uploading' && 'Uploading your receipt... Please wait.'}
-            {uploadStep === 'processing' && 'Extracting receipt information with OCR...'}
-            {uploadStep === 'minting' && 'Creating your NFT receipt on the blockchain...'}
-            {uploadStep === 'success' && 'Your receipt has been successfully converted to an NFT!'}
+            {uploadStep === 'processing' && (
+              <>Our OCR engine is analyzing your receipt. This typically takes 5-10 seconds.</>
+            )}
+            {uploadStep === 'minting' && (
+              <>Encrypting receipt data with TACo PRE technology and creating your NFT on the blockchain. Only you will have access to the original receipt data.</>
+            )}
+            {uploadStep === 'success' && 'Your receipt has been converted to an NFT with TACo PRE encryption. Only you control who can access your receipt data!'}
             {uploadStep === 'error' && uploadError}
           </p>
         </div>
