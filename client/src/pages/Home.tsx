@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useWallet } from '../contexts/WalletContext';
 import { sampleNFTs } from '../data/nftData';
+import PrivacyFeatureExplainer from '../components/PrivacyFeatureExplainer';
 
 const Home: React.FC = () => {
   const { isConnected } = useWallet();
@@ -261,6 +262,14 @@ const Home: React.FC = () => {
               </button>
             </Link>
           </div>
+        </div>
+      </div>
+      
+      {/* Privacy Features Explainer */}
+      <div className="mb-16">
+        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">Your Privacy Is Our Priority</h2>
+        <div className="flex justify-center">
+          <PrivacyFeatureExplainer />
         </div>
       </div>
       
