@@ -68,7 +68,7 @@ const EnhancedNFTGallery = () => {
   }
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       <div className="container mx-auto px-4 py-8">
         <p className="text-xl text-muted-foreground mb-8 max-w-3xl">
           Discover our exclusive character NFTs - each with unique traits and varying rarity levels.
@@ -228,7 +228,7 @@ const EnhancedNFTGallery = () => {
                     ) : (
                       <button
                         onClick={() => handleMint(nft.id)}
-                        className="w-full py-2 px-4 rounded-lg font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg transition-all duration-200"
+                        className="w-full py-3 px-4 rounded-lg font-bold text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 border border-blue-500"
                       >
                         MINT THIS NFT
                       </button>
