@@ -115,76 +115,133 @@ const EnhancedNFTGallery: React.FC = () => {
         })}
       </div>
       
-      {/* NFT Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {/* NFT Grid - Trading Card Style */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {filteredNFTs.map((nft) => {
           const isMinted = mintedNFTs.includes(nft.id);
+          
+          // Define card color schemes based on rarity
+          const getCardStyle = (rarity: string) => {
+            switch (rarity) {
+              case 'legendary':
+                return {
+                  borderColor: 'border-yellow-400',
+                  bgGradient: 'from-yellow-600 via-orange-500 to-red-500',
+                  cardBg: 'from-yellow-900/30 via-orange-900/30 to-red-900/30',
+                  textColor: 'text-yellow-200',
+                  buttonGradient: 'from-yellow-500 to-orange-600'
+                };
+              case 'epic':
+                return {
+                  borderColor: 'border-purple-400',
+                  bgGradient: 'from-purple-600 via-pink-500 to-purple-600',
+                  cardBg: 'from-purple-900/30 via-pink-900/30 to-purple-900/30',
+                  textColor: 'text-purple-200',
+                  buttonGradient: 'from-purple-500 to-pink-600'
+                };
+              case 'rare':
+                return {
+                  borderColor: 'border-blue-400',
+                  bgGradient: 'from-blue-600 via-cyan-500 to-blue-600',
+                  cardBg: 'from-blue-900/30 via-cyan-900/30 to-blue-900/30',
+                  textColor: 'text-blue-200',
+                  buttonGradient: 'from-blue-500 to-cyan-600'
+                };
+              case 'uncommon':
+                return {
+                  borderColor: 'border-green-400',
+                  bgGradient: 'from-green-600 via-emerald-500 to-green-600',
+                  cardBg: 'from-green-900/30 via-emerald-900/30 to-green-900/30',
+                  textColor: 'text-green-200',
+                  buttonGradient: 'from-green-500 to-emerald-600'
+                };
+              default:
+                return {
+                  borderColor: 'border-gray-400',
+                  bgGradient: 'from-gray-600 via-gray-500 to-gray-600',
+                  cardBg: 'from-gray-900/30 via-gray-800/30 to-gray-900/30',
+                  textColor: 'text-gray-200',
+                  buttonGradient: 'from-gray-500 to-gray-600'
+                };
+            }
+          };
+          
+          const cardStyle = getCardStyle(nft.rarity);
+          
           return (
-            <div key={nft.id} className="bg-card rounded-xl overflow-hidden border shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <div className="relative aspect-square overflow-hidden">
-                <img 
-                  src={nft.image} 
-                  alt={nft.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                  onError={(e) => {
-                    // If image fails to load, show a default color background
-                    const fallbackColor = nft.rarity === 'legendary' ? '#ffd700' : 
-                                         nft.rarity === 'epic' ? '#9932cc' :
-                                         nft.rarity === 'rare' ? '#4169e1' :
-                                         nft.rarity === 'uncommon' ? '#2e8b57' : '#777777';
-                    
-                    if (e.currentTarget.parentElement) {
-                      e.currentTarget.parentElement.style.backgroundColor = fallbackColor;
-                      e.currentTarget.style.display = 'none';
-                    }
-                  }}
-                />
-                <div className="absolute top-0 right-0 p-2">
-                  <div className={`text-white text-xs font-bold px-2 py-1 rounded-full`}
-                    style={{
-                      backgroundColor: nft.rarity === 'legendary' ? '#ffd700' : 
-                                       nft.rarity === 'epic' ? '#9932cc' :
-                                       nft.rarity === 'rare' ? '#4169e1' :
-                                       nft.rarity === 'uncommon' ? '#2e8b57' : '#777777'
-                    }}>
-                    {nft.rarity.toUpperCase()}
-                  </div>
+            <div 
+              key={nft.id} 
+              className={`relative bg-gray-900 rounded-2xl p-4 ${cardStyle.borderColor} border-4 shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group overflow-hidden`}
+            >
+              {/* Animated background gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${cardStyle.cardBg} opacity-80`}></div>
+              
+              {/* Header with brand */}
+              <div className="relative z-10 flex justify-between items-center mb-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-white font-black text-sm tracking-wider">BLOCKRECEIPT</span>
+                  <span className={`${cardStyle.textColor} font-bold text-xs`}>NFT</span>
                 </div>
-                {isMinted && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <div className="bg-green-600 text-white font-bold px-4 py-2 rounded-full">MINTED</div>
-                  </div>
-                )}
+                <div className={`text-white text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${cardStyle.bgGradient} shadow-lg`}>
+                  {nft.rarity.toUpperCase()}
+                </div>
               </div>
               
-              <div className="p-4">
-                <h3 className="font-bold text-lg mb-1">{nft.name}</h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{nft.description}</p>
-                
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {nft.attributes.slice(0, 3).map((attr, idx) => (
-                    <span 
-                      key={idx}
-                      className="bg-gray-100 dark:bg-gray-800 text-xs px-2 py-1 rounded"
-                    >
-                      {attr.value}
-                    </span>
-                  ))}
-                  {nft.attributes.length > 3 && (
-                    <span className="bg-gray-100 dark:bg-gray-800 text-xs px-2 py-1 rounded">+{nft.attributes.length - 3} more</span>
-                  )}
+              {/* Main image area with neon border */}
+              <div className={`relative rounded-xl mb-4 overflow-hidden bg-gradient-to-br ${cardStyle.bgGradient} p-0.5 group-hover:p-1 transition-all duration-300`}>
+                <div className="bg-gray-900 rounded-xl overflow-hidden">
+                  <div className="aspect-square relative">
+                    <img 
+                      src={nft.image} 
+                      alt={nft.name}
+                      className={`w-full h-full object-cover transition-all duration-500 ${isMinted ? 'grayscale opacity-60' : 'group-hover:scale-110'}`}
+                      onError={(e) => {
+                        const fallbackGradient = cardStyle.bgGradient;
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.className += ` bg-gradient-to-br ${fallbackGradient}`;
+                          e.currentTarget.style.display = 'none';
+                        }
+                      }}
+                    />
+                    {isMinted && (
+                      <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                        <div className="bg-green-500 text-white font-bold px-4 py-2 rounded-full text-sm animate-pulse">MINTED</div>
+                      </div>
+                    )}
+                    {/* Holographic shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-1000"></div>
+                  </div>
                 </div>
-                
+              </div>
+              
+              {/* NFT Name with bold styling */}
+              <div className="relative z-10 text-center mb-3">
+                <h3 className="text-white font-black text-lg tracking-wide uppercase">{nft.name}</h3>
+              </div>
+              
+              {/* Serial number style like Dunkin' cards */}
+              <div className="relative z-10 flex justify-between items-center text-xs font-mono mb-4">
+                <span className={cardStyle.textColor}>0001</span>
+                <div className="flex space-x-1">
+                  {Array.from({length: 16}).map((_, i) => (
+                    <span key={i} className="text-gray-600">•</span>
+                  ))}
+                </div>
+                <span className={cardStyle.textColor}>0000</span>
+              </div>
+              
+              {/* Action button */}
+              <div className="relative z-10">
                 {isMinted ? (
                   <Link href={`/nft/${nft.id}`}>
-                    <button className="w-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-semibold py-2 rounded-lg transition-colors">
+                    <button className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition-all duration-300 text-sm uppercase tracking-wider shadow-lg">
                       View Details
                     </button>
                   </Link>
                 ) : (
                   <button 
                     onClick={() => handleMint(nft.id)}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:shadow-lg transition-all"
+                    className={`w-full bg-gradient-to-r ${cardStyle.buttonGradient} text-white font-bold py-3 rounded-lg hover:shadow-xl transition-all duration-300 text-sm uppercase tracking-wider transform hover:scale-105 shadow-lg`}
                   >
                     Mint This NFT
                   </button>
