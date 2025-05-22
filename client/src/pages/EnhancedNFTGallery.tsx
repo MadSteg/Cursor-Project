@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useWallet } from '../contexts/WalletContext';
 import { NFT } from '../types/nft';
-import { generateBulldogNFTs } from '../data/bulldogNFTData';
+import { sampleNFTs } from '../data/nftData';
 
 // Rarity levels for display
 const rarityLevels = [
@@ -21,80 +21,18 @@ const EnhancedNFTGallery: React.FC = () => {
   const [filter, setFilter] = useState('all');
   
   useEffect(() => {
-    const fetchBulldogNFTs = async () => {
-      try {
-        // Get all bulldog image filenames from the public directory
-        const filenames = [
-          'Screenshot 2025-05-20 at 3.14.20 PM.png',
-          'Screenshot 2025-05-20 at 3.14.30 PM.png',
-          'Screenshot 2025-05-20 at 3.14.37 PM.png',
-          'Screenshot 2025-05-20 at 3.14.46 PM.png',
-          'Screenshot 2025-05-20 at 3.14.54 PM.png',
-          'Screenshot 2025-05-20 at 3.15.01 PM.png',
-          'Screenshot 2025-05-20 at 3.15.06 PM.png',
-          'Screenshot 2025-05-20 at 3.15.11 PM.png',
-          'Screenshot 2025-05-20 at 3.15.18 PM.png',
-          'Screenshot 2025-05-20 at 3.15.25 PM.png',
-          'Screenshot 2025-05-20 at 3.16.35 PM.png',
-          'Screenshot 2025-05-20 at 3.16.40 PM.png',
-          'Screenshot 2025-05-20 at 3.16.47 PM.png',
-          'Screenshot 2025-05-20 at 3.16.54 PM.png',
-          'Screenshot 2025-05-20 at 3.16.59 PM.png',
-          'Screenshot 2025-05-20 at 3.17.05 PM.png',
-          'Screenshot 2025-05-20 at 3.17.14 PM.png',
-          'Screenshot 2025-05-20 at 3.17.22 PM.png',
-          'Screenshot 2025-05-20 at 3.17.28 PM.png',
-          'Screenshot 2025-05-20 at 3.17.33 PM.png',
-          'Screenshot 2025-05-20 at 3.17.38 PM.png',
-          'Screenshot 2025-05-20 at 3.17.45 PM.png',
-          'Screenshot 2025-05-20 at 3.17.51 PM.png',
-          'Screenshot 2025-05-20 at 3.17.56 PM.png',
-          'Screenshot 2025-05-20 at 3.18.02 PM.png',
-          'Screenshot 2025-05-20 at 3.18.08 PM.png',
-          'Screenshot 2025-05-20 at 3.18.14 PM.png',
-          'Screenshot 2025-05-20 at 3.18.20 PM.png',
-          'Screenshot 2025-05-20 at 3.18.27 PM.png',
-          'Screenshot 2025-05-20 at 3.18.33 PM.png',
-          'Screenshot 2025-05-20 at 3.18.39 PM.png',
-          'Screenshot 2025-05-20 at 3.18.46 PM.png',
-          'Screenshot 2025-05-20 at 3.18.53 PM.png',
-          'Screenshot 2025-05-20 at 3.18.59 PM.png',
-          'Screenshot 2025-05-20 at 3.19.04 PM.png',
-          'Screenshot 2025-05-20 at 3.19.10 PM.png',
-          'Screenshot 2025-05-20 at 3.19.15 PM.png',
-          'Screenshot 2025-05-20 at 3.19.20 PM.png',
-          'Screenshot 2025-05-20 at 3.19.25 PM.png',
-          'Screenshot 2025-05-20 at 3.19.30 PM.png',
-          'Screenshot 2025-05-20 at 3.19.35 PM.png',
-          'Screenshot 2025-05-20 at 3.19.40 PM.png',
-          'Screenshot 2025-05-20 at 3.19.46 PM.png',
-          'Screenshot 2025-05-20 at 3.19.52 PM.png',
-          'Screenshot 2025-05-20 at 3.20.09 PM.png',
-          'Screenshot 2025-05-20 at 3.21.20 PM.png',
-          'Screenshot 2025-05-20 at 3.22.18 PM.png',
-          'Screenshot 2025-05-20 at 3.23.22 PM.png'
-        ];
-        
-        // Generate NFT data using our utility function
-        const bulldogNFTs = generateBulldogNFTs(filenames);
-        setNfts(bulldogNFTs);
-        
-        // Randomly mark some as minted (for demo purposes)
-        const randomMinted = bulldogNFTs
-          .slice()
-          .sort(() => 0.5 - Math.random())
-          .slice(0, Math.floor(bulldogNFTs.length * 0.3)) // About 30% are minted
-          .map((nft: NFT) => nft.id);
-        
-        setMintedNFTs(randomMinted);
-      } catch (error) {
-        console.error('Error loading bulldog NFTs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Use the pre-defined sample NFTs
+    setNfts(sampleNFTs);
     
-    fetchBulldogNFTs();
+    // Randomly mark some as minted (for demo purposes)
+    const randomMinted = sampleNFTs
+      .slice()
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.floor(sampleNFTs.length * 0.3)) // About 30% are minted
+      .map((nft: NFT) => nft.id);
+    
+    setMintedNFTs(randomMinted);
+    setLoading(false);
   }, []);
   
   // Filter NFTs based on rarity

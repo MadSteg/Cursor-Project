@@ -139,11 +139,25 @@ export const generateBulldogNFTs = (filenames: string[]): NFT[] => {
     const name = getNameFromFilename(filename);
     const traits = getBulldogTraits(filename);
     
+    // Create a placeholder image path that won't actually be used
+    // This is just to satisfy the type system
+    const imagePath = `/bulldogs/${filename}`;
+    
+    // For demonstration purposes, we'll use specific color backgrounds based on rarity
+    // In a production environment, these would be actual NFT images
+    const colorMap = {
+      legendary: '#FFD700', // Gold for legendary
+      epic: '#9932CC',      // Purple for epic
+      rare: '#4169E1',      // Blue for rare
+      uncommon: '#2E8B57',  // Green for uncommon
+      common: '#777777'     // Gray for common
+    };
+    
     return {
       id: `bulldog-${index}`,
       name,
       description: `A unique ${rarity} BlockReceipt bulldog NFT with special traits.`,
-      image: `/bulldogs/${filename}`,
+      image: `/nft-bulldogs/${filename}`,
       rarity,
       attributes: traits
     };
