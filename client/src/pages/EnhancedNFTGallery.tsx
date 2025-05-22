@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { sampleNFTs, rarityLevels } from '../data/nftData';
 import { NFT } from '../types/nft';
 import { useWallet } from '../contexts/WalletContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const EnhancedNFTGallery = () => {
   const { isConnected } = useWallet();
+  const { language, setLanguage, t } = useLanguage();
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [mintedNFTs, setMintedNFTs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,31 +72,56 @@ const EnhancedNFTGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       <div className="container mx-auto px-4 py-8">
-        <p className="text-xl text-muted-foreground mb-8 max-w-3xl">
-          Discover our exclusive character NFTs - each with unique traits and varying rarity levels.
-          Mint these collectible characters to your wallet or earn them by uploading receipts.
+        {/* Language Toggle */}
+        <div className="flex justify-end mb-6">
+          <div className="bg-gray-800 rounded-lg p-1 flex">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                language === 'en' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setLanguage('es')}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                language === 'es' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Español
+            </button>
+          </div>
+        </div>
+
+        <p className="text-xl text-gray-300 mb-8 max-w-3xl">
+          {t('gallery.description')}
         </p>
         
         {/* Merchant Filter Controls */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Filter by Merchant</h3>
+          <h3 className="text-lg font-semibold mb-3 text-white">{t('gallery.filterByMerchant')}</h3>
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => setMerchantFilter('all')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 merchantFilter === 'all' 
                   ? 'bg-purple-600 text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
               }`}
             >
-              All Merchants
+              {t('gallery.allMerchants')}
             </button>
             <button 
               onClick={() => setMerchantFilter('dunkin')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 merchantFilter === 'dunkin' 
                   ? 'bg-orange-600 text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
               }`}
             >
               🍩 Dunkin'
@@ -104,7 +131,7 @@ const EnhancedNFTGallery = () => {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 merchantFilter === 'cvs' 
                   ? 'bg-red-600 text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
               }`}
             >
               💊 CVS
@@ -114,13 +141,13 @@ const EnhancedNFTGallery = () => {
 
         {/* Rarity Filter Controls */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-3">Filter by Rarity</h3>
+          <h3 className="text-lg font-semibold mb-3 text-white">{t('gallery.filterByRarity')}</h3>
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-full ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-foreground'}`}
+              className={`px-4 py-2 rounded-full ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}`}
             >
-              All
+              {t('gallery.allRarities')}
             </button>
             {rarityLevels.map(level => {
               // Get background color for rarity
@@ -223,14 +250,14 @@ const EnhancedNFTGallery = () => {
                     {/* Action Button */}
                     {isMinted ? (
                       <div className="w-full py-2 px-4 rounded-lg font-medium text-sm bg-green-600 text-white text-center">
-                        ✓ MINTED
+                        {t('gallery.minted')}
                       </div>
                     ) : (
                       <button
                         onClick={() => handleMint(nft.id)}
                         className="w-full py-3 px-4 rounded-lg font-bold text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-200 border border-blue-500"
                       >
-                        MINT THIS NFT
+                        {t('gallery.mintThisNft')}
                       </button>
                     )}
                   </div>
@@ -242,8 +269,8 @@ const EnhancedNFTGallery = () => {
         
         {filteredNFTs.length === 0 && (
           <div className="text-center py-12">
-            <h3 className="text-2xl font-semibold mb-2">No NFTs Found</h3>
-            <p className="text-muted-foreground">Try selecting a different rarity or merchant filter</p>
+            <h3 className="text-2xl font-semibold mb-2 text-white">{t('gallery.noNftsFound')}</h3>
+            <p className="text-gray-400">{t('gallery.tryDifferentFilter')}</p>
           </div>
         )}
       </div>
