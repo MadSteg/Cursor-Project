@@ -16,12 +16,12 @@ const Header: React.FC = () => {
   
   // Navigation links
   const navLinks = [
-    { name: 'Mint a BlockReceipt', path: '/upload' },
-    { name: 'NFT Gallery', path: '/nft-browser' },
-    { name: 'Why BlockReceipt?', path: '/why-blockreceipt' },
-    { name: 'For Merchants', path: '/merchant-demo' },
-    { name: 'Enterprise', path: '/enterprise' },
-    { name: 'How BlockReceipt Works', path: '/how-it-works' },
+    { name: t('nav.mintBlockReceipt'), path: '/upload' },
+    { name: t('nav.nftGallery'), path: '/nft-browser' },
+    { name: t('nav.whyBlockReceipt'), path: '/why-blockreceipt' },
+    { name: t('nav.forMerchants'), path: '/merchant-demo' },
+    { name: t('nav.enterprise'), path: '/enterprise' },
+    { name: t('nav.howItWorks'), path: '/how-it-works' },
   ];
   
   return (
@@ -91,7 +91,7 @@ const Header: React.FC = () => {
                   onClick={disconnect}
                   className="px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors"
                 >
-                  Disconnect
+                  {t('common.disconnect')}
                 </button>
               </div>
             ) : (
@@ -99,7 +99,7 @@ const Header: React.FC = () => {
                 onClick={() => connect('metamask')}
                 className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg transition-colors"
               >
-                Connect Wallet
+                {t('common.connectWallet')}
               </button>
             )}
           </div>

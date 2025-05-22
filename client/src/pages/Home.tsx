@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useWallet } from '../contexts/WalletContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { sampleNFTs } from '../data/nftData';
 import PrivacyFeatureExplainer from '../components/PrivacyFeatureExplainer';
 
 const Home: React.FC = () => {
   const { isConnected } = useWallet();
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFloatingNFT, setShowFloatingNFT] = useState(false);
   const displayNFTs = sampleNFTs.slice(0, 6);
