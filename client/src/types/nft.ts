@@ -1,15 +1,15 @@
+export interface NFTAttribute {
+  trait_type: string;
+  value: string;
+}
+
+export type NFTRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
 export interface NFT {
   id: string;
   name: string;
   description: string;
   image: string;
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  attributes: {
-    trait_type: string;
-    value: string;
-  }[];
-  mintedAt?: string;
-  tokenId?: string;
-  owner?: string;
-  txHash?: string;
+  rarity: NFTRarity;
+  attributes: NFTAttribute[];
 }
