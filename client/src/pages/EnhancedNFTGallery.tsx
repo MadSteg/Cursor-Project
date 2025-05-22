@@ -87,14 +87,53 @@ const EnhancedNFTGallery: React.FC = () => {
         Mint these collectible characters to your wallet or earn them by uploading receipts.
       </p>
       
-      {/* Filter Controls */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        <button 
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-full ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-foreground'}`}
-        >
-          All
-        </button>
+      {/* Merchant Filter Controls */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3">Filter by Merchant</h3>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={() => setMerchantFilter('all')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              merchantFilter === 'all' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            All Merchants
+          </button>
+          <button 
+            onClick={() => setMerchantFilter('dunkin')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              merchantFilter === 'dunkin' 
+                ? 'bg-orange-600 text-white' 
+                : 'bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            🍩 Dunkin'
+          </button>
+          <button 
+            onClick={() => setMerchantFilter('cvs')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              merchantFilter === 'cvs' 
+                ? 'bg-red-600 text-white' 
+                : 'bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            💊 CVS
+          </button>
+        </div>
+      </div>
+
+      {/* Rarity Filter Controls */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold mb-3">Filter by Rarity</h3>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-full ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-foreground'}`}
+          >
+            All
+          </button>
         {rarityLevels.map(level => {
           // Get background color for rarity
           const bgColor = level.name === 'legendary' ? '#ffd700' : 
