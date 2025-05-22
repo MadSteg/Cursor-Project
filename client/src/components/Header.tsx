@@ -15,10 +15,11 @@ const Header: React.FC = () => {
   // Navigation links
   const navLinks = [
     { name: 'Mint a BlockReceipt', path: '/upload' },
-    { name: 'Gallery', path: '/wallet' },
     { name: 'NFT Gallery', path: '/nft-browser' },
+    { name: 'My Wallet', path: '/wallet' },
     { name: 'For Merchants', path: '/merchant-demo' },
     { name: 'Enterprise', path: '/enterprise' },
+    { name: 'How It Works', path: '/#how-it-works' },
   ];
   
   return (
