@@ -101,7 +101,7 @@ export const sampleNFTs: NFT[] = [
     name: 'Astro Donut',
     description: 'An astronaut floating on a delicious donut in space. This epic collectible brings a fun cosmic twist to your collection.',
     image: 'https://img.freepik.com/free-vector/astronaut-sitting-planet-donut-cartoon-vector-icon-illustration-science-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3482.jpg',
-    rarity: 'epic',
+    rarity: 'epic' as NFTRarity,
     attributes: [
       { trait_type: 'Character', value: 'Astronaut' },
       { trait_type: 'Accessory', value: 'Donut' },

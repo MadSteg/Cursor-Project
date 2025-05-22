@@ -297,7 +297,7 @@ const EnhancedNFTGallery: React.FC = () => {
       {filteredNFTs.length === 0 && (
         <div className="text-center py-12">
           <h3 className="text-2xl font-semibold mb-2">No NFTs Found</h3>
-          <p className="text-muted-foreground">Try selecting a different rarity filter</p>
+          <p className="text-muted-foreground">Try selecting a different rarity or merchant filter</p>
         </div>
       )}
     </div>
