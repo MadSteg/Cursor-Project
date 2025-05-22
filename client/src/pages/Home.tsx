@@ -41,10 +41,10 @@ const Home: React.FC = () => {
             BlockReceipt.ai
           </h1>
           <p className="text-xl md:text-2xl mb-4 max-w-3xl mx-auto text-blue-100">
-            Turn paper waste into digital assets
+            {t('home.subtitle')}
           </p>
           <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto text-blue-100/80">
-            Eco-friendly, fraud-proof receipts that save costs and enhance customer experience
+            {t('home.description')}
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
