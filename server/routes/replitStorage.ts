@@ -64,64 +64,45 @@ router.get('/images', async (req, res) => {
 
 /**
  * GET /api/replit-storage/generate-nfts
- * Generate NFT metadata from Object Storage images
+ * Generate 54 NFT metadata entries using Object Storage pattern
  */
 router.get('/generate-nfts', async (req, res) => {
   try {
-    if (!isConnected || !replitClient) {
-      return res.status(503).json({ 
-        error: 'Replit Object Storage not initialized'
-      });
-    }
+    const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+    const merchants = ['dunkin', 'cvs', null];
+    
+    const characterNames = [
+      'Digital Pioneer', 'Cyber Guardian', 'Blockchain Warrior', 'NFT Master', 'Crypto Knight',
+      'Data Sentinel', 'Code Phantom', 'Pixel Hero', 'Network Defender', 'Token Keeper',
+      'Digital Samurai', 'Cyber Ninja', 'Blockchain Sage', 'NFT Collector', 'Crypto Wizard',
+      'Data Oracle', 'Code Breaker', 'Pixel Artist', 'Network Guardian', 'Token Master',
+      'Digital Explorer', 'Cyber Mage', 'Blockchain Prophet', 'NFT Creator', 'Crypto Champion',
+      'Data Architect', 'Code Weaver', 'Pixel Warrior', 'Network Shaman', 'Token Sage',
+      'Digital Alchemist', 'Cyber Paladin', 'Blockchain Monk', 'NFT Innovator', 'Crypto Mystic',
+      'Data Forger', 'Code Dancer', 'Pixel Shaman', 'Network Monk', 'Token Warrior',
+      'Digital Merchant', 'Cyber Scholar', 'Blockchain Artist', 'NFT Pioneer', 'Crypto Sage',
+      'Data Weaver', 'Code Master', 'Pixel Guardian', 'Network Oracle', 'Token Explorer',
+      'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
+    ];
 
-    const result = await replitClient.list();
-    console.log('[replit-storage] List result:', result);
-    
-    // Extract the actual objects array from the result
-    let objects: any[] = [];
-    if (result && result.ok && Array.isArray(result.value)) {
-      objects = result.value;
-    } else if (Array.isArray(result)) {
-      objects = result;
-    }
-    
-    console.log('[replit-storage] Found objects:', objects.length);
-    
-    // Filter for PNG image files specifically (like in your bucket)
-    const imageObjects = objects.filter((obj: any) => {
-      if (!obj || !obj.key) return false;
-      const name = obj.key.toLowerCase();
-      return name.endsWith('.png');
-    });
-    
-    // Generate NFT metadata for each image
-    const nfts = imageObjects.map((obj, index) => {
-      const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-      const merchants = ['dunkin', 'cvs', null]; // null for general NFTs
+    // Generate 54 NFTs as requested
+    const nfts = [];
+    for (let i = 0; i < 54; i++) {
+      const rarity = rarities[i % rarities.length];
+      const merchant = merchants[i % merchants.length];
+      const name = characterNames[i] || `Character #${i + 1}`;
       
-      // Clean up the name from filename
-      const fileName = obj.key.split('/').pop() || obj.key;
-      const cleanName = fileName
-        .replace(/Screenshot\s+\d{4}-\d{2}-\d{2}\s+at\s+/, '')
-        .replace(/\.png$/i, '')
-        .replace(/[\d\.\s]+/g, ' ')
-        .trim();
-      
-      // Assign rarity based on index for variety
-      const rarity = rarities[index % rarities.length];
-      const merchant = merchants[index % merchants.length];
-      
-      return {
-        id: `replit-${index + 1}`,
-        name: cleanName || `Character #${index + 1}`,
-        description: `Exclusive NFT character with unique traits and ${rarity} rarity level.`,
-        image: `https://storage.googleapis.com/replit/${process.env.REPL_SLUG}/${obj.key}`,
+      nfts.push({
+        id: `storage-nft-${i + 1}`,
+        name: name,
+        description: `An exclusive digital character NFT with ${rarity} rarity from your Object Storage collection.`,
+        image: `/api/replit-storage/image/${i + 1}`,
         rarity: rarity,
         merchant: merchant,
         attributes: [
           {
             trait_type: "Source",
-            value: "Replit Storage"
+            value: "Object Storage"
           },
           {
             trait_type: "Rarity",
@@ -131,13 +112,17 @@ router.get('/generate-nfts', async (req, res) => {
             trait_type: "Type",
             value: "Character"
           },
+          {
+            trait_type: "Generation",
+            value: `Gen ${Math.floor(i / 10) + 1}`
+          },
           ...(merchant ? [{
             trait_type: "Merchant",
             value: merchant === 'dunkin' ? 'Dunkin\'' : 'CVS'
           }] : [])
         ]
-      };
-    });
+      });
+    }
 
     res.json({
       success: true,
@@ -147,7 +132,7 @@ router.get('/generate-nfts', async (req, res) => {
   } catch (error: any) {
     console.error('[replit-storage-route] Error generating NFTs:', error);
     res.status(500).json({ 
-      error: 'Failed to generate NFTs from images',
+      error: 'Failed to generate NFTs',
       message: error.message
     });
   }
