@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { sampleNFTs, rarityLevels } from '../data/nftData';
 import { NFT } from '../types/nft';
-import { useWallet } from '../hooks/useWallet';
+import { useWallet } from '../contexts/WalletContext';
 
 const EnhancedNFTGallery = () => {
   const { isConnected } = useWallet();

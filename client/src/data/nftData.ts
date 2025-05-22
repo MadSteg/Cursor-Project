@@ -1,5 +1,14 @@
 import { NFT, NFTRarity } from '../types/nft';
 
+// Rarity levels for filtering
+export const rarityLevels = [
+  { name: 'common', color: 'gray-600' },
+  { name: 'uncommon', color: 'green-600' },
+  { name: 'rare', color: 'blue-600' },
+  { name: 'epic', color: 'purple-600' },
+  { name: 'legendary', color: 'yellow-600' }
+];
+
 // Function to get a random NFT from the collection
 export const getRandomNFT = (): NFT => {
   const randomIndex = Math.floor(Math.random() * sampleNFTs.length);
