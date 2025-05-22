@@ -1,0 +1,196 @@
+// BlockReceipt Foundational Q&A – Interactive Deck
+// Previewable React presentation (Tailwind + shadcn/ui + Framer Motion)
+
+import { useState } from "react";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const slides = [
+  {
+    title: "BlockReceipt – Foundational Q&A",
+    subtitle: "Questions 1 – 10 in one snazzy deck",
+    body: (
+      <div className="space-y-4 text-center">
+        <p className="text-lg">Turn the endless paper‑receipt meme into an on‑chain win.</p>
+        <p className="text-md">Swipe ➡ or use the arrows below to navigate.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q1. Who feels the pain of paper receipts more?",
+    body: (
+      <div className="space-y-4">
+        <p><strong>Short answer:</strong> <em>Merchants</em> — they swallow perpetual hardware, paper, labour & brand costs, while customers only suffer when a receipt is lost.</p>
+        <ul className="list-disc ml-6 text-sm leading-relaxed">
+          <li>Hardware & supplies → constant spend on printers, rolls, service contracts.</li>
+          <li>Maintenance downtime → jams = stalled lines & angry shoppers.</li>
+          <li>Labour & training → staff swap rolls & troubleshoot instead of selling.</li>
+          <li>Environmental hit → BPA‑coated thermal paper ≠ ESG friendly.</li>
+          <li>Fraud & returns → fake receipts erode margin.</li>
+        </ul>
+        <p className="text-sm italic">Digital NFT receipts erase every bullet above — zero paper, immutable proof, instant lookup.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q2. Capture the first‑time \"aha!\"",
+    body: (
+      <div className="space-y-4 text-lg">
+        <p><strong>Customer:</strong> “One tap and my receipt’s an NFT I’ll never lose? <em>How is this not already the norm?</em>”</p>
+        <p><strong>Merchant:</strong> “Eco‑friendly, fraud‑proof, <em>and</em> cheaper than paper? <em>Why didn’t we do this sooner?</em>”</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q3. Who to target first?",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p><strong>Go big (CVS/Dunkin’)</strong> — one pilot = thousands of lanes, massive cost savings & headline buzz.</p>
+        <ul className="list-disc ml-6">
+          <li>High paper spend → high ROI.</li>
+          <li>ESG mandates → board‑level urgency.</li>
+          <li>Scalability → one integration, nationwide rollout.</li>
+        </ul>
+        <p className="italic">Boutique stores love the idea, but scale too slowly.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q4. #1 outcome CVS cares about?",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p><strong>Kill the mile‑long receipt meme</strong> & slash paper costs — a dual P&L + ESG win.</p>
+        <ul className="list-disc ml-6">
+          <li>$0.004 saved per transaction → $15M chain‑wide annualised.</li>
+          <li>~9,000 trees saved per year.</li>
+          <li>+5 pt social‑sentiment swing when the joke flips.</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    title: "Q5. Product, platform, or protocol?",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p><strong>Hybrid platform</strong> with an embedded protocol layer.</p>
+        <ul className="list-disc ml-6">
+          <li><strong>Platform:</strong> POS plug‑in & merchant dashboard.</li>
+          <li><strong>Protocol:</strong> REST/GraphQL + SDK for devs.</li>
+          <li><strong>Marketplace:</strong> opt‑in branded receipt art & loyalty NFTs.</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    title: "Q6. 60‑day pilot KPIs",
+    body: (
+      <div className="space-y-2 text-sm">
+        <ul className="list-disc ml-6">
+          <li>≥25 % customer opt‑in.</li>
+          <li>≥30 % drop in thermal paper.</li>
+          <li>≥40 % faster returns with NFT receipts.</li>
+          <li>+6 pt NPS lift Gen‑Z/Millennials.</li>
+        </ul>
+        <p className="italic">Hit 3 of 4 → national rollout.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q7. Two tangible shopper perks",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p>1️⃣ <strong>Smart‑receipt vault</strong> — search, expense, tax export, warranty proof.</p>
+        <p>2️⃣ <strong>Unlockable rewards</strong> — on‑chain loyalty, collectible art, targeted offers.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q8. Biggest risk & pre‑mortem fix",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p><strong>Risk:</strong> POS integration stalls → pilot never ships.</p>
+        <p><strong>Fix:</strong> Hire lean dev squad, ship plug‑and‑play SDK, hide ‘crypto’ jargon, custodial email‑wallet default.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q9. 5‑slide pitch skeleton",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p>1. $$ & CO₂ problem</p>
+        <p>2. One‑tap BlockReceipt switch</p>
+        <p>3. Personal memory vault</p>
+        <p>4. Loyalty & culture boost</p>
+        <p>5. 90‑day ROI roadmap</p>
+      </div>
+    ),
+  },
+  {
+    title: "Q10. 6‑month budget range",
+    body: (
+      <div className="space-y-2 text-sm">
+        <p><strong>Lean MVP:</strong> ≈ $23 K</p>
+        <p><strong>Pilot‑ready:</strong> ≈ $50 K</p>
+        <ul className="list-disc ml-6 text-xs">
+          <li>Infra $800 ▸ Wallet $300 ▸ Gas $200 + audit $6 800</li>
+          <li>Legal $6 000 ▸ Dev+Design $28 000 ▸ Branding $8 000</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    title: "Thanks!",
+    body: (
+      <div className="space-y-4 text-center text-lg">
+        <p>Ready to turn the mile‑long paper receipt into an on‑chain advantage? 🚀</p>
+        <p className="text-sm">Questions, tweaks, or extra flair? Let me know.</p>
+      </div>
+    ),
+  },
+];
+
+export default function Presentation() {
+  const [index, setIndex] = useState(0);
+
+  const prev = () => setIndex((i) => (i > 0 ? i - 1 : slides.length - 1));
+  const next = () => setIndex((i) => (i < slides.length - 1 ? i + 1 : 0));
+
+  return (
+    <div className="w-screen h-screen bg-gradient-to-br from-emerald-50 to-indigo-100 flex flex-col items-center justify-between p-6 overflow-hidden">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -40 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-5xl"
+        >
+          <Card className="shadow-2xl rounded-2xl p-8 bg-white/80 backdrop-blur">
+            <CardHeader className="text-center space-y-1">
+              <h1 className="text-2xl font-bold">{slides[index].title}</h1>
+              {slides[index].subtitle && (
+                <p className="text-md text-muted-foreground">{slides[index].subtitle}</p>
+              )}
+            </CardHeader>
+            <CardContent>{slides[index].body}</CardContent>
+          </Card>
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="flex items-center gap-4 mt-6">
+        <Button variant="outline" size="icon" onClick={prev}>
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <span className="text-sm font-medium">
+          {index + 1} / {slides.length}
+        </span>
+        <Button variant="outline" size="icon" onClick={next}>
+          <ArrowRight className="w-5 h-5" />
+        </Button>
+      </div>
+    </div>
+  );
+}

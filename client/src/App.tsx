@@ -14,6 +14,7 @@ import Home from "./pages/Home";
 import MerchantDemo from "./pages/MerchantDemo";
 import Enterprise from "./pages/Enterprise";
 import HowItWorks from "./pages/HowItWorks";
+import WhyBlockReceipt from "./pages/WhyBlockReceipt";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { ToastProvider } from './hooks/use-toast';
 
