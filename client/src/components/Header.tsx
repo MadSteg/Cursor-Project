@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useWallet } from '../contexts/WalletContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
   const { isConnected, walletAddress, connect, disconnect } = useWallet();
+  const { language, setLanguage, t } = useLanguage();
   
   // Format wallet address for display
   const formatWalletAddress = (address: string) => {
@@ -51,8 +53,33 @@ const Header: React.FC = () => {
             ))}
           </nav>
           
-          {/* Wallet Connect Button (Desktop) */}
-          <div className="hidden md:block">
+          {/* Language Toggle & Wallet Connect (Desktop) */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Language Toggle */}
+            <div className="bg-gray-800 rounded-lg p-1 flex">
+              <button
+                onClick={() => setLanguage('en')}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  language === 'en' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLanguage('es')}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  language === 'es' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                ES
+              </button>
+            </div>
+
+            {/* Wallet Connect */}
             {isConnected && walletAddress ? (
               <div className="flex items-center">
                 <div className="mr-4 px-4 py-2 bg-muted rounded-md">

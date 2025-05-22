@@ -72,31 +72,7 @@ const EnhancedNFTGallery = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       <div className="container mx-auto px-4 py-8">
-        {/* Language Toggle */}
-        <div className="flex justify-end mb-6">
-          <div className="bg-gray-800 rounded-lg p-1 flex">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                language === 'en' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setLanguage('es')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                language === 'es' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Español
-            </button>
-          </div>
-        </div>
+
 
         <p className="text-xl text-gray-300 mb-8 max-w-3xl">
           {t('gallery.description')}
@@ -200,7 +176,7 @@ const EnhancedNFTGallery = () => {
                   {/* Card Header with Rarity Badge */}
                   <div className="relative p-4 pb-2">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-bold text-foreground leading-tight">{nft.name}</h3>
+                      <h3 className="text-lg font-bold text-white leading-tight">{nft.name}</h3>
                       <div className={`px-2 py-1 rounded-full text-xs font-semibold bg-${getRarityColor(nft.rarity)} text-white`}>
                         {nft.rarity.toUpperCase()}
                       </div>
@@ -208,7 +184,7 @@ const EnhancedNFTGallery = () => {
                     
                     {/* Merchant Badge */}
                     {nft.merchant && (
-                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-700 text-white">
                         {nft.merchant === 'dunkin' ? '🍩 Dunkin\'' : nft.merchant === 'cvs' ? '💊 CVS' : nft.merchant}
                       </div>
                     )}
@@ -233,7 +209,7 @@ const EnhancedNFTGallery = () => {
                   
                   {/* Card Content */}
                   <div className="px-4 pb-4">
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    <p className="text-sm text-gray-300 mb-3 line-clamp-2">
                       {nft.description}
                     </p>
                     
@@ -241,8 +217,8 @@ const EnhancedNFTGallery = () => {
                     <div className="space-y-1 mb-4">
                       {nft.attributes.slice(0, 2).map((attr, i) => (
                         <div key={i} className="flex justify-between text-xs">
-                          <span className="text-muted-foreground">{attr.trait_type}:</span>
-                          <span className="font-medium text-foreground">{attr.value}</span>
+                          <span className="text-gray-400">{attr.trait_type}:</span>
+                          <span className="font-medium text-white">{attr.value}</span>
                         </div>
                       ))}
                     </div>
