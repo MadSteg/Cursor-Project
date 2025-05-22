@@ -4,24 +4,66 @@ import { useWallet } from '../contexts/WalletContext';
 import { NFT } from '../types/nft';
 import { sampleNFTs } from '../data/nftData';
 
-// Array of Google Cloud Storage image URLs that are known to exist
-const cloudImageUrls = [
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-1.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-2.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-3.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-4.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-5.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-6.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-7.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-8.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-9.png',
-  'https://storage.googleapis.com/blockreceipt/bulldogs/bulldog-10.png',
-  'https://storage.googleapis.com/blockreceipt/receipts/receipt-1.jpg',
-  'https://storage.googleapis.com/blockreceipt/receipts/receipt-2.jpg',
-  'https://storage.googleapis.com/blockreceipt/receipts/receipt-3.jpg',
-  // Fallback to sample images if needed
-  ...sampleNFTs.map(nft => typeof nft.image === 'string' && !nft.image.startsWith('data:') ? nft.image : '')
-].filter(url => url !== '');
+// Use local bulldog NFT images from public folder
+const bulldogNFTImages = [
+  // Screenshot images saved to public folder
+  '/bulldogs/Screenshot 2025-05-20 at 3.16.35 PM.png', // Fancy hat
+  '/bulldogs/Screenshot 2025-05-20 at 3.16.40 PM.png', // Casual tie
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.22 PM.png', // Police
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.28 PM.png', // Beer
+  '/bulldogs/Screenshot 2025-05-20 at 3.18.02 PM.png', // Baseball
+  '/bulldogs/Screenshot 2025-05-20 at 3.18.08 PM.png', // Plaid
+  '/bulldogs/Screenshot 2025-05-20 at 3.19.04 PM.png', // Bowtie
+  '/bulldogs/Screenshot 2025-05-20 at 3.20.09 PM.png', // Tourist
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.14 PM.png', // Godfather
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.20 PM.png', // Scarf
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.12 PM.png', // Rapper
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.18 PM.png', // Vacation
+  '/bulldogs/Screenshot 2025-05-20 at 3.23.00 PM.png', // Smoker
+  '/bulldogs/Screenshot 2025-05-20 at 3.23.22 PM.png', // King
+  // Additional bulldogs from the folder
+  '/bulldogs/Screenshot 2025-05-20 at 3.14.20 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.14.30 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.14.37 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.14.46 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.14.54 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.15.01 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.15.06 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.15.11 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.15.18 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.15.25 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.16.47 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.16.54 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.16.59 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.05 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.14 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.33 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.42 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.46 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.52 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.17.58 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.18.27 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.18.33 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.18.50 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.18.57 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.19.01 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.20.14 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.20.18 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.20.23 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.04 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.09 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.25 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.32 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.38 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.21.45 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.03 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.23 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.32 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.39 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.48 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.22.53 PM.png',
+  '/bulldogs/Screenshot 2025-05-20 at 3.23.32 PM.png'
+];
 
 // Array of possible NFT names
 const nftNames = [
@@ -77,20 +119,16 @@ const generateRandomNFT = (id: string, imageUrl: string): NFT => {
     }));
   
   // Determine rarity based on probabilities
-  let rarity: string;
+  let rarity: "common" | "uncommon" | "rare" | "epic" | "legendary" = "common"; // Default value
   const randValue = Math.random();
   let cumulativeProbability = 0;
   
   for (const level of rarityLevels) {
     cumulativeProbability += level.probability;
     if (randValue <= cumulativeProbability) {
-      rarity = level.name;
+      rarity = level.name as "common" | "uncommon" | "rare" | "epic" | "legendary";
       break;
     }
-  }
-  
-  if (!rarity) {
-    rarity = 'common'; // Default fallback
   }
   
   // Create the NFT object
@@ -112,8 +150,8 @@ const EnhancedNFTGallery: React.FC = () => {
   const [filter, setFilter] = useState('all');
   
   useEffect(() => {
-    // Generate NFTs from our image URLs
-    const generatedNFTs = cloudImageUrls.map((url, index) => 
+    // Generate NFTs from our local bulldog images
+    const generatedNFTs = bulldogNFTImages.map((url: string, index: number) => 
       generateRandomNFT(`nft-${index}`, url)
     );
     
@@ -124,7 +162,7 @@ const EnhancedNFTGallery: React.FC = () => {
       .slice()
       .sort(() => 0.5 - Math.random())
       .slice(0, Math.floor(generatedNFTs.length * 0.3)) // About 30% are minted
-      .map(nft => nft.id);
+      .map((nft: NFT) => nft.id);
     
     setMintedNFTs(randomMinted);
     setLoading(false);
