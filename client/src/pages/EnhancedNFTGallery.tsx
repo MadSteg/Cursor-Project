@@ -4,143 +4,14 @@ import { useWallet } from '../contexts/WalletContext';
 import { NFT } from '../types/nft';
 import { sampleNFTs } from '../data/nftData';
 
-// Use local bulldog NFT images from public folder
-const bulldogNFTImages = [
-  // Screenshot images saved to public folder
-  '/bulldogs/Screenshot 2025-05-20 at 3.16.35 PM.png', // Fancy hat
-  '/bulldogs/Screenshot 2025-05-20 at 3.16.40 PM.png', // Casual tie
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.22 PM.png', // Police
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.28 PM.png', // Beer
-  '/bulldogs/Screenshot 2025-05-20 at 3.18.02 PM.png', // Baseball
-  '/bulldogs/Screenshot 2025-05-20 at 3.18.08 PM.png', // Plaid
-  '/bulldogs/Screenshot 2025-05-20 at 3.19.04 PM.png', // Bowtie
-  '/bulldogs/Screenshot 2025-05-20 at 3.20.09 PM.png', // Tourist
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.14 PM.png', // Godfather
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.20 PM.png', // Scarf
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.12 PM.png', // Rapper
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.18 PM.png', // Vacation
-  '/bulldogs/Screenshot 2025-05-20 at 3.23.00 PM.png', // Smoker
-  '/bulldogs/Screenshot 2025-05-20 at 3.23.22 PM.png', // King
-  // Additional bulldogs from the folder
-  '/bulldogs/Screenshot 2025-05-20 at 3.14.20 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.14.30 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.14.37 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.14.46 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.14.54 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.15.01 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.15.06 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.15.11 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.15.18 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.15.25 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.16.47 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.16.54 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.16.59 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.05 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.14 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.33 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.42 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.46 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.52 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.17.58 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.18.27 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.18.33 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.18.50 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.18.57 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.19.01 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.20.14 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.20.18 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.20.23 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.04 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.09 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.25 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.32 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.38 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.21.45 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.03 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.23 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.32 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.39 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.48 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.22.53 PM.png',
-  '/bulldogs/Screenshot 2025-05-20 at 3.23.32 PM.png'
-];
-
-// Array of possible NFT names
-const nftNames = [
-  'Crypto Bulldog',
-  'Diamond Paws',
-  'Blockchain Buddy',
-  'NFT Collector',
-  'Web3 Warrior',
-  'Digital Asset Dog',
-  'Polygon Pup',
-  'Ethereum Explorer',
-  'Mint Master',
-  'Token Tracker',
-  'Smart Contract Canine',
-  'Bullish Bulldog',
-  'Captain Receipt',
-  'Dapper Dog',
-  'Receipt Guardian'
-];
-
-// Array of possible NFT traits
-const traits = [
-  { trait_type: 'Background', values: ['Solid', 'Gradient', 'Cityscape', 'Abstract', 'Digital'] },
-  { trait_type: 'Clothing', values: ['Hoodie', 'Shirt', 'Suit', 'Jersey', 'Cape', 'Armor', 'None'] },
-  { trait_type: 'Eyewear', values: ['Sunglasses', 'Monocle', 'Visor', 'VR Headset', 'None'] },
-  { trait_type: 'Hat', values: ['Cap', 'Beanie', 'Crown', 'Helmet', 'Top Hat', 'None'] },
-  { trait_type: 'Accessory', values: ['Watch', 'Chain', 'Badge', 'Wallet', 'Phone', 'None'] },
-  { trait_type: 'Personality', values: ['Playful', 'Serious', 'Excited', 'Calm', 'Mysterious'] }
-];
-
-// Rarity levels and their probabilities
+// Rarity levels for display
 const rarityLevels = [
-  { name: 'common', probability: 0.6, color: 'gray-600' },
-  { name: 'uncommon', probability: 0.25, color: 'green-600' },
-  { name: 'rare', probability: 0.1, color: 'blue-600' },
-  { name: 'epic', probability: 0.04, color: 'purple-600' },
-  { name: 'legendary', probability: 0.01, color: 'amber-500' }
+  { name: 'common', color: 'gray-600' },
+  { name: 'uncommon', color: 'green-600' },
+  { name: 'rare', color: 'blue-600' },
+  { name: 'epic', color: 'purple-600' },
+  { name: 'legendary', color: 'amber-500' }
 ];
-
-// Generate a random NFT based on our arrays
-const generateRandomNFT = (id: string, imageUrl: string): NFT => {
-  // Select a random name
-  const name = nftNames[Math.floor(Math.random() * nftNames.length)];
-  
-  // Generate 2-4 random traits
-  const numTraits = Math.floor(Math.random() * 3) + 2; // 2-4 traits
-  const selectedTraits = [...traits]
-    .sort(() => 0.5 - Math.random())
-    .slice(0, numTraits)
-    .map(trait => ({
-      trait_type: trait.trait_type,
-      value: trait.values[Math.floor(Math.random() * trait.values.length)]
-    }));
-  
-  // Determine rarity based on probabilities
-  let rarity: "common" | "uncommon" | "rare" | "epic" | "legendary" = "common"; // Default value
-  const randValue = Math.random();
-  let cumulativeProbability = 0;
-  
-  for (const level of rarityLevels) {
-    cumulativeProbability += level.probability;
-    if (randValue <= cumulativeProbability) {
-      rarity = level.name as "common" | "uncommon" | "rare" | "epic" | "legendary";
-      break;
-    }
-  }
-  
-  // Create the NFT object
-  return {
-    id,
-    name,
-    description: `A unique ${rarity} BlockReceipt bulldog NFT with special traits.`,
-    image: imageUrl,
-    rarity,
-    attributes: selectedTraits
-  };
-};
 
 const EnhancedNFTGallery: React.FC = () => {
   const { isConnected } = useWallet();
@@ -150,18 +21,14 @@ const EnhancedNFTGallery: React.FC = () => {
   const [filter, setFilter] = useState('all');
   
   useEffect(() => {
-    // Generate NFTs from our local bulldog images
-    const generatedNFTs = bulldogNFTImages.map((url: string, index: number) => 
-      generateRandomNFT(`nft-${index}`, url)
-    );
-    
-    setNfts(generatedNFTs);
+    // Use our pre-defined sample NFT data
+    setNfts(sampleNFTs);
     
     // Randomly mark some as minted (for demo purposes)
-    const randomMinted = generatedNFTs
+    const randomMinted = sampleNFTs
       .slice()
       .sort(() => 0.5 - Math.random())
-      .slice(0, Math.floor(generatedNFTs.length * 0.3)) // About 30% are minted
+      .slice(0, Math.floor(sampleNFTs.length * 0.3)) // About 30% are minted
       .map((nft: NFT) => nft.id);
     
     setMintedNFTs(randomMinted);
@@ -283,16 +150,27 @@ const EnhancedNFTGallery: React.FC = () => {
         >
           All
         </button>
-        {rarityLevels.map(level => (
-          <button 
-            key={level.name}
-            onClick={() => setFilter(level.name)}
-            className={`px-4 py-2 rounded-full flex items-center ${filter === level.name ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-foreground'}`}
-          >
-            <span className={`w-3 h-3 rounded-full bg-${level.color} mr-2`}></span>
-            {level.name.charAt(0).toUpperCase() + level.name.slice(1)}
-          </button>
-        ))}
+        {rarityLevels.map(level => {
+          // Get background color for rarity
+          const bgColor = level.name === 'legendary' ? '#ffd700' : 
+                          level.name === 'epic' ? '#9932cc' :
+                          level.name === 'rare' ? '#4169e1' :
+                          level.name === 'uncommon' ? '#2e8b57' : '#777777';
+          
+          return (
+            <button 
+              key={level.name}
+              onClick={() => setFilter(level.name)}
+              className={`px-4 py-2 rounded-full flex items-center ${filter === level.name ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-foreground'}`}
+            >
+              <span 
+                className="w-3 h-3 rounded-full mr-2" 
+                style={{ backgroundColor: bgColor }}
+              ></span>
+              {level.name.charAt(0).toUpperCase() + level.name.slice(1)}
+            </button>
+          );
+        })}
       </div>
       
       {/* NFT Grid */}
@@ -307,12 +185,26 @@ const EnhancedNFTGallery: React.FC = () => {
                   alt={nft.name}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                   onError={(e) => {
-                    // If image fails to load, show default
-                    e.currentTarget.src = '/images/bulldogs/bulldog-default.svg';
+                    // If image fails to load, show a default color background
+                    const fallbackColor = nft.rarity === 'legendary' ? '#ffd700' : 
+                                         nft.rarity === 'epic' ? '#9932cc' :
+                                         nft.rarity === 'rare' ? '#4169e1' :
+                                         nft.rarity === 'uncommon' ? '#2e8b57' : '#777777';
+                    
+                    if (e.currentTarget.parentElement) {
+                      e.currentTarget.parentElement.style.backgroundColor = fallbackColor;
+                      e.currentTarget.style.display = 'none';
+                    }
                   }}
                 />
                 <div className="absolute top-0 right-0 p-2">
-                  <div className={`bg-${getRarityColor(nft.rarity)} text-white text-xs font-bold px-2 py-1 rounded-full`}>
+                  <div className={`text-white text-xs font-bold px-2 py-1 rounded-full`}
+                    style={{
+                      backgroundColor: nft.rarity === 'legendary' ? '#ffd700' : 
+                                       nft.rarity === 'epic' ? '#9932cc' :
+                                       nft.rarity === 'rare' ? '#4169e1' :
+                                       nft.rarity === 'uncommon' ? '#2e8b57' : '#777777'
+                    }}>
                     {nft.rarity.toUpperCase()}
                   </div>
                 </div>
