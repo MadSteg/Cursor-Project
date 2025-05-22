@@ -14,45 +14,45 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    title: "Who feels the pain of paper receipts more?",
+    title: "Q1. Who feels the pain of paper receipts more?",
     icon: DollarSign,
     bgColor: "from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20",
     content: (
       <div className="space-y-6">
         <div className="text-center">
           <p className="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-4">
-            Merchants — by a landslide! 🏪
+            Short answer: <em>Merchants</em>
           </p>
           <p className="text-lg text-muted-foreground">
-            They swallow perpetual hardware, paper, labor & brand costs, while customers only suffer when a receipt is lost.
+            They swallow perpetual hardware, paper, labour & brand costs, while customers only suffer when a receipt is lost.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-3">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
-            <h4 className="font-semibold text-red-600 dark:text-red-400 mb-2">💸 Hardware & Supplies</h4>
-            <p className="text-sm">Constant spend on printers, rolls, service contracts</p>
+            <p className="text-sm"><strong>Hardware & supplies</strong> → constant spend on printers, rolls, service contracts.</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
-            <h4 className="font-semibold text-orange-600 dark:text-orange-400 mb-2">⚠️ Maintenance Downtime</h4>
-            <p className="text-sm">Jams = stalled lines & angry shoppers</p>
+            <p className="text-sm"><strong>Maintenance downtime</strong> → jams = stalled lines & angry shoppers.</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
-            <h4 className="font-semibold text-yellow-600 dark:text-yellow-400 mb-2">👥 Labor & Training</h4>
-            <p className="text-sm">Staff swap rolls & troubleshoot instead of selling</p>
+            <p className="text-sm"><strong>Labour & training</strong> → staff swap rolls & troubleshoot instead of selling.</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
-            <h4 className="font-semibold text-green-600 dark:text-green-400 mb-2">🌱 Environmental Impact</h4>
-            <p className="text-sm">BPA-coated thermal paper ≠ ESG friendly</p>
+            <p className="text-sm"><strong>Environmental hit</strong> → BPA‑coated thermal paper ≠ ESG friendly.</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>Fraud & returns</strong> → fake receipts erode margin.</p>
           </div>
         </div>
         
         <div className="bg-purple-100 dark:bg-purple-900/30 p-4 rounded-lg border">
-          <p className="text-center font-medium">
-            💎 Digital NFT receipts erase every problem above — zero paper, immutable proof, instant lookup.
+          <p className="text-center font-medium italic text-sm">
+            Digital NFT receipts erase every bullet above — zero paper, immutable proof, instant lookup.
           </p>
         </div>
       </div>
@@ -60,7 +60,7 @@ const slides: Slide[] = [
   },
   {
     id: 2,
-    title: "The first-time \"Aha!\" moment",
+    title: "Q2. Capture the first‑time \"aha!\"",
     icon: Lightbulb,
     bgColor: "from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20",
     content: (
@@ -71,7 +71,7 @@ const slides: Slide[] = [
               <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-blue-700 dark:text-blue-300">Customer Reaction</h3>
+              <h3 className="text-lg font-bold text-blue-700 dark:text-blue-300">Customer</h3>
             </div>
             <blockquote className="text-lg italic text-center">
               "One tap and my receipt's an NFT I'll never lose? 
@@ -84,10 +84,10 @@ const slides: Slide[] = [
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <DollarSign className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-green-700 dark:text-green-300">Merchant Reaction</h3>
+              <h3 className="text-lg font-bold text-green-700 dark:text-green-300">Merchant</h3>
             </div>
             <blockquote className="text-lg italic text-center">
-              "Eco-friendly, fraud-proof, <em>and</em> cheaper than paper? 
+              "Eco‑friendly, fraud‑proof, <em>and</em> cheaper than paper? 
               <span className="font-bold text-green-600 dark:text-green-400"> Why didn't we do this sooner?</span>"
             </blockquote>
           </div>
@@ -97,49 +97,37 @@ const slides: Slide[] = [
   },
   {
     id: 3,
-    title: "Who to target first?",
+    title: "Q3. Who to target first?",
     icon: Target,
     bgColor: "from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20",
     content: (
       <div className="space-y-6">
         <div className="text-center">
           <h3 className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-2">
-            Go Big: CVS, Dunkin', Walgreens 🎯
+            Go big (CVS/Dunkin')
           </h3>
           <p className="text-lg text-muted-foreground">
-            One pilot = thousands of lanes, massive cost savings & headline buzz
+            One pilot = thousands of lanes, massive cost savings & headline buzz.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
-            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-              <DollarSign className="w-6 h-6 text-white" />
-            </div>
-            <h4 className="font-semibold mb-2">High Paper Spend</h4>
-            <p className="text-sm text-muted-foreground">= High ROI potential</p>
+        <div className="space-y-3">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>High paper spend</strong> → high ROI.</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <h4 className="font-semibold mb-2">ESG Mandates</h4>
-            <p className="text-sm text-muted-foreground">= Board-level urgency</p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>ESG mandates</strong> → board‑level urgency.</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
-            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-            <h4 className="font-semibold mb-2">Scalability</h4>
-            <p className="text-sm text-muted-foreground">One integration, nationwide rollout</p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>Scalability</strong> → one integration, nationwide rollout.</p>
           </div>
         </div>
         
         <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-          <p className="text-center italic">
-            💡 Boutique stores love the idea, but scale too slowly for initial impact
+          <p className="text-center italic text-sm">
+            Boutique stores love the idea, but scale too slowly.
           </p>
         </div>
       </div>
@@ -147,37 +135,36 @@ const slides: Slide[] = [
   },
   {
     id: 4,
-    title: "#1 outcome CVS cares about",
+    title: "Q4. #1 outcome CVS cares about?",
     icon: TrendingUp,
     bgColor: "from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20",
     content: (
       <div className="space-y-6">
         <div className="text-center">
           <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
-            Kill the mile-long receipt meme 📏➡️💎
+            Kill the mile‑long receipt meme & slash paper costs
           </h3>
           <p className="text-lg text-muted-foreground">
-            Slash paper costs — a dual P&L + ESG win
+            A dual P&L + ESG win.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
             <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">$15M</div>
-            <p className="text-sm">Saved annually chain-wide</p>
-            <p className="text-xs text-muted-foreground">($0.004 per transaction)</p>
+            <p className="text-sm">chain‑wide annualised</p>
+            <p className="text-xs text-muted-foreground">$0.004 saved per transaction</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">9,000</div>
-            <p className="text-sm">Trees saved per year</p>
-            <p className="text-xs text-muted-foreground">Environmental impact</p>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">~9,000</div>
+            <p className="text-sm">trees saved per year</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">+5pt</div>
-            <p className="text-sm">Social sentiment swing</p>
-            <p className="text-xs text-muted-foreground">When the joke flips</p>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">+5 pt</div>
+            <p className="text-sm">social‑sentiment swing</p>
+            <p className="text-xs text-muted-foreground">when the joke flips</p>
           </div>
         </div>
       </div>
@@ -185,43 +172,31 @@ const slides: Slide[] = [
   },
   {
     id: 5,
-    title: "Product, platform, or protocol?",
+    title: "Q5. Product, platform, or protocol?",
     icon: Zap,
     bgColor: "from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20",
     content: (
       <div className="space-y-6">
         <div className="text-center">
           <h3 className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-2">
-            Hybrid Platform ⚡
+            Hybrid platform
           </h3>
           <p className="text-lg text-muted-foreground">
-            With an embedded protocol layer
+            with an embedded protocol layer.
           </p>
         </div>
         
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <h4 className="font-semibold text-blue-600 dark:text-blue-400 mb-2 flex items-center">
-              <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-              Platform Layer
-            </h4>
-            <p className="text-sm">POS plug-in & merchant dashboard for easy integration</p>
+        <div className="space-y-3">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>Platform:</strong> POS plug‑in & merchant dashboard.</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <h4 className="font-semibold text-green-600 dark:text-green-400 mb-2 flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-              Protocol Layer
-            </h4>
-            <p className="text-sm">REST/GraphQL + SDK for developers to build on top</p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>Protocol:</strong> REST/GraphQL + SDK for devs.</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <h4 className="font-semibold text-purple-600 dark:text-purple-400 mb-2 flex items-center">
-              <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-              Marketplace Layer
-            </h4>
-            <p className="text-sm">Opt-in branded receipt art & loyalty NFTs for engagement</p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>Marketplace:</strong> opt‑in branded receipt art & loyalty NFTs.</p>
           </div>
         </div>
       </div>
@@ -229,88 +204,53 @@ const slides: Slide[] = [
   },
   {
     id: 6,
-    title: "60-day pilot KPIs",
+    title: "Q6. 60‑day pilot KPIs",
     icon: Calendar,
     bgColor: "from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20",
     content: (
       <div className="space-y-6">
-        <div className="text-center">
-          <h3 className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-2">
-            Success Metrics 📊
-          </h3>
-          <p className="text-lg text-muted-foreground">
-            Hit 3 of 4 → national rollout
-          </p>
+        <div className="space-y-3">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>≥25 %</strong> customer opt‑in.</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>≥30 %</strong> drop in thermal paper.</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>≥40 %</strong> faster returns with NFT receipts.</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>+6 pt</strong> NPS lift Gen‑Z/Millennials.</p>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">≥25%</div>
-              <p className="font-semibold">Customer Opt-in</p>
-              <p className="text-sm text-muted-foreground">Digital receipt adoption rate</p>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">≥30%</div>
-              <p className="font-semibold">Paper Reduction</p>
-              <p className="text-sm text-muted-foreground">Drop in thermal paper usage</p>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">≥40%</div>
-              <p className="font-semibold">Faster Returns</p>
-              <p className="text-sm text-muted-foreground">Speed improvement with NFT receipts</p>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">+6pt</div>
-              <p className="font-semibold">NPS Lift</p>
-              <p className="text-sm text-muted-foreground">Gen-Z/Millennial satisfaction</p>
-            </div>
-          </div>
+        <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg border">
+          <p className="text-center italic text-sm">
+            Hit 3 of 4 → national rollout.
+          </p>
         </div>
       </div>
     )
   },
   {
     id: 7,
-    title: "Two tangible shopper perks",
+    title: "Q7. Two tangible shopper perks",
     icon: Users,
     bgColor: "from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20",
     content: (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border">
-            <div className="text-center mb-4">
-              <div className="text-4xl mb-2">🗄️</div>
-              <h3 className="text-xl font-bold text-teal-700 dark:text-teal-300">Smart Receipt Vault</h3>
-            </div>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center"><span className="w-2 h-2 bg-teal-500 rounded-full mr-2"></span>Search & organize receipts</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-teal-500 rounded-full mr-2"></span>Expense tracking</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-teal-500 rounded-full mr-2"></span>Tax export functionality</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-teal-500 rounded-full mr-2"></span>Warranty proof storage</li>
-            </ul>
+        <div className="space-y-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
+            <p className="text-lg font-semibold mb-2">1️⃣ Smart‑receipt vault</p>
+            <p className="text-sm text-muted-foreground">Search, expense, tax export, warranty proof.</p>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border">
-            <div className="text-center mb-4">
-              <div className="text-4xl mb-2">🎁</div>
-              <h3 className="text-xl font-bold text-cyan-700 dark:text-cyan-300">Unlockable Rewards</h3>
-            </div>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center"><span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>On-chain loyalty points</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>Collectible character NFTs</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>Targeted special offers</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>Exclusive brand experiences</li>
-            </ul>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
+            <p className="text-lg font-semibold mb-2">2️⃣ Unlockable rewards</p>
+            <p className="text-sm text-muted-foreground">On‑chain loyalty, collectible art, targeted offers.</p>
           </div>
         </div>
       </div>
@@ -318,146 +258,76 @@ const slides: Slide[] = [
   },
   {
     id: 8,
-    title: "Biggest risk & pre-mortem fix",
+    title: "Q8. Biggest risk & pre‑mortem fix",
     icon: AlertTriangle,
     bgColor: "from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20",
     content: (
       <div className="space-y-6">
-        <div className="bg-red-100 dark:bg-red-900/30 p-6 rounded-lg border-l-4 border-red-500">
-          <h3 className="text-lg font-bold text-red-700 dark:text-red-300 mb-2 flex items-center">
-            <AlertTriangle className="w-5 h-5 mr-2" />
-            Primary Risk
-          </h3>
-          <p className="text-red-600 dark:text-red-400">
-            POS integration stalls → pilot never ships
-          </p>
+        <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg border">
+          <h3 className="text-lg font-bold text-red-700 dark:text-red-300 mb-2">Risk:</h3>
+          <p className="text-sm">POS integration stalls → pilot never ships.</p>
         </div>
         
-        <div className="bg-green-100 dark:bg-green-900/30 p-6 rounded-lg border-l-4 border-green-500">
-          <h3 className="text-lg font-bold text-green-700 dark:text-green-300 mb-4 flex items-center">
-            <Shield className="w-5 h-5 mr-2" />
-            Prevention Strategy
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span className="text-sm">Hire lean dev squad</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span className="text-sm">Ship plug-and-play SDK</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span className="text-sm">Hide 'crypto' jargon</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span className="text-sm">Custodial email-wallet default</span>
-              </div>
-            </div>
-          </div>
+        <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg border">
+          <h3 className="text-lg font-bold text-green-700 dark:text-green-300 mb-2">Fix:</h3>
+          <p className="text-sm">Hire lean dev squad, ship plug‑and‑play SDK, hide 'crypto' jargon, custodial email‑wallet default.</p>
         </div>
       </div>
     )
   },
   {
     id: 9,
-    title: "5-slide pitch skeleton",
+    title: "Q9. 5‑slide pitch skeleton",
     icon: Presentation,
     bgColor: "from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20",
     content: (
       <div className="space-y-4">
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
-            Perfect Pitch Structure 🎯
-          </h3>
-        </div>
-        
         <div className="space-y-3">
-          {[
-            { num: 1, title: "$$ & CO₂ problem", desc: "Show the pain points and costs" },
-            { num: 2, title: "One-tap BlockReceipt switch", desc: "Demonstrate the simple solution" },
-            { num: 3, title: "Personal memory vault", desc: "Highlight customer benefits" },
-            { num: 4, title: "Loyalty & culture boost", desc: "Show engagement advantages" },
-            { num: 5, title: "90-day ROI roadmap", desc: "Present clear implementation plan" }
-          ].map((slide) => (
-            <div key={slide.num} className="bg-white dark:bg-gray-800 p-4 rounded-lg border flex items-center">
-              <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-bold mr-4">
-                {slide.num}
-              </div>
-              <div>
-                <h4 className="font-semibold">{slide.title}</h4>
-                <p className="text-sm text-muted-foreground">{slide.desc}</p>
-              </div>
-            </div>
-          ))}
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>1.</strong> $$ & CO₂ problem</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>2.</strong> One‑tap BlockReceipt switch</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>3.</strong> Personal memory vault</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>4.</strong> Loyalty & culture boost</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border">
+            <p className="text-sm"><strong>5.</strong> 90‑day ROI roadmap</p>
+          </div>
         </div>
       </div>
     )
   },
   {
     id: 10,
-    title: "6-month budget range",
+    title: "Q10. 6‑month budget range",
     icon: DollarSign,
     bgColor: "from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20",
     content: (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">Lean MVP</h3>
-              <div className="text-4xl font-bold text-blue-700 dark:text-blue-300 mb-2">≈ $23K</div>
-              <p className="text-sm text-muted-foreground">Proof of concept & basic features</p>
-            </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border text-center">
+            <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">Lean MVP</h3>
+            <div className="text-4xl font-bold text-blue-700 dark:text-blue-300 mb-2">≈ $23K</div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">Pilot-Ready</h3>
-              <div className="text-4xl font-bold text-green-700 dark:text-green-300 mb-2">≈ $50K</div>
-              <p className="text-sm text-muted-foreground">Full integration & deployment</p>
-            </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border text-center">
+            <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">Pilot‑ready</h3>
+            <div className="text-4xl font-bold text-green-700 dark:text-green-300 mb-2">≈ $50K</div>
           </div>
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
-          <h4 className="font-semibold mb-4 text-center">Budget Breakdown</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Infrastructure</span>
-                <span className="font-medium">$800</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Wallet Integration</span>
-                <span className="font-medium">$300</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Gas & Blockchain</span>
-                <span className="font-medium">$200</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Security Audit</span>
-                <span className="font-medium">$6,800</span>
-              </div>
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div className="space-y-1">
+              <p>Infra $800 ▸ Wallet $300 ▸ Gas $200 + audit $6 800</p>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Legal & Compliance</span>
-                <span className="font-medium">$6,000</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Development & Design</span>
-                <span className="font-medium">$28,000</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Branding & Marketing</span>
-                <span className="font-medium">$8,000</span>
-              </div>
+            <div className="space-y-1">
+              <p>Legal $6 000 ▸ Dev+Design $28 000 ▸ Branding $8 000</p>
             </div>
           </div>
         </div>
