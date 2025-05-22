@@ -221,17 +221,18 @@ const EnhancedNFTGallery = () => {
                     </div>
                     
                     {/* Action Button */}
-                    <button
-                      onClick={() => handleMint(nft.id)}
-                      disabled={isMinted}
-                      className={`w-full py-2 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
-                        isMinted
-                          ? 'bg-green-600 text-white cursor-not-allowed'
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg'
-                      }`}
-                    >
-                      {isMinted ? '✓ Minted' : 'Mint NFT'}
-                    </button>
+                    {isMinted ? (
+                      <div className="w-full py-2 px-4 rounded-lg font-medium text-sm bg-green-600 text-white text-center">
+                        ✓ MINTED
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleMint(nft.id)}
+                        className="w-full py-2 px-4 rounded-lg font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg transition-all duration-200"
+                      >
+                        MINT THIS NFT
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
