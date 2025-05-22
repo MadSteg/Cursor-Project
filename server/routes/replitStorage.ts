@@ -74,16 +74,24 @@ router.get('/generate-nfts', async (req, res) => {
       });
     }
 
-    const objects = await replitClient.list();
+    const result = await replitClient.list();
+    console.log('[replit-storage] List result:', result);
     
-    // Filter for image files
-    const imageObjects = objects.filter(obj => {
+    // Extract the actual objects array from the result
+    let objects: any[] = [];
+    if (result && result.ok && Array.isArray(result.value)) {
+      objects = result.value;
+    } else if (Array.isArray(result)) {
+      objects = result;
+    }
+    
+    console.log('[replit-storage] Found objects:', objects.length);
+    
+    // Filter for PNG image files specifically (like in your bucket)
+    const imageObjects = objects.filter((obj: any) => {
+      if (!obj || !obj.key) return false;
       const name = obj.key.toLowerCase();
-      return name.endsWith('.png') || 
-             name.endsWith('.jpg') || 
-             name.endsWith('.jpeg') || 
-             name.endsWith('.gif') || 
-             name.endsWith('.webp');
+      return name.endsWith('.png');
     });
     
     // Generate NFT metadata for each image
