@@ -212,7 +212,7 @@ const EnhancedNFTGallery: React.FC = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4 brand-gradient-text">BlockReceipt NFT Gallery</h1>
+      <h1 className="text-3xl font-bold mb-4 brand-gradient-text">NFT Collection</h1>
       <p className="text-xl text-muted-foreground mb-8 max-w-3xl">
         Discover our exclusive Bulldog character NFTs - each with unique traits and varying rarity levels.
         Mint these collectible characters to your wallet or earn them by uploading receipts.
