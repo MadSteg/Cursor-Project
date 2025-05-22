@@ -203,6 +203,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/storage', cloudStorageRoutes);
   console.log('[express] Cloud storage routes registered successfully');
   
+  // Register Replit object storage routes
+  const replitStorageRoutes = await import('./routes/replitStorage');
+  app.use('/api/replit-storage', replitStorageRoutes.default);
+  console.log('[express] Replit storage routes registered successfully');
+  
 
   
 
