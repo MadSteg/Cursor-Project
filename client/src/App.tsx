@@ -16,6 +16,7 @@ import Enterprise from "./pages/Enterprise";
 import HowItWorks from "./pages/HowItWorks";
 import WhyBlockReceipt from "./pages/WhyBlockReceipt";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { ToastProvider } from './hooks/use-toast';
 
 // Removed CloudStorage references
@@ -112,11 +113,13 @@ const AppContent: React.FC = () => {
 // Main App component that provides the wallet context
 const App: React.FC = () => {
   return (
-    <WalletProvider>
-      <ToastProvider>
-        <AppContent />
-      </ToastProvider>
-    </WalletProvider>
+    <LanguageProvider>
+      <WalletProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </WalletProvider>
+    </LanguageProvider>
   );
 };
 
