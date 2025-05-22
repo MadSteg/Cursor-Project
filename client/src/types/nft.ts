@@ -12,4 +12,5 @@ export interface NFT {
   image: string;
   rarity: NFTRarity;
   attributes: NFTAttribute[];
+  merchant?: string;
 }

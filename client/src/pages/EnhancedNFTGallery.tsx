@@ -19,6 +19,7 @@ const EnhancedNFTGallery: React.FC = () => {
   const [mintedNFTs, setMintedNFTs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [merchantFilter, setMerchantFilter] = useState('all');
   
   useEffect(() => {
     // Use the pre-defined sample NFTs
@@ -35,10 +36,12 @@ const EnhancedNFTGallery: React.FC = () => {
     setLoading(false);
   }, []);
   
-  // Filter NFTs based on rarity
-  const filteredNFTs = filter === 'all' 
-    ? nfts 
-    : nfts.filter(nft => nft.rarity === filter);
+  // Filter NFTs based on rarity and merchant
+  const filteredNFTs = nfts.filter(nft => {
+    const rarityMatch = filter === 'all' || nft.rarity === filter;
+    const merchantMatch = merchantFilter === 'all' || nft.merchant === merchantFilter;
+    return rarityMatch && merchantMatch;
+  });
   
   const handleMint = (id: string) => {
     if (isConnected) {
