@@ -304,9 +304,10 @@ const Home: React.FC = () => {
             </div>
             
             {/* Connection Lines */}
-            <div className="hidden md:block absolute top-8 left-1/4 w-1/4 h-0.5 bg-gradient-to-r from-indigo-300 to-blue-300 dark:from-indigo-600 dark:to-blue-600"></div>
-            <div className="hidden md:block absolute top-8 left-2/4 w-1/4 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 dark:from-blue-600 dark:to-purple-600"></div>
-            <div className="hidden md:block absolute top-8 left-3/4 w-1/4 h-0.5 bg-gradient-to-r from-purple-300 to-pink-300 dark:from-purple-600 dark:to-pink-600"></div>
+            <div className="hidden md:block absolute top-8 left-0 w-1/4 h-0.5 bg-gradient-to-r from-indigo-300 to-blue-300 dark:from-indigo-600 dark:to-blue-600"></div>
+            <div className="hidden md:block absolute top-8 left-1/4 w-1/4 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 dark:from-blue-600 dark:to-purple-600"></div>
+            <div className="hidden md:block absolute top-8 left-2/4 w-1/4 h-0.5 bg-gradient-to-r from-purple-300 to-indigo-300 dark:from-purple-600 dark:to-indigo-600"></div>
+            <div className="hidden md:block absolute top-8 left-3/4 w-1/4 h-0.5 bg-gradient-to-r from-indigo-300 to-pink-300 dark:from-indigo-600 dark:to-pink-600"></div>
           </div>
           
           <div className="text-center mt-12">
@@ -408,7 +409,7 @@ const Home: React.FC = () => {
       
       {/* Privacy Features Explainer */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">Your Privacy Is Our Priority</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">Your Privacy, Your Control, Our Priority</h2>
         <div className="flex justify-center">
           <PrivacyFeatureExplainer />
         </div>

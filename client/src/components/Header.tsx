@@ -14,14 +14,11 @@ const Header: React.FC = () => {
   
   // Navigation links
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Upload', path: '/upload' },
+    { name: 'Mint a BlockReceipt', path: '/upload' },
     { name: 'Gallery', path: '/wallet' },
-    { name: 'NFT Collection', path: '/nft-browser' },
+    { name: 'NFT Gallery', path: '/nft-browser' },
     { name: 'For Merchants', path: '/merchant-demo' },
     { name: 'Enterprise', path: '/enterprise' },
-    { name: 'Cloud Explorer', path: '/cloud-explorer' },
   ];
   
   return (

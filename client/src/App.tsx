@@ -10,11 +10,12 @@ import NFTBrowser from "./pages/NFTBrowser";
 import NFTDetail from "./pages/NFTDetail";
 import NFTTutorial from "./components/NFTTutorial";
 import Home from "./pages/Home";
-import CloudStorageDemo from "./pages/CloudStorageDemo";
-import CloudStorageExplorer from "./pages/CloudStorageExplorer";
 import MerchantDemo from "./pages/MerchantDemo";
 import Enterprise from "./pages/Enterprise";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
+import { ToastProvider } from './hooks/use-toast';
+
+// Removed CloudStorage references
 
 // Inner component that uses the wallet context
 const AppContent: React.FC = () => {
@@ -58,13 +59,7 @@ const AppContent: React.FC = () => {
             <Upload />
           </Route>
           
-          <Route path="/cloud-storage">
-            <CloudStorageDemo />
-          </Route>
-          
-          <Route path="/cloud-explorer">
-            <CloudStorageExplorer />
-          </Route>
+          {/* Cloud storage routes removed as requested */}
           
           <Route path="/merchant-demo">
             <MerchantDemo />
@@ -107,7 +102,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <WalletProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </WalletProvider>
   );
 };
