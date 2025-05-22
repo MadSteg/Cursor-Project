@@ -273,6 +273,80 @@ const HowItWorks: React.FC = () => {
         </div>
       </div>
 
+      {/* Character NFT Rarity Levels */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-8 border mb-16">
+        <h2 className="text-2xl font-bold mb-6 text-center">Character NFT Rarity Levels</h2>
+        <p className="text-lg text-center mb-8 max-w-3xl mx-auto">
+          Discover our exclusive character NFTs with unique traits and varying rarity levels that you can earn by using BlockReceipt.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border shadow-sm">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <span className="w-4 h-4 bg-amber-500 rounded-full mr-2"></span>
+              Legendary (Very Rare)
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              The rarest NFTs with special traits and unique accessories. 
+              Only a small percentage of mints result in Legendary characters.
+            </p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border shadow-sm">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <span className="w-4 h-4 bg-purple-600 rounded-full mr-2"></span>
+              Epic (Rare)
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Distinctive NFTs with uncommon traits and special appearances.
+              A lucky mint might reward you with these special characters.
+            </p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border shadow-sm">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <span className="w-4 h-4 bg-blue-600 rounded-full mr-2"></span>
+              Rare
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Somewhat uncommon NFTs with interesting traits and accessories.
+              These have a moderate chance of appearing in your collection.
+            </p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border shadow-sm">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <span className="w-4 h-4 bg-green-600 rounded-full mr-2"></span>
+              Uncommon
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Less common NFTs with distinct features that set them apart.
+              You'll find these moderately often in your minting journey.
+            </p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border shadow-sm">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <span className="w-4 h-4 bg-gray-600 rounded-full mr-2"></span>
+              Common
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              The most frequently encountered NFTs. Though common, each still has 
+              its own personality and unique look.
+            </p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border shadow-sm flex items-center justify-center">
+            <Link to="/nft-browser" className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors font-medium">
+              View All NFTs
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Call to Action */}
       <div className="text-center mb-12">
         <h2 className="text-2xl font-bold mb-4">Ready to Experience Privacy-First Digital Receipts?</h2>
