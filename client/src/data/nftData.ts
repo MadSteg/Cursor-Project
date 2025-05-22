@@ -6,149 +6,149 @@ export const getRandomNFT = (): NFT => {
   return sampleNFTs[randomIndex];
 };
 
-// Fixed set of bulldog NFTs with appropriate attributes and rarities
+// Fixed set of NFTs with appropriate attributes and rarities
 export const sampleNFTs: NFT[] = [
   {
-    id: 'bulldog-1',
-    name: 'Royal Bulldog',
-    description: 'A majestic bulldog wearing a golden crown. This legendary collectible represents the pinnacle of BlockReceipt rewards.',
-    image: 'https://img.freepik.com/free-vector/cute-french-bulldog-wearing-crown-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated_138676-4459.jpg?w=826&t=st=1716894249~exp=1716894849~hmac=e33d4dc63e7506a8a3a0c18ffc5d7a9f82a5f41e3f90ccac5e71ee2c2b39c31c',
+    id: 'nft-1',
+    name: 'Space Explorer',
+    description: 'A cute astronaut floating in a cosmic tube. This legendary collectible represents the pinnacle of BlockReceipt rewards.',
+    image: 'https://img.freepik.com/free-vector/astronaut-floating-tube-cartoon-icon-illustration-science-technology-icon-concept-isolated-flat-cartoon-style_138676-2150.jpg?w=826',
     rarity: 'legendary',
     attributes: [
-      { trait_type: 'Accessory', value: 'Crown' },
-      { trait_type: 'Clothing', value: 'Royal Robe' },
-      { trait_type: 'Personality', value: 'Majestic' }
+      { trait_type: 'Accessory', value: 'Helmet' },
+      { trait_type: 'Environment', value: 'Space' },
+      { trait_type: 'Personality', value: 'Adventurous' }
     ]
   },
   {
-    id: 'bulldog-2',
-    name: 'Cool Pup',
-    description: 'This epic bulldog has swagger for days. With his cool demeanor and hip style, he is the most sought-after companion for urban adventures.',
-    image: 'https://img.freepik.com/premium-vector/cool-bulldog-puppy-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium_138676-3734.jpg?w=826',
+    id: 'nft-2',
+    name: 'Cat & Friend',
+    description: 'An adorable gray cat cuddling with its blue plushie friend. This epic collectible shows the special bond between companions.',
+    image: 'https://img.freepik.com/free-vector/cute-cat-hugging-dinosaur-doll-cartoon-vector-icon-illustration-animal-object-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3977.jpg?w=826',
     rarity: 'epic',
     attributes: [
-      { trait_type: 'Accessory', value: 'Gold Chain' },
-      { trait_type: 'Hat', value: 'Black Cap' },
-      { trait_type: 'Personality', value: 'Cool' }
+      { trait_type: 'Animal', value: 'Cat' },
+      { trait_type: 'Accessory', value: 'Plushie' },
+      { trait_type: 'Personality', value: 'Affectionate' }
     ]
   },
   {
-    id: 'bulldog-3',
-    name: 'Officer Bulldog',
-    description: 'Keeping the streets safe, this rare bulldog officer upholds the law with adorable authority. His badge shines almost as bright as his loyalty.',
-    image: 'https://img.freepik.com/premium-vector/cute-bulldog-police-cartoon-vector-icon-illustration-animal-job-icon-concept-isolated-premium-flat_138676-1591.jpg?w=826',
+    id: 'nft-3',
+    name: 'Baseball Star',
+    description: 'A rare baseball-themed collectible featuring a bat and glove against a vibrant blue background. Perfect for sports enthusiasts.',
+    image: 'https://img.freepik.com/free-vector/baseball-bat-glove-ball-cartoon-icon-illustration-sport-baseball-icon-concept-isolated-flat-cartoon-style_138676-2154.jpg?w=826',
     rarity: 'rare',
     attributes: [
-      { trait_type: 'Hat', value: 'Police Cap' },
-      { trait_type: 'Clothing', value: 'Uniform' },
-      { trait_type: 'Personality', value: 'Authoritative' }
+      { trait_type: 'Sport', value: 'Baseball' },
+      { trait_type: 'Equipment', value: 'Bat and Glove' },
+      { trait_type: 'Theme', value: 'Athletics' }
     ]
   },
   {
-    id: 'bulldog-4',
-    name: 'Explorer Bulldog',
-    description: 'Ready for any adventure, this uncommon explorer bulldog is perfect for those who love the outdoors. His expressive face shows curiosity and excitement.',
-    image: 'https://img.freepik.com/premium-vector/cute-french-bulldog-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-flat_138676-4424.jpg?w=826',
+    id: 'nft-4',
+    name: 'Moon Pioneer',
+    description: 'An astronaut planting a flag on the moon. This uncommon explorer is ready for interstellar adventures beyond Earth.',
+    image: 'https://img.freepik.com/free-vector/astronaut-standing-moon-with-flag-cartoon-vector-icon-illustration-science-technology-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3451.jpg?w=826',
     rarity: 'uncommon',
     attributes: [
-      { trait_type: 'Accessory', value: 'Sunglasses' },
-      { trait_type: 'Hat', value: 'Safari Hat' },
+      { trait_type: 'Accessory', value: 'Flag' },
+      { trait_type: 'Environment', value: 'Moon' },
       { trait_type: 'Personality', value: 'Explorer' }
     ]
   },
   {
-    id: 'bulldog-5',
-    name: 'Business Bulldog',
-    description: 'Dressed for success in his professional attire, this common bulldog means business. Perfect for receipt collectors who appreciate a touch of class.',
-    image: 'https://img.freepik.com/premium-vector/cute-french-bulldog-wearing-suit-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-flat_138676-3897.jpg?w=826',
+    id: 'nft-5',
+    name: 'Unicorn Dreamer',
+    description: 'A magical rainbow unicorn with a playful expression. This common collectible brings color and joy to any digital collection.',
+    image: 'https://img.freepik.com/free-vector/cute-unicorn-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3930.jpg?w=826',
     rarity: 'common',
     attributes: [
-      { trait_type: 'Accessory', value: 'Tie' },
-      { trait_type: 'Clothing', value: 'Suit' },
-      { trait_type: 'Personality', value: 'Professional' }
+      { trait_type: 'Creature', value: 'Unicorn' },
+      { trait_type: 'Feature', value: 'Rainbow Mane' },
+      { trait_type: 'Personality', value: 'Magical' }
     ]
   },
   {
-    id: 'bulldog-6',
-    name: 'Social Bulldog',
-    description: 'This laid-back bulldog knows how to have a good time. With his favorite beverage in hand, he brings the party wherever he goes.',
-    image: 'https://img.freepik.com/premium-vector/french-bulldog-drink-beer-cartoon-icon-illustration_138676-2268.jpg?w=826',
+    id: 'nft-6',
+    name: 'Pizza Sloth',
+    description: 'A laid-back sloth enjoying a slice of pizza. This common collectible represents the perfect lazy day with comfort food.',
+    image: 'https://img.freepik.com/free-vector/cute-sloth-eating-pizza-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3558.jpg?w=826',
     rarity: 'common',
     attributes: [
-      { trait_type: 'Accessory', value: 'Beer' },
-      { trait_type: 'Clothing', value: 'Casual' },
-      { trait_type: 'Personality', value: 'Social' }
+      { trait_type: 'Animal', value: 'Sloth' },
+      { trait_type: 'Food', value: 'Pizza' },
+      { trait_type: 'Personality', value: 'Relaxed' }
     ]
   },
   {
-    id: 'bulldog-7',
-    name: 'Baseball Bulldog',
-    description: 'Sporting his team cap and ready for the big game, this athletic bulldog embodies the spirit of competition and team loyalty.',
-    image: 'https://img.freepik.com/premium-vector/french-bulldog-wearing-baseball-cap-cartoon_138676-2301.jpg?w=826',
+    id: 'nft-7',
+    name: 'Burger Bear',
+    description: 'A cute bear holding a delicious burger. This common collectible celebrates the simple joy of good food.',
+    image: 'https://img.freepik.com/free-vector/cute-bear-holding-burger-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3793.jpg?w=826',
     rarity: 'common',
     attributes: [
-      { trait_type: 'Hat', value: 'Baseball Cap' },
-      { trait_type: 'Clothing', value: 'Team Jersey' },
-      { trait_type: 'Personality', value: 'Athletic' }
+      { trait_type: 'Animal', value: 'Bear' },
+      { trait_type: 'Food', value: 'Burger' },
+      { trait_type: 'Personality', value: 'Hungry' }
     ]
   },
   {
-    id: 'bulldog-8',
-    name: 'Outdoor Bulldog',
-    description: 'With his cozy outfit and friendly demeanor, this uncommon bulldog is ready for camping adventures and nature exploration.',
-    image: 'https://img.freepik.com/premium-vector/cute-french-bulldog-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-flat_138676-3933.jpg?w=826',
+    id: 'nft-8',
+    name: 'Forest Fox',
+    description: 'A clever fox in its natural forest environment. This uncommon collectible represents wisdom and adaptability in the wild.',
+    image: 'https://img.freepik.com/free-vector/cute-fox-holding-leaf-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3518.jpg?w=826',
     rarity: 'uncommon',
     attributes: [
-      { trait_type: 'Hat', value: 'Plaid Hat' },
-      { trait_type: 'Clothing', value: 'Plaid Shirt' },
-      { trait_type: 'Personality', value: 'Outdoorsy' }
+      { trait_type: 'Animal', value: 'Fox' },
+      { trait_type: 'Environment', value: 'Forest' },
+      { trait_type: 'Personality', value: 'Clever' }
     ]
   },
   {
-    id: 'bulldog-9',
-    name: 'Tourist Bulldog',
-    description: 'This rare vacation-loving bulldog is all set for his tropical getaway. His happy expression shows he lives for adventure and new experiences.',
-    image: 'https://img.freepik.com/premium-vector/cute-bulldog-vacation-cartoon-vector-icon-illustration-animal-travel-icon-concept-isolated-premium_138676-1557.jpg?w=826',
+    id: 'nft-9',
+    name: 'Beach Penguin',
+    description: 'A rare penguin enjoying a tropical vacation. This collectible captures the joy of exploring environments outside your comfort zone.',
+    image: 'https://img.freepik.com/free-vector/cute-penguin-wearing-cap-summer-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-4234.jpg?w=826',
     rarity: 'rare',
     attributes: [
-      { trait_type: 'Accessory', value: 'Camera' },
-      { trait_type: 'Hat', value: 'Sun Hat' },
-      { trait_type: 'Personality', value: 'Curious' }
+      { trait_type: 'Animal', value: 'Penguin' },
+      { trait_type: 'Accessory', value: 'Beach Ball' },
+      { trait_type: 'Personality', value: 'Playful' }
     ]
   },
   {
-    id: 'bulldog-10',
-    name: 'Godfather Bulldog',
-    description: 'This epic mafia-styled bulldog makes offers you cannot refuse. His sharp suit and confident demeanor command respect in the digital realm.',
-    image: 'https://img.freepik.com/premium-vector/cute-french-bulldog-mafia-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-flat_138676-3953.jpg?w=826',
+    id: 'nft-10',
+    name: 'Mafia Cat',
+    description: 'A sophisticated cat dressed in formal attire with a stern expression. This epic collectible exudes power and commands respect.',
+    image: 'https://img.freepik.com/free-vector/cute-cat-mafia-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-4074.jpg?w=826',
     rarity: 'epic',
     attributes: [
-      { trait_type: 'Accessory', value: 'Cigar' },
-      { trait_type: 'Clothing', value: 'Italian Suit' },
+      { trait_type: 'Animal', value: 'Cat' },
+      { trait_type: 'Clothing', value: 'Suit' },
       { trait_type: 'Personality', value: 'Powerful' }
     ]
   },
   {
-    id: 'bulldog-11',
-    name: 'Artistic Bulldog',
-    description: 'With paintbrush in hand, this creative bulldog brings artistic flair to your collection. His uncommon talent for expression makes him a unique addition.',
-    image: 'https://img.freepik.com/premium-vector/french-bulldog-painter-vector-icon-illustration-animal-job-icon-concept-isolated-premium-flat_138676-4212.jpg?w=826',
+    id: 'nft-11',
+    name: 'Artist Panda',
+    description: 'A creative panda with a paintbrush and palette. This uncommon collectible celebrates artistic expression and creativity.',
+    image: 'https://img.freepik.com/free-vector/cute-panda-with-paint-palette-cartoon-vector-icon-illustration-animal-education-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3670.jpg?w=826',
     rarity: 'uncommon',
     attributes: [
+      { trait_type: 'Animal', value: 'Panda' },
       { trait_type: 'Accessory', value: 'Paintbrush' },
-      { trait_type: 'Hat', value: 'Beret' },
       { trait_type: 'Personality', value: 'Creative' }
     ]
   },
   {
-    id: 'bulldog-12',
-    name: 'Crypto Bulldog',
-    description: 'Tech-savvy and blockchain-ready, this common bulldog represents the digital future of BlockReceipt. His hacker skills protect your digital assets.',
-    image: 'https://img.freepik.com/premium-vector/cute-bulldog-hacker-cartoon-vector-icon-illustration-animal-technology-icon-concept-isolated-premium_138676-1626.jpg?w=826',
+    id: 'nft-12',
+    name: 'Tech Raccoon',
+    description: 'A tech-savvy raccoon with a laptop and hoodie. This common collectible represents the digital future of BlockReceipt.',
+    image: 'https://img.freepik.com/free-vector/cute-raccoon-with-laptop-cartoon-vector-icon-illustration-animal-technology-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3874.jpg?w=826',
     rarity: 'common',
     attributes: [
+      { trait_type: 'Animal', value: 'Raccoon' },
       { trait_type: 'Accessory', value: 'Laptop' },
-      { trait_type: 'Clothing', value: 'Hoodie' },
       { trait_type: 'Personality', value: 'Tech-Savvy' }
     ]
   }
