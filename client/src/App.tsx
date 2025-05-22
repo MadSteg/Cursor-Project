@@ -8,6 +8,7 @@ import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import NFTBrowser from "./pages/NFTBrowser";
 import NFTDetail from "./pages/NFTDetail";
+import EnhancedNFTGallery from "./pages/EnhancedNFTGallery";
 import NFTTutorial from "./components/NFTTutorial";
 import Home from "./pages/Home";
 import MerchantDemo from "./pages/MerchantDemo";
@@ -44,7 +45,7 @@ const AppContent: React.FC = () => {
           </Route>
           
           <Route path="/nft-browser">
-            <NFTBrowser />
+            <EnhancedNFTGallery />
           </Route>
           
           <Route path="/nft/:id">
