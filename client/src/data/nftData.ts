@@ -10,146 +10,98 @@ export const getRandomNFT = (): NFT => {
 export const sampleNFTs: NFT[] = [
   {
     id: 'nft-1',
-    name: 'Space Explorer',
-    description: 'A cute astronaut floating in a cosmic tube. This legendary collectible represents the pinnacle of BlockReceipt rewards.',
-    image: 'https://img.freepik.com/free-vector/astronaut-floating-tube-cartoon-icon-illustration-science-technology-icon-concept-isolated-flat-cartoon-style_138676-2150.jpg?w=826',
-    rarity: 'legendary',
-    attributes: [
-      { trait_type: 'Accessory', value: 'Helmet' },
-      { trait_type: 'Environment', value: 'Space' },
-      { trait_type: 'Personality', value: 'Adventurous' }
-    ]
-  },
-  {
-    id: 'nft-2',
-    name: 'Cat & Friend',
-    description: 'An adorable gray cat cuddling with its blue plushie friend. This epic collectible shows the special bond between companions.',
-    image: 'https://img.freepik.com/free-vector/cute-cat-hugging-dinosaur-doll-cartoon-vector-icon-illustration-animal-object-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3977.jpg?w=826',
-    rarity: 'epic',
+    name: 'Milk Kitty',
+    description: 'A cute spotted cat holding a carton of milk. This common collectible is perfect for cat lovers everywhere.',
+    image: 'https://img.freepik.com/premium-vector/cute-cat-holding-milk-box-cartoon-illustration_138676-2662.jpg?w=826',
+    rarity: 'common',
     attributes: [
       { trait_type: 'Animal', value: 'Cat' },
-      { trait_type: 'Accessory', value: 'Plushie' },
-      { trait_type: 'Personality', value: 'Affectionate' }
-    ]
-  },
-  {
-    id: 'nft-3',
-    name: 'Baseball Star',
-    description: 'A rare baseball-themed collectible featuring a bat and glove against a vibrant blue background. Perfect for sports enthusiasts.',
-    image: 'https://img.freepik.com/free-vector/baseball-bat-glove-ball-cartoon-icon-illustration-sport-baseball-icon-concept-isolated-flat-cartoon-style_138676-2154.jpg?w=826',
-    rarity: 'rare',
-    attributes: [
-      { trait_type: 'Sport', value: 'Baseball' },
-      { trait_type: 'Equipment', value: 'Bat and Glove' },
-      { trait_type: 'Theme', value: 'Athletics' }
-    ]
-  },
-  {
-    id: 'nft-4',
-    name: 'Moon Pioneer',
-    description: 'An astronaut planting a flag on the moon. This uncommon explorer is ready for interstellar adventures beyond Earth.',
-    image: 'https://img.freepik.com/free-vector/astronaut-standing-moon-with-flag-cartoon-vector-icon-illustration-science-technology-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3451.jpg?w=826',
-    rarity: 'uncommon',
-    attributes: [
-      { trait_type: 'Accessory', value: 'Flag' },
-      { trait_type: 'Environment', value: 'Moon' },
-      { trait_type: 'Personality', value: 'Explorer' }
-    ]
-  },
-  {
-    id: 'nft-5',
-    name: 'Unicorn Dreamer',
-    description: 'A magical rainbow unicorn with a playful expression. This common collectible brings color and joy to any digital collection.',
-    image: 'https://img.freepik.com/free-vector/cute-unicorn-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3930.jpg?w=826',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Creature', value: 'Unicorn' },
-      { trait_type: 'Feature', value: 'Rainbow Mane' },
-      { trait_type: 'Personality', value: 'Magical' }
-    ]
-  },
-  {
-    id: 'nft-6',
-    name: 'Pizza Sloth',
-    description: 'A laid-back sloth enjoying a slice of pizza. This common collectible represents the perfect lazy day with comfort food.',
-    image: 'https://img.freepik.com/free-vector/cute-sloth-eating-pizza-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3558.jpg?w=826',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Animal', value: 'Sloth' },
-      { trait_type: 'Food', value: 'Pizza' },
-      { trait_type: 'Personality', value: 'Relaxed' }
-    ]
-  },
-  {
-    id: 'nft-7',
-    name: 'Burger Bear',
-    description: 'A cute bear holding a delicious burger. This common collectible celebrates the simple joy of good food.',
-    image: 'https://img.freepik.com/free-vector/cute-bear-holding-burger-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3793.jpg?w=826',
-    rarity: 'common',
-    attributes: [
-      { trait_type: 'Animal', value: 'Bear' },
-      { trait_type: 'Food', value: 'Burger' },
-      { trait_type: 'Personality', value: 'Hungry' }
-    ]
-  },
-  {
-    id: 'nft-8',
-    name: 'Forest Fox',
-    description: 'A clever fox in its natural forest environment. This uncommon collectible represents wisdom and adaptability in the wild.',
-    image: 'https://img.freepik.com/free-vector/cute-fox-holding-leaf-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3518.jpg?w=826',
-    rarity: 'uncommon',
-    attributes: [
-      { trait_type: 'Animal', value: 'Fox' },
-      { trait_type: 'Environment', value: 'Forest' },
-      { trait_type: 'Personality', value: 'Clever' }
-    ]
-  },
-  {
-    id: 'nft-9',
-    name: 'Beach Penguin',
-    description: 'A rare penguin enjoying a tropical vacation. This collectible captures the joy of exploring environments outside your comfort zone.',
-    image: 'https://img.freepik.com/free-vector/cute-penguin-wearing-cap-summer-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-4234.jpg?w=826',
-    rarity: 'rare',
-    attributes: [
-      { trait_type: 'Animal', value: 'Penguin' },
-      { trait_type: 'Accessory', value: 'Beach Ball' },
+      { trait_type: 'Accessory', value: 'Milk Carton' },
       { trait_type: 'Personality', value: 'Playful' }
     ]
   },
   {
-    id: 'nft-10',
-    name: 'Mafia Cat',
-    description: 'A sophisticated cat dressed in formal attire with a stern expression. This epic collectible exudes power and commands respect.',
-    image: 'https://img.freepik.com/free-vector/cute-cat-mafia-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-4074.jpg?w=826',
+    id: 'nft-2',
+    name: 'Fox & Friends',
+    description: 'Adorable fox friends spending time together. This common collectible celebrates friendship in the animal kingdom.',
+    image: 'https://img.freepik.com/free-vector/cute-fox-couple-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3642.jpg?w=826',
+    rarity: 'common',
+    attributes: [
+      { trait_type: 'Animal', value: 'Fox' },
+      { trait_type: 'Theme', value: 'Friendship' },
+      { trait_type: 'Personality', value: 'Friendly' }
+    ]
+  },
+  {
+    id: 'nft-3',
+    name: 'Gift Bunny',
+    description: 'A cheerful white bunny holding a colorful gift box. This common collectible brings joy and celebration to your collection.',
+    image: 'https://img.freepik.com/free-vector/cute-rabbit-holding-gift-box-cartoon-vector-icon-illustration-animal-object-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3343.jpg?w=826',
+    rarity: 'common',
+    attributes: [
+      { trait_type: 'Animal', value: 'Bunny' },
+      { trait_type: 'Accessory', value: 'Gift Box' },
+      { trait_type: 'Personality', value: 'Cheerful' }
+    ]
+  },
+  {
+    id: 'nft-4',
+    name: 'London Landmark',
+    description: 'A beautiful silhouette of London featuring the iconic Big Ben and London Eye. This uncommon collectible celebrates famous world landmarks.',
+    image: 'https://img.freepik.com/free-vector/london-skyline-silhouette-flat-style_23-2147767888.jpg?w=826',
+    rarity: 'uncommon',
+    attributes: [
+      { trait_type: 'Category', value: 'Landmark' },
+      { trait_type: 'Location', value: 'London' },
+      { trait_type: 'Style', value: 'Silhouette' }
+    ]
+  },
+  {
+    id: 'nft-5',
+    name: 'Cool Cat',
+    description: 'A stylish gray cat with sunglasses exuding confidence and cool vibes. This rare collectible is perfect for those who appreciate trendy characters.',
+    image: 'https://img.freepik.com/free-vector/cute-cool-cat-wearing-sunglasses-cartoon-vector-icon-illustration-animal-fashion-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3667.jpg?w=826',
+    rarity: 'rare',
+    attributes: [
+      { trait_type: 'Animal', value: 'Cat' },
+      { trait_type: 'Accessory', value: 'Sunglasses' },
+      { trait_type: 'Personality', value: 'Cool' }
+    ]
+  },
+  {
+    id: 'nft-6',
+    name: 'Sleepy Kitty',
+    description: 'An adorable white cat with orange markings taking a peaceful nap. This epic collectible captures the serene beauty of our feline friends at rest.',
+    image: 'https://img.freepik.com/free-vector/cute-cat-sleeping-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3498.jpg?w=826',
     rarity: 'epic',
     attributes: [
       { trait_type: 'Animal', value: 'Cat' },
-      { trait_type: 'Clothing', value: 'Suit' },
-      { trait_type: 'Personality', value: 'Powerful' }
+      { trait_type: 'Action', value: 'Sleeping' },
+      { trait_type: 'Personality', value: 'Peaceful' }
     ]
   },
   {
-    id: 'nft-11',
-    name: 'Artist Panda',
-    description: 'A creative panda with a paintbrush and palette. This uncommon collectible celebrates artistic expression and creativity.',
-    image: 'https://img.freepik.com/free-vector/cute-panda-with-paint-palette-cartoon-vector-icon-illustration-animal-education-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3670.jpg?w=826',
+    id: 'nft-7',
+    name: 'Rainbow Squid',
+    description: 'A colorful orange squid with a playful personality holding a popsicle. This uncommon collectible brings underwater whimsy to your collection.',
+    image: 'https://img.freepik.com/free-vector/cute-squid-eating-ice-cream-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3498.jpg?w=826',
     rarity: 'uncommon',
     attributes: [
-      { trait_type: 'Animal', value: 'Panda' },
-      { trait_type: 'Accessory', value: 'Paintbrush' },
-      { trait_type: 'Personality', value: 'Creative' }
+      { trait_type: 'Animal', value: 'Squid' },
+      { trait_type: 'Accessory', value: 'Popsicle' },
+      { trait_type: 'Personality', value: 'Playful' }
     ]
   },
   {
-    id: 'nft-12',
-    name: 'Tech Raccoon',
-    description: 'A tech-savvy raccoon with a laptop and hoodie. This common collectible represents the digital future of BlockReceipt.',
-    image: 'https://img.freepik.com/free-vector/cute-raccoon-with-laptop-cartoon-vector-icon-illustration-animal-technology-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3874.jpg?w=826',
+    id: 'nft-8',
+    name: 'Surprised Cow',
+    description: 'A wide-eyed cow with a surprised expression. This common collectible captures the innocent charm of farm animals in a delightful way.',
+    image: 'https://img.freepik.com/free-vector/cute-cow-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3468.jpg?w=826',
     rarity: 'common',
     attributes: [
-      { trait_type: 'Animal', value: 'Raccoon' },
-      { trait_type: 'Accessory', value: 'Laptop' },
-      { trait_type: 'Personality', value: 'Tech-Savvy' }
+      { trait_type: 'Animal', value: 'Cow' },
+      { trait_type: 'Expression', value: 'Surprised' },
+      { trait_type: 'Personality', value: 'Innocent' }
     ]
   }
 ];

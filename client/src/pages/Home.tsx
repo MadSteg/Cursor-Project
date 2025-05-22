@@ -168,7 +168,7 @@ const Home: React.FC = () => {
             </li>
             <li className="flex items-start rounded-lg p-2 bg-white dark:bg-black/20 shadow-sm">
               <div className="h-6 w-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white mr-3 flex-shrink-0">✓</div>
-              <span>Collect unique Bulldog character NFTs</span>
+              <span>Collect unique character NFTs with each upload</span>
             </li>
           </ul>
           <Link href="/upload">
@@ -189,7 +189,7 @@ const Home: React.FC = () => {
             <h2 className="text-2xl font-bold ml-4 brand-gradient-text">NFT Gallery</h2>
           </div>
           <p className="text-muted-foreground mb-4 text-lg">
-            Explore your growing collection of receipt NFTs and exclusive Bulldog characters
+            Explore your growing collection of receipt NFTs and exclusive character collectibles
           </p>
           
           <div className="grid grid-cols-2 gap-3 mb-5">
@@ -415,9 +415,9 @@ const Home: React.FC = () => {
         </div>
       </div>
       
-      {/* Bulldog Earning Guide */}
+      {/* Character NFT Earning Guide */}
       <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-8 shadow-xl mb-12">
-        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">How to Earn Bulldog NFTs</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">How to Earn Fun Character NFTs</h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {displayNFTs.slice(0, 4).map((nft) => (
