@@ -12,6 +12,8 @@ import NFTTutorial from "./components/NFTTutorial";
 import Home from "./pages/Home";
 import CloudStorageDemo from "./pages/CloudStorageDemo";
 import CloudStorageExplorer from "./pages/CloudStorageExplorer";
+import MerchantDemo from "./pages/MerchantDemo";
+import Enterprise from "./pages/Enterprise";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 
 // Inner component that uses the wallet context
@@ -62,6 +64,14 @@ const AppContent: React.FC = () => {
           
           <Route path="/cloud-explorer">
             <CloudStorageExplorer />
+          </Route>
+          
+          <Route path="/merchant-demo">
+            <MerchantDemo />
+          </Route>
+          
+          <Route path="/enterprise">
+            <Enterprise />
           </Route>
           
           <Route>
