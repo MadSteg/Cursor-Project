@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { 
   Card,
   CardContent,
@@ -10,15 +10,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle 
-} from '@/components/ui/card';
+} from '../components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '../components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -27,8 +27,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+} from '../components/ui/dialog';
+import { useToast } from '../hooks/use-toast';
 
 const MerchantDemo: React.FC = () => {
   const { toast } = useToast();
