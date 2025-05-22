@@ -19,7 +19,7 @@ const Header: React.FC = () => {
     { name: 'My Wallet', path: '/wallet' },
     { name: 'For Merchants', path: '/merchant-demo' },
     { name: 'Enterprise', path: '/enterprise' },
-    { name: 'How It Works', path: '/#how-it-works' },
+    { name: 'How BlockReceipt Works', path: '/how-it-works' },
   ];
   
   return (

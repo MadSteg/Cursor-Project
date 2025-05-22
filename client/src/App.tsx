@@ -13,6 +13,7 @@ import NFTTutorial from "./components/NFTTutorial";
 import Home from "./pages/Home";
 import MerchantDemo from "./pages/MerchantDemo";
 import Enterprise from "./pages/Enterprise";
+import HowItWorks from "./pages/HowItWorks";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { ToastProvider } from './hooks/use-toast';
 
@@ -68,6 +69,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/enterprise">
             <Enterprise />
+          </Route>
+          
+          <Route path="/how-it-works">
+            <HowItWorks />
           </Route>
           
           <Route>
