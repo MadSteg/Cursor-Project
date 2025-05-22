@@ -38,9 +38,50 @@ const Home: React.FC = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100 animate-pulse-subtle">
             BlockReceipt.ai
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-blue-100">
-            Transform paper & digital receipts into secure, interactive NFTs with privacy controls
+          <p className="text-xl md:text-2xl mb-4 max-w-3xl mx-auto text-blue-100">
+            Turn paper waste into digital assets
           </p>
+          <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto text-blue-100/80">
+            Eco-friendly, fraud-proof receipts that save costs and enhance customer experience
+          </p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 text-left border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">For Merchants</h3>
+              <ul className="space-y-2">
+                <li className="flex items-center">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0">✓</div>
+                  <span className="text-white/90">Cut receipt costs up to 30%</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0">✓</div>
+                  <span className="text-white/90">Reduce return fraud by 20%+</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0">✓</div>
+                  <span className="text-white/90">Meet ESG goals with paper-free systems</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-5 text-left border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">For Customers</h3>
+              <ul className="space-y-2">
+                <li className="flex items-center">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0">✓</div>
+                  <span className="text-white/90">Never lose a receipt again</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0">✓</div>
+                  <span className="text-white/90">Easy returns with verified ownership</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0">✓</div>
+                  <span className="text-white/90">Collect exclusive NFT rewards</span>
+                </li>
+              </ul>
+            </div>
+          </div>
           
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6 mt-10">
             <Link href="/upload">
@@ -48,9 +89,9 @@ const Home: React.FC = () => {
                 Upload Receipt
               </button>
             </Link>
-            <Link href="/nft-browser">
+            <Link href="/demo">
               <button className="px-8 py-4 text-lg font-bold border-2 border-white/70 text-white hover:bg-white/10 rounded-lg transition-colors">
-                Browse NFT Collection
+                See Merchant Demo
               </button>
             </Link>
           </div>
@@ -214,17 +255,18 @@ const Home: React.FC = () => {
       <div className="relative mt-20 mb-12">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl -z-10"></div>
         <div className="px-6 py-12 md:py-16 rounded-3xl border border-indigo-200 dark:border-indigo-800/30 shadow-xl">
-          <h2 className="text-3xl font-bold text-center mb-12 brand-gradient-text">How It Works</h2>
+          <h2 className="text-3xl font-bold text-center mb-4 brand-gradient-text">How It Works</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">A seamless experience for both customers and merchants</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
             {/* Step 1 */}
             <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg relative">
               <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
                 <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">1</div>
               </div>
               <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Upload Receipt</h3>
-                <p className="text-muted-foreground">Take a photo or upload a digital receipt file from your email</p>
+                <h3 className="text-xl font-bold mb-4 mt-2">Check Out</h3>
+                <p className="text-muted-foreground">Customer chooses "Digital Receipt" option at checkout</p>
               </div>
             </div>
             
@@ -234,8 +276,8 @@ const Home: React.FC = () => {
                 <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">2</div>
               </div>
               <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Mint NFT Receipt</h3>
-                <p className="text-muted-foreground">Our OCR extracts the data and mints it as an NFT on Polygon</p>
+                <h3 className="text-xl font-bold mb-4 mt-2">Mint Receipt</h3>
+                <p className="text-muted-foreground">POS system automatically mints an NFT receipt to customer's wallet</p>
               </div>
             </div>
             
@@ -245,20 +287,119 @@ const Home: React.FC = () => {
                 <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">3</div>
               </div>
               <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Collect NFT Bulldogs</h3>
-                <p className="text-muted-foreground">Earn unique Bulldog character NFTs based on your shopping habits</p>
+                <h3 className="text-xl font-bold mb-4 mt-2">Receive Rewards</h3>
+                <p className="text-muted-foreground">Customer earns loyalty points and special NFT collectibles</p>
+              </div>
+            </div>
+            
+            {/* Step 4 */}
+            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg relative">
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
+                <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">4</div>
+              </div>
+              <div className="text-center pt-8">
+                <h3 className="text-xl font-bold mb-4 mt-2">Easy Returns</h3>
+                <p className="text-muted-foreground">Scan wallet for verified proof of purchase in seconds</p>
               </div>
             </div>
             
             {/* Connection Lines */}
-            <div className="hidden md:block absolute top-8 left-1/3 w-1/3 h-0.5 bg-gradient-to-r from-indigo-300 to-purple-300 dark:from-indigo-600 dark:to-purple-600"></div>
-            <div className="hidden md:block absolute top-8 left-2/3 w-1/3 h-0.5 bg-gradient-to-r from-purple-300 to-pink-300 dark:from-purple-600 dark:to-pink-600"></div>
+            <div className="hidden md:block absolute top-8 left-1/4 w-1/4 h-0.5 bg-gradient-to-r from-indigo-300 to-blue-300 dark:from-indigo-600 dark:to-blue-600"></div>
+            <div className="hidden md:block absolute top-8 left-2/4 w-1/4 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 dark:from-blue-600 dark:to-purple-600"></div>
+            <div className="hidden md:block absolute top-8 left-3/4 w-1/4 h-0.5 bg-gradient-to-r from-purple-300 to-pink-300 dark:from-purple-600 dark:to-pink-600"></div>
           </div>
           
           <div className="text-center mt-12">
             <Link href="/upload">
               <button className="px-10 py-4 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg hover:shadow-purple-500/30 transition-all transform hover:-translate-y-1">
                 Try It Now
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+      
+      {/* Merchant Benefits Section */}
+      <div className="relative mb-16">
+        <div className="px-6 py-12 md:py-16 rounded-3xl border border-green-200 dark:border-green-800/30 shadow-xl bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20">
+          <h2 className="text-3xl font-bold text-center mb-4 text-green-800 dark:text-green-300">For Enterprise Retailers</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">Transform your receipt infrastructure while cutting costs</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg">
+              <div className="h-14 w-14 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg mb-4 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-center mb-4">Cost Savings</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Eliminate thermal paper costs</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Reduce printer maintenance and hardware</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Save $0.004 per transaction ($15M yearly for large chains)</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg">
+              <div className="h-14 w-14 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg mb-4 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-center mb-4">ESG Impact</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Eliminate non-recyclable thermal paper</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Save 2,200+ tons of paper annually</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Preserve 9,000+ trees per year</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg">
+              <div className="h-14 w-14 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg mb-4 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905a3.61 3.61 0 01-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-center mb-4">Brand Perception</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>+8 pt NPS boost with younger demographics</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Transform receipts from waste to digital assets</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
+                  <span>Earn press coverage for sustainability innovation</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link href="/enterprise">
+              <button className="px-10 py-4 text-lg font-bold text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg shadow-lg hover:shadow-green-500/30 transition-all transform hover:-translate-y-1">
+                Enterprise Solutions
               </button>
             </Link>
           </div>
