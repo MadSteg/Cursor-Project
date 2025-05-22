@@ -10,33 +10,33 @@ export const getRandomNFT = (): NFT => {
 export const sampleNFTs: NFT[] = [
   {
     id: 'nft-1',
-    name: 'Milk Kitty',
-    description: 'A cute spotted cat holding a carton of milk. This common collectible is perfect for cat lovers everywhere.',
-    image: 'https://img.freepik.com/premium-vector/cute-cat-holding-milk-box-cartoon-illustration_138676-2662.jpg?w=826',
-    rarity: 'common',
+    name: 'Astro Donut',
+    description: 'An astronaut floating on a delicious donut in space. This epic collectible brings a fun cosmic twist to your collection.',
+    image: 'https://img.freepik.com/free-vector/astronaut-sitting-planet-donut-cartoon-vector-icon-illustration-science-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3482.jpg',
+    rarity: 'epic',
     attributes: [
-      { trait_type: 'Animal', value: 'Cat' },
-      { trait_type: 'Accessory', value: 'Milk Carton' },
-      { trait_type: 'Personality', value: 'Playful' }
+      { trait_type: 'Character', value: 'Astronaut' },
+      { trait_type: 'Accessory', value: 'Donut' },
+      { trait_type: 'Theme', value: 'Space' }
     ]
   },
   {
     id: 'nft-2',
-    name: 'Fox & Friends',
-    description: 'Adorable fox friends spending time together. This common collectible celebrates friendship in the animal kingdom.',
-    image: 'https://img.freepik.com/free-vector/cute-fox-couple-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3642.jpg?w=826',
-    rarity: 'common',
+    name: 'Cosmic Explorer',
+    description: 'A cute astronaut floating through the cosmos with stars and planets. This rare collectible celebrates space exploration.',
+    image: 'https://img.freepik.com/free-vector/astronaut-floating-with-planet-balloon-cartoon-vector-icon-illustration-science-technology-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3492.jpg',
+    rarity: 'rare',
     attributes: [
-      { trait_type: 'Animal', value: 'Fox' },
-      { trait_type: 'Theme', value: 'Friendship' },
-      { trait_type: 'Personality', value: 'Friendly' }
+      { trait_type: 'Character', value: 'Astronaut' },
+      { trait_type: 'Theme', value: 'Space' },
+      { trait_type: 'Accessory', value: 'Planet Balloon' }
     ]
   },
   {
     id: 'nft-3',
     name: 'Gift Bunny',
     description: 'A cheerful white bunny holding a colorful gift box. This common collectible brings joy and celebration to your collection.',
-    image: 'https://img.freepik.com/free-vector/cute-rabbit-holding-gift-box-cartoon-vector-icon-illustration-animal-object-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3343.jpg?w=826',
+    image: 'https://img.freepik.com/free-vector/cute-rabbit-holding-gift-box-cartoon-vector-icon-illustration-animal-object-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3343.jpg',
     rarity: 'common',
     attributes: [
       { trait_type: 'Animal', value: 'Bunny' },
@@ -48,7 +48,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-4',
     name: 'London Landmark',
     description: 'A beautiful silhouette of London featuring the iconic Big Ben and London Eye. This uncommon collectible celebrates famous world landmarks.',
-    image: 'https://img.freepik.com/free-vector/london-skyline-silhouette-flat-style_23-2147767888.jpg?w=826',
+    image: 'https://img.freepik.com/free-vector/london-skyline-silhouette-flat-style_23-2147767888.jpg',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Category', value: 'Landmark' },
@@ -60,7 +60,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-5',
     name: 'Cool Cat',
     description: 'A stylish gray cat with sunglasses exuding confidence and cool vibes. This rare collectible is perfect for those who appreciate trendy characters.',
-    image: 'https://img.freepik.com/free-vector/cute-cool-cat-wearing-sunglasses-cartoon-vector-icon-illustration-animal-fashion-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3667.jpg?w=826',
+    image: 'https://img.freepik.com/free-vector/cute-cool-cat-wearing-sunglasses-cartoon-vector-icon-illustration-animal-fashion-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3667.jpg',
     rarity: 'rare',
     attributes: [
       { trait_type: 'Animal', value: 'Cat' },
@@ -70,38 +70,38 @@ export const sampleNFTs: NFT[] = [
   },
   {
     id: 'nft-6',
-    name: 'Sleepy Kitty',
-    description: 'An adorable white cat with orange markings taking a peaceful nap. This epic collectible captures the serene beauty of our feline friends at rest.',
-    image: 'https://img.freepik.com/free-vector/cute-cat-sleeping-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3498.jpg?w=826',
-    rarity: 'epic',
+    name: 'Space Cat',
+    description: 'An adorable cat astronaut floating in space with a jetpack. This legendary collectible combines cute felines with cosmic adventure.',
+    image: 'https://img.freepik.com/free-vector/astronaut-cat-playing-with-ball-wool-space-cartoon-vector-icon-illustration-animal-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3713.jpg',
+    rarity: 'legendary',
     attributes: [
       { trait_type: 'Animal', value: 'Cat' },
-      { trait_type: 'Action', value: 'Sleeping' },
-      { trait_type: 'Personality', value: 'Peaceful' }
+      { trait_type: 'Outfit', value: 'Spacesuit' },
+      { trait_type: 'Theme', value: 'Cosmic' }
     ]
   },
   {
     id: 'nft-7',
-    name: 'Rainbow Squid',
-    description: 'A colorful orange squid with a playful personality holding a popsicle. This uncommon collectible brings underwater whimsy to your collection.',
-    image: 'https://img.freepik.com/free-vector/cute-squid-eating-ice-cream-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3498.jpg?w=826',
+    name: 'Ice Cream Squid',
+    description: 'A colorful orange squid with a playful personality enjoying an ice cream cone. This uncommon collectible brings underwater whimsy to your collection.',
+    image: 'https://img.freepik.com/free-vector/cute-squid-eating-ice-cream-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3498.jpg',
     rarity: 'uncommon',
     attributes: [
       { trait_type: 'Animal', value: 'Squid' },
-      { trait_type: 'Accessory', value: 'Popsicle' },
+      { trait_type: 'Accessory', value: 'Ice Cream' },
       { trait_type: 'Personality', value: 'Playful' }
     ]
   },
   {
     id: 'nft-8',
-    name: 'Surprised Cow',
-    description: 'A wide-eyed cow with a surprised expression. This common collectible captures the innocent charm of farm animals in a delightful way.',
-    image: 'https://img.freepik.com/free-vector/cute-cow-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3468.jpg?w=826',
+    name: 'Milk Kitty',
+    description: 'A cute spotted cat holding a carton of milk. This common collectible is perfect for cat lovers everywhere.',
+    image: 'https://img.freepik.com/premium-vector/cute-cat-holding-milk-box-cartoon-illustration_138676-2662.jpg',
     rarity: 'common',
     attributes: [
-      { trait_type: 'Animal', value: 'Cow' },
-      { trait_type: 'Expression', value: 'Surprised' },
-      { trait_type: 'Personality', value: 'Innocent' }
+      { trait_type: 'Animal', value: 'Cat' },
+      { trait_type: 'Accessory', value: 'Milk Carton' },
+      { trait_type: 'Personality', value: 'Playful' }
     ]
   }
 ];
