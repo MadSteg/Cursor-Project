@@ -154,32 +154,29 @@ const EnhancedNFTGallery = () => {
           {filteredNFTs.map((nft) => {
             const isMinted = mintedNFTs.includes(nft.id);
             
-            // Define card color schemes based on rarity
-            const rarityColors = {
-              legendary: 'border-yellow-400 shadow-yellow-400/50',
-              epic: 'border-purple-400 shadow-purple-400/50',
-              rare: 'border-blue-400 shadow-blue-400/50',
-              uncommon: 'border-green-400 shadow-green-400/50',
-              common: 'border-gray-400 shadow-gray-400/50'
+            // Define bold border colors based on rarity
+            const rarityBorders = {
+              legendary: 'border-yellow-500 border-4 shadow-yellow-500/60 shadow-2xl',
+              epic: 'border-purple-500 border-4 shadow-purple-500/60 shadow-2xl',
+              rare: 'border-blue-500 border-4 shadow-blue-500/60 shadow-2xl',
+              uncommon: 'border-green-500 border-4 shadow-green-500/60 shadow-2xl',
+              common: 'border-gray-500 border-2 shadow-gray-500/40 shadow-lg'
             };
             
-            const cardColorClass = rarityColors[nft.rarity as keyof typeof rarityColors] || 'border-gray-400 shadow-gray-400/50';
+            const cardBorderClass = rarityBorders[nft.rarity as keyof typeof rarityBorders] || 'border-gray-500 border-2 shadow-gray-500/40 shadow-lg';
             
             return (
               <div
                 key={nft.id}
-                className={`relative group cursor-pointer transition-all duration-300 hover:scale-105 ${cardColorClass}`}
+                className={`relative group cursor-pointer transition-all duration-300 hover:scale-105`}
               >
                 {/* Trading Card Container */}
-                <div className={`bg-gradient-to-br from-card via-card to-muted rounded-xl overflow-hidden border-2 shadow-lg hover:shadow-2xl transition-all duration-300 ${cardColorClass}`}>
+                <div className={`bg-gradient-to-br from-card via-card to-muted rounded-xl overflow-hidden hover:shadow-3xl transition-all duration-300 ${cardBorderClass}`}>
                   
-                  {/* Card Header with Rarity Badge */}
+                  {/* Card Header - Clean without rarity text */}
                   <div className="relative p-4 pb-2">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-bold text-white leading-tight">{nft.name}</h3>
-                      <div className={`px-2 py-1 rounded-full text-xs font-semibold bg-${getRarityColor(nft.rarity)} text-white`}>
-                        {nft.rarity.toUpperCase()}
-                      </div>
                     </div>
                     
                     {/* Merchant Badge */}
