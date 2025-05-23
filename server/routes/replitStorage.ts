@@ -143,23 +143,84 @@ router.get('/generate-nfts', async (req, res) => {
  * Serve an image from Object Storage by ID
  */
 router.get('/image/:id', async (req, res) => {
+  const imageId = req.params.id;
+  console.log(`[replit-storage] Request for image ${imageId}`);
+  
+  if (!isConnected || !replitClient) {
+    console.log('[replit-storage] Not connected to Object Storage');
+    return res.status(503).send('Object Storage not available');
+  }
+
   try {
-    const imageId = req.params.id;
-    console.log(`[replit-storage] Serving image ${imageId}`);
+    // List all files in your Object Storage
+    const listResult = await replitClient.list();
+    console.log('[replit-storage] Got list result, checking structure...');
     
-    // For now, serve a simple placeholder image URL that works
-    // This will be a working image that displays properly
-    const placeholderImageUrl = `https://picsum.photos/300/400?random=${imageId}`;
+    // Extract files array from the result
+    let allFiles: any[] = [];
+    if (listResult?.ok && Array.isArray(listResult.value)) {
+      allFiles = listResult.value;
+    } else if (Array.isArray(listResult)) {
+      allFiles = listResult;
+    } else {
+      console.log('[replit-storage] Unexpected list result format');
+      return res.status(500).send('Unable to list storage files');
+    }
     
-    // Redirect to the placeholder image
-    res.redirect(placeholderImageUrl);
+    console.log(`[replit-storage] Total files found: ${allFiles.length}`);
+    
+    // Get only PNG files from your storage
+    const pngFiles = allFiles.filter(file => 
+      file?.key && file.key.toLowerCase().endsWith('.png')
+    );
+    
+    console.log(`[replit-storage] PNG files found: ${pngFiles.length}`);
+    
+    if (pngFiles.length === 0) {
+      console.log('[replit-storage] No PNG files in storage');
+      return res.status(404).send('No PNG files found in storage');
+    }
+    
+    // Get the specific image by index
+    const index = parseInt(imageId) - 1;
+    if (index < 0 || index >= pngFiles.length) {
+      console.log(`[replit-storage] Index ${index} out of range`);
+      return res.status(404).send('Image index out of range');
+    }
+    
+    const file = pngFiles[index];
+    console.log(`[replit-storage] Downloading: ${file.key}`);
+    
+    // Download your actual PNG file
+    const downloadResult = await replitClient.downloadAsBytes(file.key);
+    
+    // Handle the download result properly
+    let imageBuffer: Buffer;
+    if (downloadResult?.ok && downloadResult.value) {
+      // Result wrapper format
+      imageBuffer = Buffer.from(downloadResult.value);
+    } else if (Buffer.isBuffer(downloadResult)) {
+      // Direct buffer format
+      imageBuffer = downloadResult;
+    } else if (downloadResult && typeof downloadResult === 'object' && downloadResult.length) {
+      // Array-like format
+      imageBuffer = Buffer.from(downloadResult);
+    } else {
+      console.log('[replit-storage] Invalid download result');
+      return res.status(500).send('Failed to download image');
+    }
+    
+    console.log(`[replit-storage] Image loaded successfully: ${imageBuffer.length} bytes`);
+    
+    // Send your actual PNG file
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Length', imageBuffer.length);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(imageBuffer);
     
   } catch (error: any) {
-    console.error('[replit-storage-route] Error serving image:', error);
-    res.status(500).json({ 
-      error: 'Failed to serve image',
-      message: error.message
-    });
+    console.error('[replit-storage] Error:', error.message);
+    res.status(500).send(`Error loading image: ${error.message}`);
   }
 });
 
