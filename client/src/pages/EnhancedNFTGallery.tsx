@@ -70,24 +70,28 @@ const EnhancedNFTGallery = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="container mx-auto px-4 py-8">
-
-
-        <p className="text-xl text-gray-300 mb-8 max-w-3xl">
-          {t('gallery.description')}
-        </p>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
+            {t('gallery.title')}
+          </h1>
+          <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
+            {t('gallery.description')}
+          </p>
+        </div>
         
         {/* Merchant Filter Controls */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3 text-white">{t('gallery.filterByMerchant')}</h3>
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">{t('gallery.filterByMerchant')}</h3>
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => setMerchantFilter('all')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 merchantFilter === 'all' 
                   ? 'bg-purple-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  : 'bg-white text-gray-700 hover:bg-purple-100 border-2 border-purple-200'
               }`}
             >
               {t('gallery.allMerchants')}
@@ -97,7 +101,7 @@ const EnhancedNFTGallery = () => {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 merchantFilter === 'dunkin' 
                   ? 'bg-orange-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  : 'bg-white text-gray-700 hover:bg-orange-100 border-2 border-orange-200'
               }`}
             >
               🍩 Dunkin'
@@ -107,7 +111,7 @@ const EnhancedNFTGallery = () => {
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 merchantFilter === 'cvs' 
                   ? 'bg-red-600 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  : 'bg-white text-gray-700 hover:bg-red-100 border-2 border-red-200'
               }`}
             >
               💊 CVS
@@ -117,11 +121,11 @@ const EnhancedNFTGallery = () => {
 
         {/* Rarity Filter Controls */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-3 text-white">{t('gallery.filterByRarity')}</h3>
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">{t('gallery.filterByRarity')}</h3>
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-full ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}`}
+              className={`px-4 py-2 rounded-full ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-indigo-100 border-2 border-indigo-200'}`}
             >
               {t('gallery.allRarities')}
             </button>
@@ -136,7 +140,7 @@ const EnhancedNFTGallery = () => {
                 <button 
                   key={level.name}
                   onClick={() => setFilter(level.name)}
-                  className={`px-4 py-2 rounded-full flex items-center ${filter === level.name ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-foreground'}`}
+                  className={`px-4 py-2 rounded-full flex items-center ${filter === level.name ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'}`}
                 >
                   <span 
                     className="w-3 h-3 rounded-full mr-2" 
@@ -171,17 +175,17 @@ const EnhancedNFTGallery = () => {
                 className={`relative group cursor-pointer transition-all duration-300 hover:scale-105`}
               >
                 {/* Trading Card Container */}
-                <div className={`bg-gradient-to-br from-card via-card to-muted rounded-xl overflow-hidden hover:shadow-3xl transition-all duration-300 ${cardBorderClass}`}>
+                <div className={`bg-white rounded-xl overflow-hidden hover:shadow-3xl transition-all duration-300 ${cardBorderClass}`}>
                   
                   {/* Card Header - Clean without rarity text */}
                   <div className="relative p-4 pb-2">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-bold text-white leading-tight">{nft.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900 leading-tight">{nft.name}</h3>
                     </div>
                     
                     {/* Merchant Badge */}
                     {nft.merchant && (
-                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-700 text-white">
+                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                         {nft.merchant === 'dunkin' ? '🍩 Dunkin\'' : nft.merchant === 'cvs' ? '💊 CVS' : nft.merchant}
                       </div>
                     )}
@@ -226,7 +230,7 @@ const EnhancedNFTGallery = () => {
                   
                   {/* Card Content */}
                   <div className="px-4 pb-4">
-                    <p className="text-sm text-gray-300 mb-3 line-clamp-2">
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                       {nft.description}
                     </p>
                     
@@ -234,8 +238,8 @@ const EnhancedNFTGallery = () => {
                     <div className="space-y-1 mb-4">
                       {nft.attributes.slice(0, 2).map((attr, i) => (
                         <div key={i} className="flex justify-between text-xs">
-                          <span className="text-gray-400">{attr.trait_type}:</span>
-                          <span className="font-medium text-white">{attr.value}</span>
+                          <span className="text-gray-500">{attr.trait_type}:</span>
+                          <span className="font-medium text-gray-800">{attr.value}</span>
                         </div>
                       ))}
                     </div>
@@ -243,7 +247,7 @@ const EnhancedNFTGallery = () => {
                     {/* Action Button */}
                     {isMinted ? (
                       <div className="w-full py-2 px-4 rounded-lg font-medium text-sm bg-green-600 text-white text-center">
-                        {t('gallery.minted')}
+                        ✓ {t('gallery.minted')}
                       </div>
                     ) : (
                       <button
