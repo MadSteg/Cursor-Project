@@ -33,18 +33,18 @@ const EnhancedNFTGallery = () => {
         'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
       ];
 
-      // Cartoon-style NFT character images - colorful and diverse designs
+      // Cute cartoon character NFTs - adorable and collectible designs
       const stockImages = [
-        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop', // Colorful astronaut
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop', // Retro character
-        'https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=400&h=400&fit=crop', // Space explorer
-        'https://images.unsplash.com/photo-1596181231785-71063e83c2c7?w=400&h=400&fit=crop', // Robot character
-        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop', // Cosmic warrior
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop', // Digital guardian
-        'https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=400&h=400&fit=crop', // Cyber knight
-        'https://images.unsplash.com/photo-1596181231785-71063e83c2c7?w=400&h=400&fit=crop', // Tech hero
-        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop', // Blockchain sage
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'  // NFT master
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop', // Cute dog character
+        'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop', // Colorful cat
+        'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', // Playful rabbit
+        'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop', // Happy bear
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop', // Digital puppy
+        'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop', // Cyber cat
+        'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', // Space bunny
+        'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop', // Blockchain bear
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop', // NFT dog
+        'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop'  // Token cat
       ];
 
       // Create NFTs using stock images
