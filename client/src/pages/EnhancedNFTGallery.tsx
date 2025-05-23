@@ -158,13 +158,13 @@ const EnhancedNFTGallery = () => {
           {filteredNFTs.map((nft) => {
             const isMinted = mintedNFTs.includes(nft.id);
             
-            // Define bold border colors and holographic effects based on rarity
+            // Define thick, bold border colors based on rarity
             const rarityBorders = {
-              legendary: 'border-yellow-500 border-4 shadow-yellow-500/60 shadow-2xl bg-gradient-to-br from-yellow-400/10 via-gold-300/5 to-yellow-600/10',
-              epic: 'border-purple-500 border-4 shadow-purple-500/60 shadow-2xl bg-gradient-to-br from-purple-400/10 via-pink-300/5 to-purple-600/10',
-              rare: 'border-blue-500 border-4 shadow-blue-500/60 shadow-2xl',
-              uncommon: 'border-green-500 border-4 shadow-green-500/60 shadow-2xl',
-              common: 'border-gray-500 border-2 shadow-gray-500/40 shadow-lg'
+              legendary: 'border-yellow-500 border-8 shadow-yellow-500/30 shadow-xl',
+              epic: 'border-purple-500 border-8 shadow-purple-500/30 shadow-xl',
+              rare: 'border-blue-500 border-6 shadow-blue-500/30 shadow-lg',
+              uncommon: 'border-green-500 border-6 shadow-green-500/30 shadow-lg',
+              common: 'border-gray-500 border-4 shadow-gray-500/20 shadow-md'
             };
             
             const cardBorderClass = rarityBorders[nft.rarity as keyof typeof rarityBorders] || 'border-gray-500 border-2 shadow-gray-500/40 shadow-lg';
@@ -204,28 +204,7 @@ const EnhancedNFTGallery = () => {
                       />
                     </div>
                     
-                    {/* Dramatic Holographic Effect - Like Shiny Pokemon Cards */}
-                    {nft.rarity === 'legendary' && (
-                      <>
-                        {/* Golden Rainbow Shimmer */}
-                        <div className="absolute inset-2 rounded-lg bg-gradient-to-r from-yellow-400 via-pink-500 via-purple-500 via-blue-500 to-green-400 opacity-40 animate-pulse pointer-events-none"></div>
-                        {/* Sparkle Overlay */}
-                        <div className="absolute inset-2 rounded-lg bg-gradient-to-tr from-gold-300/60 via-transparent to-yellow-400/60 opacity-70 animate-pulse pointer-events-none"></div>
-                        {/* Moving Rainbow Sweep */}
-                        <div className="absolute inset-2 rounded-lg bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-30 animate-bounce pointer-events-none"></div>
-                      </>
-                    )}
-                    {nft.rarity === 'epic' && (
-                      <>
-                        {/* Purple-Pink Rainbow Shimmer */}
-                        <div className="absolute inset-2 rounded-lg bg-gradient-to-r from-purple-400 via-pink-400 via-purple-600 to-indigo-500 opacity-50 animate-pulse pointer-events-none"></div>
-                        {/* Cosmic Overlay */}
-                        <div className="absolute inset-2 rounded-lg bg-gradient-to-tr from-purple-400/60 via-transparent to-pink-400/60 opacity-60 animate-pulse pointer-events-none"></div>
-                      </>
-                    )}
-                    {(nft.rarity === 'rare' || nft.rarity === 'uncommon' || nft.rarity === 'common') && (
-                      <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    )}
+
                   </div>
                   
                   {/* Card Content */}
