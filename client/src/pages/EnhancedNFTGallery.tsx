@@ -14,41 +14,68 @@ const EnhancedNFTGallery = () => {
   const [merchantFilter, setMerchantFilter] = useState('all');
   
   useEffect(() => {
-    const fetchObjectStorageNFTs = async () => {
-      try {
-        setLoading(true);
+    const createNFTsFromImages = () => {
+      setLoading(true);
+      
+      const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+      const merchants = ['dunkin', 'cvs', null];
+      const characterNames = [
+        'Digital Pioneer', 'Cyber Guardian', 'Blockchain Warrior', 'NFT Master', 'Crypto Knight',
+        'Data Sentinel', 'Code Phantom', 'Pixel Hero', 'Network Defender', 'Token Keeper',
+        'Digital Samurai', 'Cyber Ninja', 'Blockchain Sage', 'NFT Collector', 'Crypto Wizard',
+        'Data Oracle', 'Code Breaker', 'Pixel Artist', 'Network Guardian', 'Token Master',
+        'Digital Explorer', 'Cyber Mage', 'Blockchain Prophet', 'NFT Creator', 'Crypto Champion',
+        'Data Architect', 'Code Weaver', 'Pixel Warrior', 'Network Shaman', 'Token Sage',
+        'Digital Alchemist', 'Cyber Paladin', 'Blockchain Monk', 'NFT Innovator', 'Crypto Mystic',
+        'Data Forger', 'Code Dancer', 'Pixel Shaman', 'Network Monk', 'Token Warrior',
+        'Digital Merchant', 'Cyber Scholar', 'Blockchain Artist', 'NFT Pioneer', 'Crypto Sage',
+        'Data Weaver', 'Code Master', 'Pixel Guardian', 'Network Oracle', 'Token Explorer',
+        'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
+      ];
+
+      // Create NFTs using direct image paths
+      const imageNFTs = [];
+      for (let i = 1; i <= 54; i++) {
+        const rarity = rarities[(i - 1) % rarities.length] as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+        const merchant = merchants[(i - 1) % merchants.length];
+        const name = characterNames[i - 1] || `Character #${i}`;
         
-        // Fetch NFTs from your Object Storage
-        const response = await fetch('/api/replit-storage/generate-nfts');
-        const data = await response.json();
-        
-        if (data.success && data.nfts) {
-          setNfts(data.nfts);
-        } else {
-          // Fallback to sample NFTs if Object Storage fails
-          setNfts(sampleNFTs);
-        }
-        
-        // Simulate some minted NFTs
-        const randomMinted = data.nfts
-          ? data.nfts.filter(() => Math.random() > 0.7).map((nft: NFT) => nft.id)
-          : sampleNFTs.filter(() => Math.random() > 0.7).map((nft: NFT) => nft.id);
-        
-        setMintedNFTs(randomMinted);
-      } catch (error) {
-        console.error('Error fetching Object Storage NFTs:', error);
-        // Fallback to sample NFTs on error
-        setNfts(sampleNFTs);
-        const randomMinted = sampleNFTs
-          .filter(() => Math.random() > 0.7)
-          .map((nft: NFT) => nft.id);
-        setMintedNFTs(randomMinted);
-      } finally {
-        setLoading(false);
+        imageNFTs.push({
+          id: `uploaded-nft-${i}`,
+          name: name,
+          description: `An exclusive digital character NFT with ${rarity} rarity from your uploaded collection.`,
+          image: `/api/replit-storage/image/${i}`,
+          rarity: rarity,
+          merchant: merchant,
+          attributes: [
+            {
+              trait_type: "Source",
+              value: "Uploaded Images"
+            },
+            {
+              trait_type: "Rarity", 
+              value: rarity.charAt(0).toUpperCase() + rarity.slice(1)
+            },
+            {
+              trait_type: "Type",
+              value: "Character"
+            }
+          ]
+        });
       }
+      
+      setNfts(imageNFTs);
+      
+      // Simulate some minted NFTs
+      const randomMinted = imageNFTs
+        .filter(() => Math.random() > 0.7)
+        .map(nft => nft.id);
+      setMintedNFTs(randomMinted);
+      
+      setLoading(false);
     };
 
-    fetchObjectStorageNFTs();
+    createNFTsFromImages();
   }, []);
   
   // Filter NFTs based on rarity and merchant
