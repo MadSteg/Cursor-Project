@@ -68,6 +68,9 @@ router.get('/images', async (req, res) => {
  */
 router.get('/generate-nfts', async (req, res) => {
   try {
+    const fs = require('fs');
+    const path = require('path');
+    
     const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
     const merchants = ['dunkin', 'cvs', null];
     
@@ -85,24 +88,31 @@ router.get('/generate-nfts', async (req, res) => {
       'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
     ];
 
-    // Generate 54 NFTs as requested
-    const nfts = [];
-    for (let i = 0; i < 54; i++) {
+    // Get actual PNG files from your uploaded images
+    const imagesDir = path.join(process.cwd(), 'public', 'nft-images');
+    const imageFiles = fs.readdirSync(imagesDir)
+      .filter((file: string) => file.toLowerCase().endsWith('.png'))
+      .sort();
+
+    console.log(`[replit-storage] Found ${imageFiles.length} PNG files`);
+
+    // Generate NFTs using your actual uploaded images
+    const nfts = imageFiles.map((filename: string, i: number) => {
       const rarity = rarities[i % rarities.length];
       const merchant = merchants[i % merchants.length];
       const name = characterNames[i] || `Character #${i + 1}`;
       
-      nfts.push({
+      return {
         id: `storage-nft-${i + 1}`,
         name: name,
-        description: `An exclusive digital character NFT with ${rarity} rarity from your Object Storage collection.`,
-        image: `/nft-images/nft-${i + 1}.png`,
+        description: `An exclusive digital character NFT with ${rarity} rarity from your uploaded collection.`,
+        image: `/nft-images/${filename}`,
         rarity: rarity,
         merchant: merchant,
         attributes: [
           {
             trait_type: "Source",
-            value: "Object Storage"
+            value: "Uploaded Images"
           },
           {
             trait_type: "Rarity",
@@ -121,8 +131,8 @@ router.get('/generate-nfts', async (req, res) => {
             value: merchant === 'dunkin' ? 'Dunkin\'' : 'CVS'
           }] : [])
         ]
-      });
-    }
+      };
+    });
 
     res.json({
       success: true,
