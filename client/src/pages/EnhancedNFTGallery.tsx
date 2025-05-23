@@ -154,10 +154,10 @@ const EnhancedNFTGallery = () => {
           {filteredNFTs.map((nft) => {
             const isMinted = mintedNFTs.includes(nft.id);
             
-            // Define bold border colors based on rarity
+            // Define bold border colors and holographic effects based on rarity
             const rarityBorders = {
-              legendary: 'border-yellow-500 border-4 shadow-yellow-500/60 shadow-2xl',
-              epic: 'border-purple-500 border-4 shadow-purple-500/60 shadow-2xl',
+              legendary: 'border-yellow-500 border-4 shadow-yellow-500/60 shadow-2xl bg-gradient-to-br from-yellow-400/10 via-gold-300/5 to-yellow-600/10',
+              epic: 'border-purple-500 border-4 shadow-purple-500/60 shadow-2xl bg-gradient-to-br from-purple-400/10 via-pink-300/5 to-purple-600/10',
               rare: 'border-blue-500 border-4 shadow-blue-500/60 shadow-2xl',
               uncommon: 'border-green-500 border-4 shadow-green-500/60 shadow-2xl',
               common: 'border-gray-500 border-2 shadow-gray-500/40 shadow-lg'
@@ -200,8 +200,12 @@ const EnhancedNFTGallery = () => {
                       />
                     </div>
                     
-                    {/* Holographic Effect Overlay */}
-                    <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    {/* Holographic Effect Overlay - Enhanced for rare cards */}
+                    {(nft.rarity === 'legendary' || nft.rarity === 'epic') ? (
+                      <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-purple-400/20 via-pink-300/30 to-blue-400/20 opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none animate-pulse"></div>
+                    ) : (
+                      <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    )}
                   </div>
                   
                   {/* Card Content */}
