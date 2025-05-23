@@ -200,10 +200,26 @@ const EnhancedNFTGallery = () => {
                       />
                     </div>
                     
-                    {/* Holographic Effect Overlay - Enhanced for rare cards */}
-                    {(nft.rarity === 'legendary' || nft.rarity === 'epic') ? (
-                      <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-purple-400/20 via-pink-300/30 to-blue-400/20 opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none animate-pulse"></div>
-                    ) : (
+                    {/* Dramatic Holographic Effect - Like Shiny Pokemon Cards */}
+                    {nft.rarity === 'legendary' && (
+                      <>
+                        {/* Golden Rainbow Shimmer */}
+                        <div className="absolute inset-2 rounded-lg bg-gradient-to-r from-yellow-400 via-pink-500 via-purple-500 via-blue-500 to-green-400 opacity-40 animate-pulse pointer-events-none"></div>
+                        {/* Sparkle Overlay */}
+                        <div className="absolute inset-2 rounded-lg bg-gradient-to-tr from-gold-300/60 via-transparent to-yellow-400/60 opacity-70 animate-pulse pointer-events-none"></div>
+                        {/* Moving Rainbow Sweep */}
+                        <div className="absolute inset-2 rounded-lg bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-30 animate-bounce pointer-events-none"></div>
+                      </>
+                    )}
+                    {nft.rarity === 'epic' && (
+                      <>
+                        {/* Purple-Pink Rainbow Shimmer */}
+                        <div className="absolute inset-2 rounded-lg bg-gradient-to-r from-purple-400 via-pink-400 via-purple-600 to-indigo-500 opacity-50 animate-pulse pointer-events-none"></div>
+                        {/* Cosmic Overlay */}
+                        <div className="absolute inset-2 rounded-lg bg-gradient-to-tr from-purple-400/60 via-transparent to-pink-400/60 opacity-60 animate-pulse pointer-events-none"></div>
+                      </>
+                    )}
+                    {(nft.rarity === 'rare' || nft.rarity === 'uncommon' || nft.rarity === 'common') && (
                       <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     )}
                   </div>
