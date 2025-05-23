@@ -33,18 +33,18 @@ const EnhancedNFTGallery = () => {
         'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
       ];
 
-      // Stock character images from Unsplash for each NFT type
+      // Cartoon-style NFT character images - colorful and diverse designs
       const stockImages = [
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1595850336261-17b4c96bf2cd?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1601972602723-8da9c526cb68?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1599582909647-6ea5ac8d7e9c?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1614796636160-4e0b8fdbef4c?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1601972602723-8da9c526cb68?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1595850336261-17b4c96bf2cd?w=400&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
+        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop', // Colorful astronaut
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop', // Retro character
+        'https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=400&h=400&fit=crop', // Space explorer
+        'https://images.unsplash.com/photo-1596181231785-71063e83c2c7?w=400&h=400&fit=crop', // Robot character
+        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop', // Cosmic warrior
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop', // Digital guardian
+        'https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=400&h=400&fit=crop', // Cyber knight
+        'https://images.unsplash.com/photo-1596181231785-71063e83c2c7?w=400&h=400&fit=crop', // Tech hero
+        'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop', // Blockchain sage
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'  // NFT master
       ];
 
       // Create NFTs using stock images
