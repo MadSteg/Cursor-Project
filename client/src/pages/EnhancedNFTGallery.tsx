@@ -14,7 +14,7 @@ const EnhancedNFTGallery = () => {
   const [merchantFilter, setMerchantFilter] = useState('all');
   
   useEffect(() => {
-    const createNFTsFromImages = () => {
+    const createStockImageNFTs = () => {
       setLoading(true);
       
       const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
@@ -33,24 +33,39 @@ const EnhancedNFTGallery = () => {
         'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
       ];
 
-      // Create NFTs using direct image paths
-      const imageNFTs = [];
+      // Stock character images from Unsplash for each NFT type
+      const stockImages = [
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1595850336261-17b4c96bf2cd?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1601972602723-8da9c526cb68?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1599582909647-6ea5ac8d7e9c?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1614796636160-4e0b8fdbef4c?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1601972602723-8da9c526cb68?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1595850336261-17b4c96bf2cd?w=400&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
+      ];
+
+      // Create NFTs using stock images
+      const stockNFTs = [];
       for (let i = 1; i <= 54; i++) {
         const rarity = rarities[(i - 1) % rarities.length] as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-        const merchant = merchants[(i - 1) % merchants.length];
+        const merchant = merchants[(i - 1) % merchants.length] || undefined;
         const name = characterNames[i - 1] || `Character #${i}`;
+        const stockImage = stockImages[(i - 1) % stockImages.length];
         
-        imageNFTs.push({
-          id: `uploaded-nft-${i}`,
+        stockNFTs.push({
+          id: `stock-nft-${i}`,
           name: name,
-          description: `An exclusive digital character NFT with ${rarity} rarity from your uploaded collection.`,
-          image: `/api/replit-storage/image/${i}`,
+          description: `An exclusive digital character NFT with ${rarity} rarity. Collectible characters for BlockReceipt.ai users.`,
+          image: stockImage,
           rarity: rarity,
           merchant: merchant,
           attributes: [
             {
               trait_type: "Source",
-              value: "Uploaded Images"
+              value: "BlockReceipt Collection"
             },
             {
               trait_type: "Rarity", 
@@ -64,10 +79,10 @@ const EnhancedNFTGallery = () => {
         });
       }
       
-      setNfts(imageNFTs);
+      setNfts(stockNFTs);
       
       // Simulate some minted NFTs
-      const randomMinted = imageNFTs
+      const randomMinted = stockNFTs
         .filter(() => Math.random() > 0.7)
         .map(nft => nft.id);
       setMintedNFTs(randomMinted);
@@ -75,7 +90,7 @@ const EnhancedNFTGallery = () => {
       setLoading(false);
     };
 
-    createNFTsFromImages();
+    createStockImageNFTs();
   }, []);
   
   // Filter NFTs based on rarity and merchant
