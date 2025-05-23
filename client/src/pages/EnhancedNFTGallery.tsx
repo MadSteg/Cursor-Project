@@ -14,83 +14,16 @@ const EnhancedNFTGallery = () => {
   const [merchantFilter, setMerchantFilter] = useState('all');
   
   useEffect(() => {
-    const createStockImageNFTs = () => {
-      setLoading(true);
-      
-      const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-      const merchants = ['dunkin', 'cvs', null];
-      const characterNames = [
-        'Digital Pioneer', 'Cyber Guardian', 'Blockchain Warrior', 'NFT Master', 'Crypto Knight',
-        'Data Sentinel', 'Code Phantom', 'Pixel Hero', 'Network Defender', 'Token Keeper',
-        'Digital Samurai', 'Cyber Ninja', 'Blockchain Sage', 'NFT Collector', 'Crypto Wizard',
-        'Data Oracle', 'Code Breaker', 'Pixel Artist', 'Network Guardian', 'Token Master',
-        'Digital Explorer', 'Cyber Mage', 'Blockchain Prophet', 'NFT Creator', 'Crypto Champion',
-        'Data Architect', 'Code Weaver', 'Pixel Warrior', 'Network Shaman', 'Token Sage',
-        'Digital Alchemist', 'Cyber Paladin', 'Blockchain Monk', 'NFT Innovator', 'Crypto Mystic',
-        'Data Forger', 'Code Dancer', 'Pixel Shaman', 'Network Monk', 'Token Warrior',
-        'Digital Merchant', 'Cyber Scholar', 'Blockchain Artist', 'NFT Pioneer', 'Crypto Sage',
-        'Data Weaver', 'Code Master', 'Pixel Guardian', 'Network Oracle', 'Token Explorer',
-        'Digital Voyager', 'Cyber Bard', 'Blockchain Scribe', 'NFT Visionary'
-      ];
-
-      // Cute cartoon character NFTs - adorable and collectible designs
-      const stockImages = [
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop', // Cute dog character
-        'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop', // Colorful cat
-        'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', // Playful rabbit
-        'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop', // Happy bear
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop', // Digital puppy
-        'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop', // Cyber cat
-        'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop', // Space bunny
-        'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop', // Blockchain bear
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop', // NFT dog
-        'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=400&fit=crop'  // Token cat
-      ];
-
-      // Create NFTs using stock images
-      const stockNFTs = [];
-      for (let i = 1; i <= 54; i++) {
-        const rarity = rarities[(i - 1) % rarities.length] as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-        const merchant = merchants[(i - 1) % merchants.length] || undefined;
-        const name = characterNames[i - 1] || `Character #${i}`;
-        const stockImage = stockImages[(i - 1) % stockImages.length];
-        
-        stockNFTs.push({
-          id: `stock-nft-${i}`,
-          name: name,
-          description: `An exclusive digital character NFT with ${rarity} rarity. Collectible characters for BlockReceipt.ai users.`,
-          image: stockImage,
-          rarity: rarity,
-          merchant: merchant,
-          attributes: [
-            {
-              trait_type: "Source",
-              value: "BlockReceipt Collection"
-            },
-            {
-              trait_type: "Rarity", 
-              value: rarity.charAt(0).toUpperCase() + rarity.slice(1)
-            },
-            {
-              trait_type: "Type",
-              value: "Character"
-            }
-          ]
-        });
-      }
-      
-      setNfts(stockNFTs);
-      
-      // Simulate some minted NFTs
-      const randomMinted = stockNFTs
-        .filter(() => Math.random() > 0.7)
-        .map(nft => nft.id);
-      setMintedNFTs(randomMinted);
-      
-      setLoading(false);
-    };
-
-    createStockImageNFTs();
+    // Use the original sample NFTs that were working well
+    setNfts(sampleNFTs);
+    
+    // Simulate some minted NFTs
+    const randomMinted = sampleNFTs
+      .filter(() => Math.random() > 0.7)
+      .map(nft => nft.id);
+    setMintedNFTs(randomMinted);
+    
+    setLoading(false);
   }, []);
   
   // Filter NFTs based on rarity and merchant
