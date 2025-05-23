@@ -96,7 +96,7 @@ router.get('/generate-nfts', async (req, res) => {
         id: `storage-nft-${i + 1}`,
         name: name,
         description: `An exclusive digital character NFT with ${rarity} rarity from your Object Storage collection.`,
-        image: `/api/replit-storage/image/${i + 1}`,
+        image: `/nft-images/nft-${i + 1}.png`,
         rarity: rarity,
         merchant: merchant,
         attributes: [
