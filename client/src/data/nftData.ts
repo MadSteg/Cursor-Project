@@ -21,7 +21,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-1',
     name: 'Space Cat Astronaut',
     description: 'A cute orange tabby cat wearing a tiny astronaut helmet exploring the cosmos. This epic collectible brings space adventure to your collection.',
-    image: 'https://via.placeholder.com/400x400/FF6B6B/FFFFFF?text=🐱‍🚀',
+    image: 'https://picsum.photos/seed/spacecat/400/400',
     rarity: 'epic' as NFTRarity,
     attributes: [
       { trait_type: 'Animal', value: 'Cat' },
@@ -33,7 +33,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-2',
     name: 'Robot Butler',
     description: 'A friendly green robot with antenna and big eyes helping with daily tasks. This rare collectible represents the future of shopping assistance.',
-    image: 'https://via.placeholder.com/400x400/4ECDC4/FFFFFF?text=🤖',
+    image: 'https://picsum.photos/seed/robot/400/400',
     rarity: 'rare' as NFTRarity,
     attributes: [
       { trait_type: 'Type', value: 'Robot' },
@@ -45,7 +45,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-3',
     name: 'Rainbow Unicorn',
     description: 'A magical white unicorn with a glowing horn and rainbow mane spreading joy. This common collectible brings magic to everyday purchases.',
-    image: 'https://via.placeholder.com/400x400/FFE66D/FFFFFF?text=🦄',
+    image: 'https://picsum.photos/seed/unicorn/400/400',
     rarity: 'common' as NFTRarity,
     attributes: [
       { trait_type: 'Creature', value: 'Unicorn' },
@@ -57,7 +57,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-4',
     name: 'Bubble Bear',
     description: 'A cheerful polar bear blowing colorful soap bubbles with a smile. This uncommon collectible adds playful fun to your NFT collection.',
-    image: 'https://via.placeholder.com/400x400/A8E6CF/FFFFFF?text=🐻',
+    image: 'https://picsum.photos/seed/bear/400/400',
     rarity: 'uncommon' as NFTRarity,
     attributes: [
       { trait_type: 'Animal', value: 'Bear' },
@@ -69,7 +69,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-5',
     name: 'Crystal Wizard',
     description: 'A wise wizard with a long beard holding a glowing crystal staff. This rare collectible casts spells of savings and smart shopping.',
-    image: 'https://via.placeholder.com/400x400/C7CEEA/FFFFFF?text=🧙‍♂️',
+    image: 'https://picsum.photos/seed/wizard/400/400',
     rarity: 'rare' as NFTRarity,
     attributes: [
       { trait_type: 'Class', value: 'Wizard' },
@@ -81,7 +81,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-6',
     name: 'Golden Phoenix',
     description: 'A majestic phoenix with golden feathers rising from flames of prosperity. This legendary collectible represents rebirth and endless possibilities.',
-    image: 'https://via.placeholder.com/400x400/FFD93D/FFFFFF?text=🔥🐦',
+    image: 'https://picsum.photos/seed/phoenix/400/400',
     rarity: 'legendary' as NFTRarity,
     attributes: [
       { trait_type: 'Creature', value: 'Phoenix' },
@@ -93,7 +93,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-7',
     name: 'Ninja Puppy',
     description: 'A cute puppy wearing ninja gear with throwing stars, ready for stealth shopping missions. This uncommon collectible brings adventure to your purchases.',
-    image: 'https://via.placeholder.com/400x400/6BCF7F/FFFFFF?text=🐶⚔️',
+    image: 'https://picsum.photos/seed/ninja/400/400',
     rarity: 'uncommon' as NFTRarity,
     attributes: [
       { trait_type: 'Animal', value: 'Puppy' },
@@ -105,7 +105,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-8',
     name: 'Moonbeam Owl',
     description: 'A wise owl perched on a crescent moon with sparkly feathers that glow in moonlight. This common collectible watches over your night shopping.',
-    image: 'https://via.placeholder.com/400x400/B4A7D6/FFFFFF?text=🦉🌙',
+    image: 'https://picsum.photos/seed/owl/400/400',
     rarity: 'common' as NFTRarity,
     attributes: [
       { trait_type: 'Bird', value: 'Owl' },
