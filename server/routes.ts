@@ -486,6 +486,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount unified upload-and-mint route
   app.use('/api/upload-and-mint', uploadAndMintRoutes);
 
+  // Mount PRE encryption routes
+  const preEncryptionRoutes = await import('./routes/preEncryption');
+  app.use('/api/pre', preEncryptionRoutes.default);
+  log('PRE encryption routes registered successfully', 'express');
+
   // Create HTTP server
   const httpServer = createServer(app);
 

@@ -1,0 +1,133 @@
+1. Fuse in Threshold PRE Integration
+	1.	Import the PRE interface at the top of your master contract:
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+interface IProxyReEncryption {
+  function reencrypt(bytes calldata capsule, address delegatee) external returns (bytes memory);
+}
+
+
+	2.	Add storage variables just below your contract declaration:
+
+  IProxyReEncryption public immutable preModule;
+  mapping(uint256 => bytes) public encryptedReceipts;
+  mapping(uint256 => bytes) public receiptCapsules;
+  mapping(uint256 => mapping(address => bytes)) public reCapsules;
+
+
+	3.	Wire the constructor to accept and set the PRE module address:
+
+constructor(
+  string memory uri_,
+  address _preModule
+) ERC1155(uri_) {
+  preModule = IProxyReEncryption(_preModule);
+}
+
+
+	4.	Extend your mint function (or add mintEncrypted) to decode and store the encrypted payload + capsule:
+
+function mintEncrypted(
+  address to,
+  uint256 id,
+  uint256 amount,
+  bytes calldata data
+) external onlyOwner {
+  (bytes memory cipherText, bytes memory capsule) = abi.decode(data, (bytes, bytes));
+  encryptedReceipts[id]   = cipherText;
+  receiptCapsules[id]     = capsule;
+  _mint(to, id, amount, "");
+}
+
+
+	5.	Add access control methods:
+
+function grantAccess(uint256 id, address delegatee) external onlyOwner {
+  bytes memory capsule = receiptCapsules[id];
+  require(capsule.length != 0, "No such receipt");
+  reCapsules[id][delegatee] = preModule.reencrypt(capsule, delegatee);
+}
+
+function revokeAccess(uint256 id, address delegatee) external onlyOwner {
+  delete reCapsules[id][delegatee];
+}
+
+
+
+⸻
+
+2. Update Your Deployment Script
+
+// scripts/deploy.js
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  const uri = "https://api.blockreceipt.ai/metadata/{id}.json";
+  const preModuleAddress = process.env.PRE_MODULE_ADDRESS; // e.g. 0x347C...F07
+
+  const Factory = await ethers.getContractFactory("Receipt1155Enhanced");
+  const contract = await Factory.deploy(uri, preModuleAddress);
+  await contract.deployed();
+  console.log("Deployed at:", contract.address, "with PRE:", preModuleAddress);
+}
+
+main().catch(console.error);
+
+
+⸻
+
+3. Replit-Specific Next Steps
+	1.	Add a Secret in Replit:
+	•	Key: PRE_MODULE_ADDRESS
+	•	Value: 0x347CC7ede7e5517bD47D20620B2CF1b406edcF07 (swap to Polygon child if needed)
+	2.	Install the PRE SDK:
+
+npm install @threshold-proxy-reencryption/sdk
+
+
+	3.	Off-Chain Flow:
+	•	Encrypt on purchase:
+
+const { encryptPayload } = require('@threshold-proxy-reencryption/sdk');
+const { cipherText, capsule } = await encryptPayload(
+  JSON.stringify(receipt), userPublicKey
+);
+const data = ethers.utils.defaultAbiCoder.encode(
+  ['bytes','bytes'], [cipherText, capsule]
+);
+await contract.mintEncrypted(user, tokenId, 1, data);
+
+
+	•	Grant Access:
+
+await contract.grantAccess(tokenId, delegateeAddress);
+
+
+	•	Decrypt:
+
+const reCaps = await contract.reCapsules(tokenId, myAddress);
+const cipher = await contract.encryptedReceipts(tokenId);
+const plain = await decryptPayload(cipher, reCaps, myPrivateKey);
+
+
+	•	Revoke:
+
+await contract.revokeAccess(tokenId, delegateeAddress);
+
+
+	4.	Test on Testnet:
+	•	Configure Mumbai/Goerli in Hardhat.
+	•	Deploy and verify mint/grant/decrypt/revoke flows.
+	5.	UI Integration:
+	•	Add React components to call these methods.
+	•	Provide forms/buttons for encrypt, mint, grant, decrypt, revoke.
+
+⸻
+
+4. Wrapping Up
+
+Follow these steps to fully integrate Threshold PRE into your existing contract, configure Replit for secure key management, implement off-chain encryption/decryption, and test end-to-end on testnets before mainnet launch.
