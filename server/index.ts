@@ -14,6 +14,9 @@ import { rawBodyParser } from './middleware/rawBodyParser';
 
 const app = express();
 
+// Trust proxy for rate limiting and security headers
+app.set('trust proxy', 1);
+
 // Security hardening with Helmet
 app.use(helmet({
   contentSecurityPolicy: {
