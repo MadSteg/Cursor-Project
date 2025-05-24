@@ -1,0 +1,88 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bearGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8e6cf"/>
+      <stop offset="100%" style="stop-color:#7fcdcd"/>
+    </linearGradient>
+    <radialGradient id="bubbleGradient" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="70%" style="stop-color:#e3f2fd"/>
+      <stop offset="100%" style="stop-color:#bbdefb"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f0f8ff"/>
+  
+  <!-- Bear Body -->
+  <ellipse cx="200" cy="280" rx="80" ry="65" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  
+  <!-- Bear Head -->
+  <circle cx="200" cy="190" r="70" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  
+  <!-- Bear Ears -->
+  <circle cx="160" cy="140" r="25" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  <circle cx="240" cy="140" r="25" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  <circle cx="160" cy="140" r="15" fill="#88d8c0"/>
+  <circle cx="240" cy="140" r="15" fill="#88d8c0"/>
+  
+  <!-- Bear Eyes -->
+  <circle cx="180" cy="180" r="12" fill="#333"/>
+  <circle cx="220" cy="180" r="12" fill="#333"/>
+  <circle cx="182" cy="178" r="6" fill="white"/>
+  <circle cx="222" cy="178" r="6" fill="white"/>
+  <circle cx="184" cy="176" r="3" fill="#333"/>
+  <circle cx="224" cy="176" r="3" fill="#333"/>
+  
+  <!-- Bear Nose -->
+  <ellipse cx="200" cy="205" rx="8" ry="6" fill="#333"/>
+  
+  <!-- Bear Mouth -->
+  <path d="M 200 215 Q 190 225 185 220" stroke="#333" stroke-width="3" fill="none"/>
+  <path d="M 200 215 Q 210 225 215 220" stroke="#333" stroke-width="3" fill="none"/>
+  
+  <!-- Bear Arms -->
+  <ellipse cx="130" cy="250" rx="30" ry="50" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  <ellipse cx="270" cy="250" rx="30" ry="50" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  
+  <!-- Bear Paws -->
+  <circle cx="130" cy="310" r="20" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  <circle cx="270" cy="310" r="20" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  
+  <!-- Bear Legs -->
+  <ellipse cx="170" cy="340" rx="25" ry="40" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  <ellipse cx="230" cy="340" rx="25" ry="40" fill="url(#bearGradient)" stroke="#5fb3b3" stroke-width="3"/>
+  
+  <!-- Bear Feet -->
+  <ellipse cx="170" cy="385" rx="18" ry="10" fill="#5fb3b3"/>
+  <ellipse cx="230" cy="385" rx="18" ry="10" fill="#5fb3b3"/>
+  
+  <!-- Bubble Wand -->
+  <circle cx="280" cy="300" r="15" fill="none" stroke="#ffd93d" stroke-width="4"/>
+  <line x1="285" y1="315" x2="295" y2="340" stroke="#ffd93d" stroke-width="4"/>
+  
+  <!-- Floating Bubbles -->
+  <circle cx="320" cy="180" r="12" fill="url(#bubbleGradient)" opacity="0.8" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="340" cy="150" r="8" fill="url(#bubbleGradient)" opacity="0.7" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="360" cy="200" r="6" fill="url(#bubbleGradient)" opacity="0.6" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="310" cy="120" r="10" fill="url(#bubbleGradient)" opacity="0.8" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="350" cy="100" r="7" fill="url(#bubbleGradient)" opacity="0.7" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="80" cy="120" r="9" fill="url(#bubbleGradient)" opacity="0.8" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="60" cy="160" r="6" fill="url(#bubbleGradient)" opacity="0.6" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="100" cy="100" r="5" fill="url(#bubbleGradient)" opacity="0.5" stroke="#bbdefb" stroke-width="1"/>
+  <circle cx="40" cy="200" r="7" fill="url(#bubbleGradient)" opacity="0.7" stroke="#bbdefb" stroke-width="1"/>
+  
+  <!-- Animated Bubbles -->
+  <circle cx="300" cy="250" r="15" fill="url(#bubbleGradient)" opacity="0.8" stroke="#bbdefb" stroke-width="1">
+    <animateTransform attributeName="transform" type="translate" values="0,0; 20,-30; 40,-80" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8; 0.5; 0" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="290" cy="270" r="10" fill="url(#bubbleGradient)" opacity="0.7" stroke="#bbdefb" stroke-width="1">
+    <animateTransform attributeName="transform" type="translate" values="0,0; -15,-40; -35,-90" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7; 0.4; 0" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="305" cy="275" r="8" fill="url(#bubbleGradient)" opacity="0.6" stroke="#bbdefb" stroke-width="1">
+    <animateTransform attributeName="transform" type="translate" values="0,0; 10,-25; 25,-70" dur="2.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6; 0.3; 0" dur="2.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>
