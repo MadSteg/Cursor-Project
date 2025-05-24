@@ -15,6 +15,7 @@ import MerchantDemo from "./pages/MerchantDemo";
 import Enterprise from "./pages/Enterprise";
 import HowItWorks from "./pages/HowItWorks";
 import WhyBlockReceipt from "./pages/WhyBlockReceipt";
+import ForMerchants from "./pages/ForMerchants";
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ToastProvider } from './hooks/use-toast';
@@ -79,6 +80,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/why-blockreceipt">
             <WhyBlockReceipt />
+          </Route>
+          
+          <Route path="/for-merchants">
+            <ForMerchants />
           </Route>
           
           <Route>
