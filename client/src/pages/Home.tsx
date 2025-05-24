@@ -118,7 +118,7 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-emerald-300 mb-2">SOLUTION</h4>
+                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
                     <p className="text-white">
                       <span className="font-semibold">Threshold Proxy Re-encryption</span> provides exclusive access to your purchase history — no one else, ever.
                     </p>
@@ -138,7 +138,7 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-red-300 mb-2">PROBLEM</h4>
+                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
                     <p className="text-white">
                       <span className="font-semibold">Are perishable, weak, damage might impact warranty claims</span> or their sole functionality to be used
                     </p>
@@ -155,9 +155,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-emerald-300 mb-2">SOLUTION</h4>
+                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
                     <p className="text-white">
-                      <span className="font-semibold">No more last minute panic scrambling</span> — your receipts live safely 24/7 in your digital wallet as NFTs
+                      <span className="font-semibold">24/7 accessibility</span> using tamper-proof blockchain technology
                     </p>
                   </div>
                 </div>
@@ -175,7 +175,7 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-red-300 mb-2">PROBLEM</h4>
+                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
                     <p className="text-white">
                       <span className="font-semibold">Often misplaced and needed when you don't think you will</span> causing stress when you need proof of purchase for returns
                     </p>
@@ -192,9 +192,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-emerald-300 mb-2">SOLUTION</h4>
+                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
                     <p className="text-white">
-                      <span className="font-semibold">Carbon-neutral digital format</span> eliminating paper waste and toxic thermal ink for a completely sustainable solution
+                      <span className="font-semibold">No more last minute panic scrambling</span> — your receipts live safely 24/7 in your digital wallet as NFTs
                     </p>
                   </div>
                 </div>
