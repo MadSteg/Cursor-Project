@@ -15,101 +15,13 @@ export const getRandomNFT = (): NFT => {
   return sampleNFTs[randomIndex];
 };
 
-// Merchant-specific NFT collections
-export const merchantNFTs = {
-  dunkin: [
-    {
-      id: 'dunkin-1',
-      name: 'Rainbow Donut Wizard',
-      description: 'A cute magical donut with sparkly rainbow glaze casting sweet spells. This epic collectible brings enchantment to your Dunkin\' experience.',
-      image: 'https://cdn.pixabay.com/photo/2021/01/15/17/01/doughnut-5919219_1280.png',
-      rarity: 'epic' as NFTRarity,
-      merchant: 'dunkin',
-      attributes: [
-        { trait_type: 'Type', value: 'Donut' },
-        { trait_type: 'Power', value: 'Magic' },
-        { trait_type: 'Style', value: 'Rainbow' }
-      ]
-    },
-    {
-      id: 'dunkin-2',
-      name: 'Coffee Bean Astronaut',
-      description: 'An adorable coffee bean in a tiny spacesuit exploring the coffee cosmos. This rare collectible represents your journey through Dunkin\'s universe.',
-      image: 'https://cdn.pixabay.com/photo/2020/10/23/18/05/coffee-5679700_1280.png',
-      rarity: 'rare' as NFTRarity,
-      merchant: 'dunkin',
-      attributes: [
-        { trait_type: 'Character', value: 'Coffee Bean' },
-        { trait_type: 'Outfit', value: 'Spacesuit' },
-        { trait_type: 'Theme', value: 'Space' }
-      ]
-    },
-    {
-      id: 'dunkin-3',
-      name: 'Iced Coffee Penguin',
-      description: 'A cheerful penguin sliding on an iced coffee wave with a big smile. This uncommon collectible celebrates cool refreshing drinks.',
-      image: 'https://cdn.pixabay.com/photo/2021/02/03/13/40/penguin-5978378_1280.png',
-      rarity: 'uncommon' as NFTRarity,
-      merchant: 'dunkin',
-      attributes: [
-        { trait_type: 'Animal', value: 'Penguin' },
-        { trait_type: 'Drink', value: 'Iced Coffee' },
-        { trait_type: 'Mood', value: 'Happy' }
-      ]
-    },
-    {
-      id: 'dunkin-4',
-      name: 'Breakfast Dragon',
-      description: 'A tiny friendly dragon breathing maple syrup flames while protecting a breakfast sandwich. This legendary collectible guards your morning fuel.',
-      image: 'https://cdn.pixabay.com/photo/2020/12/27/18/51/dragon-5862090_1280.png',
-      rarity: 'legendary' as NFTRarity,
-      merchant: 'dunkin',
-      attributes: [
-        { trait_type: 'Creature', value: 'Dragon' },
-        { trait_type: 'Breath', value: 'Maple Syrup' },
-        { trait_type: 'Protects', value: 'Breakfast' }
-      ]
-    }
-  ],
-  cvs: [
-    {
-      id: 'cvs-1',
-      name: 'Vitamin Fairy',
-      description: 'A tiny fairy with rainbow wings carrying a magical vitamin bottle that sparkles with health. This rare collectible brings wellness magic to your day.',
-      image: 'https://cdn.pixabay.com/photo/2021/01/30/12/19/fairy-5964718_1280.png',
-      rarity: 'rare' as NFTRarity,
-      merchant: 'cvs',
-      attributes: [
-        { trait_type: 'Being', value: 'Fairy' },
-        { trait_type: 'Item', value: 'Vitamin' },
-        { trait_type: 'Power', value: 'Health Magic' }
-      ]
-    },
-    {
-      id: 'cvs-2',
-      name: 'Bandage Bear Doctor',
-      description: 'A cute teddy bear wearing a doctor coat with a stethoscope and healing bandages. This epic collectible represents care and comfort from CVS.',
-      image: 'https://cdn.pixabay.com/photo/2020/05/17/12/31/teddy-bear-5179181_1280.png',
-      rarity: 'epic' as NFTRarity,
-      merchant: 'cvs',
-      attributes: [
-        { trait_type: 'Animal', value: 'Bear' },
-        { trait_type: 'Profession', value: 'Doctor' },
-        { trait_type: 'Specialty', value: 'Healing' }
-      ]
-    }
-  ]
-};
-
 // All NFTs combined for backwards compatibility
 export const sampleNFTs: NFT[] = [
-  ...merchantNFTs.dunkin,
-  ...merchantNFTs.cvs,
   {
     id: 'nft-1',
     name: 'Space Cat Astronaut',
     description: 'A cute orange tabby cat wearing a tiny astronaut helmet exploring the cosmos. This epic collectible brings space adventure to your collection.',
-    image: 'https://cdn.pixabay.com/photo/2021/08/04/13/06/software-developer-6521720_1280.png',
+    image: 'https://via.placeholder.com/400x400/FF6B6B/FFFFFF?text=🐱‍🚀',
     rarity: 'epic' as NFTRarity,
     attributes: [
       { trait_type: 'Animal', value: 'Cat' },
@@ -121,7 +33,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-2',
     name: 'Robot Butler',
     description: 'A friendly green robot with antenna and big eyes helping with daily tasks. This rare collectible represents the future of shopping assistance.',
-    image: 'https://cdn.pixabay.com/photo/2021/01/30/12/19/robot-5964717_1280.png',
+    image: 'https://via.placeholder.com/400x400/4ECDC4/FFFFFF?text=🤖',
     rarity: 'rare' as NFTRarity,
     attributes: [
       { trait_type: 'Type', value: 'Robot' },
@@ -133,7 +45,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-3',
     name: 'Rainbow Unicorn',
     description: 'A magical white unicorn with a glowing horn and rainbow mane spreading joy. This common collectible brings magic to everyday purchases.',
-    image: 'https://cdn.pixabay.com/photo/2021/02/19/11/43/unicorn-6030176_1280.png',
+    image: 'https://via.placeholder.com/400x400/FFE66D/FFFFFF?text=🦄',
     rarity: 'common' as NFTRarity,
     attributes: [
       { trait_type: 'Creature', value: 'Unicorn' },
@@ -145,7 +57,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-4',
     name: 'Bubble Bear',
     description: 'A cheerful polar bear blowing colorful soap bubbles with a smile. This uncommon collectible adds playful fun to your NFT collection.',
-    image: 'https://cdn.pixabay.com/photo/2020/12/15/16/25/bear-5834347_1280.png',
+    image: 'https://via.placeholder.com/400x400/A8E6CF/FFFFFF?text=🐻',
     rarity: 'uncommon' as NFTRarity,
     attributes: [
       { trait_type: 'Animal', value: 'Bear' },
@@ -157,7 +69,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-5',
     name: 'Crystal Wizard',
     description: 'A wise wizard with a long beard holding a glowing crystal staff. This rare collectible casts spells of savings and smart shopping.',
-    image: 'https://cdn.pixabay.com/photo/2021/01/04/06/25/wizard-5886422_1280.png',
+    image: 'https://via.placeholder.com/400x400/C7CEEA/FFFFFF?text=🧙‍♂️',
     rarity: 'rare' as NFTRarity,
     attributes: [
       { trait_type: 'Class', value: 'Wizard' },
@@ -169,7 +81,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-6',
     name: 'Golden Phoenix',
     description: 'A majestic phoenix with golden feathers rising from flames of prosperity. This legendary collectible represents rebirth and endless possibilities.',
-    image: 'https://cdn.pixabay.com/photo/2020/10/11/09/25/phoenix-5645819_1280.png',
+    image: 'https://via.placeholder.com/400x400/FFD93D/FFFFFF?text=🔥🐦',
     rarity: 'legendary' as NFTRarity,
     attributes: [
       { trait_type: 'Creature', value: 'Phoenix' },
@@ -181,7 +93,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-7',
     name: 'Ninja Puppy',
     description: 'A cute puppy wearing ninja gear with throwing stars, ready for stealth shopping missions. This uncommon collectible brings adventure to your purchases.',
-    image: 'https://cdn.pixabay.com/photo/2021/02/03/13/40/dog-5978377_1280.png',
+    image: 'https://via.placeholder.com/400x400/6BCF7F/FFFFFF?text=🐶⚔️',
     rarity: 'uncommon' as NFTRarity,
     attributes: [
       { trait_type: 'Animal', value: 'Puppy' },
@@ -193,7 +105,7 @@ export const sampleNFTs: NFT[] = [
     id: 'nft-8',
     name: 'Moonbeam Owl',
     description: 'A wise owl perched on a crescent moon with sparkly feathers that glow in moonlight. This common collectible watches over your night shopping.',
-    image: 'https://cdn.pixabay.com/photo/2020/12/08/22/13/owl-5817043_1280.png',
+    image: 'https://via.placeholder.com/400x400/B4A7D6/FFFFFF?text=🦉🌙',
     rarity: 'common' as NFTRarity,
     attributes: [
       { trait_type: 'Bird', value: 'Owl' },

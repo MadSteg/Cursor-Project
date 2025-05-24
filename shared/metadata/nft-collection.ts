@@ -20,7 +20,7 @@ export const NFT_COLLECTION: NFTMetadata[] = [
   {
     id: 'space-cat-warrior',
     name: 'Space Cat Warrior',
-    image: 'https://cdn.pixabay.com/photo/2021/08/04/13/06/software-developer-6521720_1280.png',
+    image: 'https://via.placeholder.com/400x400/FF6B6B/FFFFFF?text=🐱‍🚀',
     description: 'A brave space cat warrior defending your receipts across the galaxy with cosmic powers.',
     tier: 'PREMIUM',
     categories: ['entertainment', 'gaming', 'space'],
@@ -34,7 +34,7 @@ export const NFT_COLLECTION: NFTMetadata[] = [
   {
     id: 'crystal-wizard-keeper',
     name: 'Crystal Wizard Keeper',
-    image: 'https://cdn.pixabay.com/photo/2021/01/04/06/25/wizard-5886422_1280.png',
+    image: 'https://via.placeholder.com/400x400/C7CEEA/FFFFFF?text=🧙‍♂️',
     description: 'A mystical wizard who guards your digital receipts with ancient crystal magic.',
     tier: 'LUXURY',
     categories: ['magic', 'fantasy', 'protection'],
