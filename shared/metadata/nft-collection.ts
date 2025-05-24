@@ -18,36 +18,36 @@ export interface NFTMetadata {
 // NFT Collection Array
 export const NFT_COLLECTION: NFTMetadata[] = [
   {
-    id: 'receipt-warrior',
-    name: 'Receipt Warrior',
-    image: '/nft-images/receipt-warrior.svg',
-    description: 'A brave warrior ready to defend your purchase history with honor and pixels.',
+    id: 'space-cat-warrior',
+    name: 'Space Cat Warrior',
+    image: 'https://cdn.pixabay.com/photo/2021/08/04/13/06/software-developer-6521720_1280.png',
+    description: 'A brave space cat warrior defending your receipts across the galaxy with cosmic powers.',
     tier: 'PREMIUM',
-    categories: ['entertainment', 'gaming', 'sports'],
+    categories: ['entertainment', 'gaming', 'space'],
     attributes: {
       rarity: 'Epic',
-      power: 72,
-      defense: 68,
-      speed: 65
+      power: 85,
+      defense: 72,
+      cuteness: 95
     }
   },
   {
-    id: 'crypto-receipt',
-    name: 'Crypto Receipt',
-    image: '/nft-images/crypto-receipt.svg',
-    description: 'Digital asset receipt secured with blockchain technology and pixel perfection.',
+    id: 'crystal-wizard-keeper',
+    name: 'Crystal Wizard Keeper',
+    image: 'https://cdn.pixabay.com/photo/2021/01/04/06/25/wizard-5886422_1280.png',
+    description: 'A mystical wizard who guards your digital receipts with ancient crystal magic.',
     tier: 'LUXURY',
-    categories: ['tech', 'finance', 'cryptocurrency'],
+    categories: ['magic', 'fantasy', 'protection'],
     attributes: {
       rarity: 'Legendary',
-      encryption: 92,
-      decentralization: 88,
-      volatility: 75
+      magic: 98,
+      wisdom: 90,
+      crystal_power: 85
     }
   },
   {
-    id: 'fashion-receipt',
-    name: 'Fashion Couture Receipt',
+    id: 'rainbow-unicorn-helper',
+    name: 'Rainbow Unicorn Helper',
     image: '/nft-images/fashion-receipt.svg',
     description: 'Stylish receipt that showcases your fashion-forward purchases with pixel elegance.',
     tier: 'PREMIUM',
