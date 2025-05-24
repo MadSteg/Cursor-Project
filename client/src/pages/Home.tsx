@@ -128,7 +128,7 @@ const Home: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-lg text-white text-center">
-                      <span className="font-semibold">Durable and permanently accessible</span> with tamper-proof blockchain storage that ensures your proof of purchase never deteriorates
+                      <span className="font-semibold">24/7 accessibility</span> using tamper-proof blockchain technology
                     </p>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ const Home: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-lg text-white text-center">
-                      <span className="font-semibold">Encrypted and private</span> so only you control access to your purchase data with advanced TACo PRE security technology
+                      <span className="font-semibold">Threshold Proxy Re-encryption</span> provides exclusive access to your purchase history — no one else, ever.
                     </p>
                   </div>
                 </div>
@@ -154,7 +154,7 @@ const Home: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-lg text-white text-center">
-                      <span className="font-semibold">Automatically stored forever</span> in your secure digital wallet so they're always available when you need them most
+                      <span className="font-semibold">No more last minute panic scrambling</span> — your receipts live safely 24/7 in your digital wallet as NFTs
                     </p>
                   </div>
                 </div>
