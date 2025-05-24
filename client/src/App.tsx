@@ -3,8 +3,7 @@ import { Route, Switch } from 'wouter';
 import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import Wallet from "./pages/Wallet";
-import OCRTestPage from "./pages/OCRTestPage";
-import Upload from "./pages/Upload";
+
 import Gallery from "./pages/Gallery";
 import NFTBrowser from "./pages/NFTBrowser";
 import NFTDetail from "./pages/NFTDetail";
@@ -55,16 +54,6 @@ const AppContent: React.FC = () => {
           <Route path="/nft/:id">
             <NFTDetail />
           </Route>
-          
-          <Route path="/ocr-test">
-            <OCRTestPage />
-          </Route>
-          
-          <Route path="/upload">
-            <Upload />
-          </Route>
-          
-          {/* Cloud storage routes removed as requested */}
           
           <Route path="/merchant-demo">
             <MerchantDemo />

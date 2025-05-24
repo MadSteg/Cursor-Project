@@ -1,0 +1,98 @@
+**BlockReceipt – Refined Product Roadmap & MVP Scope (POS-Only Focus)**
+
+---
+
+## 🚀 Strategic Shift
+
+To maximize traction, simplify technical scope, and focus on the core value proposition, BlockReceipt is pivoting to prioritize **receipt minting at the point of sale (POS)** only.
+
+All features related to **receipt uploads, OCR parsing, barcode-based SKU extraction, or post-sale data reconstruction** are deprecated from the MVP and future sprints until pilot traction is proven.
+
+This update reflects:
+
+* Real-world feedback from users and stakeholders
+* A desire to simplify the UX and backend requirements
+* A focus on merchant pilot success
+
+---
+
+## ✅ Revised MVP Scope (POS-Focused)
+
+### 1. **Customer Flow**
+
+* Customer completes transaction at POS
+* “Mint BlockReceipt” option is triggered
+* Receipt is minted and viewable via:
+
+  * Instant wallet creation (via Magic.link or Web3Auth)
+  * Mobile vault / QR code fallback
+
+### 2. **Merchant Experience**
+
+* Minimal integration with POS system (BlockReceipt as new output option)
+* Merchant dashboard includes:
+
+  * # of receipts minted
+  * Paper receipts avoided
+  * Estimated CO₂ savings
+  * Average mint cost per receipt
+
+### 3. **Smart Contract + Infrastructure**
+
+* Deploy ERC-1155 (or similar) contract to Polygon or Base
+* Metadata includes:
+
+  * Merchant name
+  * Purchase timestamp
+  * Total amount
+  * POS reference code (no itemization for MVP)
+
+### 4. **Security & Privacy**
+
+* Use Threshold PRE to encrypt sensitive metadata (scaffolding in place)
+* No personal info stored without user opt-in
+
+### 5. **Marketing/UX Layer**
+
+* Option for merchant-branded receipt design
+* Optional limited-edition NFT receipt themes
+* Tagline on receipt: “Powered by BlockReceipt – Yours. Verifiable. Forever.”
+
+---
+
+## 🛠 Replit App – Dev Cleanup Instructions
+
+**Scope Removal: Receipt Upload Path**
+
+* Remove all UI/UX elements referring to:
+
+  * Uploading physical receipts
+  * OCR scanning
+  * Barcode decoding
+* Purge related routes, components, and assets (e.g. `/upload`, `ReceiptScanner.js`)
+* Delete backend services or stubbed code relating to image analysis or SKU matching
+* Re-align database schema to remove any `uploaded_receipts`, `ocr_text`, `image_reference` tables/fields
+
+**Focus all front-end logic on:**
+
+* Minting interface at POS
+* Wallet login/creation
+* Vault display (NFT receipts)
+* Merchant dashboard metrics
+
+---
+
+## 📈 Outcome Goals (Pilot Phase)
+
+* Prove users will interact with POS-based mint flow
+* Validate dashboard KPIs for merchants
+* Collect user feedback around friction, UX, and engagement
+* Avoid wasted dev time on legacy receipt parsing infrastructure
+
+---
+
+**Product Principle Going Forward:**
+
+> *“We’re not fixing old receipts. We’re evolving new ones.”*
+
+Prepared for BlockReceipt by ChatGPT in collaboration with Steven Donoghue
