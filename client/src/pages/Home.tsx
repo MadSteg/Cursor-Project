@@ -308,83 +308,80 @@ const Home: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
         
         {/* Privacy & Security - TACo PRE */}
-        <div className="relative bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 rounded-2xl p-8 shadow-2xl overflow-hidden">
+        <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
           </div>
           
           {/* Floating Security Elements */}
-          <div className="absolute top-6 right-6 w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-8 left-8 w-8 h-8 bg-gradient-to-r from-cyan-400 to-teal-500 rounded-full opacity-30 animate-bounce"></div>
+          <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
+          <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
           
           <div className="relative z-10">
-            <div className="flex items-center mb-6">
-              <div className="h-16 w-16 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center text-white shadow-lg mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-white mb-1">Your Privacy, Your Control</h2>
-                <p className="text-emerald-100 text-lg">Why BlockReceipt beats traditional receipts</p>
-              </div>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                Your Privacy, Your Control
+              </h2>
+              <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
+                Why BlockReceipt beats traditional receipts
+              </p>
             </div>
             
             {/* Traditional vs BlockReceipt Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 mb-12">
               {/* Traditional Receipts - Problems */}
-              <div className="bg-red-900/30 backdrop-blur-sm border border-red-500/30 rounded-xl p-5">
-                <h3 className="text-xl font-bold text-red-200 mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
+                <h3 className="text-2xl font-bold text-red-300 mb-6 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                   Traditional Receipts
                 </h3>
-                <ul className="space-y-3 text-red-100">
+                <ul className="space-y-4 text-purple-100">
                   <li className="flex items-start">
-                    <span className="text-red-400 mr-2">✗</span>
-                    <span>Anyone can read your purchase details</span>
+                    <span className="text-red-400 mr-3 text-xl">✗</span>
+                    <span className="leading-relaxed">Anyone can read your purchase details</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-red-400 mr-2">✗</span>
-                    <span>Easy to lose or damage</span>
+                    <span className="text-red-400 mr-3 text-xl">✗</span>
+                    <span className="leading-relaxed">Easy to lose or damage</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-red-400 mr-2">✗</span>
-                    <span>No control over your data</span>
+                    <span className="text-red-400 mr-3 text-xl">✗</span>
+                    <span className="leading-relaxed">No control over your data</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-red-400 mr-2">✗</span>
-                    <span>Fades and becomes unreadable</span>
+                    <span className="text-red-400 mr-3 text-xl">✗</span>
+                    <span className="leading-relaxed">Fades and becomes unreadable</span>
                   </li>
                 </ul>
               </div>
               
               {/* BlockReceipt - Solutions */}
-              <div className="bg-emerald-900/30 backdrop-blur-sm border border-emerald-400/30 rounded-xl p-5">
-                <h3 className="text-xl font-bold text-emerald-200 mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
+                <h3 className="text-2xl font-bold text-emerald-300 mb-6 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   BlockReceipt NFTs
                 </h3>
-                <ul className="space-y-3 text-emerald-100">
+                <ul className="space-y-4 text-purple-100">
                   <li className="flex items-start">
-                    <span className="text-emerald-400 mr-2">✓</span>
-                    <span>Only YOU can access full receipt details</span>
+                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                    <span className="leading-relaxed">Only YOU can access full receipt details</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-emerald-400 mr-2">✓</span>
-                    <span>Permanent, tamper-proof storage</span>
+                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                    <span className="leading-relaxed">Permanent, tamper-proof storage</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-emerald-400 mr-2">✓</span>
-                    <span>Complete control over data sharing</span>
+                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                    <span className="leading-relaxed">Complete control over data sharing</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-emerald-400 mr-2">✓</span>
-                    <span>Never fades, always accessible</span>
+                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                    <span className="leading-relaxed">Never fades, always accessible</span>
                   </li>
                 </ul>
               </div>
