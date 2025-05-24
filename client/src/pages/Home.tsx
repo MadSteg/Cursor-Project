@@ -40,65 +40,128 @@ const Home: React.FC = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100 animate-pulse-subtle">
             BlockReceipt.ai
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-blue-100 leading-relaxed">
-            BlockReceipt is the smart, secure, eco-friendly way to own your purchase history.
-          </p>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              Ditch paper pollution.
+            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
+              Choose carbon-neutral collectibles.
+            </h2>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 max-w-4xl mx-auto mb-8">
-            {/* Traditional Receipts - Problems */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
-              <h3 className="text-2xl font-bold text-red-300 mb-6 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                Traditional Receipts
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 max-w-5xl mx-auto mb-8">
+            {/* Traditional Paper Receipts - Problems */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/15 transition-all duration-300">
+              <h3 className="text-2xl font-bold text-orange-300 mb-8">
+                Traditional Paper Receipts
               </h3>
-              <ul className="space-y-4 text-purple-100">
-                <li className="flex items-start">
-                  <span className="text-red-400 mr-3 text-xl">✗</span>
-                  <span className="leading-relaxed">Anyone can read your purchase details</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-red-400 mr-3 text-xl">✗</span>
-                  <span className="leading-relaxed">Easy to lose or damage</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-red-400 mr-3 text-xl">✗</span>
-                  <span className="leading-relaxed">No control over your data</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-red-400 mr-3 text-xl">✗</span>
-                  <span className="leading-relaxed">Fades and becomes unreadable</span>
-                </li>
-              </ul>
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Vulnerable receipts in your</h4>
+                    <p className="text-white/80">name exposing your data</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Lose it just when you</h4>
+                    <p className="text-white/80">need it most</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">End up as wallet clutter</h4>
+                    <p className="text-white/80">or landfill waste</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Hard to track past</h4>
+                    <p className="text-white/80">purchases or returns</p>
+                  </div>
+                </div>
+              </div>
             </div>
             
             {/* BlockReceipt - Solutions */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
-              <h3 className="text-2xl font-bold text-emerald-300 mb-6 flex items-center">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 hover:bg-white/15 transition-all duration-300">
+              <h3 className="text-2xl font-bold text-emerald-300 mb-8 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                BlockReceipt NFTs
+                BlockReceipt
               </h3>
-              <ul className="space-y-4 text-purple-100">
-                <li className="flex items-start">
-                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                  <span className="leading-relaxed">Only YOU can access full receipt details</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                  <span className="leading-relaxed">Permanent, tamper-proof storage</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                  <span className="leading-relaxed">Complete control over data sharing</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                  <span className="leading-relaxed">Never fades, always accessible</span>
-                </li>
-              </ul>
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Secure & accessible 24/7</h4>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Only you have access to</h4>
+                    <p className="text-white/80">your receipt details</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Merchant collectibles</h4>
+                    <p className="text-white/80">& loyalties</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="w-12 h-12 mr-4 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-1">Digital purchase history,</h4>
+                    <p className="text-white/80">neatly organized</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
