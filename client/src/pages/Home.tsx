@@ -49,7 +49,7 @@ const Home: React.FC = () => {
             </h2>
           </div>
           
-          <div className="max-w-5xl mx-auto mb-12 space-y-6">
+          <div className="max-w-5xl mx-auto mb-12 space-y-3">
             {/* Traditional Paper Receipts Section */}
             <div className="bg-red-900/20 backdrop-blur-sm border border-red-400/30 rounded-2xl p-8">
               <div className="text-center mb-8">
