@@ -25,8 +25,7 @@ export function PrivacyControl({ receiptId, isOwner, currentAccess = [] }: Priva
     if (!grantAddress.trim()) {
       toast({
         title: "Address Required",
-        description: "Please enter a wallet address to grant access",
-        variant: "destructive"
+        description: "Please enter a wallet address to grant access"
       });
       return;
     }
