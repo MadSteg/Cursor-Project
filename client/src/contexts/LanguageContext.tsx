@@ -35,17 +35,17 @@ const translations = {
     'gallery.tryDifferentFilter': 'Try selecting a different rarity or merchant filter',
     
     // Home Page
-    'home.title': 'Transform Your Receipts Into NFTs',
-    'home.subtitle': 'The future of digital receipts is here',
-    'home.description': 'BlockReceipt revolutionizes how you store and manage purchase data. Turn every receipt into a secure, tradeable NFT while maintaining complete privacy.',
+    'home.title': 'Digital Receipts. Minted at Checkout.',
+    'home.subtitle': 'The future of point-of-sale receipts is here',
+    'home.description': 'BlockReceipt transforms every purchase into a secure, verifiable NFT receipt. Minted instantly at checkout — no paper, no uploads, just better receipts.',
     'home.getStarted': 'Get Started',
     'home.learnMore': 'Learn More',
-    'home.features.secure': 'Secure & Private',
-    'home.features.secureDesc': 'Your data is encrypted and only you control access',
-    'home.features.tradeable': 'Tradeable NFTs',
-    'home.features.tradeableDesc': 'Transform receipts into valuable digital assets',
-    'home.features.universal': 'Universal Support',
-    'home.features.universalDesc': 'Works with any merchant or retailer',
+    'home.features.secure': 'Instant & Verifiable',
+    'home.features.secureDesc': 'Receipts are minted on-chain with cryptographic proof',
+    'home.features.tradeable': 'No Paper Waste',
+    'home.features.tradeableDesc': 'Eco-friendly digital receipts replace thermal paper',
+    'home.features.universal': 'POS Integration',
+    'home.features.universalDesc': 'Works with existing point-of-sale systems',
     
     // Common
     'common.connectWallet': 'Connect Wallet',
@@ -101,17 +101,17 @@ const translations = {
     'gallery.tryDifferentFilter': 'Intenta seleccionar un filtro de rareza o comerciante diferente',
     
     // Home Page
-    'home.title': 'Transforma Tus Recibos en NFTs',
-    'home.subtitle': 'El futuro de los recibos digitales está aquí',
-    'home.description': 'BlockReceipt revoluciona cómo almacenas y gestionas datos de compras. Convierte cada recibo en un NFT seguro y comerciable manteniendo total privacidad.',
+    'home.title': 'Recibos Digitales. Acuñados al Pagar.',
+    'home.subtitle': 'El futuro de los recibos de punto de venta está aquí',
+    'home.description': 'BlockReceipt transforma cada compra en un recibo NFT seguro y verificable. Acuñado instantáneamente al pagar — sin papel, sin cargas, solo mejores recibos.',
     'home.getStarted': 'Comenzar',
     'home.learnMore': 'Aprender Más',
-    'home.features.secure': 'Seguro y Privado',
-    'home.features.secureDesc': 'Tus datos están encriptados y solo tú controlas el acceso',
-    'home.features.tradeable': 'NFTs Comerciables',
-    'home.features.tradeableDesc': 'Transforma recibos en activos digitales valiosos',
-    'home.features.universal': 'Soporte Universal',
-    'home.features.universalDesc': 'Funciona con cualquier comerciante o minorista',
+    'home.features.secure': 'Instantáneo y Verificable',
+    'home.features.secureDesc': 'Recibos acuñados en cadena con prueba criptográfica',
+    'home.features.tradeable': 'Sin Desperdicio de Papel',
+    'home.features.tradeableDesc': 'Recibos digitales ecológicos reemplazan papel térmico',
+    'home.features.universal': 'Integración POS',
+    'home.features.universalDesc': 'Funciona con sistemas de punto de venta existentes',
     
     // Common
     'common.connectWallet': 'Conectar Billetera',
