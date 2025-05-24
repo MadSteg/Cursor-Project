@@ -1,21 +1,23 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Route, Switch } from 'wouter';
 import Header from "./components/Header";
-import Dashboard from "./pages/Dashboard";
-import Wallet from "./pages/Wallet";
+import { ErrorBoundary, LoadingFallback } from "./components/ErrorBoundary";
 
-import Gallery from "./pages/Gallery";
-import NFTBrowser from "./pages/NFTBrowser";
-import NFTDetail from "./pages/NFTDetail";
-import EnhancedNFTGallery from "./pages/EnhancedNFTGallery";
-import NFTTutorial from "./components/NFTTutorial";
-import Home from "./pages/Home";
-import MerchantDemo from "./pages/MerchantDemo";
-import Enterprise from "./pages/Enterprise";
-import HowItWorks from "./pages/HowItWorks";
-import WhyBlockReceipt from "./pages/WhyBlockReceipt";
-import ForMerchants from "./pages/ForMerchants";
-import LoyaltyRewards from "./pages/LoyaltyRewards";
+// Lazy load pages for better performance
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const Wallet = React.lazy(() => import("./pages/Wallet"));
+const Gallery = React.lazy(() => import("./pages/Gallery"));
+const NFTBrowser = React.lazy(() => import("./pages/NFTBrowser"));
+const NFTDetail = React.lazy(() => import("./pages/NFTDetail"));
+const EnhancedNFTGallery = React.lazy(() => import("./pages/EnhancedNFTGallery"));
+const NFTTutorial = React.lazy(() => import("./components/NFTTutorial"));
+const Home = React.lazy(() => import("./pages/Home"));
+const MerchantDemo = React.lazy(() => import("./pages/MerchantDemo"));
+const Enterprise = React.lazy(() => import("./pages/Enterprise"));
+const HowItWorks = React.lazy(() => import("./pages/HowItWorks"));
+const WhyBlockReceipt = React.lazy(() => import("./pages/WhyBlockReceipt"));
+const ForMerchants = React.lazy(() => import("./pages/ForMerchants"));
+const LoyaltyRewards = React.lazy(() => import("./pages/LoyaltyRewards"));
 
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -32,7 +34,9 @@ const AppContent: React.FC = () => {
       <Header />
       
       <main className="py-8 px-4 container mx-auto">
-        <Switch>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback message="Loading page..." />}>
+            <Switch>
           <Route path="/">
             <Home />
           </Route>
@@ -93,7 +97,9 @@ const AppContent: React.FC = () => {
               </a>
             </div>
           </Route>
-        </Switch>
+            </Switch>
+          </Suspense>
+        </ErrorBoundary>
       </main>
       
       <footer className="py-8 border-t">
