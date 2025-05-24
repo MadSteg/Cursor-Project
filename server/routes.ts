@@ -28,6 +28,8 @@ import ocrRoutes from "./routes/ocr";
 import ocrTestRoutes from "./routes/ocrTest";
 // Receipt upload routes
 // Import the uploadReceipt routes
+// Instant receipt delivery routes
+import instantReceiptRoutes from "./routes/instantReceipt";
 import uploadReceiptRoutes from "./routes/uploadReceipt";
 // Import the auto-process receipt routes
 import autoProcessReceiptRoutes from "./routes/autoProcessReceipt";

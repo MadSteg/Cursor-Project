@@ -1,132 +1,147 @@
-/**
- * Wallet Service
- * 
- * This service handles blockchain wallet operations for the application.
- * It provides functionality to generate, store, and manage user wallets.
- */
 import { ethers } from 'ethers';
-import { eq } from 'drizzle-orm';
+import crypto from 'crypto';
 import { db } from '../db';
-import { userWallets } from '@shared/schema';
+import { userWallets, users } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
-/**
- * Interface for a user wallet
- */
-export interface UserWallet {
-  id: number;
-  userId: number;
+export interface WalletInfo {
   address: string;
-  encryptedPrivateKey: string | null;
-  createdAt: Date;
-  lastUsedAt: Date | null;
+  mnemonic: string;
+  privateKey: string;
+}
+
+export interface UserWalletData {
+  id: number;
+  address: string;
+  seedPhrase?: string;
+  userId: number;
 }
 
 export class WalletService {
-  // Provider instances for different networks
-  private polygonProvider: ethers.providers.JsonRpcProvider;
-  
-  constructor() {
-    // Initialize the Polygon provider
-    this.polygonProvider = new ethers.providers.JsonRpcProvider(
-      process.env.POLYGON_MUMBAI_RPC_URL || 'https://polygon-mumbai.g.alchemy.com/v2/demo'
-    );
-  }
-  
+  private static encryptionKey = process.env.WALLET_ENCRYPTION_KEY || 'default-dev-key-not-secure';
+
   /**
-   * Generate a new Ethereum wallet
-   * @returns A new wallet with address and private key
+   * Generate a new wallet with mnemonic seed phrase
    */
-  async generateWallet(): Promise<{ address: string; privateKey: string }> {
-    // Create a new random wallet
+  static generateWallet(): WalletInfo {
+    // Generate a random wallet with mnemonic
     const wallet = ethers.Wallet.createRandom();
     
     return {
       address: wallet.address,
+      mnemonic: wallet.mnemonic?.phrase || '',
       privateKey: wallet.privateKey
     };
   }
-  
+
   /**
-   * Store a wallet in the database
-   * @param userId The user ID who owns the wallet
-   * @param address The wallet address
-   * @param encryptedPrivateKey The encrypted private key (optional)
-   * @returns The created wallet
+   * Encrypt sensitive data for database storage
    */
-  async storeWallet(userId: number, address: string, encryptedPrivateKey?: string): Promise<UserWallet> {
-    // Insert the wallet into the database
-    const [wallet] = await db.insert(userWallets).values({
-      userId,
-      address,
-      encryptedPrivateKey: encryptedPrivateKey || null,
-    }).returning();
-    
-    return wallet;
+  private static encrypt(text: string): string {
+    const cipher = crypto.createCipher('aes-256-cbc', this.encryptionKey);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
   }
-  
+
   /**
-   * Get a user's wallet by user ID
-   * @param userId The user ID to look up
-   * @returns The user's wallet or null if not found
+   * Decrypt sensitive data from database
    */
-  async getUserWallet(userId: number): Promise<UserWallet | null> {
-    // Find the wallet in the database
+  private static decrypt(encryptedText: string): string {
+    const decipher = crypto.createDecipher('aes-256-cbc', this.encryptionKey);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  }
+
+  /**
+   * Create and store a wallet for a user
+   */
+  static async createUserWallet(userId: number): Promise<UserWalletData> {
+    // Check if user already has a wallet
+    const existingWallet = await this.getUserWallet(userId);
+    if (existingWallet) {
+      return existingWallet;
+    }
+
+    // Generate new wallet
+    const walletInfo = this.generateWallet();
+    
+    // Encrypt the private key for storage
+    const encryptedPrivateKey = this.encrypt(walletInfo.privateKey);
+
+    // Store in database
+    const [newWallet] = await db.insert(userWallets).values({
+      userId,
+      address: walletInfo.address,
+      encryptedPrivateKey
+    }).returning();
+
+    return {
+      id: newWallet.id,
+      address: newWallet.address,
+      seedPhrase: walletInfo.mnemonic,
+      userId: newWallet.userId
+    };
+  }
+
+  /**
+   * Get user's wallet from database
+   */
+  static async getUserWallet(userId: number): Promise<UserWalletData | null> {
     const [wallet] = await db
       .select()
       .from(userWallets)
       .where(eq(userWallets.userId, userId));
-    
-    return wallet || null;
+
+    if (!wallet) return null;
+
+    return {
+      id: wallet.id,
+      address: wallet.address,
+      userId: wallet.userId
+    };
   }
-  
+
   /**
-   * Get a wallet by its address
-   * @param address The wallet address to look up
-   * @returns The wallet or null if not found
+   * Get wallet with decrypted private key (for signing transactions)
    */
-  async getWalletByAddress(address: string): Promise<UserWallet | null> {
-    // Find the wallet in the database
+  static async getUserWalletWithPrivateKey(userId: number): Promise<WalletInfo | null> {
     const [wallet] = await db
       .select()
       .from(userWallets)
-      .where(eq(userWallets.address, address));
-    
-    return wallet || null;
+      .where(eq(userWallets.userId, userId));
+
+    if (!wallet || !wallet.encryptedPrivateKey) return null;
+
+    const privateKey = this.decrypt(wallet.encryptedPrivateKey);
+    const ethersWallet = new ethers.Wallet(privateKey);
+
+    return {
+      address: wallet.address,
+      privateKey,
+      mnemonic: '' // We don't store mnemonic in DB for security
+    };
   }
-  
+
   /**
-   * Get a wallet's balance
-   * @param address The wallet address to check
-   * @param network The network to check balance on (polygon or ethereum)
-   * @returns The balance in wei as a string
+   * Create a guest wallet (no user account required)
    */
-  async getWalletBalance(address: string, network: 'polygon' | 'ethereum' = 'polygon'): Promise<string> {
-    let provider: ethers.providers.Provider;
-    
-    // Select the appropriate provider based on the network
-    if (network === 'polygon') {
-      provider = this.polygonProvider;
-    } else {
-      // Default to Polygon for now
-      provider = this.polygonProvider;
-    }
-    
-    // Get the balance from the blockchain
-    const balance = await provider.getBalance(address);
-    
-    // Return the balance as a string
-    return balance.toString();
+  static createGuestWallet(): WalletInfo {
+    return this.generateWallet();
   }
-  
+
   /**
-   * Update the last used timestamp for a wallet
-   * @param address The wallet address to update
+   * Validate if an address is a valid Ethereum address
    */
-  async updateLastUsed(address: string): Promise<void> {
-    // Update the last used timestamp
-    await db
-      .update(userWallets)
-      .set({ lastUsedAt: new Date() })
-      .where(eq(userWallets.address, address));
+  static isValidAddress(address: string): boolean {
+    return ethers.utils.isAddress(address);
+  }
+
+  /**
+   * Generate a secure access token for wallet operations
+   */
+  static generateAccessToken(): string {
+    return crypto.randomBytes(32).toString('hex');
   }
 }
