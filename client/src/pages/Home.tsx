@@ -157,12 +157,6 @@ const Home: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
               How BlockReceipt Makes Shopping Smarter
             </h2>
-            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto mb-3">
-              Transform your everyday shopping into a secure, rewarding digital experience
-            </p>
-            <p className="text-lg md:text-xl text-purple-200 max-w-2xl mx-auto">
-              No more lost receipts. No more loyalty cards. Just better shopping.
-            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-4">
