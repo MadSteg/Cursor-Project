@@ -45,7 +45,7 @@ const Home: React.FC = () => {
               Ditch paper pollution.
             </h2>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
-              Choose carbon-neutral collectibles.
+              Choose carbon-neutral NFT collectibles.
             </h2>
           </div>
           
