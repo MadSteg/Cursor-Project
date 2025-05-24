@@ -211,9 +211,9 @@ const Home: React.FC = () => {
                 <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                   4
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4 text-center">Breeze Through Returns</h3>
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Secure Verification & Returns</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Show proof of purchase in seconds — even months later. Your receipts can't fade or be lost, helping you return or exchange faster than ever.
+                  Instantly verify purchases for returns or warranty claims without the drawbacks of paper receipts — no fading, no tearing, no loss. Your proof of purchase is always accessible and verifiable.
                 </p>
               </div>
               {/* Connector Line */}
@@ -228,7 +228,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Your Proof, Always Secure</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Each receipt is cryptographically verifiable and secured with blockchain technology — tamper-proof, fraud-proof, worry-free.
+                  Each receipt is protected with advanced TACo PRE encryption technology from Threshold Network — providing enterprise-grade security that's tamper-proof, fraud-proof, and worry-free.
                 </p>
               </div>
             </div>
