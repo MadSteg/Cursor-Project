@@ -145,56 +145,85 @@ const Home: React.FC = () => {
       </div>
       
       {/* How It Works Section */}
-      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-8 mt-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-          <p className="text-xl text-gray-600">A seamless experience for both customers and merchants</p>
+      <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 rounded-3xl p-8 md:p-12 mt-20 overflow-hidden shadow-2xl">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Step 1 */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              1
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Check Out</h3>
-            <p className="text-gray-600">Customer chooses "Mint BlockReceipt" option at checkout</p>
-          </div>
-          
-          {/* Step 2 */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              2
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Mint Receipt</h3>
-            <p className="text-gray-600">POS system automatically mints an NFT receipt to customer's wallet</p>
-          </div>
-          
-          {/* Step 3 */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              3
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Receive Rewards</h3>
-            <p className="text-gray-600">Customer earns loyalty points and special NFT collectibles</p>
-          </div>
-          
-          {/* Step 4 */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              4
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Easy Returns</h3>
-            <p className="text-gray-600">Scan wallet for verified proof of purchase in seconds</p>
-          </div>
-        </div>
+        {/* Floating Elements */}
+        <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
         
-        <div className="text-center mt-10">
-          <Link href="/merchant-demo">
-            <button className="px-8 py-4 bg-purple-600 text-white text-lg font-bold rounded-lg shadow-lg hover:bg-purple-700 transition-colors">
-              Try It Now
-            </button>
-          </Link>
+        <div className="relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+              How It Works For You
+            </h2>
+            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
+              Your everyday shopping experience, elevated with secure digital receipts
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6">
+            {/* Step 1 */}
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  1
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4 text-center">Shop & Pay</h3>
+                <p className="text-purple-100 text-center leading-relaxed">
+                  Choose "Mint BlockReceipt" when you check out — just like choosing paper or email receipts
+                </p>
+              </div>
+              {/* Connector Line */}
+              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+            </div>
+            
+            {/* Step 2 */}
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  2
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4 text-center">Instant Receipt</h3>
+                <p className="text-purple-100 text-center leading-relaxed">
+                  Your receipt is automatically created as a secure digital NFT in your wallet — no setup needed
+                </p>
+              </div>
+              {/* Connector Line */}
+              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+            </div>
+            
+            {/* Step 3 */}
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  3
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4 text-center">Collect Rewards</h3>
+                <p className="text-purple-100 text-center leading-relaxed">
+                  Earn special collectible NFTs and loyalty rewards with every purchase — like digital trading cards
+                </p>
+              </div>
+              {/* Connector Line */}
+              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+            </div>
+            
+            {/* Step 4 */}
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  4
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4 text-center">Easy Returns</h3>
+                <p className="text-purple-100 text-center leading-relaxed">
+                  Show your phone for instant proof of purchase — no more lost receipts or long return lines
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
