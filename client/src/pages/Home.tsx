@@ -49,153 +49,101 @@ const Home: React.FC = () => {
             </h2>
           </div>
           
-          <div className="max-w-4xl mx-auto mb-8 space-y-8">
-
-
-            {/* Problem-Solution 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Problem */}
-              <div className="bg-red-900/20 backdrop-blur-sm border border-red-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">Not carbon efficient</span> - creating massive paper waste and toxic thermal ink pollution that harms the environment
-                    </p>
-                  </div>
-                </div>
+          <div className="max-w-5xl mx-auto mb-12 space-y-12">
+            {/* Traditional Paper Receipts Section */}
+            <div className="bg-red-900/20 backdrop-blur-sm border border-red-400/30 rounded-2xl p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-red-300 mb-4 flex items-center justify-center">
+                  🔴 Traditional Paper Receipts
+                </h3>
               </div>
               
-              {/* Solution */}
-              <div className="bg-emerald-900/20 backdrop-blur-sm border border-emerald-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <span className="text-red-400 text-xl mr-3">❌</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Not carbon efficient</h4>
+                      <p className="text-white/80">Creates paper waste and toxic thermal ink pollution that harms the environment.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">Carbon-neutral digital format</span> eliminating paper waste and toxic thermal ink for a completely sustainable solution
-                    </p>
+                  
+                  <div className="flex items-start">
+                    <span className="text-red-400 text-xl mr-3">❌</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Privacy risks for everyone</h4>
+                      <p className="text-white/80">Exposes personal data that can be read by anyone, opening merchants up to fraud and breaches.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <span className="text-red-400 text-xl mr-3">❌</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Fragile and unreliable</h4>
+                      <p className="text-white/80">Easily lost, damaged, or faded — risking warranty claims and making returns a hassle.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <span className="text-red-400 text-xl mr-3">❌</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Always missing when you need them</h4>
+                      <p className="text-white/80">Often misplaced just when you need proof for a return, creating unnecessary stress.</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Problem-Solution 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Problem */}
-              <div className="bg-red-900/20 backdrop-blur-sm border border-red-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">Contain personal data that others could have access to</span> opening the merchant up to fraud and customer privacy breaches
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Solution */}
-              <div className="bg-emerald-900/20 backdrop-blur-sm border border-emerald-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">Threshold Proxy Re-encryption</span> provides exclusive access to your purchase history — no one else, ever.
-                    </p>
-                  </div>
-                </div>
-              </div>
+            {/* Divider */}
+            <div className="text-center">
+              <div className="text-white/60 text-2xl font-light">⸻</div>
             </div>
 
-            {/* Problem-Solution 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Problem */}
-              <div className="bg-red-900/20 backdrop-blur-sm border border-red-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">Are perishable, weak, damage might impact warranty claims</span> or their sole functionality to be used
-                    </p>
-                  </div>
-                </div>
+            {/* BlockReceipt Section */}
+            <div className="bg-emerald-900/20 backdrop-blur-sm border border-emerald-400/30 rounded-2xl p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-emerald-300 mb-4 flex items-center justify-center">
+                  🟢 BlockReceipt
+                </h3>
               </div>
               
-              {/* Solution */}
-              <div className="bg-emerald-900/20 backdrop-blur-sm border border-emerald-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <span className="text-emerald-400 text-xl mr-3">✅</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Carbon-neutral and clutter-free</h4>
+                      <p className="text-white/80">Eliminate waste, ink, and landfill impact with a fully digital, sustainable format.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">24/7 accessibility</span> using tamper-proof blockchain technology
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Problem-Solution 4 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Problem */}
-              <div className="bg-red-900/20 backdrop-blur-sm border border-red-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">Often misplaced and needed when you don't think you will</span> causing stress when you need proof of purchase for returns
-                    </p>
+                  
+                  <div className="flex items-start">
+                    <span className="text-emerald-400 text-xl mr-3">✅</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Only you can access your receipts</h4>
+                      <p className="text-white/80">Protected by Threshold proxy re-encryption — your purchase history stays private, always.</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Solution */}
-              <div className="bg-emerald-900/20 backdrop-blur-sm border border-emerald-400/30 rounded-2xl p-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-                    </svg>
+                
+                <div className="space-y-6">
+                  <div className="flex items-start">
+                    <span className="text-emerald-400 text-xl mr-3">✅</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Secure and always available</h4>
+                      <p className="text-white/80">24/7 access in your digital wallet, backed by tamper-proof blockchain technology.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
-                    <p className="text-white">
-                      <span className="font-semibold">No more last minute panic scrambling</span> — your receipts live safely 24/7 in your digital wallet as NFTs
-                    </p>
+                  
+                  <div className="flex items-start">
+                    <span className="text-emerald-400 text-xl mr-3">✅</span>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Never scramble for a receipt again</h4>
+                      <p className="text-white/80">Receipts are stored automatically, neatly categorized, and always ready when you need them.</p>
+                    </div>
                   </div>
                 </div>
               </div>
