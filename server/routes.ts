@@ -128,6 +128,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register OCR test tool routes
   app.use('/api/ocr-test', ocrTestRoutes);
   
+  // Register instant receipt delivery routes
+  app.use('/api', instantReceiptRoutes);
+  
   // Register receipt upload routes
   app.use('/api/upload', uploadReceiptRoutes);
   
