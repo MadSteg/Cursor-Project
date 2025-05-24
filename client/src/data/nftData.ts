@@ -114,3 +114,8 @@ export const sampleNFTs: NFT[] = [
     ]
   }
 ];
+
+// Function to get sample minted NFTs (for compatibility with NFTBrowser)
+export const getSampleMintedNFTs = () => {
+  return sampleNFTs.slice(0, 4); // Return first 4 NFTs as "minted" examples
+};
