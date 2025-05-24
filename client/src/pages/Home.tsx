@@ -86,14 +86,14 @@ const Home: React.FC = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6 mt-10">
-            <Link href="/upload">
+            <Link href="/nft-browser">
               <button className="px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg hover:shadow-purple-500/30 transition-all transform hover:-translate-y-1">
-                Upload Receipt
+                View NFT Gallery
               </button>
             </Link>
-            <Link href="/demo">
+            <Link href="/merchant-demo">
               <button className="px-8 py-4 text-lg font-bold border-2 border-white/70 text-white hover:bg-white/10 rounded-lg transition-colors">
-                See Merchant Demo
+                See POS Demo
               </button>
             </Link>
           </div>
@@ -144,41 +144,62 @@ const Home: React.FC = () => {
         </div>
       </div>
       
-      {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-20">
-        {/* Upload Receipt Card */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-          <div className="flex items-center mb-4">
-            <div className="h-14 w-14 brand-gradient-bg rounded-full flex items-center justify-center text-white shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
+      {/* How It Works Section */}
+      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-8 mt-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+          <p className="text-xl text-gray-600">A seamless experience for both customers and merchants</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Step 1 */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              1
             </div>
-            <h2 className="text-2xl font-bold ml-4 brand-gradient-text">Upload Receipt</h2>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Check Out</h3>
+            <p className="text-gray-600">Customer chooses "Mint BlockReceipt" option at checkout</p>
           </div>
-          <p className="text-muted-foreground mb-6 text-lg">
-            Transform any paper or digital receipt into a secure NFT with just a few clicks
-          </p>
-          <ul className="space-y-3 mb-6">
-            <li className="flex items-start rounded-lg p-2 bg-white dark:bg-black/20 shadow-sm">
-              <div className="h-6 w-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white mr-3 flex-shrink-0">✓</div>
-              <span>Automatic data extraction with advanced OCR</span>
-            </li>
-            <li className="flex items-start rounded-lg p-2 bg-white dark:bg-black/20 shadow-sm">
-              <div className="h-6 w-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white mr-3 flex-shrink-0">✓</div>
-              <span>Privacy-preserving encryption with Threshold TACo</span>
-            </li>
-            <li className="flex items-start rounded-lg p-2 bg-white dark:bg-black/20 shadow-sm">
-              <div className="h-6 w-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white mr-3 flex-shrink-0">✓</div>
-              <span>Collect unique character NFTs with each upload</span>
-            </li>
-          </ul>
-          <Link href="/upload">
-            <button className="w-full py-3 brand-gradient-bg text-white text-lg font-bold rounded-lg shadow-lg hover:shadow-indigo-500/30 transition-all">
-              Upload Now
+          
+          {/* Step 2 */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              2
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Mint Receipt</h3>
+            <p className="text-gray-600">POS system automatically mints an NFT receipt to customer's wallet</p>
+          </div>
+          
+          {/* Step 3 */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              3
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Receive Rewards</h3>
+            <p className="text-gray-600">Customer earns loyalty points and special NFT collectibles</p>
+          </div>
+          
+          {/* Step 4 */}
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              4
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Easy Returns</h3>
+            <p className="text-gray-600">Scan wallet for verified proof of purchase in seconds</p>
+          </div>
+        </div>
+        
+        <div className="text-center mt-10">
+          <Link href="/merchant-demo">
+            <button className="px-8 py-4 bg-purple-600 text-white text-lg font-bold rounded-lg shadow-lg hover:bg-purple-700 transition-colors">
+              Try It Now
             </button>
           </Link>
         </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
         
         {/* NFT Gallery Preview */}
         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
