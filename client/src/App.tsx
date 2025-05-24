@@ -111,7 +111,11 @@ const AppContent: React.FC = () => {
       </footer>
       
       {/* Display the NFT Tutorial for logged-in users */}
-      {isConnected && <NFTTutorial />}
+      {isConnected && (
+        <Suspense fallback={<LoadingFallback message="Loading tutorial..." />}>
+          <NFTTutorial />
+        </Suspense>
+      )}
     </div>
   );
 };
