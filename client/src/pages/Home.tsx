@@ -158,27 +158,27 @@ const Home: React.FC = () => {
         <div className="relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-              How It Works For You
+              How BlockReceipt Makes Shopping Smarter
             </h2>
             <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
-              Your everyday shopping experience, elevated with secure digital receipts
+              Transform your everyday shopping into a secure, rewarding digital experience
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-4">
             {/* Step 1 */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
                 <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                   1
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 text-center">Shop & Pay</h3>
-                <p className="text-purple-100 text-center leading-relaxed">
-                  Choose "Mint BlockReceipt" when you check out — just like choosing paper or email receipts
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Check Out Like Normal</h3>
+                <p className="text-purple-100 text-center leading-relaxed text-sm">
+                  Select "Mint BlockReceipt" instead of a paper or email receipt — simple and seamless
                 </p>
               </div>
               {/* Connector Line */}
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+              <div className="hidden md:block absolute top-1/2 -right-2 w-4 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
             </div>
             
             {/* Step 2 */}
@@ -187,13 +187,13 @@ const Home: React.FC = () => {
                 <div className="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                   2
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 text-center">Instant Receipt</h3>
-                <p className="text-purple-100 text-center leading-relaxed">
-                  Your receipt is automatically created as a secure digital NFT in your wallet — no setup needed
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Instant Digital Receipt</h3>
+                <p className="text-purple-100 text-center leading-relaxed text-sm">
+                  Get a secure NFT receipt in your wallet automatically — no apps or setup
                 </p>
               </div>
               {/* Connector Line */}
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+              <div className="hidden md:block absolute top-1/2 -right-2 w-4 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
             </div>
             
             {/* Step 3 */}
@@ -202,13 +202,13 @@ const Home: React.FC = () => {
                 <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                   3
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 text-center">Collect Rewards</h3>
-                <p className="text-purple-100 text-center leading-relaxed">
-                  Earn special collectible NFTs and loyalty rewards with every purchase — like digital trading cards
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Get Rewards, Not Clutter</h3>
+                <p className="text-purple-100 text-center leading-relaxed text-sm">
+                  Earn collectible NFTs and loyalty points with every purchase — no more paper pile-up
                 </p>
               </div>
               {/* Connector Line */}
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+              <div className="hidden md:block absolute top-1/2 -right-2 w-4 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
             </div>
             
             {/* Step 4 */}
@@ -217,9 +217,24 @@ const Home: React.FC = () => {
                 <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                   4
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 text-center">Easy Returns</h3>
-                <p className="text-purple-100 text-center leading-relaxed">
-                  Show your phone for instant proof of purchase — no more lost receipts or long return lines
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Breeze Through Returns</h3>
+                <p className="text-purple-100 text-center leading-relaxed text-sm">
+                  Your receipt is always in your phone. Skip the paper trail and long return lines
+                </p>
+              </div>
+              {/* Connector Line */}
+              <div className="hidden md:block absolute top-1/2 -right-2 w-4 h-0.5 bg-gradient-to-r from-white/40 to-transparent"></div>
+            </div>
+            
+            {/* Step 5 */}
+            <div className="relative">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <div className="w-20 h-20 bg-gradient-to-r from-indigo-400 to-purple-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  5
+                </div>
+                <h3 className="text-xl font-bold text-white mb-4 text-center">Your Proof, Always Secure</h3>
+                <p className="text-purple-100 text-center leading-relaxed text-sm">
+                  Rest assured knowing your receipts are verifiable and fraud-resistant
                 </p>
               </div>
             </div>
