@@ -177,7 +177,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Check Out Like Normal</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Just pick "Mint BlockReceipt" like you'd choose paper or email — fast, familiar, and frictionless.
+                  Just pick "Mint BlockReceipt" like you'd choose paper or email. Your receipt history gets upgraded automatically — no more lost paper or endless inbox searches.
                 </p>
               </div>
               {/* Connector Line */}
@@ -192,7 +192,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Instant Digital Receipt</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  A secure receipt lands in your wallet instantly — no app installs, no setup, no stress.
+                  Minted automatically after purchase and stored in a secure, searchable digital vault. Available anytime via mobile — it's your receipt history reimagined.
                 </p>
               </div>
               {/* Connector Line */}
@@ -207,7 +207,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Get Rewards, Not Clutter</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Earn loyalty rewards and digital collectibles — no mess, just perks.
+                  Get insights into spending habits, reorder suggestions, and purchase summaries by store. Think of it as a smart ledger that builds itself.
                 </p>
               </div>
               {/* Connector Line */}
@@ -222,7 +222,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Breeze Through Returns</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Need to return something? Just flash your phone — no searching, no stress.
+                  Show proof of purchase in seconds — even months later. Your receipts can't fade or be lost, helping you return or exchange faster than ever.
                 </p>
               </div>
               {/* Connector Line */}
@@ -237,7 +237,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Your Proof, Always Secure</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Each receipt is cryptographically secured — tamper-proof, fraud-proof, worry-free.
+                  Each receipt is cryptographically verifiable and secured with blockchain technology — tamper-proof, fraud-proof, worry-free.
                 </p>
               </div>
             </div>
