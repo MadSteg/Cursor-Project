@@ -1,0 +1,60 @@
+🔍 What Works Well:
+	•	✅ Clean layout, vibrant but readable colors
+	•	✅ Strong headline: “How BlockReceipt Makes Shopping Smarter”
+	•	✅ Good flow from checkout to benefits and peace of mind
+	•	✅ Numbered steps create an intuitive user journey
+
+⸻
+
+✍️ Suggestions to Improve Messaging:
+
+1. “Check Out Like Normal”
+	•	Current: “Select ‘Mint BlockReceipt’ instead of a paper or email receipt — simple and seamless”
+	•	Suggested:
+“Just pick ‘Mint BlockReceipt’ like you’d choose paper or email — fast, familiar, and frictionless.”
+
+✅ Why: “Just pick” sounds more casual and reassuring. “Fast, familiar, frictionless” is alliterative and benefit-packed.
+
+⸻
+
+2. “Instant Digital Receipt”
+	•	Current: “Get a secure NFT receipt in your wallet automatically — no apps or setup”
+	•	Suggested:
+“A secure receipt lands in your wallet instantly — no app installs, no setup, no stress.”
+
+✅ Why: Emphasizes “stress-free” and repeats the benefit from another angle (emotional relief).
+
+⸻
+
+3. “Get Rewards, Not Clutter”
+	•	Current: “Earn collectible NFTs and loyalty points with every purchase — no more paper pile-up”
+	•	Suggested:
+“Earn loyalty rewards and digital collectibles — no mess, just perks.”
+
+✅ Why: Shorter, punchier. “Just perks” focuses on what the user gains.
+
+⸻
+
+4. “Breeze Through Returns”
+	•	Current: “Your receipt is always in your phone. Skip the paper trail and long return lines”
+	•	Suggested:
+“Need to return something? Just flash your phone — no searching, no stress.”
+
+✅ Why: More conversational and emotionally resonant. “Flash your phone” = visual simplicity.
+
+⸻
+
+5. “Your Proof, Always Secure”
+	•	Current: “Rest assured knowing your receipts are verifiable and fraud-resistant”
+	•	Suggested:
+“Each receipt is cryptographically secured — tamper-proof, fraud-proof, worry-free.”
+
+✅ Why: Adds credibility and highlights the underlying tech without overwhelming non-tech users.
+
+⸻
+
+🎯 Optional Enhancements:
+	•	Mini subheadline idea below main title:
+“No more lost receipts. No more loyalty cards. Just better shopping.”
+	•	Iconography consistency: Consider refining the icon styles to match (currently varies in visual weight and alignment).
+	•	Animation on hover (if on web): Could add a quick 1-sentence benefit or icon pulse to boost interactivity.

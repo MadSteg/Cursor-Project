@@ -160,8 +160,11 @@ const Home: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
               How BlockReceipt Makes Shopping Smarter
             </h2>
-            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto mb-3">
               Transform your everyday shopping into a secure, rewarding digital experience
+            </p>
+            <p className="text-lg md:text-xl text-purple-200 max-w-2xl mx-auto">
+              No more lost receipts. No more loyalty cards. Just better shopping.
             </p>
           </div>
           
@@ -174,7 +177,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Check Out Like Normal</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Select "Mint BlockReceipt" instead of a paper or email receipt — simple and seamless
+                  Just pick "Mint BlockReceipt" like you'd choose paper or email — fast, familiar, and frictionless.
                 </p>
               </div>
               {/* Connector Line */}
@@ -189,7 +192,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Instant Digital Receipt</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Get a secure NFT receipt in your wallet automatically — no apps or setup
+                  A secure receipt lands in your wallet instantly — no app installs, no setup, no stress.
                 </p>
               </div>
               {/* Connector Line */}
@@ -204,7 +207,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Get Rewards, Not Clutter</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Earn collectible NFTs and loyalty points with every purchase — no more paper pile-up
+                  Earn loyalty rewards and digital collectibles — no mess, just perks.
                 </p>
               </div>
               {/* Connector Line */}
@@ -219,7 +222,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Breeze Through Returns</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Your receipt is always in your phone. Skip the paper trail and long return lines
+                  Need to return something? Just flash your phone — no searching, no stress.
                 </p>
               </div>
               {/* Connector Line */}
@@ -234,7 +237,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Your Proof, Always Secure</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
-                  Rest assured knowing your receipts are verifiable and fraud-resistant
+                  Each receipt is cryptographically secured — tamper-proof, fraud-proof, worry-free.
                 </p>
               </div>
             </div>
