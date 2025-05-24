@@ -50,6 +50,8 @@ const Home: React.FC = () => {
           </div>
           
           <div className="max-w-4xl mx-auto mb-8 space-y-8">
+
+
             {/* Problem-Solution 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Problem */}
@@ -57,13 +59,13 @@ const Home: React.FC = () => {
                 <div className="flex items-start">
                   <div className="w-10 h-10 mr-4 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-red-300 mb-2">PROBLEM</h4>
+                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
                     <p className="text-white">
-                      <span className="font-semibold">Single-use and frustratingly vulnerable</span> to rips and damage that could impact return/warranty claims
+                      <span className="font-semibold">Not carbon efficient</span> - creating massive paper waste and toxic thermal ink pollution that harms the environment
                     </p>
                   </div>
                 </div>
@@ -78,9 +80,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-emerald-300 mb-2">SOLUTION</h4>
+                    <h4 className="text-lg font-bold text-emerald-300 mb-2">BlockReceipt</h4>
                     <p className="text-white">
-                      <span className="font-semibold">24/7 accessibility</span> using tamper-proof blockchain technology
+                      <span className="font-semibold">Carbon-neutral digital format</span> eliminating paper waste and toxic thermal ink for a completely sustainable solution
                     </p>
                   </div>
                 </div>
@@ -99,9 +101,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-red-300 mb-2">PROBLEM</h4>
+                    <h4 className="text-lg font-bold text-orange-300 mb-2">Traditional Receipts</h4>
                     <p className="text-white">
-                      <span className="font-semibold">Contain personal data</span> that anyone who has your receipt can see or use for fraudulent returns in your name
+                      <span className="font-semibold">Contain personal data that others could have access to</span> opening the merchant up to fraud and customer privacy breaches
                     </p>
                   </div>
                 </div>
@@ -132,13 +134,13 @@ const Home: React.FC = () => {
                 <div className="flex items-start">
                   <div className="w-10 h-10 mr-4 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-red-300 mb-2">PROBLEM</h4>
                     <p className="text-white">
-                      <span className="font-semibold">Often misplaced or disappear</span> by the time you need them for returns or warranty claims
+                      <span className="font-semibold">Are perishable, weak, damage might impact warranty claims</span> or their sole functionality to be used
                     </p>
                   </div>
                 </div>
@@ -169,13 +171,13 @@ const Home: React.FC = () => {
                 <div className="flex items-start">
                   <div className="w-10 h-10 mr-4 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-red-300 mb-2">PROBLEM</h4>
                     <p className="text-white">
-                      <span className="font-semibold">Printed with toxic ink</span> creating continual toxic waste which is in no way recyclable
+                      <span className="font-semibold">Often misplaced and needed when you don't think you will</span> causing stress when you need proof of purchase for returns
                     </p>
                   </div>
                 </div>
