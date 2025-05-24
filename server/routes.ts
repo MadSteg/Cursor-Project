@@ -28,8 +28,8 @@ import ocrRoutes from "./routes/ocr";
 import ocrTestRoutes from "./routes/ocrTest";
 // Receipt upload routes
 // Import the uploadReceipt routes
-// Instant receipt delivery routes
-import instantReceiptRoutes from "./routes/instantReceipt";
+// Loyalty rewards routes
+import loyaltyRewardsRoutes from "./routes/loyaltyRewards";
 import uploadReceiptRoutes from "./routes/uploadReceipt";
 // Import the auto-process receipt routes
 import autoProcessReceiptRoutes from "./routes/autoProcessReceipt";
@@ -128,8 +128,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register OCR test tool routes
   app.use('/api/ocr-test', ocrTestRoutes);
   
-  // Register instant receipt delivery routes
-  app.use('/api', instantReceiptRoutes);
+  // Register loyalty rewards routes
+  app.use('/api/loyalty', loyaltyRewardsRoutes);
   
   // Register receipt upload routes
   app.use('/api/upload', uploadReceiptRoutes);

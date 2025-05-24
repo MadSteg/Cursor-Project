@@ -317,9 +317,10 @@ export const encryptedMetadataAccess = pgTable('encrypted_metadata_access', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// NFT Pool Table
+// NFT Pool Table (now merchant-specific)
 export const nftPool = pgTable('nft_pool', {
   id: serial('id').primaryKey(),
+  merchantId: integer('merchant_id').notNull().references(() => merchants.id),
   nftId: text('nft_id').notNull().unique(),
   name: text('name').notNull(),
   image: text('image').notNull(), // URL to image
@@ -330,6 +331,49 @@ export const nftPool = pgTable('nft_pool', {
   enabled: boolean('enabled').default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Loyalty Points Table
+export const loyaltyPoints = pgTable('loyalty_points', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  merchantId: integer('merchant_id').notNull().references(() => merchants.id),
+  points: integer('points').notNull(), // Points balance
+  earnedFromReceiptId: integer('earned_from_receipt_id').references(() => userReceipts.id),
+  expiresAt: timestamp('expires_at'), // When points expire
+  isRedeemed: boolean('is_redeemed').default(false),
+  redeemedAt: timestamp('redeemed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Merchant Reward Pools Table
+export const merchantRewardPools = pgTable('merchant_reward_pools', {
+  id: serial('id').primaryKey(),
+  merchantId: integer('merchant_id').notNull().references(() => merchants.id),
+  name: text('name').notNull(), // "Holiday Collection", "Summer NFTs", etc.
+  description: text('description'),
+  totalFunded: integer('total_funded').notNull(), // Amount merchant funded in cents
+  totalMinted: integer('total_minted').default(0), // Number of NFTs minted
+  ourCommissionRate: integer('our_commission_rate').default(10), // Percentage we take (10 = 10%)
+  isActive: boolean('is_active').default(true),
+  startDate: timestamp('start_date').defaultNow().notNull(),
+  endDate: timestamp('end_date'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Reward Claims Table
+export const rewardClaims = pgTable('reward_claims', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  merchantId: integer('merchant_id').notNull().references(() => merchants.id),
+  receiptId: integer('receipt_id').notNull().references(() => userReceipts.id),
+  rewardType: text('reward_type').notNull(), // "nft", "discount", "points"
+  nftTokenId: text('nft_token_id'), // If reward is an NFT
+  pointsAwarded: integer('points_awarded'), // If reward is points
+  discountAmount: integer('discount_amount'), // If reward is discount in cents
+  tier: text('tier').notNull(), // "basic", "premium", "luxury"
+  isAutoClaimed: boolean('is_auto_claimed').default(true),
+  claimedAt: timestamp('claimed_at').defaultNow().notNull(),
 });
 
 // NFT Transfers Table
@@ -394,11 +438,32 @@ export const insertNftPoolSchema = createInsertSchema(nftPool).omit({
   updatedAt: true,
 });
 
+export const insertLoyaltyPointsSchema = createInsertSchema(loyaltyPoints).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMerchantRewardPoolSchema = createInsertSchema(merchantRewardPools).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRewardClaimSchema = createInsertSchema(rewardClaims).omit({
+  id: true,
+  claimedAt: true,
+});
+
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type EncryptedMetadata = typeof encryptedMetadata.$inferSelect;
 export type EncryptedMetadataAccess = typeof encryptedMetadataAccess.$inferSelect;
 export type NftTransfer = typeof nftTransfers.$inferSelect;
 export type NftOwnership = typeof nftOwnership.$inferSelect;
 export type NftPool = typeof nftPool.$inferSelect;
+export type LoyaltyPoints = typeof loyaltyPoints.$inferSelect;
+export type MerchantRewardPool = typeof merchantRewardPools.$inferSelect;
+export type RewardClaim = typeof rewardClaims.$inferSelect;
 export type InsertNftOwnership = z.infer<typeof insertNftOwnershipSchema>;
 export type InsertNftPool = z.infer<typeof insertNftPoolSchema>;
+export type InsertLoyaltyPoints = z.infer<typeof insertLoyaltyPointsSchema>;
+export type InsertMerchantRewardPool = z.infer<typeof insertMerchantRewardPoolSchema>;
+export type InsertRewardClaim = z.infer<typeof insertRewardClaimSchema>;

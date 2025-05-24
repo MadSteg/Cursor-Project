@@ -15,6 +15,7 @@ import Enterprise from "./pages/Enterprise";
 import HowItWorks from "./pages/HowItWorks";
 import WhyBlockReceipt from "./pages/WhyBlockReceipt";
 import ForMerchants from "./pages/ForMerchants";
+import LoyaltyRewards from "./pages/LoyaltyRewards";
 
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -76,7 +77,9 @@ const AppContent: React.FC = () => {
             <ForMerchants />
           </Route>
           
-
+          <Route path="/loyalty-rewards">
+            <LoyaltyRewards />
+          </Route>
           
           <Route>
             <div className="max-w-md mx-auto text-center py-12">
