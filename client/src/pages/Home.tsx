@@ -155,7 +155,7 @@ const Home: React.FC = () => {
         <div className="relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-              How BlockReceipt Makes Shopping Smarter
+              BlockReceipt Makes Shopping Smarter
             </h2>
           </div>
           
