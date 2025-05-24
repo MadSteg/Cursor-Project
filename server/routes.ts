@@ -489,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount PRE encryption routes
   const preEncryptionRoutes = await import('./routes/preEncryption');
   app.use('/api/pre', preEncryptionRoutes.default);
-  log('PRE encryption routes registered successfully', 'express');
+  console.log('[express] PRE encryption routes registered successfully');
 
   // Create HTTP server
   const httpServer = createServer(app);

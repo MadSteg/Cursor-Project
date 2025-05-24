@@ -20,7 +20,7 @@ export interface DecryptedReceipt {
 class PREEncryptionService {
   private provider: ethers.providers.Provider;
   private contractAddress: string;
-  private contract: ethers.Contract;
+  private contract: ethers.Contract | null = null;
 
   constructor() {
     this.provider = new ethers.providers.JsonRpcProvider(process.env.POLYGON_RPC_URL);
@@ -49,13 +49,13 @@ class PREEncryptionService {
       const receiptJson = JSON.stringify(receiptData);
       
       // Use existing TACo integration for encryption
-      const encryptedData = await thresholdClient.encrypt(receiptJson, ownerPublicKey);
+      const encryptedData = await thresholdClient.encrypt(receiptJson);
       
       // Generate receipt hash for verification
       const receiptHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(receiptJson));
       
       return {
-        cipherText: encryptedData.cipherText,
+        cipherText: encryptedData.ciphertext, // Fix property name
         capsule: encryptedData.capsule,
         receiptHash
       };

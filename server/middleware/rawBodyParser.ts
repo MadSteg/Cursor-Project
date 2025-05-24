@@ -16,6 +16,11 @@ declare global {
 }
 
 export function rawBodyParser(req: Request, res: Response, next: NextFunction) {
+  // Skip for PRE encryption routes to avoid conflicts
+  if (req.path.includes('/api/pre/') || req.path.includes('/api/taco/')) {
+    return next();
+  }
+
   let data = '';
   
   // Skip if not a POST request or body already parsed

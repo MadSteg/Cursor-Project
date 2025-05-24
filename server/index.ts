@@ -9,8 +9,7 @@ import { initializeStripeService } from "./services/stripeService";
 import { thresholdClient } from "./services/tacoService";
 import "dotenv-safe/config"; // ensures .env and .env.example match
 
-// Import raw body parser middleware for webhook signature verification
-import { rawBodyParser } from './middleware/rawBodyParser';
+// PRE encryption functionality enabled
 
 const app = express();
 
@@ -48,8 +47,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-// Add raw body parser middleware before JSON parsing for webhook signature verification
-app.use(rawBodyParser);
+
 // Increase JSON body size limit to 50MB for receipt image uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
