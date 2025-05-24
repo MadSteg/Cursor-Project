@@ -17,6 +17,7 @@ const Header: React.FC = () => {
   // Navigation links
   const navLinks = [
     { name: t('nav.nftGallery'), path: '/nft-browser' },
+    { name: 'Instant Receipt', path: '/instant-receipt' },
     { name: t('nav.whyBlockReceipt'), path: '/why-blockreceipt' },
     { name: t('nav.forMerchants'), path: '/for-merchants' },
     { name: t('nav.posDemo'), path: '/merchant-demo' },
