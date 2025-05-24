@@ -313,347 +313,135 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
+      {/* Combined Purple Security Section */}
+      <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden mt-20 mb-16">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
+        </div>
         
-        {/* Privacy & Security - TACo PRE */}
-        <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
+        {/* Floating Security Elements */}
+        <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
+        
+        <div className="relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+              Your Privacy, Your Control
+            </h2>
+            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
+              Why BlockReceipt beats traditional receipts
+            </p>
           </div>
           
-          {/* Floating Security Elements */}
-          <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
-          
-          <div className="relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                Your Privacy, Your Control
-              </h2>
-              <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
-                Why BlockReceipt beats traditional receipts
-              </p>
-            </div>
-            
-            {/* Traditional vs BlockReceipt Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 mb-12">
-              {/* Traditional Receipts - Problems */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
-                <h3 className="text-2xl font-bold text-red-300 mb-6 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  Traditional Receipts
-                </h3>
-                <ul className="space-y-4 text-purple-100">
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 text-xl">✗</span>
-                    <span className="leading-relaxed">Anyone can read your purchase details</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 text-xl">✗</span>
-                    <span className="leading-relaxed">Easy to lose or damage</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 text-xl">✗</span>
-                    <span className="leading-relaxed">No control over your data</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-red-400 mr-3 text-xl">✗</span>
-                    <span className="leading-relaxed">Fades and becomes unreadable</span>
-                  </li>
-                </ul>
-              </div>
-              
-              {/* BlockReceipt - Solutions */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
-                <h3 className="text-2xl font-bold text-emerald-300 mb-6 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  BlockReceipt NFTs
-                </h3>
-                <ul className="space-y-4 text-purple-100">
-                  <li className="flex items-start">
-                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                    <span className="leading-relaxed">Only YOU can access full receipt details</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                    <span className="leading-relaxed">Permanent, tamper-proof storage</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                    <span className="leading-relaxed">Complete control over data sharing</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-emerald-400 mr-3 text-xl">✓</span>
-                    <span className="leading-relaxed">Never fades, always accessible</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            
-            {/* TACo PRE Explanation */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 mb-6">
-              <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-3 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          {/* Traditional vs BlockReceipt Comparison */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 mb-12">
+            {/* Traditional Receipts - Problems */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
+              <h3 className="text-2xl font-bold text-red-300 mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
-                Advanced TACo PRE Encryption
+                Traditional Receipts
               </h3>
-              <p className="text-white/90 text-lg leading-relaxed mb-4">
-                Your receipt metadata is secured using <span className="font-bold text-cyan-300">Threshold Access Control Proxy Re-Encryption</span> — 
-                military-grade technology that ensures only your wallet can decrypt your purchase information.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-cyan-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-black font-bold">1</span>
-                  </div>
-                  <p className="text-white/80 text-sm">Receipt data encrypted with your unique keys</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-black font-bold">2</span>
-                  </div>
-                  <p className="text-white/80 text-sm">Stored securely on blockchain & IPFS</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <span className="text-black font-bold">3</span>
-                  </div>
-                  <p className="text-white/80 text-sm">Only you decide who gets access</p>
-                </div>
-              </div>
+              <ul className="space-y-4 text-purple-100">
+                <li className="flex items-start">
+                  <span className="text-red-400 mr-3 text-xl">✗</span>
+                  <span className="leading-relaxed">Anyone can read your purchase details</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-400 mr-3 text-xl">✗</span>
+                  <span className="leading-relaxed">Easy to lose or damage</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-400 mr-3 text-xl">✗</span>
+                  <span className="leading-relaxed">No control over your data</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-400 mr-3 text-xl">✗</span>
+                  <span className="leading-relaxed">Fades and becomes unreadable</span>
+                </li>
+              </ul>
             </div>
             
-            {/* Call to Action */}
-            <div className="text-center">
-              <p className="text-white/90 text-lg mb-4">
-                <span className="font-bold">Choose security.</span> Choose control. Choose BlockReceipt at checkout.
-              </p>
-              <Link href="/how-it-works">
-                <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-1">
-                  Learn More About TACo Security
-                </button>
-              </Link>
+            {/* BlockReceipt - Solutions */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300">
+              <h3 className="text-2xl font-bold text-emerald-300 mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                BlockReceipt NFTs
+              </h3>
+              <ul className="space-y-4 text-purple-100">
+                <li className="flex items-start">
+                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                  <span className="leading-relaxed">Only YOU can access full receipt details</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                  <span className="leading-relaxed">Permanent, tamper-proof storage</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                  <span className="leading-relaxed">Complete control over data sharing</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-emerald-400 mr-3 text-xl">✓</span>
+                  <span className="leading-relaxed">Never fades, always accessible</span>
+                </li>
+              </ul>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* How It Works Section - With Animation */}
-      <div className="relative mt-20 mb-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl -z-10"></div>
-        <div className="px-6 py-12 md:py-16 rounded-3xl border border-indigo-200 dark:border-indigo-800/30 shadow-xl">
-          <h2 className="text-3xl font-bold text-center mb-4 brand-gradient-text">How It Works</h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">A seamless experience for both customers and merchants</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-            {/* Step 1 */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-                <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">1</div>
+          {/* TACo PRE Explanation */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 mb-6">
+            <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-3 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1721 9z" />
+              </svg>
+              Advanced TACo PRE Encryption
+            </h3>
+            <p className="text-white/90 text-lg leading-relaxed mb-4">
+              Your receipt metadata is secured using <span className="font-bold text-cyan-300">Threshold Access Control Proxy Re-Encryption</span> — 
+              military-grade technology that ensures only your wallet can decrypt your purchase information.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-cyan-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-black font-bold">1</span>
+                </div>
+                <p className="text-white/80 text-sm">Receipt data encrypted with your unique keys</p>
               </div>
-              <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Check Out</h3>
-                <p className="text-muted-foreground">Customer chooses "Digital Receipt" option at checkout</p>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-black font-bold">2</span>
+                </div>
+                <p className="text-white/80 text-sm">Stored securely on blockchain & IPFS</p>
               </div>
-            </div>
-            
-            {/* Step 2 */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-                <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">2</div>
-              </div>
-              <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Mint Receipt</h3>
-                <p className="text-muted-foreground">POS system automatically mints an NFT receipt to customer's wallet</p>
-              </div>
-            </div>
-            
-            {/* Step 3 */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-                <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">3</div>
-              </div>
-              <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Receive Rewards</h3>
-                <p className="text-muted-foreground">Customer earns loyalty points and special NFT collectibles</p>
-              </div>
-            </div>
-            
-            {/* Step 4 */}
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
-                <div className="h-16 w-16 brand-gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-gray-800 shadow-lg">4</div>
-              </div>
-              <div className="text-center pt-8">
-                <h3 className="text-xl font-bold mb-4 mt-2">Easy Returns</h3>
-                <p className="text-muted-foreground">Scan wallet for verified proof of purchase in seconds</p>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-black font-bold">3</span>
+                </div>
+                <p className="text-white/80 text-sm">Only you decide who gets access</p>
               </div>
             </div>
-            
-            {/* Connection Lines */}
-            <div className="hidden md:block absolute top-8 left-0 w-1/4 h-0.5 bg-gradient-to-r from-indigo-300 to-blue-300 dark:from-indigo-600 dark:to-blue-600"></div>
-            <div className="hidden md:block absolute top-8 left-1/4 w-1/4 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 dark:from-blue-600 dark:to-purple-600"></div>
-            <div className="hidden md:block absolute top-8 left-2/4 w-1/4 h-0.5 bg-gradient-to-r from-purple-300 to-indigo-300 dark:from-purple-600 dark:to-indigo-600"></div>
-            <div className="hidden md:block absolute top-8 left-3/4 w-1/4 h-0.5 bg-gradient-to-r from-indigo-300 to-pink-300 dark:from-indigo-600 dark:to-pink-600"></div>
           </div>
           
-          <div className="text-center mt-12">
-            <Link href="/upload">
-              <button className="px-10 py-4 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg hover:shadow-purple-500/30 transition-all transform hover:-translate-y-1">
-                Try It Now
+          {/* Call to Action */}
+          <div className="text-center">
+            <p className="text-white/90 text-lg mb-4">
+              <span className="font-bold">Choose security.</span> Choose control. Choose BlockReceipt at checkout.
+            </p>
+            <Link href="/how-it-works">
+              <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-1">
+                Learn More About TACo Security
               </button>
             </Link>
           </div>
         </div>
       </div>
       
-      {/* Merchant Benefits Section */}
-      <div className="relative mb-16">
-        <div className="px-6 py-12 md:py-16 rounded-3xl border border-green-200 dark:border-green-800/30 shadow-xl bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20">
-          <h2 className="text-3xl font-bold text-center mb-4 text-green-800 dark:text-green-300">For Enterprise Retailers</h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">Transform your receipt infrastructure while cutting costs</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg">
-              <div className="h-14 w-14 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg mb-4 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-center mb-4">Cost Savings</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Eliminate thermal paper costs</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Reduce printer maintenance and hardware</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Save $0.004 per transaction ($15M yearly for large chains)</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg">
-              <div className="h-14 w-14 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg mb-4 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-center mb-4">ESG Impact</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Eliminate non-recyclable thermal paper</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Save 2,200+ tons of paper annually</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Preserve 9,000+ trees per year</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-900/60 rounded-xl p-6 shadow-lg">
-              <div className="h-14 w-14 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center text-white shadow-lg mb-4 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905a3.61 3.61 0 01-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-center mb-4">Brand Perception</h3>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>+8 pt NPS boost with younger demographics</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Transform receipts from waste to digital assets</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="h-5 w-5 bg-green-500 rounded-full flex items-center justify-center text-white mr-2 flex-shrink-0 mt-0.5">✓</div>
-                  <span>Earn press coverage for sustainability innovation</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="text-center mt-10">
-            <Link href="/enterprise">
-              <button className="px-10 py-4 text-lg font-bold text-white bg-gradient-to-r from-green-600 to-teal-600 rounded-lg shadow-lg hover:shadow-green-500/30 transition-all transform hover:-translate-y-1">
-                Enterprise Solutions
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-      
-      {/* Privacy Features Explainer */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">Your Privacy, Your Control, Our Priority</h2>
-        <div className="flex justify-center">
-          <PrivacyFeatureExplainer />
-        </div>
-      </div>
-      
-      {/* Character NFT Earning Guide */}
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-8 shadow-xl mb-12">
-        <h2 className="text-3xl font-bold mb-8 text-center brand-gradient-text">How to Earn Fun Character NFTs</h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {displayNFTs.slice(0, 4).map((nft) => (
-            <div key={nft.id} className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-lg group hover:shadow-xl transition-all">
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={nft.image} 
-                  alt={nft.name} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                />
-                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-bold text-white ${
-                  nft.rarity === 'legendary' ? 'bg-amber-500' :
-                  nft.rarity === 'epic' ? 'bg-purple-600' :
-                  nft.rarity === 'rare' ? 'bg-blue-600' :
-                  nft.rarity === 'uncommon' ? 'bg-green-600' :
-                  'bg-gray-600'
-                }`}>
-                  {nft.rarity.toUpperCase()}
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-lg mb-1">{nft.name}</h3>
-                <p className="text-sm text-muted-foreground mb-3">{nft.description.split('.')[0] + '.'}</p>
-                <div className="text-sm font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-2 rounded-md">
-                  {nft.id.includes('cowboy') && "Fashion purchases over $50"}
-                  {nft.id.includes('angel') && "Charitable donations over $100"}
-                  {nft.id.includes('beer') && "Dining purchases over $30"}
-                  {nft.id.includes('soccer') && "Sports purchases over $40"}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="text-center mt-8">
-          <Link href="/nft-browser">
-            <button className="px-6 py-3 border-2 border-indigo-500 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg hover:bg-indigo-500 hover:text-white transition-colors">
-              View Complete Collection
-            </button>
-          </Link>
-        </div>
-      </div>
+
       
       {/* Floating NFT Animation */}
       {showFloatingNFT && (
