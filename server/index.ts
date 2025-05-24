@@ -1,18 +1,50 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeStripeService } from "./services/stripeService";
 import { thresholdClient } from "./services/tacoService";
-import dotenv from 'dotenv';
-
-// Ensure environment variables are loaded
-dotenv.config();
+import "dotenv-safe/config"; // ensures .env and .env.example match
 
 // Import raw body parser middleware for webhook signature verification
 import { rawBodyParser } from './middleware/rawBodyParser';
 
 const app = express();
+
+// Security hardening with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval needed for Vite dev
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      connectSrc: ["'self'", "wss:", "https:"],
+      fontSrc: ["'self'", "https:", "data:"],
+    },
+  },
+}));
+
+// CORS configuration - restrict to frontend URL in production
+app.use(cors({
+  origin: process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? false : true),
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+app.use(limiter);
 // Add raw body parser middleware before JSON parsing for webhook signature verification
 app.use(rawBodyParser);
 // Increase JSON body size limit to 50MB for receipt image uploads
@@ -71,12 +103,29 @@ initializeStripeService();
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // Global error handling middleware
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    // Log the error for debugging
+    console.error('Error caught by global handler:', {
+      message: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      ip: req.ip
+    });
 
-    res.status(status).json({ message });
-    throw err;
+    const status = err.status || err.statusCode || 500;
+    const message = process.env.NODE_ENV === 'production' 
+      ? (status === 500 ? 'Internal Server Error' : err.message)
+      : err.message || 'Internal Server Error';
+
+    // Don't expose stack traces in production
+    const response: any = { error: message };
+    if (process.env.NODE_ENV !== 'production') {
+      response.stack = err.stack;
+    }
+
+    res.status(status).json(response);
   });
 
   // importantly only setup vite in development and after
