@@ -227,46 +227,85 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
-        
-        {/* NFT Gallery Preview */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-          <div className="flex items-center mb-4">
-            <div className="h-14 w-14 brand-gradient-bg rounded-full flex items-center justify-center text-white shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold ml-4 brand-gradient-text">NFT Gallery</h2>
-          </div>
-          <p className="text-muted-foreground mb-4 text-lg">
-            Explore your growing collection of receipt NFTs and exclusive character collectibles
+      {/* Animated NFT Showcase */}
+      <div className="mt-20 mb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Collect Exclusive NFT Characters</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Each purchase comes with a chance to earn rare collectible characters — the more you shop, the more you collect
           </p>
+        </div>
+        
+        {/* Scrolling NFT Strip */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-purple-100 via-blue-50 to-indigo-100 rounded-2xl py-8 shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-10"></div>
           
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            {displayNFTs.slice(0, 4).map((nft) => (
-              <Link key={nft.id} href={`/nft/${nft.id}`}>
-                <div className="relative rounded-lg overflow-hidden border border-indigo-200 dark:border-indigo-800 shadow-md hover:shadow-lg transition-all cursor-pointer group">
+          {/* First Row - Left to Right */}
+          <div className="flex animate-scroll-left mb-6">
+            {[...sampleNFTs, ...sampleNFTs].map((nft, index) => (
+              <div key={`row1-${index}`} className="flex-shrink-0 mx-3">
+                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
                   <img 
                     src={nft.image} 
                     alt={nft.name} 
-                    className="w-full aspect-square object-cover transition-transform group-hover:scale-110 duration-300" 
+                    className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                    <span className="text-white text-sm font-bold truncate">{nft.name}</span>
+                </div>
+                <div className="text-center mt-2">
+                  <p className="text-sm font-bold text-gray-800 truncate">{nft.name}</p>
+                  <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold mt-1 ${
+                    nft.rarity === 'legendary' ? 'bg-amber-200 text-amber-800' :
+                    nft.rarity === 'epic' ? 'bg-purple-200 text-purple-800' :
+                    nft.rarity === 'rare' ? 'bg-blue-200 text-blue-800' :
+                    nft.rarity === 'uncommon' ? 'bg-green-200 text-green-800' :
+                    'bg-gray-200 text-gray-800'
+                  }`}>
+                    {nft.rarity.toUpperCase()}
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
           
+          {/* Second Row - Right to Left */}
+          <div className="flex animate-scroll-right">
+            {[...sampleNFTs.slice().reverse(), ...sampleNFTs.slice().reverse()].map((nft, index) => (
+              <div key={`row2-${index}`} className="flex-shrink-0 mx-3">
+                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                  <img 
+                    src={nft.image} 
+                    alt={nft.name} 
+                    className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                  />
+                </div>
+                <div className="text-center mt-2">
+                  <p className="text-sm font-bold text-gray-800 truncate">{nft.name}</p>
+                  <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold mt-1 ${
+                    nft.rarity === 'legendary' ? 'bg-amber-200 text-amber-800' :
+                    nft.rarity === 'epic' ? 'bg-purple-200 text-purple-800' :
+                    nft.rarity === 'rare' ? 'bg-blue-200 text-blue-800' :
+                    nft.rarity === 'uncommon' ? 'bg-green-200 text-green-800' :
+                    'bg-gray-200 text-gray-800'
+                  }`}>
+                    {nft.rarity.toUpperCase()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="text-center mt-8">
           <Link href="/nft-browser">
-            <button className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-lg font-bold rounded-lg shadow-lg hover:shadow-indigo-500/30 transition-all">
-              View All NFTs
+            <button className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-purple-500/30 transition-all transform hover:-translate-y-1">
+              Explore All Collectibles
             </button>
           </Link>
         </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
         
         {/* Blockchain Benefits */}
         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
