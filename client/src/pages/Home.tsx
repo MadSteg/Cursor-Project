@@ -40,11 +40,8 @@ const Home: React.FC = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100 animate-pulse-subtle">
             BlockReceipt.ai
           </h1>
-          <p className="text-xl md:text-2xl mb-4 max-w-3xl mx-auto text-blue-100">
-            {t('home.subtitle')}
-          </p>
-          <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto text-blue-100/80">
-            {t('home.description')}
+          <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto text-blue-100 leading-relaxed">
+            Transform your everyday shopping receipts into secure, retrievable digital NFTs — Minted instantly at checkout — no paper, no emails, just better digitally verifiable receipts.
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
