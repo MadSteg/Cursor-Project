@@ -63,8 +63,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-white mb-1">Single-use and frustratingly vulnerable</h4>
-                    <p className="text-white/80">to rips and damage that could impact return/warranty claims</p>
+                    <p className="text-lg text-white text-center">
+                      <span className="font-semibold">Single-use and frustratingly vulnerable</span> to rips and damage that could impact return/warranty claims
+                    </p>
                   </div>
                 </div>
                 
@@ -76,8 +77,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-white mb-1">Contain personal data</h4>
-                    <p className="text-white/80">that anyone who has your receipt can see or use for fraudulent returns in your name</p>
+                    <p className="text-lg text-white text-center">
+                      <span className="font-semibold">Contain personal data</span> that anyone who has your receipt can see or use for fraudulent returns in your name
+                    </p>
                   </div>
                 </div>
                 
@@ -88,8 +90,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-white mb-1">Often misplaced or disappear</h4>
-                    <p className="text-white/80">by the time you need them for returns or warranty claims</p>
+                    <p className="text-lg text-white text-center">
+                      <span className="font-semibold">Often misplaced or disappear</span> by the time you need them for returns or warranty claims
+                    </p>
                   </div>
                 </div>
                 
@@ -100,8 +103,9 @@ const Home: React.FC = () => {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-white mb-1">Printed with toxic ink</h4>
-                    <p className="text-white/80">creating continual toxic waste which is in no way recyclable</p>
+                    <p className="text-lg text-white text-center">
+                      <span className="font-semibold">Printed with toxic ink</span> creating continual toxic waste which is in no way recyclable
+                    </p>
                   </div>
                 </div>
               </div>
