@@ -127,19 +127,46 @@ const Gallery: React.FC = () => {
         </div>
         
         <div className="p-6">
-          <div className="mb-4">
-            <div className="text-sm text-muted-foreground mb-1">Total Amount</div>
-            <div className="text-2xl font-bold">${nft.total.toFixed(2)}</div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="space-y-4">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Category</div>
-              <div className="font-medium">{nft.category || 'Uncategorized'}</div>
+              <h2 className="text-2xl font-bold">{nft.merchantName}</h2>
+              <p className="text-sm text-muted-foreground">
+                {new Date(nft.date).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
             </div>
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">Token ID</div>
-              <div className="font-mono text-xs truncate">{nft.tokenId}</div>
+            
+            <div className="mb-4">
+              <div className="text-sm text-muted-foreground mb-1">Total Amount</div>
+              <div className="text-2xl font-bold">${nft.total.toFixed(2)}</div>
+            </div>
+            
+            {nft.items && nft.items.length > 0 && (
+              <div className="mb-4">
+                <div className="text-sm text-muted-foreground mb-2">Items Purchased</div>
+                <ul className="space-y-1 text-sm">
+                  {nft.items.map((item, idx) => (
+                    <li key={idx} className="flex justify-between">
+                      <span>{item.name} x{item.quantity}</span>
+                      <span className="font-medium">${parseFloat(item.price).toFixed(2)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Category</div>
+                <div className="font-medium">{nft.category || 'Uncategorized'}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Token ID</div>
+                <div className="font-mono text-xs truncate">{nft.tokenId}</div>
+              </div>
             </div>
           </div>
           
