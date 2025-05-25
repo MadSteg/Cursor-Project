@@ -62,32 +62,12 @@ const AppContent: React.FC = () => {
             <NFTDetail />
           </Route>
           
-          <Route path="/merchant-demo">
-            <MerchantDemo />
-          </Route>
-          
-          <Route path="/enterprise">
-            <Enterprise />
-          </Route>
-          
-          <Route path="/how-it-works">
-            <HowItWorks />
-          </Route>
-          
           <Route path="/why-blockreceipt">
             <WhyBlockReceipt />
           </Route>
           
           <Route path="/for-merchants">
             <ForMerchants />
-          </Route>
-          
-          <Route path="/loyalty-rewards">
-            <LoyaltyRewards />
-          </Route>
-          
-          <Route path="/pre-demo">
-            <PREDemo />
           </Route>
           
           <Route>

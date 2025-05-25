@@ -19,9 +19,6 @@ const Header: React.FC = () => {
     { name: t('nav.nftGallery'), path: '/nft-browser' },
     { name: t('nav.whyBlockReceipt'), path: '/why-blockreceipt' },
     { name: t('nav.forMerchants'), path: '/for-merchants' },
-    { name: t('nav.posDemo'), path: '/merchant-demo' },
-    { name: 'PRE Demo', path: '/pre-demo' },
-    { name: t('nav.howItWorks'), path: '/how-it-works' },
   ];
   
   return (
@@ -53,31 +50,8 @@ const Header: React.FC = () => {
             ))}
           </nav>
           
-          {/* Language Toggle & Wallet Connect (Desktop) */}
+          {/* Wallet Connect (Desktop) */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Language Toggle */}
-            <div className="bg-gray-800 rounded-lg p-1 flex">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  language === 'en' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('es')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  language === 'es' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                ES
-              </button>
-            </div>
 
             {/* Wallet Connect */}
             {isConnected && walletAddress ? (
