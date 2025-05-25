@@ -143,33 +143,33 @@ const WhyBlockReceipt: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           
           {/* Privacy & Security */}
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-indigo-100">
-            <div className="bg-indigo-100 p-3 rounded-full w-fit mb-4">
-              <Shield className="w-6 h-6 text-indigo-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-gradient-to-r from-indigo-400 to-purple-400 p-3 rounded-full w-fit mb-4">
+              <Shield className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Fully Private & Secure</h3>
-            <p className="text-gray-600 mb-4">Receipts are stored using encryption and privacy-preserving technology like Threshold PRE.</p>
-            <p className="text-indigo-600 font-medium">Only you control your data.</p>
+            <h3 className="text-xl font-bold text-white mb-3">Fully Private & Secure</h3>
+            <p className="text-purple-100 mb-4">Receipts are stored using encryption and privacy-preserving technology like Threshold PRE.</p>
+            <p className="text-blue-300 font-medium">Only you control your data.</p>
           </div>
 
           {/* No Wallet Required */}
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-orange-100">
-            <div className="bg-orange-100 p-3 rounded-full w-fit mb-4">
-              <Lock className="w-6 h-6 text-orange-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-gradient-to-r from-orange-400 to-red-400 p-3 rounded-full w-fit mb-4">
+              <Lock className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">No Wallet? No Problem.</h3>
-            <p className="text-gray-600 mb-4">We create a secure digital vault for you behind the scenes. You don't need crypto knowledge.</p>
-            <p className="text-orange-600 font-medium">Just pay as usual.</p>
+            <h3 className="text-xl font-bold text-white mb-3">No Wallet? No Problem.</h3>
+            <p className="text-purple-100 mb-4">We create a secure digital vault for you behind the scenes. You don't need crypto knowledge.</p>
+            <p className="text-orange-300 font-medium">Just pay as usual.</p>
           </div>
 
           {/* Collectible Experience */}
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-pink-100">
-            <div className="bg-pink-100 p-3 rounded-full w-fit mb-4">
-              <Sparkles className="w-6 h-6 text-pink-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-3 rounded-full w-fit mb-4">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Looks Good, Too.</h3>
-            <p className="text-gray-600 mb-4">Some receipts come with limited-edition designs, animations, or loyalty perks.</p>
-            <p className="text-pink-600 font-medium">Everyday purchases become collectible experiences.</p>
+            <h3 className="text-xl font-bold text-white mb-3">Looks Good, Too.</h3>
+            <p className="text-purple-100 mb-4">Some receipts come with limited-edition designs, animations, or loyalty perks.</p>
+            <p className="text-pink-300 font-medium">Everyday purchases become collectible experiences.</p>
           </div>
 
         </div>

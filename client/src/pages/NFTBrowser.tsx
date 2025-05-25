@@ -211,27 +211,7 @@ export default function NFTBrowser() {
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-3xl font-bold text-green-600">{filteredNFTs.length}</div>
-              <div className="text-gray-600">Total NFTs</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600">{filteredNFTs.filter(n => n.isAnimated).length}</div>
-              <div className="text-gray-600">Animated</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-purple-600">{filteredNFTs.filter(n => n.rarity === 'Legendary').length}</div>
-              <div className="text-gray-600">Legendary</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-pink-600">{categories.length - 1}</div>
-              <div className="text-gray-600">Categories</div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Dynamic NFT Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">

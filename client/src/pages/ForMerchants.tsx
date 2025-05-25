@@ -78,57 +78,57 @@ const ForMerchants: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
-                <span className="text-gray-700">Shorter return lines and less conflict for staff</span>
+                <span className="text-purple-100">Shorter return lines and less conflict for staff</span>
               </div>
             </div>
           </div>
 
           {/* Boost Brand Reputation */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-purple-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-purple-100 p-3 rounded-full mr-4">
-                <Users className="w-8 h-8 text-purple-600" />
+              <div className="bg-gradient-to-r from-purple-400 to-pink-400 p-3 rounded-full mr-4">
+                <Users className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Boost Brand Reputation</h3>
+              <h3 className="text-2xl font-bold text-white">Boost Brand Reputation</h3>
             </div>
-            <p className="text-gray-600 mb-6">Younger customers want digital-first, eco-conscious brands. BlockReceipt positions your business as a tech-forward, privacy-respecting leader.</p>
+            <p className="text-purple-100 mb-6">Younger customers want digital-first, eco-conscious brands. BlockReceipt positions your business as a tech-forward, privacy-respecting leader.</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Appeal to modern consumer values</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Appeal to modern consumer values</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Offer optional branded or collectible receipts</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Offer optional branded or collectible receipts</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Create buzz through limited NFT receipt designs</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Create buzz through limited NFT receipt designs</span>
               </div>
             </div>
           </div>
 
           {/* Hit ESG Goals */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-emerald-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-emerald-100 p-3 rounded-full mr-4">
-                <Target className="w-8 h-8 text-emerald-600" />
+              <div className="bg-gradient-to-r from-emerald-400 to-green-400 p-3 rounded-full mr-4">
+                <Target className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Hit Your ESG Goals</h3>
+              <h3 className="text-2xl font-bold text-white">Hit Your ESG Goals</h3>
             </div>
-            <p className="text-gray-600 mb-6">Thermal receipt paper isn't recyclable and contributes heavily to waste. BlockReceipt helps you track measurable impact.</p>
+            <p className="text-purple-100 mb-6">Thermal receipt paper isn't recyclable and contributes heavily to waste. BlockReceipt helps you track measurable impact.</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Track CO₂ savings by receipt volume</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Track CO₂ savings by receipt volume</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Report sustainability metrics for internal and public reports</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Report sustainability metrics for internal and public reports</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Earn PR and CSR points through innovation</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Earn PR and CSR points through innovation</span>
               </div>
             </div>
           </div>
@@ -139,70 +139,70 @@ const ForMerchants: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           
           {/* Privacy-Preserving Engagement */}
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-indigo-100">
-            <div className="bg-indigo-100 p-3 rounded-full w-fit mb-4">
-              <Shield className="w-6 h-6 text-indigo-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-gradient-to-r from-indigo-400 to-purple-400 p-3 rounded-full w-fit mb-4">
+              <Shield className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-bold text-gray-900 mb-3">Privacy-Preserving Customer Engagement</h4>
-            <p className="text-gray-600 mb-4 text-sm">Use encrypted metadata sharing to unlock smarter targeting — only with user permission.</p>
+            <h4 className="text-lg font-bold text-white mb-3">Privacy-Preserving Customer Engagement</h4>
+            <p className="text-purple-100 mb-4 text-sm">Use encrypted metadata sharing to unlock smarter targeting — only with user permission.</p>
             <div className="space-y-2 text-sm">
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Access real post-sale behavior (if opted-in)</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Access real post-sale behavior (if opted-in)</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Deliver more relevant offers and rewards</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Deliver more relevant offers and rewards</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Build trust by giving users control over their data</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Build trust by giving users control over their data</span>
               </div>
             </div>
           </div>
 
           {/* No Disruption */}
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-orange-100">
-            <div className="bg-orange-100 p-3 rounded-full w-fit mb-4">
-              <Zap className="w-6 h-6 text-orange-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-gradient-to-r from-orange-400 to-red-400 p-3 rounded-full w-fit mb-4">
+              <Zap className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-bold text-gray-900 mb-3">No Disruption to Your Existing POS</h4>
-            <p className="text-gray-600 mb-4 text-sm">BlockReceipt integrates as an optional output — like print or email.</p>
+            <h4 className="text-lg font-bold text-white mb-3">No Disruption to Your Existing POS</h4>
+            <p className="text-purple-100 mb-4 text-sm">BlockReceipt integrates as an optional output — like print or email.</p>
             <div className="space-y-2 text-sm">
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Minimal training required</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Minimal training required</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">No changes to core payment flows</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">No changes to core payment flows</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Flexible rollout per location or region</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Flexible rollout per location or region</span>
               </div>
             </div>
           </div>
 
           {/* Easy Pilot */}
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-teal-100">
-            <div className="bg-teal-100 p-3 rounded-full w-fit mb-4">
-              <BarChart3 className="w-6 h-6 text-teal-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+            <div className="bg-gradient-to-r from-teal-400 to-cyan-400 p-3 rounded-full w-fit mb-4">
+              <BarChart3 className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-bold text-gray-900 mb-3">Easy Pilot. Big Upside.</h4>
-            <p className="text-gray-600 mb-4 text-sm">Start with 3–5 stores. We provide the software, setup support, and dashboards.</p>
+            <h4 className="text-lg font-bold text-white mb-3">Easy Pilot. Big Upside.</h4>
+            <p className="text-purple-100 mb-4 text-sm">Start with 3–5 stores. We provide the software, setup support, and dashboards.</p>
             <div className="space-y-2 text-sm">
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Track receipts printed vs. BlockReceipts minted</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Track receipts printed vs. BlockReceipts minted</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Monitor cost savings and environmental stats</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Monitor cost savings and environmental stats</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                <span className="text-gray-700">Analyze customer reaction and staff feedback</span>
+                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                <span className="text-purple-100">Analyze customer reaction and staff feedback</span>
               </div>
             </div>
           </div>
@@ -210,9 +210,9 @@ const ForMerchants: React.FC = () => {
         </div>
 
         {/* Merchant CTA */}
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-12 text-center text-white mb-16">
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-12 text-center text-white mb-16">
           <h3 className="text-3xl font-bold mb-4">Offer better receipts. Save money. Connect with customers.</h3>
-          <p className="text-xl text-green-100 mb-6">BlockReceipt isn't just more modern — it's smarter business.</p>
+          <p className="text-xl text-purple-100 mb-6">BlockReceipt isn't just more modern — it's smarter business.</p>
           <div className="bg-white/20 rounded-lg p-4 inline-block">
             <p className="text-lg font-medium">Ready to pilot? Contact us to start with your first 3-5 locations.</p>
           </div>
