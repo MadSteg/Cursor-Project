@@ -604,6 +604,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/pre', preEncryptionRoutes.default);
   console.log('[express] PRE encryption routes registered successfully');
 
+  // Mount verification routes
+  const verifyRoutes = await import('./routes/verifyReceipt');
+  app.use('/api/verify', verifyRoutes.default);
+  console.log('[express] Verification routes registered successfully');
+
   // Create HTTP server
   const httpServer = createServer(app);
 

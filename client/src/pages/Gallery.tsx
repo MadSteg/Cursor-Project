@@ -26,7 +26,28 @@ const Gallery: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeNft, setActiveNft] = useState<NFTItem | null>(null);
+  const [verifying, setVerifying] = useState(false);
   const { isConnected, walletAddress } = useWallet();
+
+  // Function to verify receipt on blockchain
+  const handleVerifyOnChain = async (tokenId: string) => {
+    setVerifying(true);
+    try {
+      const response = await fetch(`/api/verify/${tokenId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Receipt verified on blockchain!\n\nToken ID: ${result.data.tokenId}\nNetwork: ${result.data.network.name}\nContract: ${result.data.contractAddress}\nMetadata: ${result.data.metadataUri}`);
+      } else {
+        alert(`❌ Verification failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      alert('❌ Unable to verify receipt. Please try again.');
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   // Demo NFTs to showcase enhanced metadata
   const demoNfts: NFTItem[] = [
@@ -200,8 +221,12 @@ const Gallery: React.FC = () => {
             <button className="px-4 py-2 border rounded-md hover:bg-muted transition-colors">
               Share
             </button>
-            <button className="px-4 py-2 brand-gradient-bg text-white rounded-md hover:opacity-90 transition-opacity">
-              Verify on Chain
+            <button 
+              onClick={() => handleVerifyOnChain(nft.tokenId)}
+              disabled={verifying}
+              className="px-4 py-2 brand-gradient-bg text-white rounded-md hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {verifying ? 'Verifying...' : 'Verify on Chain'}
             </button>
           </div>
         </div>
