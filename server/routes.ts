@@ -123,6 +123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register merchant plugin routes
   app.use('/api/merchant', merchantPluginRoutes);
   
+  // Register merchant portal routes
+  registerMerchantPortalRoutes(app);
+  
   // Register new catalog routes
   app.use('/api/products', productsRoutes);
   app.use('/api/merchants', merchantRoutes);

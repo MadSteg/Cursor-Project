@@ -275,7 +275,7 @@ export function registerMerchantPortalRoutes(app: Express) {
       
       // Find merchant by ID
       let merchantProfile = null;
-      for (const [keyId, data] of merchantApiKeys.entries()) {
+      merchantApiKeys.forEach((data, keyId) => {
         if (data.merchantId === merchantId) {
           merchantProfile = {
             merchantId: data.merchantId,
@@ -285,9 +285,8 @@ export function registerMerchantPortalRoutes(app: Express) {
             lastUsed: data.lastUsed,
             apiKey: keyId
           };
-          break;
         }
-      }
+      });
 
       if (!merchantProfile) {
         return res.status(404).json({

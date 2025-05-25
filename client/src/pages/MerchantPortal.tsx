@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Key, 
   BarChart3, 
@@ -28,26 +29,63 @@ import {
 export default function MerchantPortal() {
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
-  const [storeName, setStoreName] = useState('Demo Store');
+  const [storeName, setStoreName] = useState('');
   const [storeUrl, setStoreUrl] = useState('');
+  const [merchantId, setMerchantId] = useState('');
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock analytics data - in real app this would come from API
-  const analytics = {
-    totalMints: 1247,
-    thisMonth: 342,
-    avgTransactionValue: 28.50,
-    carbonSaved: 156, // kg CO2
-    costSavings: 847.20 // dollars saved on paper/printing
-  };
+  // Fetch analytics data from API
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['merchant-analytics', merchantId],
+    queryFn: async () => {
+      if (!merchantId) return null;
+      const response = await fetch(`/api/merchant/analytics/${merchantId}`);
+      const data = await response.json();
+      return data.success ? data.analytics : null;
+    },
+    enabled: !!merchantId
+  });
+
+  // Generate API key mutation
+  const generateApiKeyMutation = useMutation({
+    mutationFn: async ({ storeName, storeUrl }: { storeName: string; storeUrl?: string }) => {
+      const response = await fetch('/api/merchant/generate-api-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storeName, storeUrl })
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        setApiKey(data.apiKey);
+        setMerchantId(data.merchantId);
+        toast({
+          title: "API Key Generated!",
+          description: "Your new API key is ready. Copy it safely - it won't be shown again.",
+        });
+        queryClient.invalidateQueries({ queryKey: ['merchant-analytics'] });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to generate API key",
+          variant: "destructive"
+        });
+      }
+    }
+  });
 
   const generateApiKey = () => {
-    const newKey = `br_${Math.random().toString(36).substring(2, 15)}_${Date.now().toString(36)}`;
-    setApiKey(newKey);
-    toast({
-      title: "API Key Generated!",
-      description: "Your new API key is ready. Copy it safely - it won't be shown again.",
-    });
+    if (!storeName.trim()) {
+      toast({
+        title: "Store Name Required",
+        description: "Please enter your store name before generating an API key",
+        variant: "destructive"
+      });
+      return;
+    }
+    generateApiKeyMutation.mutate({ storeName, storeUrl });
   };
 
   const copyApiKey = () => {
@@ -58,11 +96,34 @@ export default function MerchantPortal() {
     });
   };
 
+  // Test webhook mutation
+  const testWebhookMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/merchant/test-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "Webhook Test Sent",
+          description: "Test transaction processed successfully",
+        });
+        queryClient.invalidateQueries({ queryKey: ['merchant-analytics'] });
+      } else {
+        toast({
+          title: "Test Failed",
+          description: data.error || "Failed to send test webhook",
+          variant: "destructive"
+        });
+      }
+    }
+  });
+
   const testWebhook = () => {
-    toast({
-      title: "Webhook Test Sent",
-      description: "Check your endpoint logs for the test transaction",
-    });
+    testWebhookMutation.mutate();
   };
 
   return (
