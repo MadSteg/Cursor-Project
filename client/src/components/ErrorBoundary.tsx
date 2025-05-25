@@ -1,4 +1,5 @@
 import React from 'react';
+import LoadingSkeleton from './LoadingSkeleton';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -62,12 +63,21 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 }
 
-// Loading fallback component
-export const LoadingFallback: React.FC<{ message?: string }> = ({ message = "Loading..." }) => (
-  <div className="flex items-center justify-center p-8">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-      <p className="text-gray-600">{message}</p>
+// Enhanced loading fallback component with skeleton
+export const LoadingFallback: React.FC<{ 
+  message?: string;
+  type?: 'page' | 'card' | 'nft-grid' | 'hero';
+}> = ({ 
+  message = "Loading...",
+  type = 'page'
+}) => (
+  <div className="min-h-screen">
+    <div className="container mx-auto px-4 py-8">
+      <LoadingSkeleton type={type} count={6} />
+      <div className="text-center mt-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+        <p className="text-purple-200">{message}</p>
+      </div>
     </div>
   </div>
 );
