@@ -88,11 +88,63 @@ const Gallery: React.FC = () => {
     }
   }, [isConnected, walletAddress]);
   
+  // Demo NFTs to showcase enhanced metadata
+  const demoNfts = [
+    {
+      id: 'demo-1',
+      tokenId: '1',
+      merchantName: 'Dunkin Donuts',
+      date: '2025-05-25',
+      total: 24.50,
+      category: 'Food & Beverage',
+      imageUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&fit=crop',
+      items: [
+        { name: 'Latte', quantity: 1, price: '4.25' },
+        { name: 'Donut', quantity: 2, price: '2.50' }
+      ],
+      warranty: null
+    },
+    {
+      id: 'demo-2', 
+      tokenId: '2',
+      merchantName: 'Best Buy',
+      date: '2025-05-24',
+      total: 89.99,
+      category: 'Electronics',
+      imageUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop',
+      items: [
+        { name: 'Wireless Mouse', quantity: 1, price: '29.99' },
+        { name: 'USB Cable', quantity: 2, price: '15.00' }
+      ],
+      warranty: {
+        duration: '1 Year',
+        expires: '2026-05-24'
+      }
+    },
+    {
+      id: 'demo-3',
+      tokenId: '3', 
+      merchantName: 'Target',
+      date: '2025-05-23',
+      total: 156.78,
+      category: 'Retail',
+      imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop',
+      items: [
+        { name: 'Organic Groceries', quantity: 1, price: '45.30' },
+        { name: 'Household Items', quantity: 3, price: '25.99' }
+      ],
+      warranty: null
+    }
+  ];
+
+  // Use demo NFTs when not connected or no real NFTs available
+  const displayNfts = !isConnected || nfts.length === 0 ? demoNfts : nfts;
+  
   // Get unique categories for filter
-  const categories = Array.from(new Set(nfts.map(nft => nft.category).filter(Boolean)));
+  const categories = Array.from(new Set(displayNfts.map(nft => nft.category).filter(Boolean)));
   
   // Filtered NFTs based on category and search
-  const filteredNfts = nfts.filter(nft => {
+  const filteredNfts = displayNfts.filter(nft => {
     const matchesCategory = selectedCategory ? nft.category === selectedCategory : true;
     const matchesSearch = searchTerm
       ? nft.merchantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -204,34 +256,57 @@ const Gallery: React.FC = () => {
     </div>
   );
   
-  // Not connected state
-  if (!isConnected) {
-    return (
-      <div className="py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-6 brand-gradient-text">NFT Receipt Gallery</h1>
-          
-          <div className="bg-card shadow-sm rounded-lg p-8 border animate-pulse-custom">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-muted-foreground mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="2" y="6" width="20" height="12" rx="2" />
-              <path d="M14 12h4" />
-              <path d="M6 12h4" />
-            </svg>
-            <h2 className="text-xl font-semibold mb-2">Connect Your Wallet</h2>
-            <p className="text-muted-foreground mb-6">
-              Please connect your wallet to view your NFT receipt collection
-            </p>
-            <button
-              onClick={() => {}}
-              className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
-            >
-              Connect Wallet
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Demo NFTs to showcase enhanced metadata
+  const demoNfts = [
+    {
+      id: 'demo-1',
+      tokenId: '1',
+      merchantName: 'Dunkin Donuts',
+      date: '2025-05-25',
+      total: 24.50,
+      category: 'Food & Beverage',
+      imageUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&fit=crop',
+      items: [
+        { name: 'Latte', quantity: 1, price: '4.25' },
+        { name: 'Donut', quantity: 2, price: '2.50' }
+      ],
+      warranty: null
+    },
+    {
+      id: 'demo-2', 
+      tokenId: '2',
+      merchantName: 'Best Buy',
+      date: '2025-05-24',
+      total: 89.99,
+      category: 'Electronics',
+      imageUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop',
+      items: [
+        { name: 'Wireless Mouse', quantity: 1, price: '29.99' },
+        { name: 'USB Cable', quantity: 2, price: '15.00' }
+      ],
+      warranty: {
+        duration: '1 Year',
+        expires: '2026-05-24'
+      }
+    },
+    {
+      id: 'demo-3',
+      tokenId: '3', 
+      merchantName: 'Target',
+      date: '2025-05-23',
+      total: 156.78,
+      category: 'Retail',
+      imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop',
+      items: [
+        { name: 'Organic Groceries', quantity: 1, price: '45.30' },
+        { name: 'Household Items', quantity: 3, price: '25.99' }
+      ],
+      warranty: null
+    }
+  ];
+
+  // Use demo NFTs when not connected or no real NFTs available
+  const displayNfts = !isConnected || nfts.length === 0 ? demoNfts : nfts;
   
   // Loading state
   if (isLoading) {
