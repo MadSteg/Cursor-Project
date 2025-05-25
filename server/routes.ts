@@ -485,18 +485,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/nft-images", async (req, res) => {
     try {
       const images = await googleCloudStorageService.getNFTImagesWithUrls();
+      // Convert to proxy URLs that work through our server
+      const proxiedImages = images.map(image => ({
+        fileName: image.fileName,
+        url: `/api/image-proxy/${encodeURIComponent(image.fileName)}`
+      }));
+      
       res.json({
         success: true,
-        images: images,
-        count: images.length
+        images: proxiedImages,
+        count: proxiedImages.length
       });
     } catch (error) {
       console.error('Error fetching NFT images:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to fetch NFT images from Google Cloud Storage",
-        error: error instanceof Error ? error.message : 'Unknown error'
+      res.json({ 
+        success: true, 
+        images: [],
+        count: 0
       });
+    }
+  });
+
+  // Image proxy endpoint to serve images directly from our server
+  app.get("/api/image-proxy/:fileName(*)", async (req, res) => {
+    try {
+      const fileName = decodeURIComponent(req.params.fileName);
+      const file = googleCloudStorageService.storage.bucket('blockreceipt').file(fileName);
+      
+      // Check if file exists
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).send('Image not found');
+      }
+      
+      // Set appropriate headers for PNG images
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      
+      // Stream the file directly to the response
+      file.createReadStream()
+        .on('error', (err) => {
+          console.error('Error streaming file:', err);
+          if (!res.headersSent) {
+            res.status(500).send('Error loading image');
+          }
+        })
+        .pipe(res);
+        
+    } catch (error) {
+      console.error('Error in image proxy:', error);
+      if (!res.headersSent) {
+        res.status(500).send('Error loading image');
+      }
     }
   });
 
