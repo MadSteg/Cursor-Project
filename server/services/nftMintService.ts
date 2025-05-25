@@ -81,20 +81,38 @@ class NFTMintService {
       });
     }
     
-    // Generate metadata object
+    // Generate enriched metadata object with enhanced schema
     return {
       name: `${receipt.merchantName} Receipt - ${receipt.date}`,
       description: `Digital receipt from ${receipt.merchantName} for $${receipt.total.toFixed(2)}`,
       image: receipt.imagePath ? `ipfs://${receipt.imagePath}` : 'https://blockreceipt.ai/default-receipt.png',
       external_url: `https://blockreceipt.ai/receipts/${receipt.id}`,
+      
+      // Enhanced metadata fields
+      merchant: receipt.merchantName,
+      purchaseDate: new Date(receipt.date).toISOString(),
+      totalAmount: receipt.total.toFixed(2),
+      currency: 'USD',
+      items: receipt.items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price.toFixed(2)
+      })),
+      
+      // Traditional NFT attributes for marketplaces
       attributes,
+      
+      // Additional properties for BlockReceipt features
       properties: {
         merchant: receipt.merchantName,
         date: receipt.date,
         total: receipt.total,
+        subtotal: receipt.subtotal,
+        tax: receipt.tax,
         category: receipt.category || 'General',
         tier: tier.id,
-        benefits: tier.benefits
+        benefits: tier.benefits,
+        confidence: receipt.confidence
       }
     };
   }
