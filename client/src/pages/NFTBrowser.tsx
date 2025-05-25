@@ -66,7 +66,7 @@ const generateKawaiiNFTs = (): KawaiiNFT[] => {
       nfts.push({
         id: nftId.toString(),
         name,
-        image: `https://api.dicebear.com/7.x/bottts/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&colorful=true`,
+        image: `https://picsum.photos/200/200?random=${nftId}&blur=0`,
         category,
         rarity,
         price: basePrice + Math.random() * 0.5,
