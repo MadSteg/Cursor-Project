@@ -20,34 +20,32 @@ interface KawaiiNFT {
 // Extensive kawaii NFT collection with consistent naming
 const generateReceiptNFTs = (): KawaiiNFT[] => {
   const categories = {
-    'Retail Shopping': [
-      'Tech Gadget', 'Home Improvement', 'Fashion Find', 'Sports Gear', 'Book Purchase',
-      'Electronics', 'Garden Supply', 'Craft Materials', 'Beauty Products', 'Toy Store',
-      'Office Supplies', 'Pet Accessories', 'Music Album', 'Video Game', 'Art Supplies'
+    'Adventurers': [
+      'Blue Explorer', 'Red Wanderer', 'Green Scout', 'Purple Traveler', 'Orange Adventurer',
+      'Pink Pioneer', 'Yellow Seeker', 'Teal Navigator', 'Brown Hiker', 'Gray Nomad',
+      'Indigo Ranger', 'Coral Trekker', 'Mint Explorer', 'Lavender Scout', 'Peach Wanderer'
     ],
-    'Food & Dining': [
-      'Pizza Night', 'Burger Meal', 'Coffee Break', 'Sandwich Lunch', 'Taco Tuesday',
-      'Pasta Dinner', 'Breakfast Treat', 'Ice Cream', 'Sushi Roll', 'BBQ Feast',
-      'Salad Bowl', 'Donut Run', 'Smoothie Stop', 'Bakery Visit', 'Deli Order'
+    'Space Crew': [
+      'Astronaut Alpha', 'Cosmonaut Beta', 'Space Captain', 'Galaxy Pilot', 'Stellar Navigator',
+      'Cosmic Explorer', 'Rocket Rider', 'Planet Scout', 'Star Voyager', 'Moon Walker',
+      'Solar Surfer', 'Nebula Drifter', 'Comet Chaser', 'Orbit Guardian', 'Deep Space Pioneer'
     ],
-    'Fuel & Travel': [
-      'Gas Fill-up', 'Road Trip Fuel', 'Morning Commute', 'Highway Stop', 'City Drive',
-      'Weekend Travel', 'Car Wash', 'Snack Stop', 'Energy Drink', 'Travel Essentials',
-      'Highway Rest', 'Urban Fuel', 'Quick Stop', 'Journey Break', 'Fuel & Go'
+    'Ocean Friends': [
+      'Blue Diver', 'Sea Explorer', 'Wave Rider', 'Coral Guardian', 'Deep Sea Scout',
+      'Ocean Navigator', 'Pearl Seeker', 'Tide Walker', 'Marine Explorer', 'Kelp Forest Guide',
+      'Reef Protector', 'Current Rider', 'Lagoon Scout', 'Bay Explorer', 'Aqua Adventurer'
     ],
-    'Grocery & Market': [
-      'Weekly Shop', 'Fresh Produce', 'Organic Haul', 'Pantry Restock', 'Healthy Choices',
-      'Bulk Shopping', 'Local Market', 'Farm Fresh', 'Meal Prep', 'Family Groceries',
-      'Fresh Bakery', 'Deli Counter', 'Seafood Market', 'Farmers Market', 'Corner Store'
+    'Forest Rangers': [
+      'Tree Climber', 'Forest Guide', 'Nature Scout', 'Woodland Explorer', 'Leaf Walker',
+      'Branch Hopper', 'Moss Finder', 'Root Tracker', 'Canopy Explorer', 'Trail Blazer',
+      'Bush Walker', 'Fern Seeker', 'Bark Examiner', 'Grove Guardian', 'Wild Explorer'
     ],
-    'Digital Commerce': [
-      'Online Order', 'Digital Download', 'App Purchase', 'Streaming Service', 'Cloud Storage',
-      'Software License', 'E-book', 'Gaming Credits', 'Music Subscription', 'Photo Prints',
-      'Digital Art', 'Online Course', 'Virtual Gift', 'Web Service', 'Digital Magazine'
+    'Mountain Climbers': [
+      'Peak Seeker', 'Summit Explorer', 'Rock Climber', 'Alpine Scout', 'Ridge Walker',
+      'Cliff Hanger', 'Valley Explorer', 'Boulder Hopper', 'Snow Trekker', 'Ice Walker',
+      'Canyon Scout', 'Mesa Explorer', 'Slope Rider', 'Crag Climber', 'High Altitude Explorer'
     ]
   };
-
-  const rarities: Array<'Common' | 'Rare' | 'Epic' | 'Legendary'> = ['Common', 'Rare', 'Epic', 'Legendary'];
   const creators = ['BlockReceipt', 'POS Terminal', 'Receipt Bot', 'Auto Mint', 'Chain Store', 'Digital Till'];
   
   let nftId = 1;
@@ -55,18 +53,17 @@ const generateReceiptNFTs = (): KawaiiNFT[] => {
 
   Object.entries(categories).forEach(([category, names]) => {
     names.forEach(name => {
-      const rarity = rarities[Math.floor(Math.random() * rarities.length)];
-      const basePrice = rarity === 'Common' ? 0.1 : rarity === 'Rare' ? 0.5 : rarity === 'Epic' ? 1.2 : 3.0;
+      const basePrice = 0.5;
       
       nfts.push({
         id: nftId.toString(),
         name,
-        image: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&colorful=true`,
+        image: `https://api.dicebear.com/7.x/adventurer/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`,
         category,
-        rarity,
+        rarity: 'Common' as 'Common' | 'Rare' | 'Epic' | 'Legendary',
         price: basePrice + Math.random() * 0.5,
         likes: Math.floor(Math.random() * 150) + 10,
-        isAnimated: Math.random() > 0.7,
+        isAnimated: false,
         creator: creators[Math.floor(Math.random() * creators.length)]
       });
       nftId++;
@@ -201,20 +198,10 @@ export default function NFTBrowser() {
                       }`}
                     />
                     
-                    {/* Animated Badge */}
-                    {nft.isAnimated && (
-                      <div className="absolute top-2 left-2">
-                        <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white animate-bounce">
-                          ✨ Animated
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {/* Rarity Badge */}
+                    {/* NFT ID Badge */}
                     <div className="absolute top-2 right-2">
-                      <Badge className={`${getRarityColor(nft.rarity)} text-white flex items-center gap-1`}>
-                        {getRarityIcon(nft.rarity)}
-                        {nft.rarity}
+                      <Badge className="bg-blue-500 text-white">
+                        #{nft.id}
                       </Badge>
                     </div>
                     
