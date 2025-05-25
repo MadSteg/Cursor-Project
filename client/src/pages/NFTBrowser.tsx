@@ -4,7 +4,7 @@ import { Heart, Sparkles, Star, Crown, Gem } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-// Using dynamic imports for assets with spaces in filenames
+import { useQuery } from '@tanstack/react-query';
 
 interface KawaiiNFT {
   id: string;

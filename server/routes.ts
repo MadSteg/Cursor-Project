@@ -17,6 +17,7 @@ import merchantPluginRoutes from "./routes/merchant-plugin";
 import productsRoutes from "./routes/products";
 // Import merchant registry routes
 import { merchantRoutes } from "./routes/merchants";
+import { googleCloudStorageService } from "./services/googleCloudStorage";
 // POS webhook integration routes
 import posWebhookRoutes from "./routes/posWebhook";
 import nftReceiptsRoutes from "./routes/nft-receipts";
@@ -477,6 +478,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(monthlySpending);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch monthly spending" });
+    }
+  });
+
+  // Get NFT images from Google Cloud Storage
+  app.get("/api/nft-images", async (req, res) => {
+    try {
+      const images = await googleCloudStorageService.getNFTImagesWithUrls();
+      res.json({
+        success: true,
+        images: images,
+        count: images.length
+      });
+    } catch (error) {
+      console.error('Error fetching NFT images:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch NFT images from Google Cloud Storage",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Test Google Cloud Storage connection
+  app.get("/api/test-gcs-connection", async (req, res) => {
+    try {
+      const isConnected = await googleCloudStorageService.testConnection();
+      res.json({
+        success: isConnected,
+        message: isConnected ? "Google Cloud Storage connection successful" : "Failed to connect to Google Cloud Storage"
+      });
+    } catch (error) {
+      console.error('Error testing GCS connection:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Error testing Google Cloud Storage connection",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
