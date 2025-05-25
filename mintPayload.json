@@ -1,0 +1,9 @@
+{
+  "merchantName": "Dunkin Donuts",
+  "totalAmount": "24.50",
+  "currency": "USD",
+  "items": [
+    { "name": "Latte", "quantity": 1, "price": "4.25" },
+    { "name": "Donut", "quantity": 2, "price": "2.50" }
+  ]
+}
