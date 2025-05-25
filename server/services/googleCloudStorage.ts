@@ -45,7 +45,20 @@ class GoogleCloudStorageService {
    */
   getPublicUrl(fileName: string): string {
     // Generate a proper public URL for Google Cloud Storage
-    return `https://storage.googleapis.com/${this.bucketName}/${encodeURIComponent(fileName)}`;
+    return `https://storage.cloud.google.com/${this.bucketName}/${encodeURIComponent(fileName)}`;
+  }
+
+  /**
+   * Make a file publicly accessible
+   */
+  async makeFilePublic(fileName: string): Promise<void> {
+    try {
+      const file = this.storage.bucket(this.bucketName).file(fileName);
+      await file.makePublic();
+      console.log(`Made ${fileName} publicly accessible`);
+    } catch (error) {
+      console.error(`Error making ${fileName} public:`, error);
+    }
   }
 
   /**
@@ -72,10 +85,16 @@ class GoogleCloudStorageService {
     try {
       const imageFileNames = await this.listNFTImages();
       const imagesWithUrls = await Promise.all(
-        imageFileNames.map(async fileName => ({
-          fileName,
-          url: await this.getSignedUrl(fileName)
-        }))
+        imageFileNames.map(async fileName => {
+          // Try to make file public first
+          await this.makeFilePublic(fileName);
+          
+          // Return public URL for better compatibility
+          return {
+            fileName,
+            url: this.getPublicUrl(fileName)
+          };
+        })
       );
       return imagesWithUrls;
     } catch (error) {
