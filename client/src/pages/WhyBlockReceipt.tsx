@@ -3,17 +3,32 @@ import { CheckCircle, Shield, TrendingUp, Leaf, Lock, Sparkles, FileText, Rotate
 
 const WhyBlockReceipt: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
-            Why use BlockReceipt?
-          </h1>
-          <p className="text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed">
-            BlockReceipt helps you keep track of every purchase — securely, privately, and permanently — without relying on paper, email, or memory. Here's why it's better than traditional receipts.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700">
+      {/* Hero Header with Purple Gradient */}
+      <div className="relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
         </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
+        
+        <div className="max-w-6xl mx-auto px-4 py-16 relative z-10">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+              Why use BlockReceipt?
+            </h1>
+            <p className="text-xl text-purple-100 max-w-4xl mx-auto leading-relaxed">
+              BlockReceipt helps you keep track of every purchase — securely, privately, and permanently — without relying on paper, email, or memory. Here's why it's better than traditional receipts.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="max-w-6xl mx-auto px-4 pb-16">
 
         {/* Feature Grid */}
         <div className="grid md:grid-cols-2 gap-12 mb-16">

@@ -166,27 +166,26 @@ export default function NFTBrowser() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50">
-      {/* Magical Header */}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700">
+      {/* Hero Header with Purple Gradient */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-blue-500/20"></div>
-        <div className="container mx-auto px-4 py-16 relative">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
+        </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
+        
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="text-center">
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
-              🧾 BlockReceipt NFT Collection
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              BlockReceipt NFT Collection
             </h1>
-            <p className="text-2xl text-gray-700 max-w-3xl mx-auto mb-8">
+            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto mb-8">
               These NFTs are automatically minted when you make purchases using BlockReceipt. Each NFT contains encrypted receipt data including purchase details, merchant information, and transaction history.
             </p>
-            <div className="flex justify-center space-x-2 text-4xl mb-8">
-              <span>🧾</span>
-              <span>💎</span>
-              <span>🔗</span>
-              <span>✨</span>
-              <span>🛡️</span>
-            </div>
-            
-
           </div>
         </div>
       </div>
