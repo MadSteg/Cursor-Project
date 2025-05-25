@@ -4,8 +4,7 @@ import { Heart, Sparkles, Star, Crown, Gem } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import dunkinNftImage from '@assets/Dunkin NFT Template.png';
-import img7721 from '@assets/IMG_7721.jpeg';
+// Using dynamic imports for assets with spaces in filenames
 
 interface KawaiiNFT {
   id: string;
@@ -60,7 +59,7 @@ const generateReceiptNFTs = (): KawaiiNFT[] => {
       nfts.push({
         id: nftId.toString(),
         name,
-        image: nftId % 2 === 0 ? dunkinNftImage : img7721,
+        image: `https://api.dicebear.com/7.x/adventurer/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`,
         category,
         rarity: 'Common' as 'Common' | 'Rare' | 'Epic' | 'Legendary',
         price: basePrice + Math.random() * 0.5,
@@ -207,12 +206,7 @@ export default function NFTBrowser() {
                       </Badge>
                     </div>
                     
-                    {/* Price Badge */}
-                    <div className="absolute bottom-2 left-2">
-                      <Badge className="bg-green-500 text-white font-bold">
-                        {nft.price.toFixed(2)} ETH
-                      </Badge>
-                    </div>
+
                     
                     {/* Likes */}
                     <div className="absolute bottom-2 right-2 flex items-center space-x-1 bg-white/90 rounded-full px-2 py-1">
