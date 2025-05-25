@@ -19,6 +19,7 @@ import merchantPluginRoutes from "./routes/merchant-plugin";
 import productsRoutes from "./routes/products";
 // Import merchant registry routes
 import { merchantRoutes } from "./routes/merchants";
+import { registerMerchantPortalRoutes } from "./routes/merchantPortal";
 import { googleCloudStorageService } from "./services/googleCloudStorage";
 // POS webhook integration routes
 import posWebhookRoutes from "./routes/posWebhook";

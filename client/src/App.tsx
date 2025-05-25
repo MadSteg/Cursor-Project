@@ -20,6 +20,7 @@ const HowItWorks = React.lazy(() => import("./pages/HowItWorks"));
 const WhyBlockReceipt = React.lazy(() => import("./pages/WhyBlockReceipt"));
 const ForMerchants = React.lazy(() => import("./pages/ForMerchants"));
 const PaymentTest = React.lazy(() => import("./pages/PaymentTest"));
+const MerchantPortal = React.lazy(() => import("./pages/MerchantPortal"));
 const LoyaltyRewards = React.lazy(() => import("./pages/LoyaltyRewards"));
 const PREDemo = React.lazy(() => import("./pages/PREDemo"));
 
@@ -78,6 +79,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/payment-test">
             <PaymentTest />
+          </Route>
+          
+          <Route path="/merchant-portal">
+            <MerchantPortal />
           </Route>
           
           <Route>
