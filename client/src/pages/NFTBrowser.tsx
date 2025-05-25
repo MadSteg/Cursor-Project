@@ -20,30 +20,30 @@ interface KawaiiNFT {
 // Extensive kawaii NFT collection with consistent naming
 const generateReceiptNFTs = (): KawaiiNFT[] => {
   const categories = {
-    'Retail Receipts': [
-      'Target Purchase', 'Walmart Receipt', 'Best Buy Tech', 'Home Depot Tools', 'Amazon Order',
-      'Apple Store Buy', 'Nike Sneakers', 'Starbucks Coffee', 'CVS Pharmacy', 'GameStop Game',
-      'Barnes Noble', 'Costco Bulk', 'Trader Joes', 'Whole Foods', 'REI Outdoor'
+    'Retail Shopping': [
+      'Tech Gadget', 'Home Improvement', 'Fashion Find', 'Sports Gear', 'Book Purchase',
+      'Electronics', 'Garden Supply', 'Craft Materials', 'Beauty Products', 'Toy Store',
+      'Office Supplies', 'Pet Accessories', 'Music Album', 'Video Game', 'Art Supplies'
     ],
-    'Restaurant Bills': [
-      'Pizza Hut Meal', 'McDonalds Order', 'Chipotle Bowl', 'Subway Sandwich', 'Taco Bell',
-      'Olive Garden', 'Cheesecake Factory', 'Panera Bread', 'Five Guys', 'In-N-Out',
-      'Dominos Pizza', 'KFC Chicken', 'Burger King', 'Dennys Diner', 'IHOP Pancakes'
+    'Food & Dining': [
+      'Pizza Night', 'Burger Meal', 'Coffee Break', 'Sandwich Lunch', 'Taco Tuesday',
+      'Pasta Dinner', 'Breakfast Treat', 'Ice Cream', 'Sushi Roll', 'BBQ Feast',
+      'Salad Bowl', 'Donut Run', 'Smoothie Stop', 'Bakery Visit', 'Deli Order'
     ],
-    'Gas Stations': [
-      'Shell Gas', 'Exxon Fill-up', 'BP Station', 'Chevron Fuel', 'Mobil Gas',
-      'Texaco Stop', '76 Station', 'Arco Gas', 'Valero Fuel', 'Speedway',
-      'Wawa Store', '7-Eleven', 'Circle K', 'QuikTrip', 'Casey General'
+    'Fuel & Travel': [
+      'Gas Fill-up', 'Road Trip Fuel', 'Morning Commute', 'Highway Stop', 'City Drive',
+      'Weekend Travel', 'Car Wash', 'Snack Stop', 'Energy Drink', 'Travel Essentials',
+      'Highway Rest', 'Urban Fuel', 'Quick Stop', 'Journey Break', 'Fuel & Go'
     ],
-    'Grocery Stores': [
-      'Kroger Receipt', 'Safeway Shop', 'Publix Order', 'H-E-B Texas', 'Giant Food',
-      'Stop Shop', 'Food Lion', 'Albertsons', 'Meijer Store', 'WinCo Foods',
-      'Fresh Market', 'Harris Teeter', 'Wegmans', 'King Soopers', 'City Market'
+    'Grocery & Market': [
+      'Weekly Shop', 'Fresh Produce', 'Organic Haul', 'Pantry Restock', 'Healthy Choices',
+      'Bulk Shopping', 'Local Market', 'Farm Fresh', 'Meal Prep', 'Family Groceries',
+      'Fresh Bakery', 'Deli Counter', 'Seafood Market', 'Farmers Market', 'Corner Store'
     ],
-    'Online Purchases': [
-      'Amazon Prime', 'eBay Auction', 'Etsy Craft', 'Walmart Online', 'Target Pickup',
-      'Best Buy Ship', 'Home Depot', 'Lowes Order', 'Wayfair Home', 'Overstock',
-      'Newegg Tech', 'B&H Photo', 'REI Coop', 'Dick Sports', 'Macys Online'
+    'Digital Commerce': [
+      'Online Order', 'Digital Download', 'App Purchase', 'Streaming Service', 'Cloud Storage',
+      'Software License', 'E-book', 'Gaming Credits', 'Music Subscription', 'Photo Prints',
+      'Digital Art', 'Online Course', 'Virtual Gift', 'Web Service', 'Digital Magazine'
     ]
   };
 
@@ -61,7 +61,7 @@ const generateReceiptNFTs = (): KawaiiNFT[] => {
       nfts.push({
         id: nftId.toString(),
         name,
-        image: `https://api.dicebear.com/7.x/shapes/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`,
+        image: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&colorful=true`,
         category,
         rarity,
         price: basePrice + Math.random() * 0.5,
