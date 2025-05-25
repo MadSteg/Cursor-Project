@@ -17,7 +17,7 @@ class GoogleCloudStorageService {
       projectId: credentials.project_id,
     });
     
-    this.bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'blockreceipt';
+    this.bucketName = 'blockreceipt'; // Use your actual bucket name
   }
 
   /**
