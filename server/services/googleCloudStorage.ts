@@ -44,19 +44,40 @@ class GoogleCloudStorageService {
    * Get a public URL for an image in the bucket
    */
   getPublicUrl(fileName: string): string {
-    return `https://storage.googleapis.com/${this.bucketName}/${fileName}`;
+    // Generate a proper public URL for Google Cloud Storage
+    return `https://storage.googleapis.com/${this.bucketName}/${encodeURIComponent(fileName)}`;
   }
 
   /**
-   * Get all NFT images with their public URLs
+   * Get a signed URL for private images (if bucket is not public)
+   */
+  async getSignedUrl(fileName: string): Promise<string> {
+    try {
+      const file = this.storage.bucket(this.bucketName).file(fileName);
+      const [url] = await file.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+      });
+      return url;
+    } catch (error) {
+      console.error('Error generating signed URL:', error);
+      return this.getPublicUrl(fileName); // Fallback to public URL
+    }
+  }
+
+  /**
+   * Get all NFT images with their accessible URLs
    */
   async getNFTImagesWithUrls(): Promise<Array<{ fileName: string; url: string }>> {
     try {
       const imageFileNames = await this.listNFTImages();
-      return imageFileNames.map(fileName => ({
-        fileName,
-        url: this.getPublicUrl(fileName)
-      }));
+      const imagesWithUrls = await Promise.all(
+        imageFileNames.map(async fileName => ({
+          fileName,
+          url: await this.getSignedUrl(fileName)
+        }))
+      );
+      return imagesWithUrls;
     } catch (error) {
       console.error('Error getting NFT images with URLs:', error);
       return [];
