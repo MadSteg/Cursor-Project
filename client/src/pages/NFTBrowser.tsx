@@ -210,7 +210,7 @@ export default function NFTBrowser() {
                       {/* Hover Effect */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
                         <div className="text-white text-xs font-semibold p-2">
-                          Click to view
+                          View Receipt Details
                         </div>
                       </div>
                     </div>
@@ -251,7 +251,7 @@ export default function NFTBrowser() {
                       {/* Hover Effect */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
                         <div className="text-white text-xs font-semibold p-2">
-                          Click to view
+                          View Receipt Details
                         </div>
                       </div>
                     </div>
@@ -292,7 +292,7 @@ export default function NFTBrowser() {
                       {/* Hover Effect */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
                         <div className="text-white text-xs font-semibold p-2">
-                          Click to view
+                          View Receipt Details
                         </div>
                       </div>
                     </div>
@@ -333,7 +333,7 @@ export default function NFTBrowser() {
                       {/* Hover Effect */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
                         <div className="text-white text-xs font-semibold p-2">
-                          Click to view
+                          View Receipt Details
                         </div>
                       </div>
                     </div>
