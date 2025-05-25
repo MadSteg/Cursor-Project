@@ -7,7 +7,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeStripeService } from "./services/stripeService";
 import { thresholdClient } from "./services/tacoService";
-import "dotenv-safe/config"; // ensures .env and .env.example match
+import * as dotenv from "dotenv-safe";
+dotenv.config(); // ensures .env and .env.example match
 
 // PRE encryption functionality enabled
 
