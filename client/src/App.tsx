@@ -31,7 +31,7 @@ const AppContent: React.FC = () => {
   const { isConnected } = useWallet();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-slate-900 text-white">
       <Header />
       
       <main className="py-8 px-4 container mx-auto">
@@ -87,9 +87,9 @@ const AppContent: React.FC = () => {
         </ErrorBoundary>
       </main>
       
-      <footer className="py-8 border-t">
+      <footer className="py-8 border-t border-slate-700">
         <div className="container mx-auto px-4">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-slate-400">
             © {new Date().getFullYear()} BlockReceipt.ai. All rights reserved.
           </p>
         </div>
