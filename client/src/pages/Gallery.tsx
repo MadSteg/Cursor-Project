@@ -4,92 +4,32 @@ import { useWallet } from '../contexts/WalletContext';
 interface NFTItem {
   id: string;
   tokenId: string;
-  imageUrl: string;
   merchantName: string;
   date: string;
   total: number;
   category?: string;
+  imageUrl: string;
+  items?: Array<{
+    name: string;
+    quantity: number;
+    price: string;
+  }>;
   warranty?: {
     duration: string;
     expires: string;
-  }
+  };
 }
 
 const Gallery: React.FC = () => {
-  const { isConnected, walletAddress } = useWallet();
   const [nfts, setNfts] = useState<NFTItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeNft, setActiveNft] = useState<NFTItem | null>(null);
-  
-  // Mock data for demonstration purposes
-  useEffect(() => {
-    // In a real app, this would fetch from your backend API
-    const fetchNfts = async () => {
-      setIsLoading(true);
-      
-      // Simulate API call delay
-      setTimeout(() => {
-        // Mock data to demonstrate UI before real API integration
-        const mockNfts: NFTItem[] = [
-          {
-            id: '1',
-            tokenId: '0x123456789abcdef',
-            imageUrl: 'https://placehold.co/400x600/6366f1/ffffff?text=Receipt+NFT',
-            merchantName: 'Grocery Store',
-            date: '2025-05-15',
-            total: 67.82,
-            category: 'Groceries'
-          },
-          {
-            id: '2',
-            tokenId: '0x234567890abcdef',
-            imageUrl: 'https://placehold.co/400x600/8b5cf6/ffffff?text=Electronics+NFT',
-            merchantName: 'Tech Store',
-            date: '2025-05-10',
-            total: 499.99,
-            category: 'Electronics',
-            warranty: {
-              duration: '2 years',
-              expires: '2027-05-10'
-            }
-          },
-          {
-            id: '3',
-            tokenId: '0x345678901abcdef',
-            imageUrl: 'https://placehold.co/400x600/ec4899/ffffff?text=Restaurant+NFT',
-            merchantName: 'Local Restaurant',
-            date: '2025-05-18',
-            total: 85.65,
-            category: 'Dining'
-          },
-          {
-            id: '4',
-            tokenId: '0x456789012abcdef',
-            imageUrl: 'https://placehold.co/400x600/f59e0b/ffffff?text=Clothing+NFT',
-            merchantName: 'Fashion Outlet',
-            date: '2025-05-05',
-            total: 128.45,
-            category: 'Clothing'
-          }
-        ];
-        
-        setNfts(mockNfts);
-        setIsLoading(false);
-      }, 1500);
-    };
-    
-    if (isConnected && walletAddress) {
-      fetchNfts();
-    } else {
-      setNfts([]);
-      setIsLoading(false);
-    }
-  }, [isConnected, walletAddress]);
-  
+  const { isConnected, walletAddress } = useWallet();
+
   // Demo NFTs to showcase enhanced metadata
-  const demoNfts = [
+  const demoNfts: NFTItem[] = [
     {
       id: 'demo-1',
       tokenId: '1',
@@ -101,8 +41,7 @@ const Gallery: React.FC = () => {
       items: [
         { name: 'Latte', quantity: 1, price: '4.25' },
         { name: 'Donut', quantity: 2, price: '2.50' }
-      ],
-      warranty: null
+      ]
     },
     {
       id: 'demo-2', 
@@ -132,8 +71,7 @@ const Gallery: React.FC = () => {
       items: [
         { name: 'Organic Groceries', quantity: 1, price: '45.30' },
         { name: 'Household Items', quantity: 3, price: '25.99' }
-      ],
-      warranty: null
+      ]
     }
   ];
 
@@ -153,7 +91,22 @@ const Gallery: React.FC = () => {
     
     return matchesCategory && matchesSearch;
   });
-  
+
+  // Mock fetch for demonstration
+  useEffect(() => {
+    if (isConnected && walletAddress) {
+      setIsLoading(true);
+      // Simulate API call
+      setTimeout(() => {
+        setNfts([]); // Start with empty to show demo NFTs
+        setIsLoading(false);
+      }, 1000);
+    } else {
+      setNfts([]);
+      setIsLoading(false);
+    }
+  }, [isConnected, walletAddress]);
+
   // Modal for viewing NFT details
   const NFTModal = ({ nft, onClose }: { nft: NFTItem; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
@@ -255,76 +208,20 @@ const Gallery: React.FC = () => {
       </div>
     </div>
   );
-  
-  // Demo NFTs to showcase enhanced metadata
-  const demoNfts = [
-    {
-      id: 'demo-1',
-      tokenId: '1',
-      merchantName: 'Dunkin Donuts',
-      date: '2025-05-25',
-      total: 24.50,
-      category: 'Food & Beverage',
-      imageUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&fit=crop',
-      items: [
-        { name: 'Latte', quantity: 1, price: '4.25' },
-        { name: 'Donut', quantity: 2, price: '2.50' }
-      ],
-      warranty: null
-    },
-    {
-      id: 'demo-2', 
-      tokenId: '2',
-      merchantName: 'Best Buy',
-      date: '2025-05-24',
-      total: 89.99,
-      category: 'Electronics',
-      imageUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop',
-      items: [
-        { name: 'Wireless Mouse', quantity: 1, price: '29.99' },
-        { name: 'USB Cable', quantity: 2, price: '15.00' }
-      ],
-      warranty: {
-        duration: '1 Year',
-        expires: '2026-05-24'
-      }
-    },
-    {
-      id: 'demo-3',
-      tokenId: '3', 
-      merchantName: 'Target',
-      date: '2025-05-23',
-      total: 156.78,
-      category: 'Retail',
-      imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop',
-      items: [
-        { name: 'Organic Groceries', quantity: 1, price: '45.30' },
-        { name: 'Household Items', quantity: 3, price: '25.99' }
-      ],
-      warranty: null
-    }
-  ];
 
-  // Use demo NFTs when not connected or no real NFTs available
-  const displayNfts = !isConnected || nfts.length === 0 ? demoNfts : nfts;
-  
   // Loading state
   if (isLoading) {
     return (
       <div className="py-12 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">NFT Receipt Gallery</h1>
-          </div>
-          
+          <h1 className="text-3xl font-bold mb-8 brand-gradient-text">NFT Receipt Gallery</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="bg-card rounded-lg shadow-sm overflow-hidden border animate-pulse">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-card rounded-lg shadow-sm overflow-hidden border animate-pulse">
                 <div className="h-48 bg-muted"></div>
-                <div className="p-4 space-y-3">
-                  <div className="h-5 bg-muted rounded w-2/3"></div>
-                  <div className="h-4 bg-muted rounded w-1/2"></div>
-                  <div className="h-4 bg-muted rounded w-1/4"></div>
+                <div className="p-4">
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-3/4"></div>
                 </div>
               </div>
             ))}
@@ -333,7 +230,7 @@ const Gallery: React.FC = () => {
       </div>
     );
   }
-  
+
   // Empty state
   if (filteredNfts.length === 0) {
     return (
@@ -351,20 +248,6 @@ const Gallery: React.FC = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full md:w-64 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
               </div>
               
               <select
@@ -392,12 +275,6 @@ const Gallery: React.FC = () => {
                 ? "No NFTs match your current filters. Try adjusting your search criteria."
                 : "You don't have any NFT receipts yet. Upload a receipt to get started."}
             </p>
-            <a
-              href="/upload"
-              className="interactive-button inline-block px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
-            >
-              Upload Receipt
-            </a>
           </div>
         </div>
       </div>
