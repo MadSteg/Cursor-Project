@@ -2,6 +2,7 @@
   "merchantName": "Dunkin Donuts",
   "totalAmount": "24.50",
   "currency": "USD",
+  "walletAddress": "0x742d35Cc6634C0532925a3b8D23C3C51bC0dE5d8",
   "items": [
     { "name": "Latte", "quantity": 1, "price": "4.25" },
     { "name": "Donut", "quantity": 2, "price": "2.50" }

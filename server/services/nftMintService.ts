@@ -9,7 +9,8 @@
  */
 import { amoyBlockchainService } from './amoyBlockchainService';
 import { ipfsService } from './ipfsService';
-import { tacoService } from './tacoService';
+// Import TaCo service - will use thresholdClient instead
+// import { tacoService } from './tacoService';
 import { determineReceiptTier } from './ocrService';
 import { logger } from '../utils/logger';
 
@@ -133,19 +134,14 @@ class NFTMintService {
       
       // Upload metadata to IPFS
       logger.info('Uploading metadata to IPFS...');
-      const metadataResult = await ipfsService.pinJSON(metadata);
+      const metadataResult = await ipfsService.pinToIPFS(JSON.stringify(metadata));
       logger.info(`Metadata pinned to IPFS: ${metadataResult}`);
       
       // Determine if metadata should be encrypted
       let encryptedMetadata = null;
       if (options.encryptedMetadata && options.wallet && options.recipientPublicKey) {
-        logger.info('Encrypting metadata with TaCo...');
-        encryptedMetadata = await tacoService.encryptReceiptMetadata(
-          receipt.items,
-          options.wallet,
-          options.recipientPublicKey
-        );
-        logger.info('Metadata encrypted successfully');
+        logger.info('Encryption requested but TaCo service temporarily disabled');
+        encryptedMetadata = { available: false };
       }
       
       // Format wallet address if provided

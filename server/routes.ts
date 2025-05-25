@@ -48,6 +48,8 @@ import nftsRoutes from "./routes/nfts";
 import nftPurchaseBotRoutes from "./routes/nftPurchaseBot";
 // Import the NFT Pool routes
 import nftPoolRoutes from "./routes/nftPool";
+// Import the direct mint routes for testing enriched metadata
+import directMintRoutes from "./routes/directMint";
 // Import the task queue routes
 import taskRoutes from "./routes/tasks";
 // Import test routes for the task queue
@@ -163,6 +165,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register NFT Pool routes
   app.use('/api/nfts', nftPoolRoutes);
+  
+  // Register direct mint routes for testing enriched metadata
+  app.use('/api/direct-mint', directMintRoutes);
   
   // Register Task Queue routes
   app.use('/api', taskRoutes);
