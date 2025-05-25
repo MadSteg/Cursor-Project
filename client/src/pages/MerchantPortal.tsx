@@ -155,10 +155,19 @@ export default function MerchantPortal() {
                   <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{analytics.totalMints.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +{analytics.thisMonth} this month
-                  </p>
+                  {analyticsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-20 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">{analytics?.totalMints?.toLocaleString() || '0'}</div>
+                      <p className="text-xs text-muted-foreground">
+                        +{analytics?.thisMonth || 0} this month
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -168,10 +177,19 @@ export default function MerchantPortal() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${analytics.avgTransactionValue}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +12.3% from last month
-                  </p>
+                  {analyticsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">${analytics?.avgTransactionValue?.toFixed(2) || '0.00'}</div>
+                      <p className="text-xs text-muted-foreground">
+                        +12.3% from last month
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -181,10 +199,19 @@ export default function MerchantPortal() {
                   <Leaf className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{analytics.carbonSaved}kg</div>
-                  <p className="text-xs text-muted-foreground">
-                    CO₂ emissions avoided
-                  </p>
+                  {analyticsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">{analytics?.carbonSaved || 0}kg</div>
+                      <p className="text-xs text-muted-foreground">
+                        CO₂ emissions avoided
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -194,10 +221,19 @@ export default function MerchantPortal() {
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${analytics.costSavings}</div>
-                  <p className="text-xs text-muted-foreground">
-                    vs. paper receipts
-                  </p>
+                  {analyticsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">${analytics?.costSavings?.toFixed(2) || '0.00'}</div>
+                      <p className="text-xs text-muted-foreground">
+                        vs. paper receipts
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -209,31 +245,52 @@ export default function MerchantPortal() {
                 <CardDescription>Latest transactions from your POS system</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { id: 'TXN-001', amount: '$24.99', customer: '0x1234...5678', time: '2 min ago', status: 'minted' },
-                    { id: 'TXN-002', amount: '$45.20', customer: '0x8765...4321', time: '5 min ago', status: 'minted' },
-                    { id: 'TXN-003', amount: '$12.50', customer: '0x9876...1234', time: '8 min ago', status: 'pending' },
-                  ].map((txn) => (
-                    <div key={txn.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <p className="font-medium">{txn.id}</p>
-                          <p className="text-sm text-gray-500">{txn.customer}</p>
+                {analyticsLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="animate-pulse flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-24"></div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="h-4 bg-gray-200 rounded w-16 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-20"></div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">{txn.amount}</p>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={txn.status === 'minted' ? 'default' : 'secondary'}>
-                            {txn.status}
-                          </Badge>
-                          <span className="text-sm text-gray-500">{txn.time}</span>
+                    ))}
+                  </div>
+                ) : analytics?.recentTransactions?.length > 0 ? (
+                  <div className="space-y-4">
+                    {analytics.recentTransactions.map((txn) => (
+                      <div key={txn.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <p className="font-medium">{txn.id}</p>
+                            <p className="text-sm text-gray-500">{txn.customer}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{txn.amount}</p>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={txn.status === 'minted' ? 'default' : 'secondary'}>
+                              {txn.status}
+                            </Badge>
+                            <span className="text-sm text-gray-500">{txn.time}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-lg font-medium">No transactions yet</p>
+                    <p className="text-sm">Generate an API key and connect your POS system to start seeing transactions</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
