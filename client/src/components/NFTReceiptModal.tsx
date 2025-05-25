@@ -100,16 +100,16 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
               <h3 className="text-lg font-bold text-gray-900">Receipt NFT #{receiptData.tokenId}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <Store className="h-4 w-4 text-gray-700" />
-                <span className="font-medium text-gray-800">{receiptData.merchantName}</span>
-                <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">{receiptData.category}</Badge>
+                <span className="font-bold text-gray-900">{receiptData.merchantName}</span>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-900 border-blue-300 font-semibold">{receiptData.category}</Badge>
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <Calendar className="h-4 w-4 text-gray-700" />
                 <span className="text-sm text-gray-800">{receiptData.purchaseDate} at 2:34 PM EST</span>
               </div>
               <div className="text-xs mt-1 font-mono">
-                <span className="text-gray-600">Transaction: </span>
-                <span className="text-red-600 font-semibold">{receiptData.transactionId || 'tx_demo123abc'}</span>
+                <span className="text-gray-700">Transaction: </span>
+                <span className="text-red-700 font-bold bg-red-50 px-2 py-1 rounded">{receiptData.transactionId || 'tx_demo123abc'}</span>
               </div>
               
               {/* Verification Details */}
