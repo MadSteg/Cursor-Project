@@ -110,7 +110,7 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
             </div>
           </div>
 
-          <Separator />
+          <hr className="border-gray-200" />
 
           {/* Purchase Details */}
           <Card>
@@ -127,7 +127,7 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
                   </div>
                 ))}
                 
-                <Separator className="my-3" />
+                <hr className="my-3 border-gray-200" />
                 
                 <div className="space-y-1">
                   <div className="flex justify-between">

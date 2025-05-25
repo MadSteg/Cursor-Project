@@ -521,6 +521,16 @@ const Home: React.FC = () => {
 
       
 
+      {/* NFT Receipt Modal */}
+      {selectedNFT && (
+        <NFTReceiptModal
+          isOpen={!!selectedNFT}
+          onClose={() => setSelectedNFT(null)}
+          nftImage={selectedNFT.image}
+          nftId={selectedNFT.id}
+        />
+      )}
+
     </div>
     </>
   );
