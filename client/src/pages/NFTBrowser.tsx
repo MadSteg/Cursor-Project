@@ -4,6 +4,8 @@ import { Heart, Sparkles, Star, Crown, Gem } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import SEOHead from '../components/SEOHead';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 interface KawaiiNFT {
   id: string;
@@ -166,6 +168,13 @@ export default function NFTBrowser() {
   };
 
   return (
+    <>
+      <SEOHead 
+        title="NFT Collectibles Gallery - BlockReceipt.ai"
+        description="Explore our collection of carbon-neutral NFT collectibles. Each digital receipt transforms into a unique, encrypted NFT powered by blockchain technology."
+        keywords="NFT gallery, digital collectibles, blockchain receipts, carbon-neutral NFTs, encrypted NFTs, Web3 collectibles"
+        url="/nft-browser"
+      />
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700">
       {/* Hero Header with Purple Gradient */}
       <div className="relative overflow-hidden">
@@ -282,6 +291,11 @@ export default function NFTBrowser() {
         )}
       </div>
     </div>
+  );
+}
+
+      </div>
+    </>
   );
 }
 
