@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useWallet } from '../contexts/WalletContext';
-import { useLanguage } from '../contexts/LanguageContext';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
   const { isConnected, walletAddress, connect, disconnect } = useWallet();
-  const { language, setLanguage, t } = useLanguage();
   
   // Format wallet address for display
   const formatWalletAddress = (address: string) => {
@@ -16,9 +14,10 @@ const Header: React.FC = () => {
   
   // Navigation links
   const navLinks = [
-    { name: t('nav.nftGallery'), path: '/nft-browser' },
-    { name: t('nav.whyBlockReceipt'), path: '/why-blockreceipt' },
-    { name: t('nav.forMerchants'), path: '/for-merchants' },
+    { name: 'Gallery', path: '/gallery' },
+    { name: 'NFT Browser', path: '/nft-browser' },
+    { name: 'Why BlockReceipt', path: '/why-blockreceipt' },
+    { name: 'For Merchants', path: '/for-merchants' },
   ];
   
   return (
@@ -65,7 +64,7 @@ const Header: React.FC = () => {
                   onClick={disconnect}
                   className="px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors"
                 >
-                  {t('common.disconnect')}
+                  Disconnect
                 </button>
               </div>
             ) : (
@@ -73,7 +72,7 @@ const Header: React.FC = () => {
                 onClick={() => connect('metamask')}
                 className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg transition-colors"
               >
-                {t('common.connectWallet')}
+                Connect Wallet
               </button>
             )}
           </div>
