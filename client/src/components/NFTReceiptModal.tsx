@@ -107,8 +107,9 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
                 <Calendar className="h-4 w-4 text-gray-700" />
                 <span className="text-sm text-gray-800">{receiptData.purchaseDate} at 2:34 PM EST</span>
               </div>
-              <div className="text-xs text-gray-600 mt-1 font-mono">
-                Transaction: {receiptData.transactionId || 'tx_demo123abc'}
+              <div className="text-xs mt-1 font-mono">
+                <span className="text-gray-600">Transaction: </span>
+                <span className="text-red-600 font-semibold">{receiptData.transactionId || 'tx_demo123abc'}</span>
               </div>
               
               {/* Verification Details */}
