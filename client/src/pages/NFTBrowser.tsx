@@ -4,7 +4,6 @@ import { Heart, Sparkles, Star, Crown, Gem } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
 
 interface KawaiiNFT {
   id: string;
@@ -17,6 +16,37 @@ interface KawaiiNFT {
   isAnimated: boolean;
   creator: string;
 }
+
+// Function to generate NFTs using your real images from Google Cloud Storage
+const generateNFTsFromBucket = (bucketImages: Array<{ fileName: string; url: string }>): KawaiiNFT[] => {
+  const categories = ['Receipt NFTs', 'Collectibles', 'Digital Assets', 'Blockchain Items'];
+  const creators = ['BlockReceipt', 'Digital Mint', 'NFT Creator', 'Chain Artist'];
+  
+  return bucketImages.map((image, index) => {
+    const nftId = index + 1;
+    const category = categories[index % categories.length];
+    const creator = creators[index % creators.length];
+    
+    // Extract a display name from the filename
+    const displayName = image.fileName
+      .replace(/\.(png|jpg|jpeg|gif)$/i, '') // Remove extension
+      .replace(/^nft[-_]?/i, '') // Remove 'nft' prefix
+      .replace(/[-_]/g, ' ') // Replace dashes/underscores with spaces
+      .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
+    
+    return {
+      id: nftId.toString(),
+      name: displayName || `NFT #${nftId}`,
+      image: image.url,
+      category,
+      rarity: 'Common' as 'Common' | 'Rare' | 'Epic' | 'Legendary',
+      price: 0, // No price display as requested
+      likes: Math.floor(Math.random() * 150) + 10,
+      isAnimated: false,
+      creator
+    };
+  });
+};
 
 // Extensive kawaii NFT collection with consistent naming
 const generateReceiptNFTs = (): KawaiiNFT[] => {
@@ -95,15 +125,41 @@ const getRarityIcon = (rarity: string) => {
 };
 
 export default function NFTBrowser() {
-  const [nfts] = useState<KawaiiNFT[]>(generateReceiptNFTs());
   const [visibleNFTs, setVisibleNFTs] = useState(24);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [bucketImages, setBucketImages] = useState<Array<{ fileName: string; url: string }>>([]);
+  const [imagesLoading, setImagesLoading] = useState(true);
 
-  const categories = ['All', ...Array.from(new Set(nfts.map(nft => nft.category)))];
+  // Fetch real NFT images from your Google Cloud Storage bucket
+  useEffect(() => {
+    async function fetchBucketImages() {
+      try {
+        const response = await fetch('/api/nft-images');
+        const data = await response.json();
+        
+        if (data.success && data.images?.length > 0) {
+          setBucketImages(data.images);
+        }
+      } catch (error) {
+        console.log('Using fallback images - bucket may be empty or not accessible');
+      } finally {
+        setImagesLoading(false);
+      }
+    }
+    
+    fetchBucketImages();
+  }, []);
+
+  // Generate NFTs using your real images from the bucket
+  const nfts = bucketImages.length > 0 
+    ? generateNFTsFromBucket(bucketImages)
+    : generateReceiptNFTs();
+
+  const categories = ['All', ...Array.from(new Set(nfts.map((nft: KawaiiNFT) => nft.category)))];
 
   const filteredNFTs = selectedCategory === 'All' 
     ? nfts 
-    : nfts.filter(nft => nft.category === selectedCategory);
+    : nfts.filter((nft: KawaiiNFT) => nft.category === selectedCategory);
 
   const loadMore = () => {
     setVisibleNFTs(prev => Math.min(prev + 12, filteredNFTs.length));
