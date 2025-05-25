@@ -287,8 +287,11 @@ const Home: React.FC = () => {
             {/* Step 1 */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  1
+                <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg relative">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0L17 13" />
+                  </svg>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-white text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">1</div>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Check Out Like Normal</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
@@ -302,8 +305,11 @@ const Home: React.FC = () => {
             {/* Step 2 */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  2
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg relative">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-white text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">2</div>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Instant Digital Receipt</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
@@ -317,8 +323,11 @@ const Home: React.FC = () => {
             {/* Step 3 */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  3
+                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg relative">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-white text-green-600 rounded-full flex items-center justify-center text-sm font-bold">3</div>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Get Rewards, Not Clutter</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
@@ -332,8 +341,11 @@ const Home: React.FC = () => {
             {/* Step 4 */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  4
+                <div className="w-20 h-20 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg relative">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-white text-orange-600 rounded-full flex items-center justify-center text-sm font-bold">4</div>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Secure Verification & Returns</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
@@ -347,8 +359,11 @@ const Home: React.FC = () => {
             {/* Step 5 */}
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 h-full hover:bg-white/15 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="w-20 h-20 bg-gradient-to-r from-indigo-400 to-purple-500 text-white rounded-2xl flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  5
+                <div className="w-20 h-20 bg-gradient-to-r from-indigo-400 to-purple-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg relative">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-white text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold">5</div>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 text-center">Your Proof, Always Secure</h3>
                 <p className="text-purple-100 text-center leading-relaxed text-sm">
