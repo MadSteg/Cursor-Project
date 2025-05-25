@@ -10,7 +10,38 @@ const Home: React.FC = () => {
   const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFloatingNFT, setShowFloatingNFT] = useState(false);
-  const displayNFTs = sampleNFTs.slice(0, 6);
+  const [bucketImages, setBucketImages] = useState<Array<{ fileName: string; url: string }>>([]);
+  const [imagesLoading, setImagesLoading] = useState(true);
+
+  // Fetch your real images from Google Cloud Storage
+  useEffect(() => {
+    async function fetchBucketImages() {
+      try {
+        const response = await fetch('/api/nft-images');
+        const data = await response.json();
+        
+        if (data.success && data.images?.length > 0) {
+          setBucketImages(data.images);
+        }
+      } catch (error) {
+        console.log('Using fallback images - bucket may be empty or not accessible');
+      } finally {
+        setImagesLoading(false);
+      }
+    }
+    
+    fetchBucketImages();
+  }, []);
+
+  // Use your real images if available, otherwise fall back to sample NFTs
+  const displayNFTs = bucketImages.length > 0 
+    ? bucketImages.map((image, index) => ({
+        id: index + 1,
+        name: image.fileName.replace(/\.(png|jpg|jpeg|gif)$/i, '').replace(/^screenshot[-_]?/i, '').replace(/[-_]/g, ' '),
+        image: image.url,
+        rarity: 'common' as const
+      })).slice(0, 6)
+    : sampleNFTs.slice(0, 6);
 
   // Rotate through featured NFTs
   useEffect(() => {

@@ -17,9 +17,9 @@ interface KawaiiNFT {
   creator: string;
 }
 
-// Function to generate NFTs using your real images with AI analysis
-const generateNFTsFromBucket = (bucketImages: Array<{ fileName: string; url: string }>, analysisResults?: Array<{ fileName: string; analysis: any }>): KawaiiNFT[] => {
-  const categories = ['Bulldog Collection', 'Digital Pets', 'Canine Collectibles', 'Breed Showcase'];
+// Function to generate NFTs using your real images from Google Cloud Storage
+const generateNFTsFromBucket = (bucketImages: Array<{ fileName: string; url: string }>): KawaiiNFT[] => {
+  const categories = ['Receipt NFTs', 'Digital Collectibles', 'Blockchain Assets', 'Purchase Records'];
   const creators = ['BlockReceipt', 'Digital Mint', 'NFT Creator', 'Chain Artist'];
   
   return bucketImages.map((image, index) => {
@@ -27,20 +27,12 @@ const generateNFTsFromBucket = (bucketImages: Array<{ fileName: string; url: str
     const category = categories[index % categories.length];
     const creator = creators[index % creators.length];
     
-    // Try to find AI analysis for this image
-    const analysis = analysisResults?.find(result => result.fileName === image.fileName);
-    
-    let displayName;
-    if (analysis?.analysis?.nftName) {
-      displayName = analysis.analysis.nftName;
-    } else {
-      // Fallback to filename processing
-      displayName = image.fileName
-        .replace(/\.(png|jpg|jpeg|gif)$/i, '') // Remove extension
-        .replace(/^screenshot[-_]?/i, '') // Remove 'screenshot' prefix
-        .replace(/[-_]/g, ' ') // Replace dashes/underscores with spaces
-        .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
-    }
+    // Extract a display name from the filename
+    const displayName = image.fileName
+      .replace(/\.(png|jpg|jpeg|gif)$/i, '') // Remove extension
+      .replace(/^screenshot[-_]?/i, '') // Remove 'screenshot' prefix
+      .replace(/[-_]/g, ' ') // Replace dashes/underscores with spaces
+      .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
     
     return {
       id: nftId.toString(),
@@ -136,9 +128,7 @@ export default function NFTBrowser() {
   const [visibleNFTs, setVisibleNFTs] = useState(24);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [bucketImages, setBucketImages] = useState<Array<{ fileName: string; url: string }>>([]);
-  const [analysisResults, setAnalysisResults] = useState<Array<{ fileName: string; analysis: any }>>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Fetch real NFT images from your Google Cloud Storage bucket
   useEffect(() => {
@@ -160,32 +150,9 @@ export default function NFTBrowser() {
     fetchBucketImages();
   }, []);
 
-  // Function to analyze images with AI and get smart names
-  const analyzeImagesWithAI = async () => {
-    try {
-      setIsAnalyzing(true);
-      const response = await fetch('/api/analyze-nft-images', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setAnalysisResults(data.results);
-        console.log(`AI analysis completed for ${data.results.length} images`);
-      }
-    } catch (error) {
-      console.error('Error analyzing images:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // Generate NFTs using your real images from the bucket with AI analysis
+  // Generate NFTs using your real images from the bucket
   const nfts = bucketImages.length > 0 
-    ? generateNFTsFromBucket(bucketImages, analysisResults)
+    ? generateNFTsFromBucket(bucketImages)
     : generateReceiptNFTs();
 
   const categories = ['All', ...Array.from(new Set(nfts.map((nft: KawaiiNFT) => nft.category)))];
@@ -219,27 +186,7 @@ export default function NFTBrowser() {
               <span>🛡️</span>
             </div>
             
-            {/* AI Analysis Button */}
-            {bucketImages.length > 0 && (
-              <div className="flex justify-center mb-8">
-                <button
-                  onClick={analyzeImagesWithAI}
-                  disabled={isAnalyzing}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Analyzing Images with AI...
-                    </>
-                  ) : (
-                    <>
-                      🤖 Generate Smart NFT Names
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
@@ -347,7 +294,7 @@ export default function NFTBrowser() {
               size="lg"
               className="bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white px-12 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
-              ✨ Discover More Kawaii NFTs ✨
+              ✨ Load More NFTs ✨
             </Button>
             <p className="text-gray-600 mt-4">
               Showing {visibleNFTs} of {filteredNFTs.length} adorable NFTs
