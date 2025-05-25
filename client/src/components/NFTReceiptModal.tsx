@@ -82,15 +82,15 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5" />
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white/98 backdrop-blur-xl border-2 border-white/30 shadow-2xl rounded-2xl">
+        <DialogHeader className="pb-4 border-b border-gray-200">
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
+            <Coins className="h-5 w-5 text-purple-600" />
             NFT Receipt Details
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 text-gray-900">
           {/* NFT Image and Basic Info */}
           <div className="flex gap-4">
             <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200">
@@ -113,9 +113,12 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
           <hr className="border-gray-200" />
 
           {/* Purchase Details */}
-          <Card>
-            <CardContent className="p-4">
-              <h4 className="font-semibold mb-3">Purchase Details</h4>
+          <Card className="bg-gray-50 border-gray-200">
+            <CardContent className="p-6">
+              <h4 className="font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4" />
+                Purchase Details
+              </h4>
               <div className="space-y-2">
                 {receiptData.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-center">
