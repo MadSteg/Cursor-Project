@@ -18,22 +18,22 @@ interface KawaiiNFT {
 }
 
 // Extensive kawaii NFT collection with consistent naming
-const generateKawaiiNFTs = (): KawaiiNFT[] => {
+const generateReceiptNFTs = (): KawaiiNFT[] => {
   const categories = {
-    'Cute Animals': [
-      'Sleepy Corgi', 'Rainbow Cat', 'Baby Panda', 'Magical Unicorn', 'Chubby Hamster',
-      'Fluffy Bunny', 'Dancing Penguin', 'Kawaii Fox', 'Smiling Seal', 'Happy Dolphin',
-      'Tiny Dragon', 'Floating Whale', 'Pixel Kitten', 'Bouncy Slime', 'Glowing Firefly'
+    'Retail Receipts': [
+      'Target Purchase', 'Walmart Receipt', 'Best Buy Tech', 'Home Depot Tools', 'Amazon Order',
+      'Apple Store Buy', 'Nike Sneakers', 'Starbucks Coffee', 'CVS Pharmacy', 'GameStop Game',
+      'Barnes Noble', 'Costco Bulk', 'Trader Joes', 'Whole Foods', 'REI Outdoor'
     ],
-    'Fantasy Friends': [
-      'Fairy Princess', 'Star Guardian', 'Moon Sprite', 'Crystal Mage', 'Wind Spirit',
-      'Cloud Walker', 'Dream Catcher', 'Magic Potion', 'Enchanted Rose', 'Mystic Orb',
-      'Angel Wings', 'Cosmic Butterfly', 'Shooting Star', 'Rainbow Bridge', 'Golden Harp'
+    'Restaurant Bills': [
+      'Pizza Hut Meal', 'McDonalds Order', 'Chipotle Bowl', 'Subway Sandwich', 'Taco Bell',
+      'Olive Garden', 'Cheesecake Factory', 'Panera Bread', 'Five Guys', 'In-N-Out',
+      'Dominos Pizza', 'KFC Chicken', 'Burger King', 'Dennys Diner', 'IHOP Pancakes'
     ],
-    'Sweet Treats': [
-      'Cupcake Princess', 'Donut King', 'Ice Cream Cone', 'Candy Heart', 'Chocolate Chip',
-      'Marshmallow Cloud', 'Lollipop Swirl', 'Bubble Tea', 'Kawaii Cookie', 'Sweet Macaron',
-      'Cotton Candy', 'Strawberry Cake', 'Honey Bear', 'Sugar Crystal', 'Caramel Drop'
+    'Gas Stations': [
+      'Shell Gas', 'Exxon Fill-up', 'BP Station', 'Chevron Fuel', 'Mobil Gas',
+      'Texaco Stop', '76 Station', 'Arco Gas', 'Valero Fuel', 'Speedway',
+      'Wawa Store', '7-Eleven', 'Circle K', 'QuikTrip', 'Casey General'
     ],
     'Ocean Cuties': [
       'Jellyfish Glow', 'Seahorse Dance', 'Starfish Shine', 'Coral Garden', 'Pearl Diver',
@@ -66,7 +66,7 @@ const generateKawaiiNFTs = (): KawaiiNFT[] => {
       nfts.push({
         id: nftId.toString(),
         name,
-        image: `https://via.placeholder.com/200x200/FF69B4/FFFFFF?text=${encodeURIComponent(name.split(' ')[0])}`,
+        image: `https://api.dicebear.com/7.x/shapes/svg?seed=${name.replace(' ', '')}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`,
         category,
         rarity,
         price: basePrice + Math.random() * 0.5,
@@ -102,7 +102,7 @@ const getRarityIcon = (rarity: string) => {
 };
 
 export default function NFTBrowser() {
-  const [nfts] = useState<KawaiiNFT[]>(generateKawaiiNFTs());
+  const [nfts] = useState<KawaiiNFT[]>(generateReceiptNFTs());
   const [visibleNFTs, setVisibleNFTs] = useState(24);
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -123,18 +123,18 @@ export default function NFTBrowser() {
         <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-blue-500/20"></div>
         <div className="container mx-auto px-4 py-16 relative">
           <div className="text-center">
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-6 animate-pulse">
-              ✨ Kawaii NFT Gallery ✨
+            <h1 className="text-6xl font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+              🧾 BlockReceipt NFT Collection
             </h1>
             <p className="text-2xl text-gray-700 max-w-3xl mx-auto mb-8">
-              Discover the cutest collection of animated NFTs in the blockchain universe! 🌈
+              These NFTs are automatically minted when you make purchases using BlockReceipt. Each NFT contains encrypted receipt data including purchase details, merchant information, and transaction history.
             </p>
             <div className="flex justify-center space-x-2 text-4xl mb-8">
-              <span className="animate-bounce">🦄</span>
-              <span className="animate-bounce delay-100">🌟</span>
-              <span className="animate-bounce delay-200">🎀</span>
-              <span className="animate-bounce delay-300">🍭</span>
-              <span className="animate-bounce delay-500">💖</span>
+              <span>🧾</span>
+              <span>💎</span>
+              <span>🔗</span>
+              <span>✨</span>
+              <span>🛡️</span>
             </div>
           </div>
         </div>
