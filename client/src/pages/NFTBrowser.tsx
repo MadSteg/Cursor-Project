@@ -66,7 +66,7 @@ const generateKawaiiNFTs = (): KawaiiNFT[] => {
       nfts.push({
         id: nftId.toString(),
         name,
-        image: `https://picsum.photos/200/200?random=${nftId}&blur=0`,
+        image: `https://via.placeholder.com/200x200/FF69B4/FFFFFF?text=${encodeURIComponent(name.split(' ')[0])}`,
         category,
         rarity,
         price: basePrice + Math.random() * 0.5,
