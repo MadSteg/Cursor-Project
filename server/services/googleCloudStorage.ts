@@ -17,7 +17,7 @@ class GoogleCloudStorageService {
       projectId: credentials.project_id,
     });
     
-    this.bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME;
+    this.bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'blockreceipt';
   }
 
   /**
@@ -25,9 +25,7 @@ class GoogleCloudStorageService {
    */
   async listNFTImages(): Promise<string[]> {
     try {
-      const [files] = await this.storage.bucket(this.bucketName).getFiles({
-        prefix: 'nft', // Assuming your NFT images have 'nft' prefix
-      });
+      const [files] = await this.storage.bucket(this.bucketName).getFiles();
 
       // Filter for image files and return their names
       return files
