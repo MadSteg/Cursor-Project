@@ -31,110 +31,110 @@ const WhyBlockReceipt: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 pb-16">
 
         {/* Feature Grid */}
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
           
           {/* Your Receipts, Upgraded */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-purple-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-purple-100 p-3 rounded-full mr-4">
-                <FileText className="w-8 h-8 text-purple-600" />
+              <div className="bg-gradient-to-r from-purple-400 to-pink-400 p-3 rounded-full mr-4">
+                <FileText className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Your Receipts, Upgraded</h2>
+              <h2 className="text-2xl font-bold text-white">Your Receipts, Upgraded</h2>
             </div>
-            <p className="text-gray-600 mb-6">No more lost paper or endless inbox searches. BlockReceipts are:</p>
+            <p className="text-purple-100 mb-6">No more lost paper or endless inbox searches. BlockReceipts are:</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Minted automatically after purchase (no setup required)</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Minted automatically after purchase (no setup required)</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Stored in a secure, searchable digital vault</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Stored in a secure, searchable digital vault</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Available anytime via mobile</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Available anytime via mobile</span>
               </div>
             </div>
-            <p className="text-purple-600 font-medium mt-6">It's your receipt history reimagined — modern, accessible, and reliable.</p>
+            <p className="text-yellow-300 font-medium mt-6">It's your receipt history reimagined — modern, accessible, and reliable.</p>
           </div>
 
           {/* Return with Confidence */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-blue-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-blue-100 p-3 rounded-full mr-4">
-                <RotateCcw className="w-8 h-8 text-blue-600" />
+              <div className="bg-gradient-to-r from-blue-400 to-cyan-400 p-3 rounded-full mr-4">
+                <RotateCcw className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Return with Confidence</h2>
+              <h2 className="text-2xl font-bold text-white">Return with Confidence</h2>
             </div>
-            <p className="text-gray-600 mb-6">Show proof of purchase in seconds — even months later. BlockReceipts:</p>
+            <p className="text-purple-100 mb-6">Show proof of purchase in seconds — even months later. BlockReceipts:</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Can't fade or be lost</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Can't fade or be lost</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Help you return or exchange faster</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Help you return or exchange faster</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Are cryptographically verifiable</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Are cryptographically verifiable</span>
               </div>
             </div>
-            <p className="text-blue-600 font-medium mt-6">No more digging through drawers. Just open your receipt vault.</p>
+            <p className="text-cyan-300 font-medium mt-6">No more digging through drawers. Just open your receipt vault.</p>
           </div>
 
           {/* Track Your Spending Smarter */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-green-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-green-100 p-3 rounded-full mr-4">
-                <TrendingUp className="w-8 h-8 text-green-600" />
+              <div className="bg-gradient-to-r from-green-400 to-emerald-400 p-3 rounded-full mr-4">
+                <TrendingUp className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Track Your Spending Smarter</h2>
+              <h2 className="text-2xl font-bold text-white">Track Your Spending Smarter</h2>
             </div>
-            <p className="text-gray-600 mb-6">BlockReceipt uses OCR to scan and categorize what you've bought. Over time, you get:</p>
+            <p className="text-purple-100 mb-6">BlockReceipt uses OCR to scan and categorize what you've bought. Over time, you get:</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Insights into spending habits</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Insights into spending habits</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Reorder suggestions</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Reorder suggestions</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Purchase summaries by store, category, or item</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Purchase summaries by store, category, or item</span>
               </div>
             </div>
-            <p className="text-green-600 font-medium mt-6">Think of it as a smart ledger that builds itself.</p>
+            <p className="text-emerald-300 font-medium mt-6">Think of it as a smart ledger that builds itself.</p>
           </div>
 
           {/* Eco-Friendly by Design */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-emerald-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-emerald-100 p-3 rounded-full mr-4">
-                <Leaf className="w-8 h-8 text-emerald-600" />
+              <div className="bg-gradient-to-r from-emerald-400 to-green-400 p-3 rounded-full mr-4">
+                <Leaf className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Eco-Friendly by Design</h2>
+              <h2 className="text-2xl font-bold text-white">Eco-Friendly by Design</h2>
             </div>
-            <p className="text-gray-600 mb-6">Paper receipts are wasteful — and most thermal paper can't be recycled.</p>
+            <p className="text-purple-100 mb-6">Paper receipts are wasteful — and most thermal paper can't be recycled.</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Helps reduce paper use</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Helps reduce paper use</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Lowers carbon footprint</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Lowers carbon footprint</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Powers more sustainable commerce</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Powers more sustainable commerce</span>
               </div>
             </div>
-            <p className="text-emerald-600 font-medium mt-6">It's better for you and the planet.</p>
+            <p className="text-green-300 font-medium mt-6">It's better for you and the planet.</p>
           </div>
 
         </div>

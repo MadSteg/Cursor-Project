@@ -31,53 +31,53 @@ const ForMerchants: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 pb-16">
 
         {/* Merchant Benefits Grid */}
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
           
           {/* Save Money */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-green-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-green-100 p-3 rounded-full mr-4">
-                <DollarSign className="w-8 h-8 text-green-600" />
+              <div className="bg-gradient-to-r from-green-400 to-emerald-400 p-3 rounded-full mr-4">
+                <DollarSign className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Save Money on Every Transaction</h3>
+              <h3 className="text-2xl font-bold text-white">Save Money on Every Transaction</h3>
             </div>
-            <p className="text-gray-600 mb-6">Thermal printers, paper rolls, ink, and maintenance cost merchants thousands annually. BlockReceipt lets you offer a digital receipt without printing anything.</p>
+            <p className="text-purple-100 mb-6">Thermal printers, paper rolls, ink, and maintenance cost merchants thousands annually. BlockReceipt lets you offer a digital receipt without printing anything.</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Minting a digital receipt costs &lt; $0.005</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Minting a digital receipt costs &lt; $0.005</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Eliminate printer jams, service contracts, and reprints</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Eliminate printer jams, service contracts, and reprints</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Free up staff time currently spent on receipt issues</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Free up staff time currently spent on receipt issues</span>
               </div>
             </div>
           </div>
 
           {/* Reduce Returns Headaches */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-blue-100">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
             <div className="flex items-center mb-6">
-              <div className="bg-blue-100 p-3 rounded-full mr-4">
-                <RotateCcw className="w-8 h-8 text-blue-600" />
+              <div className="bg-gradient-to-r from-blue-400 to-cyan-400 p-3 rounded-full mr-4">
+                <RotateCcw className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">Reduce Returns Headaches</h3>
+              <h3 className="text-2xl font-bold text-white">Reduce Returns Headaches</h3>
             </div>
-            <p className="text-gray-600 mb-6">With BlockReceipt, customers can return items more easily — and you have verifiable proof of purchase on-chain.</p>
+            <p className="text-purple-100 mb-6">With BlockReceipt, customers can return items more easily — and you have verifiable proof of purchase on-chain.</p>
             <div className="space-y-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Fewer disputes over lost/damaged receipts</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Fewer disputes over lost/damaged receipts</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                <span className="text-gray-700">Reduced fraud from fake returns</span>
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-purple-100">Reduced fraud from fake returns</span>
               </div>
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
                 <span className="text-gray-700">Shorter return lines and less conflict for staff</span>
               </div>
             </div>
