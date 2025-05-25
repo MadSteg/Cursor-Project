@@ -88,10 +88,38 @@ export default function NFTBrowser() {
   const displayImages = generateDisplayImages();
 
   const handleImageClick = (image: any) => {
+    // Generate receipt data that matches what the modal expects
+    const merchants = ['Dunkin Donuts', 'Best Buy', 'Target', 'Starbucks', 'Amazon', 'Apple Store'];
+    const itemsData = [
+      [{ name: 'Medium Coffee', quantity: 1, price: 3.49 }, { name: 'Glazed Donut', quantity: 2, price: 1.29 }],
+      [{ name: 'Wireless Headphones', quantity: 1, price: 149.99 }, { name: 'Phone Case', quantity: 1, price: 24.99 }],
+      [{ name: 'Organic T-Shirt', quantity: 2, price: 19.99 }, { name: 'Jeans', quantity: 1, price: 39.99 }],
+      [{ name: 'Latte', quantity: 1, price: 4.95 }, { name: 'Blueberry Muffin', quantity: 1, price: 2.75 }],
+      [{ name: 'Book: Design Patterns', quantity: 1, price: 29.99 }, { name: 'USB Cable', quantity: 1, price: 12.99 }],
+      [{ name: 'iPhone 15 Pro', quantity: 1, price: 999.99 }, { name: 'AppleCare+', quantity: 1, price: 199.99 }]
+    ];
+    
+    const merchantIndex = (image.id - 1) % merchants.length;
+    const items = itemsData[merchantIndex];
+    const subtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    const tax = subtotal * 0.0875;
+    const total = subtotal + tax;
+    
     setSelectedNFT({
-      ...sampleReceiptData,
       id: image.id,
-      image: image.url
+      image: image.url,
+      merchantName: merchants[merchantIndex],
+      purchaseDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      totalAmount: total,
+      currency: "USD",
+      items: items,
+      transactionId: "BR_" + Math.random().toString(36).substr(2, 8).toUpperCase(),
+      verificationDetails: {
+        tokenId: image.id,
+        contractAddress: "0x" + Math.random().toString(16).substr(2, 40),
+        network: "Polygon Amoy",
+        verifiedAt: new Date().toISOString()
+      }
     });
     setModalOpen(true);
   };
@@ -147,49 +175,172 @@ export default function NFTBrowser() {
           </div>
         </div>
 
-        {/* NFT Grid with Animation */}
+        {/* NFT Scrolling Animation Rows */}
         <div className="container mx-auto px-4 pb-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-            {displayImages.map((image, index) => (
-              <div
-                key={image.id}
-                onClick={() => handleImageClick(image)}
-                className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-pink-300/50 hover:shadow-2xl overflow-hidden rounded-xl animate-fadeInUp"
-                style={{
-                  animationDelay: `${index * 0.05}s`,
-                  animationFillMode: 'both'
-                }}
-              >
-                <div className="relative">
-                  {/* Glow Effect */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 bg-gradient-to-br from-purple-400 to-pink-500 blur-lg"></div>
+          <div className="space-y-8 overflow-hidden">
+            {/* Row 1 - Left to Right */}
+            <div className="flex animate-scroll-left space-x-4">
+              {displayImages.slice(0, 14).concat(displayImages.slice(0, 14)).map((image, index) => (
+                <div
+                  key={`row1-${index}`}
+                  onClick={() => handleImageClick(image)}
+                  className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-pink-300/50 hover:shadow-2xl overflow-hidden rounded-xl flex-shrink-0"
+                  style={{ width: '120px', height: '120px' }}
+                >
+                  <div className="relative h-full">
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 bg-gradient-to-br from-purple-400 to-pink-500 blur-lg"></div>
 
-                  {/* NFT Image */}
-                  <div className="relative p-3">
-                    <img
-                      src={image.url}
-                      alt={`NFT #${image.id}`}
-                      className="w-full h-24 object-contain rounded-lg transition-all duration-300 group-hover:scale-110"
-                      loading="lazy"
-                    />
+                    {/* NFT Image */}
+                    <div className="relative p-3 h-full flex flex-col">
+                      <img
+                        src={image.url}
+                        alt={`NFT #${image.id}`}
+                        className="w-full h-16 object-contain rounded-lg transition-all duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
 
-                    {/* NFT ID Badge */}
-                    <div className="absolute top-1 right-1">
-                      <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
-                        #{image.id}
+                      {/* NFT ID Badge */}
+                      <div className="absolute top-1 right-1">
+                        <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                          #{image.id}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Hover Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
-                      <div className="text-white text-xs font-semibold p-2">
-                        Click to view receipt
+                      {/* Hover Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
+                        <div className="text-white text-xs font-semibold p-2">
+                          Click to view
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Row 2 - Right to Left */}
+            <div className="flex animate-scroll-right space-x-4">
+              {displayImages.slice(14, 28).concat(displayImages.slice(14, 28)).map((image, index) => (
+                <div
+                  key={`row2-${index}`}
+                  onClick={() => handleImageClick(image)}
+                  className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-pink-300/50 hover:shadow-2xl overflow-hidden rounded-xl flex-shrink-0"
+                  style={{ width: '120px', height: '120px' }}
+                >
+                  <div className="relative h-full">
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 bg-gradient-to-br from-cyan-400 to-blue-500 blur-lg"></div>
+
+                    {/* NFT Image */}
+                    <div className="relative p-3 h-full flex flex-col">
+                      <img
+                        src={image.url}
+                        alt={`NFT #${image.id}`}
+                        className="w-full h-16 object-contain rounded-lg transition-all duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+
+                      {/* NFT ID Badge */}
+                      <div className="absolute top-1 right-1">
+                        <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                          #{image.id}
+                        </div>
+                      </div>
+
+                      {/* Hover Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
+                        <div className="text-white text-xs font-semibold p-2">
+                          Click to view
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Row 3 - Left to Right (Faster) */}
+            <div className="flex animate-scroll-left-fast space-x-4">
+              {displayImages.slice(28, 42).concat(displayImages.slice(28, 42)).map((image, index) => (
+                <div
+                  key={`row3-${index}`}
+                  onClick={() => handleImageClick(image)}
+                  className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-pink-300/50 hover:shadow-2xl overflow-hidden rounded-xl flex-shrink-0"
+                  style={{ width: '120px', height: '120px' }}
+                >
+                  <div className="relative h-full">
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 bg-gradient-to-br from-yellow-400 to-orange-500 blur-lg"></div>
+
+                    {/* NFT Image */}
+                    <div className="relative p-3 h-full flex flex-col">
+                      <img
+                        src={image.url}
+                        alt={`NFT #${image.id}`}
+                        className="w-full h-16 object-contain rounded-lg transition-all duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+
+                      {/* NFT ID Badge */}
+                      <div className="absolute top-1 right-1">
+                        <div className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                          #{image.id}
+                        </div>
+                      </div>
+
+                      {/* Hover Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
+                        <div className="text-white text-xs font-semibold p-2">
+                          Click to view
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Row 4 - Right to Left (Slower) */}
+            <div className="flex animate-scroll-right-slow space-x-4">
+              {displayImages.slice(42, 55).concat(displayImages.slice(42, 55)).map((image, index) => (
+                <div
+                  key={`row4-${index}`}
+                  onClick={() => handleImageClick(image)}
+                  className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-pink-300/50 hover:shadow-2xl overflow-hidden rounded-xl flex-shrink-0"
+                  style={{ width: '120px', height: '120px' }}
+                >
+                  <div className="relative h-full">
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 bg-gradient-to-br from-pink-400 to-red-500 blur-lg"></div>
+
+                    {/* NFT Image */}
+                    <div className="relative p-3 h-full flex flex-col">
+                      <img
+                        src={image.url}
+                        alt={`NFT #${image.id}`}
+                        className="w-full h-16 object-contain rounded-lg transition-all duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+
+                      {/* NFT ID Badge */}
+                      <div className="absolute top-1 right-1">
+                        <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                          #{image.id}
+                        </div>
+                      </div>
+
+                      {/* Hover Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
+                        <div className="text-white text-xs font-semibold p-2">
+                          Click to view
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Collection Info */}
