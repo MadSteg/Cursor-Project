@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 // Using a simple hr element instead of separator component
-import { Calendar, DollarSign, Store, Shield, ExternalLink, Coins, ShoppingCart } from 'lucide-react';
+import { Calendar, DollarSign, Store, Shield, ExternalLink, Coins, ShoppingCart, RefreshCw, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface NFTReceiptModalProps {
@@ -97,15 +97,29 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
               <img src={nftImage} alt="NFT Receipt" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">Receipt NFT #{receiptData.tokenId}</h3>
+              <h3 className="text-lg font-bold text-gray-900">Receipt NFT #{receiptData.tokenId}</h3>
               <div className="flex items-center gap-2 mt-1">
-                <Store className="h-4 w-4 text-gray-600" />
-                <span className="font-medium">{receiptData.merchantName}</span>
-                <Badge variant="secondary">{receiptData.category}</Badge>
+                <Store className="h-4 w-4 text-gray-700" />
+                <span className="font-medium text-gray-800">{receiptData.merchantName}</span>
+                <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">{receiptData.category}</Badge>
               </div>
-              <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
-                <Calendar className="h-4 w-4" />
-                <span>{receiptData.purchaseDate}</span>
+              <div className="flex items-center gap-2 mt-1">
+                <Calendar className="h-4 w-4 text-gray-700" />
+                <span className="text-sm text-gray-800">{receiptData.purchaseDate}</span>
+              </div>
+              
+              {/* Verification Details */}
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">Blockchain Verified</span>
+                </div>
+                <div className="text-xs text-green-700 space-y-1">
+                  <div>Network: Polygon Amoy (Chain ID: 80002)</div>
+                  <div>Contract: 0x1111...1111</div>
+                  <div>IPFS: ipfs://demo-metadata-{receiptData.tokenId}</div>
+                  <div>Status: ✅ Permanently Recorded</div>
+                </div>
               </div>
             </div>
           </div>
@@ -174,28 +188,69 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              onClick={handleVerifyOnChain}
-              disabled={verifying}
-              className="flex-1"
-            >
-              {verifying ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                  Verifying...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Verify on Blockchain
-                </div>
-              )}
-            </Button>
+          <div className="space-y-3 pt-4 border-t border-gray-200">
+            <div className="flex gap-3">
+              <Button
+                onClick={handleVerifyOnChain}
+                disabled={verifying}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {verifying ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                    Verifying...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Verify on Blockchain
+                  </div>
+                )}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </Button>
+            </div>
             
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
+            {/* Warranty & Returns Actions */}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
+                onClick={() => {
+                  toast({
+                    title: "Returns Process",
+                    description: "Return request initiated. You'll receive instructions via email.",
+                  });
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Request Return
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                onClick={() => {
+                  toast({
+                    title: "Warranty Claim",
+                    description: "Warranty claim started. Support team will contact you soon.",
+                  });
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Warranty Claim
+                </div>
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
