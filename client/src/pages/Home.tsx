@@ -361,72 +361,111 @@ const Home: React.FC = () => {
       </div>
 
       {/* Animated NFT Showcase */}
-      <div className="mt-20 mb-16">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Collect Exclusive NFT Characters</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Each purchase comes with a chance to earn rare collectible characters — the more you shop, the more you collect
-          </p>
+      <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden mt-20 mb-16">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
         </div>
         
-        {/* Scrolling NFT Strip */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-purple-100 via-blue-50 to-indigo-100 rounded-2xl py-8 shadow-lg">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-10"></div>
-          
-          {/* First Row - Left to Right */}
-          <div className="flex animate-scroll-left mb-6">
-            {bucketImages.length > 0 
-              ? [...bucketImages, ...bucketImages].map((image, index) => (
-                  <div key={`row1-${index}`} className="flex-shrink-0 mx-3">
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
-                      <img 
-                        src={image.url} 
-                        alt="NFT Collection" 
-                        className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
-                      />
-                    </div>
-                  </div>
-                ))
-              : [...sampleNFTs, ...sampleNFTs].map((nft, index) => (
-                  <div key={`row1-fallback-${index}`} className="flex-shrink-0 mx-3">
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
-                      <img 
-                        src={nft.image} 
-                        alt="NFT Collection" 
-                        className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
-                      />
-                    </div>
-                  </div>
-                ))
-            }
+        {/* Floating Elements */}
+        <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
+        
+        <div className="relative z-10">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Collect Exclusive NFT Characters</h2>
+            <p className="text-xl text-purple-100 max-w-3xl mx-auto">
+              Each purchase comes with a chance to earn rare collectible characters — the more you shop, the more you collect
+            </p>
           </div>
           
-          {/* Second Row - Right to Left */}
-          <div className="flex animate-scroll-right">
-            {bucketImages.length > 0 
-              ? [...bucketImages.slice().reverse(), ...bucketImages.slice().reverse()].map((image, index) => (
-                  <div key={`row2-${index}`} className="flex-shrink-0 mx-3">
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
-                      <img 
-                        src={image.url} 
-                        alt="NFT Collection" 
-                        className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
-                      />
+          {/* Scrolling NFT Strip */}
+          <div className="relative overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-8 shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none z-10"></div>
+            
+            {/* First Row - Left to Right */}
+            <div className="flex animate-scroll-left mb-6">
+              {bucketImages.length > 0 
+                ? [...bucketImages, ...bucketImages].map((image, index) => (
+                    <div key={`row1-${index}`} className="flex-shrink-0 mx-3">
+                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                        <img 
+                          src={image.url} 
+                          alt="NFT Collection" 
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
-              : [...sampleNFTs.slice().reverse(), ...sampleNFTs.slice().reverse()].map((nft, index) => (
-                  <div key={`row2-fallback-${index}`} className="flex-shrink-0 mx-3">
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
-                      <img 
-                        src={nft.image} 
-                        alt="NFT Collection" 
-                        className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
-                      />
+                  ))
+                : [...sampleNFTs, ...sampleNFTs].map((nft, index) => (
+                    <div key={`row1-fallback-${index}`} className="flex-shrink-0 mx-3">
+                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                        <img 
+                          src={nft.image} 
+                          alt="NFT Collection" 
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
-            }
+                  ))
+              }
+            </div>
+            
+            {/* Second Row - Right to Left */}
+            <div className="flex animate-scroll-right mb-6">
+              {bucketImages.length > 0 
+                ? [...bucketImages.slice().reverse(), ...bucketImages.slice().reverse()].map((image, index) => (
+                    <div key={`row2-${index}`} className="flex-shrink-0 mx-3">
+                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                        <img 
+                          src={image.url} 
+                          alt="NFT Collection" 
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                        />
+                      </div>
+                    </div>
+                  ))
+                : [...sampleNFTs.slice().reverse(), ...sampleNFTs.slice().reverse()].map((nft, index) => (
+                    <div key={`row2-fallback-${index}`} className="flex-shrink-0 mx-3">
+                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                        <img 
+                          src={nft.image} 
+                          alt="NFT Collection" 
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                        />
+                      </div>
+                    </div>
+                  ))
+              }
+            </div>
+
+            {/* Third Row - Left to Right (Slower) */}
+            <div className="flex animate-scroll-left-slow">
+              {bucketImages.length > 0 
+                ? [...bucketImages.slice(0, Math.ceil(bucketImages.length/2)), ...bucketImages.slice(0, Math.ceil(bucketImages.length/2))].map((image, index) => (
+                    <div key={`row3-${index}`} className="flex-shrink-0 mx-3">
+                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                        <img 
+                          src={image.url} 
+                          alt="NFT Collection" 
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                        />
+                      </div>
+                    </div>
+                  ))
+                : [...sampleNFTs.slice(0, 3), ...sampleNFTs.slice(0, 3)].map((nft, index) => (
+                    <div key={`row3-fallback-${index}`} className="flex-shrink-0 mx-3">
+                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                        <img 
+                          src={nft.image} 
+                          alt="NFT Collection" 
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all" 
+                        />
+                      </div>
+                    </div>
+                  ))
+              }
+            </div>
           </div>
         </div>
         

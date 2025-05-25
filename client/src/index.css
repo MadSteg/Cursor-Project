@@ -71,6 +71,10 @@ body {
   animation: scroll-right 30s linear infinite;
 }
 
+.animate-scroll-left-slow {
+  animation: scroll-left 45s linear infinite;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
