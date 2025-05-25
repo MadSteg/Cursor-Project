@@ -155,16 +155,16 @@ export default function MerchantPortal() {
                   <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  {analyticsLoading ? (
+                  {analyticsLoading || !analytics ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-20 mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-24"></div>
                     </div>
                   ) : (
                     <>
-                      <div className="text-2xl font-bold">{analytics?.totalMints?.toLocaleString() || '0'}</div>
+                      <div className="text-2xl font-bold">{analytics.totalMints?.toLocaleString() || '0'}</div>
                       <p className="text-xs text-muted-foreground">
-                        +{analytics?.thisMonth || 0} this month
+                        +{analytics.thisMonth || 0} this month
                       </p>
                     </>
                   )}
@@ -177,14 +177,14 @@ export default function MerchantPortal() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  {analyticsLoading ? (
+                  {analyticsLoading || !analytics ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-20"></div>
                     </div>
                   ) : (
                     <>
-                      <div className="text-2xl font-bold">${analytics?.avgTransactionValue?.toFixed(2) || '0.00'}</div>
+                      <div className="text-2xl font-bold">${analytics.avgTransactionValue?.toFixed(2) || '0.00'}</div>
                       <p className="text-xs text-muted-foreground">
                         +12.3% from last month
                       </p>
@@ -199,14 +199,14 @@ export default function MerchantPortal() {
                   <Leaf className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  {analyticsLoading ? (
+                  {analyticsLoading || !analytics ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-24"></div>
                     </div>
                   ) : (
                     <>
-                      <div className="text-2xl font-bold">{analytics?.carbonSaved || 0}kg</div>
+                      <div className="text-2xl font-bold">{analytics.carbonSaved || 0}kg</div>
                       <p className="text-xs text-muted-foreground">
                         CO₂ emissions avoided
                       </p>
@@ -221,14 +221,14 @@ export default function MerchantPortal() {
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  {analyticsLoading ? (
+                  {analyticsLoading || !analytics ? (
                     <div className="animate-pulse">
                       <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-20"></div>
                     </div>
                   ) : (
                     <>
-                      <div className="text-2xl font-bold">${analytics?.costSavings?.toFixed(2) || '0.00'}</div>
+                      <div className="text-2xl font-bold">${analytics.costSavings?.toFixed(2) || '0.00'}</div>
                       <p className="text-xs text-muted-foreground">
                         vs. paper receipts
                       </p>
