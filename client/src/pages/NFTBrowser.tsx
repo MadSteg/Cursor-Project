@@ -366,7 +366,8 @@ export default function NFTBrowser() {
             setModalOpen(false);
             setSelectedNFT(null);
           }}
-          nftData={selectedNFT}
+          nftImage={selectedNFT.image}
+          nftId={selectedNFT.id}
         />
       )}
     </>
