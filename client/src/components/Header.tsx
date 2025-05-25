@@ -20,6 +20,7 @@ const Header: React.FC = () => {
     { name: t('nav.whyBlockReceipt'), path: '/why-blockreceipt' },
     { name: t('nav.forMerchants'), path: '/for-merchants' },
     { name: t('nav.posDemo'), path: '/merchant-demo' },
+    { name: 'PRE Demo', path: '/pre-demo' },
     { name: t('nav.howItWorks'), path: '/how-it-works' },
   ];
   
