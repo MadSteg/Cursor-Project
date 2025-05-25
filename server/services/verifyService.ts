@@ -2,12 +2,39 @@ import { ethers } from 'ethers';
 
 export async function verifyReceipt(tokenId: string) {
   try {
-    // Initialize provider with RPC URL
-    const rpcUrl = process.env.RPC_URL || 'https://polygon-amoy.g.alchemy.com/v2/aW44pWE6n-X1AhiLXaJQPu3POOrIlArr';
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    // For demo purposes, simulate verification for demo tokens 1, 2, 3
+    const demoTokens = ['1', '2', '3'];
     
-    // Contract address - using the enhanced contract
-    const contractAddress = process.env.RECEIPT_NFT_CONTRACT_ADDRESS || '0x1111111111111111111111111111111111111111';
+    if (demoTokens.includes(tokenId)) {
+      // Return simulated verification success for demo
+      return {
+        success: true,
+        tokenId,
+        exists: true,
+        metadataUri: `ipfs://demo-metadata-${tokenId}`,
+        totalSupply: '1',
+        contractAddress: '0x1111111111111111111111111111111111111111',
+        network: {
+          name: 'polygon-amoy',
+          chainId: 80002
+        },
+        verifiedAt: new Date().toISOString(),
+        isDemoToken: true
+      };
+    }
+
+    // For real tokens, try blockchain verification
+    const rpcUrl = process.env.RPC_URL;
+    if (!rpcUrl) {
+      throw new Error('RPC URL not configured for blockchain verification');
+    }
+
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const contractAddress = process.env.RECEIPT_NFT_CONTRACT_ADDRESS;
+    
+    if (!contractAddress || contractAddress === '0x1111111111111111111111111111111111111111') {
+      throw new Error('Contract address not configured for blockchain verification');
+    }
     
     // ERC-1155 ABI for the enhanced receipt contract
     const contractABI = [

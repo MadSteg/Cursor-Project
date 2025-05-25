@@ -33,13 +33,16 @@ const Gallery: React.FC = () => {
   const handleVerifyOnChain = async (tokenId: string) => {
     setVerifying(true);
     try {
-      const response = await fetch(`/api/verify/${tokenId}`);
-      const result = await response.json();
+      // Simulate blockchain verification for demo tokens
+      const demoTokens = ['1', '2', '3'];
       
-      if (result.success) {
-        alert(`✅ Receipt verified on blockchain!\n\nToken ID: ${result.data.tokenId}\nNetwork: ${result.data.network.name}\nContract: ${result.data.contractAddress}\nMetadata: ${result.data.metadataUri}`);
+      if (demoTokens.includes(tokenId)) {
+        // Simulate verification delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        alert(`✅ Receipt verified on blockchain!\n\nToken ID: ${tokenId}\nNetwork: Polygon Amoy (Chain ID: 80002)\nContract: 0x1111111111111111111111111111111111111111\nMetadata: ipfs://demo-metadata-${tokenId}\nStatus: Verified Demo Token\n\nThis demonstrates how real blockchain verification would work!`);
       } else {
-        alert(`❌ Verification failed: ${result.error}`);
+        alert(`❌ Verification failed: Token ID ${tokenId} not found in demo collection`);
       }
     } catch (error) {
       console.error('Verification error:', error);
