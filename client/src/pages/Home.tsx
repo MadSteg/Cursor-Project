@@ -439,76 +439,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Combined Purple Security Section */}
-      <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden mt-20 mb-16">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
-        </div>
-        
-        {/* Floating Security Elements */}
-        <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
-        
-        <div className="relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-              Your Privacy, Your Control
-            </h2>
-            <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto">
-              Why BlockReceipt beats traditional receipts
-            </p>
-          </div>
-          
 
-          
-          {/* TACo PRE Explanation */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 mb-6">
-            <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-3 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1721 9z" />
-              </svg>
-              Advanced TACo PRE Encryption
-            </h3>
-            <p className="text-white/90 text-lg leading-relaxed mb-4">
-              Your receipt metadata is secured using <span className="font-bold text-cyan-300">Threshold Access Control Proxy Re-Encryption</span> — 
-              military-grade technology that ensures only your wallet can decrypt your purchase information.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-cyan-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-black font-bold">1</span>
-                </div>
-                <p className="text-white/80 text-sm">Receipt data encrypted with your unique keys</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-black font-bold">2</span>
-                </div>
-                <p className="text-white/80 text-sm">Stored securely on blockchain & IPFS</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-black font-bold">3</span>
-                </div>
-                <p className="text-white/80 text-sm">Only you decide who gets access</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Call to Action */}
-          <div className="text-center">
-            <p className="text-white/90 text-lg mb-4">
-              <span className="font-bold">Choose security.</span> Choose control. Choose BlockReceipt at checkout.
-            </p>
-            <Link href="/how-it-works">
-              <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-1">
-                Learn More About TACo Security
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
       
 
       
