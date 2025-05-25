@@ -23,19 +23,19 @@ interface KawaiiNFT {
 const generateNFTsFromBucket = (bucketImages: Array<{ fileName: string; url: string }>): KawaiiNFT[] => {
   const categories = ['Receipt NFTs', 'Digital Collectibles', 'Blockchain Assets', 'Purchase Records'];
   const creators = ['BlockReceipt', 'Digital Mint', 'NFT Creator', 'Chain Artist'];
-  
+
   return bucketImages.map((image, index) => {
     const nftId = index + 1;
     const category = categories[index % categories.length];
     const creator = creators[index % creators.length];
-    
+
     // Extract a display name from the filename
     const displayName = image.fileName
       .replace(/\.(png|jpg|jpeg|gif)$/i, '') // Remove extension
       .replace(/^screenshot[-_]?/i, '') // Remove 'screenshot' prefix
       .replace(/[-_]/g, ' ') // Replace dashes/underscores with spaces
       .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
-    
+
     return {
       id: nftId.toString(),
       name: displayName || `Digital Collectible #${nftId}`,
@@ -80,14 +80,14 @@ const generateReceiptNFTs = (): KawaiiNFT[] => {
     ]
   };
   const creators = ['BlockReceipt', 'POS Terminal', 'Receipt Bot', 'Auto Mint', 'Chain Store', 'Digital Till'];
-  
+
   let nftId = 1;
   const nfts: KawaiiNFT[] = [];
 
   Object.entries(categories).forEach(([category, names]) => {
     names.forEach(name => {
       const basePrice = 0.5;
-      
+
       nfts.push({
         id: nftId.toString(),
         name,
@@ -138,7 +138,7 @@ export default function NFTBrowser() {
       try {
         const response = await fetch('/api/nft-images');
         const data = await response.json();
-        
+
         if (data.success && data.images?.length > 0) {
           setBucketImages(data.images);
         }
@@ -148,7 +148,7 @@ export default function NFTBrowser() {
         setImagesLoading(false);
       }
     }
-    
+
     fetchBucketImages();
   }, []);
 
@@ -182,11 +182,11 @@ export default function NFTBrowser() {
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
         </div>
-        
+
         {/* Floating Elements */}
         <div className="absolute top-8 right-8 w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20 animate-pulse"></div>
         <div className="absolute bottom-12 left-12 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full opacity-25 animate-bounce"></div>
-        
+
         <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
@@ -234,7 +234,7 @@ export default function NFTBrowser() {
                     nft.rarity === 'Epic' ? 'bg-purple-500' :
                     nft.rarity === 'Rare' ? 'bg-blue-500' : 'bg-gray-400'
                   } blur-lg`}></div>
-                  
+
                   {/* NFT Image */}
                   <div className="relative p-4">
                     <img
@@ -244,16 +244,16 @@ export default function NFTBrowser() {
                         nft.isAnimated ? 'animate-pulse' : ''
                       }`}
                     />
-                    
+
                     {/* NFT ID Badge */}
                     <div className="absolute top-2 right-2">
                       <Badge className="bg-blue-500 text-white">
                         #{nft.id}
                       </Badge>
                     </div>
-                    
 
-                    
+
+
                     {/* Likes */}
                     <div className="absolute bottom-2 right-2 flex items-center space-x-1 bg-white/90 rounded-full px-2 py-1">
                       <Heart className="w-3 h-3 text-red-500 fill-current" />
@@ -261,7 +261,7 @@ export default function NFTBrowser() {
                     </div>
                   </div>
                 </div>
-                
+
                 <CardContent className="p-4 pt-0">
                   <h3 className="font-bold text-white text-sm mb-1 group-hover:text-pink-300 transition-colors">
                     {nft.name}
@@ -291,9 +291,8 @@ export default function NFTBrowser() {
         )}
       </div>
     </div>
-      </div>
-    </>
-  );
+      </>
+    );
 }
 
 function getCategoryEmoji(category: string): string {
