@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
           </Route>
           
           <Route path="/nft-browser">
-            <EnhancedNFTGallery />
+            <NFTBrowser />
           </Route>
           
           <Route path="/nft/:id">
