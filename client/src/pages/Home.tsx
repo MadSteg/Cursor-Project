@@ -482,23 +482,7 @@ const Home: React.FC = () => {
       
 
       
-      {/* Floating NFT Animation */}
-      {showFloatingNFT && (
-        <div className="fixed bottom-8 right-8 z-50 animate-slide-up">
-          <div className="relative">
-            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black/80 text-white rounded-full px-4 py-1 text-sm font-bold whitespace-nowrap">
-              Upload a receipt to earn!
-            </div>
-            <div className="h-24 w-24 rounded-lg overflow-hidden border-4 border-white shadow-2xl animate-pulse-subtle">
-              <img 
-                src={displayNFTs[0].image} 
-                alt="Featured NFT" 
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
