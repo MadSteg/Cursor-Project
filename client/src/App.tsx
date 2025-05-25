@@ -75,6 +75,10 @@ const AppContent: React.FC = () => {
             <ForMerchants />
           </Route>
           
+          <Route path="/payment-test">
+            <PaymentTest />
+          </Route>
+          
           <Route>
             <div className="max-w-md mx-auto text-center py-12">
               <h1 className="text-4xl font-bold mb-4">404</h1>
