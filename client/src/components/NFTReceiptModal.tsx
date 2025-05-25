@@ -105,7 +105,10 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <Calendar className="h-4 w-4 text-gray-700" />
-                <span className="text-sm text-gray-800">{receiptData.purchaseDate}</span>
+                <span className="text-sm text-gray-800">{receiptData.purchaseDate} at 2:34 PM EST</span>
+              </div>
+              <div className="text-xs text-gray-600 mt-1 font-mono">
+                Transaction: {receiptData.transactionId || 'tx_demo123abc'}
               </div>
               
               {/* Verification Details */}
@@ -164,93 +167,50 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
             </CardContent>
           </Card>
 
-          {/* Payment Info */}
+          {/* Action Cards */}
           <div className="grid grid-cols-2 gap-4">
-            <Card className="bg-green-50 border-green-200">
+            <Card className="bg-orange-50 border-orange-200 cursor-pointer hover:bg-orange-100 transition-colors"
+                  onClick={() => {
+                    toast({
+                      title: "Returns Process",
+                      description: "Return request initiated. You'll receive instructions via email.",
+                    });
+                  }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-gray-800">Payment Method</span>
+                  <RefreshCw className="h-4 w-4 text-orange-600" />
+                  <span className="font-medium text-gray-800">Request Return</span>
                 </div>
-                <p className="text-sm text-gray-700">{receiptData.paymentMethod}</p>
+                <p className="text-sm text-gray-700">Start return process for this item</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+                  onClick={() => {
+                    toast({
+                      title: "Warranty Claim",
+                      description: "Warranty claim started. Support team will contact you soon.",
+                    });
+                  }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <ExternalLink className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-800">Transaction ID</span>
+                  <FileText className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-800">Warranty Claim</span>
                 </div>
-                <p className="text-sm text-gray-700 font-mono">{receiptData.transactionId}</p>
+                <p className="text-sm text-gray-700">File a warranty claim for this purchase</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-3 pt-4 border-t border-gray-200">
-            <div className="flex gap-3">
-              <Button
-                onClick={handleVerifyOnChain}
-                disabled={verifying}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                {verifying ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    Verifying...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Verify on Blockchain
-                  </div>
-                )}
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Close
-              </Button>
-            </div>
-            
-            {/* Warranty & Returns Actions */}
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
-                onClick={() => {
-                  toast({
-                    title: "Returns Process",
-                    description: "Return request initiated. You'll receive instructions via email.",
-                  });
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Request Return
-                </div>
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
-                onClick={() => {
-                  toast({
-                    title: "Warranty Claim",
-                    description: "Warranty claim started. Support team will contact you soon.",
-                  });
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Warranty Claim
-                </div>
-              </Button>
-            </div>
+          <div className="pt-4 border-t border-gray-200">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Close
+            </Button>
           </div>
         </div>
       </DialogContent>
