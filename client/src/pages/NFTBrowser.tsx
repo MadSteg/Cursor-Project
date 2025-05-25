@@ -217,7 +217,7 @@ export default function NFTBrowser() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
           {filteredNFTs.slice(0, visibleNFTs).map((nft, index) => (
             <Link key={nft.id} href={`/nft/${nft.id}`}>
-              <Card className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/90 backdrop-blur-sm border-2 hover:border-pink-300 hover:shadow-2xl overflow-hidden">
+              <Card className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:rotate-1 bg-white/10 backdrop-blur-sm border border-white/20 hover:border-pink-300/50 hover:shadow-2xl overflow-hidden">
                 <div className="relative">
                   {/* Rarity Glow Effect */}
                   <div className={`absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 ${
@@ -254,11 +254,11 @@ export default function NFTBrowser() {
                 </div>
                 
                 <CardContent className="p-4 pt-0">
-                  <h3 className="font-bold text-gray-800 text-sm mb-1 group-hover:text-purple-600 transition-colors">
+                  <h3 className="font-bold text-white text-sm mb-1 group-hover:text-pink-300 transition-colors">
                     {nft.name}
                   </h3>
-                  <p className="text-xs text-gray-600 mb-2">by {nft.creator}</p>
-                  <div className="text-xs text-gray-500">{nft.category}</div>
+                  <p className="text-xs text-purple-200 mb-2">by {nft.creator}</p>
+                  <div className="text-xs text-purple-300">{nft.category}</div>
                 </CardContent>
               </Card>
             </Link>
@@ -275,7 +275,7 @@ export default function NFTBrowser() {
             >
               ✨ Load More NFTs ✨
             </Button>
-            <p className="text-gray-600 mt-4">
+            <p className="text-purple-200 mt-4">
               Showing {visibleNFTs} of {filteredNFTs.length} adorable NFTs
             </p>
           </div>
