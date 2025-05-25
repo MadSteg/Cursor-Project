@@ -506,6 +506,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analyze images with AI and get smart NFT names
+  app.post("/api/analyze-nft-images", async (req, res) => {
+    try {
+      const { imageAnalysisService } = await import('./services/imageAnalysis');
+      const images = await googleCloudStorageService.getNFTImagesWithUrls();
+      
+      // Convert to proxy URLs for analysis
+      const proxiedImages = images.map(image => ({
+        fileName: image.fileName,
+        url: `http://localhost:5000/api/image-proxy/${encodeURIComponent(image.fileName)}`
+      }));
+      
+      console.log(`Starting AI analysis of ${proxiedImages.length} images...`);
+      const analysisResults = await imageAnalysisService.analyzeMultipleImages(proxiedImages);
+      
+      res.json({
+        success: true,
+        results: analysisResults,
+        count: analysisResults.length
+      });
+    } catch (error) {
+      console.error('Error analyzing images:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to analyze images",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Image proxy endpoint to serve images directly from our server
   app.get("/api/image-proxy/:fileName(*)", async (req, res) => {
     try {
