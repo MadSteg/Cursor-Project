@@ -118,7 +118,7 @@
     "recharts": "^2.15.2",
     "sharp": "^0.34.2",
     "solc": "^0.8.30",
-    "stripe": "^18.1.0",
+    "stripe": "^18.1.1",
     "supertest": "^7.1.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",

@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import stripeWebhook from "./routes/stripeWebhook";
 // Removed legacy Mumbai blockchain routes
 import blockchainAmoyRoutes from "./routes/blockchain-amoy";
 import multiBlockchainRoutes from "./routes/multi-blockchain";
@@ -78,6 +79,9 @@ import cloudStorageRoutes from "./routes/cloudStorage";
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   // All routes are prefixed with /api
+  
+  // Stripe webhook must be registered BEFORE JSON parser middleware
+  app.use('/api/webhook', stripeWebhook);
   
   // Mumbai blockchain routes have been removed completely
   
