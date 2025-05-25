@@ -8,7 +8,9 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeStripeService } from "./services/stripeService";
 import { thresholdClient } from "./services/tacoService";
 import * as dotenv from "dotenv-safe";
-dotenv.config(); // ensures .env and .env.example match
+dotenv.config({
+  allowEmptyValues: true
+}); // allows empty environment variables
 
 // PRE encryption functionality enabled
 
