@@ -291,9 +291,6 @@ export default function NFTBrowser() {
         )}
       </div>
     </div>
-  );
-}
-
       </div>
     </>
   );

@@ -1,7 +1,9 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Route, Switch } from 'wouter';
 import Header from "./components/Header";
 import { ErrorBoundary, LoadingFallback } from "./components/ErrorBoundary";
+import { initGA } from './lib/analytics';
+import { useAnalytics } from './hooks/use-analytics';
 
 // Lazy load pages for better performance
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
@@ -29,6 +31,9 @@ import { ToastProvider } from './hooks/use-toast';
 // Inner component that uses the wallet context
 const AppContent: React.FC = () => {
   const { isConnected } = useWallet();
+  
+  // Track page views when routes change
+  useAnalytics();
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
