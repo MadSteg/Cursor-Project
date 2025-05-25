@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 // Using a simple hr element instead of separator component
-import { Calendar, DollarSign, Store, Shield, ExternalLink, Coins } from 'lucide-react';
+import { Calendar, DollarSign, Store, Shield, ExternalLink, Coins, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface NFTReceiptModalProps {
@@ -152,23 +152,23 @@ export default function NFTReceiptModal({ isOpen, onClose, nftImage, nftId }: NF
 
           {/* Payment Info */}
           <div className="grid grid-cols-2 gap-4">
-            <Card>
+            <Card className="bg-green-50 border-green-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <DollarSign className="h-4 w-4 text-green-600" />
-                  <span className="font-medium">Payment Method</span>
+                  <span className="font-medium text-gray-800">Payment Method</span>
                 </div>
-                <p className="text-sm text-gray-600">{receiptData.paymentMethod}</p>
+                <p className="text-sm text-gray-700">{receiptData.paymentMethod}</p>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <ExternalLink className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium">Transaction ID</span>
+                  <span className="font-medium text-gray-800">Transaction ID</span>
                 </div>
-                <p className="text-sm text-gray-600 font-mono">{receiptData.transactionId}</p>
+                <p className="text-sm text-gray-700 font-mono">{receiptData.transactionId}</p>
               </CardContent>
             </Card>
           </div>
