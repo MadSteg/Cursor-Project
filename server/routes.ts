@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { validateBody, mintSchema, stripePaymentSchema, verifyReceiptSchema } from "./middleware/validation";
 import stripeWebhook from "./routes/stripeWebhook";
 // Removed legacy Mumbai blockchain routes
 import blockchainAmoyRoutes from "./routes/blockchain-amoy";

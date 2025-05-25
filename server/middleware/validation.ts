@@ -1,68 +1,119 @@
+import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodSchema } from 'zod';
-import asyncHandler from 'express-async-handler';
+
+// Validation schemas
+export const mintSchema = Joi.object({
+  merchantName: Joi.string().min(1).max(100).required(),
+  totalAmount: Joi.string().pattern(/^[0-9]+(\.[0-9]{1,2})?$/).required(),
+  currency: Joi.string().valid('USD', 'EUR', 'GBP', 'CAD').required(),
+  items: Joi.array().items(
+    Joi.object({
+      name: Joi.string().min(1).max(200).required(),
+      quantity: Joi.number().integer().min(1).max(1000).required(),
+      price: Joi.string().pattern(/^[0-9]+(\.[0-9]{1,2})?$/).required()
+    })
+  ).min(1).max(50).required(),
+  walletAddress: Joi.string().pattern(/^0x[a-fA-F0-9]{40}$/).required()
+});
+
+export const stripePaymentSchema = Joi.object({
+  amount: Joi.number().min(0.50).max(999999.99).required(),
+  currency: Joi.string().valid('usd', 'eur', 'gbp', 'cad').required(),
+  receiptData: Joi.object({
+    merchantName: Joi.string().min(1).max(100).required(),
+    items: Joi.array().items(
+      Joi.object({
+        name: Joi.string().min(1).max(200).required(),
+        quantity: Joi.number().integer().min(1).required(),
+        price: Joi.number().min(0).required()
+      })
+    ).min(1).required()
+  }).optional()
+});
+
+export const verifyReceiptSchema = Joi.object({
+  tokenId: Joi.string().pattern(/^[0-9]+$/).required(),
+  contractAddress: Joi.string().pattern(/^0x[a-fA-F0-9]{40}$/).required()
+});
+
+export const walletConnectionSchema = Joi.object({
+  walletAddress: Joi.string().pattern(/^0x[a-fA-F0-9]{40}$/).required(),
+  signature: Joi.string().min(10).max(500).required()
+});
 
 // Validation middleware factory
-export const validateBody = (schema: ZodSchema) => {
-  return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      req.body = schema.parse(req.body);
-      next();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({
-          error: 'Validation failed',
-          details: error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
-        });
-        return;
-      }
-      next(error);
+export const validateBody = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false, // Include all errors
+      stripUnknown: true // Remove unknown fields
+    });
+
+    if (error) {
+      const errorMessages = error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message
+      }));
+
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errorMessages
+      });
     }
-  });
+
+    // Replace req.body with validated and sanitized data
+    req.body = value;
+    next();
+  };
 };
 
-// Common validation schemas
-export const schemas = {
-  // Receipt creation schema
-  createReceipt: z.object({
-    userId: z.number().int().positive(),
-    merchantName: z.string().min(1, 'Merchant name is required'),
-    total: z.number().positive('Total must be positive'),
-    subtotal: z.number().positive().optional(),
-    tax: z.number().nonnegative().optional(),
-    date: z.string().datetime().optional(),
-    items: z.array(z.object({
-      name: z.string().min(1, 'Item name is required'),
-      quantity: z.number().int().positive('Quantity must be positive'),
-      price: z.number().nonnegative('Price must be non-negative')
-    })).min(1, 'At least one item is required').optional(),
-    category: z.string().optional(),
-    imageHash: z.string().optional()
-  }),
+// Query parameter validation
+export const validateQuery = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { error, value } = schema.validate(req.query, {
+      abortEarly: false,
+      stripUnknown: true
+    });
 
-  // User creation schema
-  createUser: z.object({
-    username: z.string().min(3, 'Username must be at least 3 characters'),
-    email: z.string().email('Invalid email format'),
-    password: z.string().min(8, 'Password must be at least 8 characters')
-  }),
+    if (error) {
+      const errorMessages = error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message
+      }));
 
-  // NFT minting schema
-  mintNFT: z.object({
-    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
-    receiptId: z.number().int().positive(),
-    tokenId: z.string().optional(),
-    metadataUri: z.string().url().optional()
-  }),
+      return res.status(400).json({
+        error: 'Query validation failed',
+        details: errorMessages
+      });
+    }
 
-  // Loyalty rewards claim schema
-  claimReward: z.object({
-    userId: z.number().int().positive(),
-    rewardType: z.enum(['points', 'nft', 'discount']),
-    amount: z.number().positive().optional(),
-    merchantName: z.string().min(1).optional()
-  })
+    req.query = value;
+    next();
+  };
+};
+
+// Sanitization helpers
+export const sanitizeInput = {
+  // Remove potentially dangerous characters
+  cleanString: (input: string): string => {
+    return input.replace(/[<>\"']/g, '').trim();
+  },
+  
+  // Validate and clean wallet addresses
+  cleanWalletAddress: (address: string): string => {
+    const cleaned = address.toLowerCase().trim();
+    if (!/^0x[a-f0-9]{40}$/.test(cleaned)) {
+      throw new Error('Invalid wallet address format');
+    }
+    return cleaned;
+  },
+  
+  // Clean monetary amounts
+  cleanAmount: (amount: string): number => {
+    const cleaned = parseFloat(amount);
+    if (isNaN(cleaned) || cleaned < 0) {
+      throw new Error('Invalid amount format');
+    }
+    return Math.round(cleaned * 100) / 100; // Round to 2 decimal places
+  }
 };
