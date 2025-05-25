@@ -35,25 +35,20 @@ const generateReceiptNFTs = (): KawaiiNFT[] => {
       'Texaco Stop', '76 Station', 'Arco Gas', 'Valero Fuel', 'Speedway',
       'Wawa Store', '7-Eleven', 'Circle K', 'QuikTrip', 'Casey General'
     ],
-    'Ocean Cuties': [
-      'Jellyfish Glow', 'Seahorse Dance', 'Starfish Shine', 'Coral Garden', 'Pearl Diver',
-      'Mermaid Tail', 'Ocean Bubble', 'Seashell Song', 'Whale Song', 'Dolphin Jump',
-      'Octopus Hug', 'Sea Turtle', 'Clownfish', 'Sea Anemone', 'Treasure Chest'
+    'Grocery Stores': [
+      'Kroger Receipt', 'Safeway Shop', 'Publix Order', 'H-E-B Texas', 'Giant Food',
+      'Stop Shop', 'Food Lion', 'Albertsons', 'Meijer Store', 'WinCo Foods',
+      'Fresh Market', 'Harris Teeter', 'Wegmans', 'King Soopers', 'City Market'
     ],
-    'Space Kawaii': [
-      'Rocket Ship', 'Planet Smile', 'Alien Friend', 'Comet Trail', 'Galaxy Swirl',
-      'Space Cat', 'Moon Rabbit', 'Star Collector', 'Nebula Dance', 'Asteroid Belt',
-      'Solar Flare', 'Cosmic Dust', 'Black Hole', 'Satellite', 'Space Station'
-    ],
-    'Garden Magic': [
-      'Sunflower Smile', 'Rose Bloom', 'Daisy Chain', 'Tulip Dance', 'Lily Pad',
-      'Butterfly Kiss', 'Bee Buzz', 'Ladybug Luck', 'Mushroom House', 'Tree Spirit',
-      'Flower Crown', 'Garden Gate', 'Watering Can', 'Seed Sprout', 'Rainbow Garden'
+    'Online Purchases': [
+      'Amazon Prime', 'eBay Auction', 'Etsy Craft', 'Walmart Online', 'Target Pickup',
+      'Best Buy Ship', 'Home Depot', 'Lowes Order', 'Wayfair Home', 'Overstock',
+      'Newegg Tech', 'B&H Photo', 'REI Coop', 'Dick Sports', 'Macys Online'
     ]
   };
 
   const rarities: Array<'Common' | 'Rare' | 'Epic' | 'Legendary'> = ['Common', 'Rare', 'Epic', 'Legendary'];
-  const creators = ['KawaiiStudio', 'CuteFactory', 'AnimeLab', 'PixelArt', 'DreamMaker', 'MagicBrush'];
+  const creators = ['BlockReceipt', 'POS Terminal', 'Receipt Bot', 'Auto Mint', 'Chain Store', 'Digital Till'];
   
   let nftId = 1;
   const nfts: KawaiiNFT[] = [];
