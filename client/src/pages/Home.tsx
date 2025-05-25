@@ -6,6 +6,7 @@ import { sampleNFTs } from '../data/nftData';
 import PrivacyFeatureExplainer from '../components/PrivacyFeatureExplainer';
 import SEOHead from '../components/SEOHead';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import NFTReceiptModal from '../components/NFTReceiptModal';
 
 const Home: React.FC = () => {
   const { isConnected } = useWallet();
@@ -14,6 +15,7 @@ const Home: React.FC = () => {
   const [showFloatingNFT, setShowFloatingNFT] = useState(false);
   const [bucketImages, setBucketImages] = useState<Array<{ fileName: string; url: string }>>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
+  const [selectedNFT, setSelectedNFT] = useState<{ image: string; id: number } | null>(null);
 
   // Fetch your real images from Google Cloud Storage
   useEffect(() => {
@@ -412,7 +414,10 @@ const Home: React.FC = () => {
               {bucketImages.length > 0 
                 ? [...bucketImages, ...bucketImages].map((image, index) => (
                     <div key={`row1-${index}`} className="flex-shrink-0 mx-3">
-                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                      <div 
+                        className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white"
+                        onClick={() => setSelectedNFT({ image: image.url, id: (index % bucketImages.length) + 1 })}
+                      >
                         <img 
                           src={image.url} 
                           alt="NFT Collection" 
@@ -423,7 +428,10 @@ const Home: React.FC = () => {
                   ))
                 : [...sampleNFTs, ...sampleNFTs].map((nft, index) => (
                     <div key={`row1-fallback-${index}`} className="flex-shrink-0 mx-3">
-                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                      <div 
+                        className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white"
+                        onClick={() => setSelectedNFT({ image: nft.image, id: nft.id })}
+                      >
                         <img 
                           src={nft.image} 
                           alt="NFT Collection" 
@@ -440,7 +448,10 @@ const Home: React.FC = () => {
               {bucketImages.length > 0 
                 ? [...bucketImages.slice().reverse(), ...bucketImages.slice().reverse()].map((image, index) => (
                     <div key={`row2-${index}`} className="flex-shrink-0 mx-3">
-                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                      <div 
+                        className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white"
+                        onClick={() => setSelectedNFT({ image: image.url, id: (index % bucketImages.length) + 1 })}
+                      >
                         <img 
                           src={image.url} 
                           alt="NFT Collection" 
@@ -451,7 +462,10 @@ const Home: React.FC = () => {
                   ))
                 : [...sampleNFTs.slice().reverse(), ...sampleNFTs.slice().reverse()].map((nft, index) => (
                     <div key={`row2-fallback-${index}`} className="flex-shrink-0 mx-3">
-                      <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white">
+                      <div 
+                        className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group cursor-pointer border-4 border-white"
+                        onClick={() => setSelectedNFT({ image: nft.image, id: nft.id })}
+                      >
                         <img 
                           src={nft.image} 
                           alt="NFT Collection" 

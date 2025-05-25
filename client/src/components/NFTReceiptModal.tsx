@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+// Using a simple hr element instead of separator component
 import { Calendar, DollarSign, Store, Shield, ExternalLink, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
