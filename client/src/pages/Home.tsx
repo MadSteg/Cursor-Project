@@ -4,6 +4,8 @@ import { useWallet } from '../contexts/WalletContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { sampleNFTs } from '../data/nftData';
 import PrivacyFeatureExplainer from '../components/PrivacyFeatureExplainer';
+import SEOHead from '../components/SEOHead';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 const Home: React.FC = () => {
   const { isConnected } = useWallet();
@@ -60,7 +62,14 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto relative space-y-12">
+    <>
+      <SEOHead 
+        title="BlockReceipt.ai - Ditch Paper Pollution, Choose Carbon-Neutral NFT Collectibles"
+        description="Transform your receipts into secure, encrypted NFTs with BlockReceipt.ai. Carbon-neutral digital receipts powered by Threshold Network encryption and Polygon blockchain technology."
+        keywords="blockchain receipts, NFT receipts, carbon-neutral receipts, digital receipts, Threshold PRE, privacy-first receipts, Web3 receipts, encrypted receipts, sustainable receipts"
+        url="/"
+      />
+      <div className="max-w-6xl mx-auto relative space-y-12">
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 shadow-2xl mb-16">
         <div className="absolute inset-0 opacity-20">
@@ -499,6 +508,7 @@ const Home: React.FC = () => {
       
 
     </div>
+    </>
   );
 };
 
