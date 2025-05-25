@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new receipt
-  app.post("/api/receipts", async (req, res) => {
+  app.post("/api/receipts", validateBody(mintSchema), async (req, res) => {
     try {
       // For demo purposes, always use user ID 1
       const userId = 1;
