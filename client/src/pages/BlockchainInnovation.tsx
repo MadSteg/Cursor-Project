@@ -217,11 +217,11 @@ export default function BlockchainInnovation() {
                 </h3>
                 <div className="space-y-3">
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm font-mono">function redeemStamps() {</p>
+                    <p className="text-sm font-mono">function redeemStamps() {'{'}</p>
                     <p className="text-sm font-mono ml-4">findOriginMerchants();</p>
                     <p className="text-sm font-mono ml-4">calculateProportion();</p>
                     <p className="text-sm font-mono ml-4">executeDirectTransfer();</p>
-                    <p className="text-sm font-mono">}</p>
+                    <p className="text-sm font-mono">{'}'}</p>
                   </div>
                   <p className="text-sm text-slate-600">
                     Smart contract handles settlement automatically with zero trust required
