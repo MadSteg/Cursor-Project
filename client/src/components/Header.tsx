@@ -16,6 +16,7 @@ const Header: React.FC = () => {
   const navLinks = [
     { name: 'Why use BlockReceipt?', path: '/why-blockreceipt' },
     { name: 'BlockReceipt Vault', path: '/nft-browser' },
+    { name: 'Universal Loyalty Card', path: '/loyalty-card' },
     { name: 'Payment Test', path: '/payment-test' },
     { name: 'Merchant Portal', path: '/merchant-portal' },
     { name: 'Enterprise', path: '/for-merchants' },

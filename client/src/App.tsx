@@ -21,6 +21,7 @@ const WhyBlockReceipt = React.lazy(() => import("./pages/WhyBlockReceipt"));
 const ForMerchants = React.lazy(() => import("./pages/ForMerchants"));
 const PaymentTest = React.lazy(() => import("./pages/PaymentTest"));
 const MerchantPortal = React.lazy(() => import("./pages/MerchantPortalSimple"));
+const LoyaltyCard = React.lazy(() => import("./pages/LoyaltyCard"));
 const LoyaltyRewards = React.lazy(() => import("./pages/LoyaltyRewards"));
 const PREDemo = React.lazy(() => import("./pages/PREDemo"));
 
@@ -85,6 +86,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/merchant-portal">
             <MerchantPortal />
+          </Route>
+          
+          <Route path="/loyalty-card">
+            <LoyaltyCard />
           </Route>
           
           <Route>
