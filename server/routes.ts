@@ -126,6 +126,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register merchant portal routes
   registerMerchantPortalRoutes(app);
   
+  // Register loyalty card routes
+  try {
+    const loyaltyModule = await import('./routes/loyaltyCard.js');
+    loyaltyModule.registerLoyaltyCardRoutes(app);
+    console.log('[express] Loyalty card routes registered successfully');
+  } catch (error) {
+    console.warn('[express] Could not load loyalty card routes:', error.message);
+  }
+  
   // Register new catalog routes
   app.use('/api/products', productsRoutes);
   app.use('/api/merchants', merchantRoutes);
