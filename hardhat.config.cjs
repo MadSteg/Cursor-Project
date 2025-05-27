@@ -12,10 +12,14 @@ module.exports = {
   solidity: "0.8.17",
   networks: {
     mumbai: {
-      url: RPC_URL,
+      url: MUMBAI_RPC_URL,
       accounts: [PRIVATE_KEY],
       chainId: 80001,
     },
-    // Add other networks as needed
+    amoy: {
+      url: AMOY_RPC_URL,
+      accounts: [PRIVATE_KEY],
+      chainId: 80002,
+    },
   },
 };
