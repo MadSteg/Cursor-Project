@@ -27,6 +27,7 @@ const BlockchainInnovation = React.lazy(() => import("./pages/BlockchainInnovati
 const LoyaltyRewards = React.lazy(() => import("./pages/LoyaltyRewards"));
 const PREDemo = React.lazy(() => import("./pages/PREDemo"));
 const ReceiptNFT = React.lazy(() => import("./pages/ReceiptNFT"));
+const GiftCardRedemption = React.lazy(() => import("./pages/GiftCardRedemption"));
 
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -105,6 +106,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/receipt-nft">
             <ReceiptNFT />
+          </Route>
+          
+          <Route path="/gift-cards">
+            <GiftCardRedemption />
           </Route>
           
           <Route>
