@@ -36,7 +36,7 @@ export default function LoyaltyCard() {
               </Button>
             </div>
             
-            {/* Loyalty Card Visual */}
+            {/* Loyalty Card Visual with Receipt NFT Style */}
             <div className="relative mx-auto w-80 h-48 transform rotate-6 hover:rotate-0 transition-transform duration-700">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-pink-600 rounded-2xl shadow-2xl" />
               <div className="absolute inset-0 bg-black/20 rounded-2xl" />
@@ -55,6 +55,18 @@ export default function LoyaltyCard() {
                   <p className="text-sm opacity-90">Card ID</p>
                   <p className="font-mono">0x8F2...4A9</p>
                 </div>
+              </div>
+              {/* Receipt NFT Style Image as background element */}
+              <div className="absolute top-2 right-2 w-12 h-12 opacity-30">
+                <img 
+                  src="/api/image-proxy/Receipt%20NFT%20Style.png" 
+                  alt="Receipt NFT Style"
+                  className="w-full h-full object-cover rounded-lg"
+                  onError={(e) => {
+                    // Fallback if image not found
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
               </div>
             </div>
           </div>
