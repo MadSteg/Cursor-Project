@@ -17,6 +17,7 @@ const Header: React.FC = () => {
     { name: 'Why use BlockReceipt?', path: '/why-blockreceipt' },
     { name: 'BlockReceipt Vault', path: '/nft-browser' },
     { name: 'Universal Loyalty Card', path: '/loyalty-card' },
+    { name: 'Blockchain Innovation', path: '/blockchain-innovation' },
     { name: 'Settlement Dashboard', path: '/merchant-settlement' },
     { name: 'Payment Test', path: '/payment-test' },
     { name: 'Merchant Portal', path: '/merchant-portal' },

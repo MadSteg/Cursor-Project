@@ -21,6 +21,7 @@ export interface SettlementTransaction {
   dollarAmount: number;
   timestamp: string;
   transactionHash?: string;
+  settlementType?: 'direct_merchant' | 'pool_based';
 }
 
 class MerchantSettlementService {
@@ -28,6 +29,8 @@ class MerchantSettlementService {
   private settlementHistory: SettlementTransaction[] = [];
   private readonly STAMP_VALUE = 0.10; // Each stamp worth $0.10
   private readonly POOL_CONTRIBUTION_RATE = 0.005; // 0.5% of revenue goes to pool
+  private readonly NETWORK_FEE_RATE = 0.001; // 0.1% network operation fee
+  private readonly DIRECT_SETTLEMENT_ENABLED = true; // Enable direct merchant-to-merchant settlement
 
   constructor() {
     this.initializeMockMerchants();
@@ -109,19 +112,76 @@ class MerchantSettlementService {
 
   /**
    * Create a settlement transaction when stamps are redeemed
+   * Uses direct merchant-to-merchant settlement via smart contract
    */
   private createSettlementTransaction(redeemingMerchantId: string, stamps: number) {
-    const transaction: SettlementTransaction = {
-      id: `settlement_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      fromMerchant: 'loyalty-pool', // Could be specific merchants based on where stamps were earned
-      toMerchant: redeemingMerchantId,
-      stampValue: stamps,
-      dollarAmount: stamps * this.STAMP_VALUE,
-      timestamp: new Date().toISOString(),
-      transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`
-    };
+    // NEW: Direct settlement - find which merchants should pay
+    const earningMerchants = this.findStampEarningMerchants(stamps);
+    
+    earningMerchants.forEach(({ merchantId, stampsPortion, dollarAmount }) => {
+      const transaction: SettlementTransaction = {
+        id: `settlement_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        fromMerchant: merchantId, // Direct merchant-to-merchant
+        toMerchant: redeemingMerchantId,
+        stampValue: stampsPortion,
+        dollarAmount: dollarAmount,
+        timestamp: new Date().toISOString(),
+        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`, // Would be real blockchain tx
+        settlementType: 'direct_merchant'
+      };
 
-    this.settlementHistory.push(transaction);
+      this.settlementHistory.push(transaction);
+      
+      // Update merchant balances for direct settlement
+      this.updateDirectSettlement(merchantId, redeemingMerchantId, dollarAmount);
+    });
+  }
+
+  /**
+   * INNOVATION: Find which specific merchants should pay for redeemed stamps
+   * Based on proportional earnings rather than pool contribution
+   */
+  private findStampEarningMerchants(stampsToRedeem: number): Array<{merchantId: string, stampsPortion: number, dollarAmount: number}> {
+    const allMerchants = Array.from(this.merchantBalances.values());
+    const totalStampsEarned = allMerchants.reduce((sum, m) => sum + m.stampsEarned, 0);
+    
+    if (totalStampsEarned === 0) return [];
+
+    const settlements: Array<{merchantId: string, stampsPortion: number, dollarAmount: number}> = [];
+    let remainingStamps = stampsToRedeem;
+
+    // Proportionally distribute cost based on stamps earned by each merchant
+    allMerchants.forEach((merchant) => {
+      if (merchant.stampsEarned > 0 && remainingStamps > 0) {
+        const proportion = merchant.stampsEarned / totalStampsEarned;
+        const stampsPortion = Math.min(Math.ceil(stampsToRedeem * proportion), remainingStamps);
+        const dollarAmount = stampsPortion * this.STAMP_VALUE;
+
+        if (stampsPortion > 0) {
+          settlements.push({
+            merchantId: merchant.merchantId,
+            stampsPortion,
+            dollarAmount
+          });
+          remainingStamps -= stampsPortion;
+        }
+      }
+    });
+
+    return settlements;
+  }
+
+  /**
+   * Update balances for direct merchant-to-merchant settlement
+   */
+  private updateDirectSettlement(fromMerchantId: string, toMerchantId: string, amount: number) {
+    const fromMerchant = this.merchantBalances.get(fromMerchantId);
+    const toMerchant = this.merchantBalances.get(toMerchantId);
+
+    if (fromMerchant && toMerchant) {
+      fromMerchant.settlementDue += amount;
+      toMerchant.settlementOwed += amount;
+    }
   }
 
   /**
