@@ -126,6 +126,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register merchant portal routes
   registerMerchantPortalRoutes(app);
   
+  // Register merchant settlement routes
+  const { registerMerchantSettlementRoutes } = await import('./routes/merchantSettlement.js');
+  registerMerchantSettlementRoutes(app);
+  
   // Register loyalty card routes
   try {
     const loyaltyModule = await import('./routes/loyaltyCard.js');
