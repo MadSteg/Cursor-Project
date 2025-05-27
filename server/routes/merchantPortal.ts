@@ -177,17 +177,13 @@ export function registerMerchantPortalRoutes(app: Express) {
         merchantId: merchantData.merchantId
       });
 
-      // Here we would typically:
-      // 1. Validate the transaction data
-      // 2. Call the NFT minting service
-      // 3. Update analytics
-      // 4. Send receipt to customer
-
-      // For demo, we'll simulate the minting process
+      const purchaseAmount = parseFloat(amount.toString());
+      
+      // Process receipt NFT minting
       const receiptData = {
         transactionId,
         merchantName: merchantData.storeName,
-        amount: parseFloat(amount.toString()),
+        amount: purchaseAmount,
         currency,
         items,
         timestamp: new Date().toISOString(),
@@ -200,17 +196,50 @@ export function registerMerchantPortalRoutes(app: Express) {
         }
       };
 
+      let loyaltyResult = null;
+      
+      // Process loyalty stamps if customer has a wallet address
+      if (customerWallet) {
+        try {
+          const { loyaltyCardService } = await import('../services/loyaltyCardService');
+          
+          // Use a demo merchant address for now - in production this would be the actual merchant's blockchain address
+          const merchantAddress = `0x${merchantData.merchantId.padStart(40, '0')}`;
+          
+          loyaltyResult = await loyaltyCardService.processPurchaseForLoyalty(
+            customerWallet,
+            merchantAddress,
+            purchaseAmount,
+            transactionId
+          );
+          
+          logger.info('Loyalty stamps processed', {
+            customerWallet,
+            stampsAwarded: loyaltyResult.stampsAwarded,
+            loyaltyTxHash: loyaltyResult.txHash
+          });
+          
+        } catch (loyaltyError) {
+          logger.warn('Failed to process loyalty stamps, continuing with receipt', {
+            error: loyaltyError,
+            customerWallet,
+            transactionId
+          });
+          // Don't fail the entire transaction if loyalty processing fails
+        }
+      }
+
       // Update analytics
       const analytics = merchantAnalytics.get(merchantData.merchantId);
       if (analytics) {
         analytics.totalMints += 1;
         analytics.thisMonth += 1;
-        analytics.avgTransactionValue = (analytics.avgTransactionValue + parseFloat(amount.toString())) / 2;
+        analytics.avgTransactionValue = (analytics.avgTransactionValue + purchaseAmount) / 2;
         
         // Add to recent transactions
         analytics.recentTransactions.unshift({
           id: transactionId,
-          amount: `$${parseFloat(amount.toString()).toFixed(2)}`,
+          amount: `$${purchaseAmount.toFixed(2)}`,
           customer: customerWallet || customerEmail || 'Anonymous',
           time: 'Just now',
           status: 'minted'
@@ -220,12 +249,23 @@ export function registerMerchantPortalRoutes(app: Express) {
         analytics.recentTransactions = analytics.recentTransactions.slice(0, 10);
       }
 
-      res.json({
+      const response = {
         success: true,
         message: 'Transaction processed and NFT receipt minted',
         receiptData,
         nftTokenId: `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`
-      });
+      };
+
+      // Include loyalty information if processed
+      if (loyaltyResult && loyaltyResult.stampsAwarded > 0) {
+        response.loyalty = {
+          stampsAwarded: loyaltyResult.stampsAwarded,
+          cardId: loyaltyResult.cardId,
+          txHash: loyaltyResult.txHash
+        };
+      }
+
+      res.json(response);
 
     } catch (error) {
       logger.error('Error processing POS webhook:', error);
