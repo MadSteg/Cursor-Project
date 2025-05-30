@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { posIntegrationService } from "./services/posIntegrationService";
 import { storage } from "./storage";
 import { validateBody, mintSchema, stripePaymentSchema, verifyReceiptSchema } from "./middleware/validation";
 import stripeWebhook from "./routes/stripeWebhook";
@@ -215,6 +216,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register coupon routes
   app.use('/api/coupons', couponRoutes);
   console.log('[express] Coupon routes registered successfully');
+  
+  // Register POS integration routes
+  app.post('/api/pos/mint-receipt', async (req, res) => {
+    try {
+      const { merchantId, merchantName, customerPhone, totalAmount, items, transactionId } = req.body;
+      
+      const result = await posIntegrationService.mintReceiptNFT(
+        merchantId,
+        merchantName,
+        customerPhone,
+        totalAmount,
+        items,
+        transactionId
+      );
+      
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('[pos] Error minting receipt:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
   
   // Register NFT routes
   app.use('/api/nfts', nftRoutes);

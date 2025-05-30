@@ -280,16 +280,16 @@ export default function BrandEngagement() {
                         </span>
                         <span className="text-slate-400">
                           {campaign.participants} participants
-                          {campaign.target && ` / ${campaign.target} target`}
+                          {(campaign as any).target && ` / ${(campaign as any).target} target`}
                         </span>
                       </div>
 
-                      {campaign.type === 'regional' && campaign.target && (
+                      {campaign.type === 'regional' && (campaign as any).target && (
                         <div className="mt-2">
                           <div className="bg-slate-800 rounded-full h-2">
                             <div 
                               className="bg-blue-500 h-2 rounded-full" 
-                              style={{ width: `${(campaign.participants / campaign.target) * 100}%` }}
+                              style={{ width: `${(campaign.participants / (campaign as any).target) * 100}%` }}
                             ></div>
                           </div>
                         </div>

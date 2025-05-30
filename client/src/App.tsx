@@ -83,21 +83,7 @@ const AppContent: React.FC = () => {
             <PaymentTest />
           </Route>
           
-          <Route path="/merchant-portal">
-            <MerchantPortal />
-          </Route>
-          
-          <Route path="/loyalty-card">
-            <LoyaltyCard />
-          </Route>
-          
-          <Route path="/merchant-settlement">
-            <MerchantSettlement />
-          </Route>
-          
-          <Route path="/blockchain-innovation">
-            <BlockchainInnovation />
-          </Route>
+
           
           <Route path="/pos-integration">
             <POSIntegration />
