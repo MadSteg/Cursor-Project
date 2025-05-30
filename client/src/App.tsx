@@ -21,13 +21,8 @@ const WhyBlockReceipt = React.lazy(() => import("./pages/WhyBlockReceipt"));
 const ForMerchants = React.lazy(() => import("./pages/ForMerchants"));
 const PaymentTest = React.lazy(() => import("./pages/PaymentTest"));
 const MerchantPortal = React.lazy(() => import("./pages/MerchantPortalSimple"));
-const LoyaltyCard = React.lazy(() => import("./pages/LoyaltyCard"));
-const MerchantSettlement = React.lazy(() => import("./pages/MerchantSettlement"));
-const BlockchainInnovation = React.lazy(() => import("./pages/BlockchainInnovation"));
-const LoyaltyRewards = React.lazy(() => import("./pages/LoyaltyRewards"));
-const PREDemo = React.lazy(() => import("./pages/PREDemo"));
-const ReceiptNFT = React.lazy(() => import("./pages/ReceiptNFT"));
-const GiftCardRedemption = React.lazy(() => import("./pages/GiftCardRedemption"));
+const POSIntegration = React.lazy(() => import("./pages/POSIntegration"));
+const BrandEngagement = React.lazy(() => import("./pages/BrandEngagement"));
 
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -104,12 +99,12 @@ const AppContent: React.FC = () => {
             <BlockchainInnovation />
           </Route>
           
-          <Route path="/receipt-nft">
-            <ReceiptNFT />
+          <Route path="/pos-integration">
+            <POSIntegration />
           </Route>
           
-          <Route path="/gift-cards">
-            <GiftCardRedemption />
+          <Route path="/brand-engagement">
+            <BrandEngagement />
           </Route>
           
           <Route>
