@@ -180,8 +180,8 @@ class POSIntegrationService {
     try {
       const customerId = this.generateCustomerId(customerPhone);
       
-      // Create or get customer wallet
-      const wallet = this.createOrGetCustomerWallet(customerId);
+      // Create or get customer account
+      const account = this.createOrGetCustomerAccount(customerId);
 
       // Calculate rewards
       const rewards = this.calculateRewards(merchantId, totalAmount, items);
