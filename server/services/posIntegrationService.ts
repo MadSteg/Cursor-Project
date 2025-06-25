@@ -186,12 +186,12 @@ class POSIntegrationService {
       // Calculate rewards
       const rewards = this.calculateRewards(merchantId, totalAmount, items);
 
-      // Select random NFT image
+      // Select random receipt image
       const randomImage = this.receiptImages[Math.floor(Math.random() * this.receiptImages.length)];
-      const nftImageUrl = `/api/image-proxy/${encodeURIComponent(randomImage)}`;
+      const receiptImageUrl = `/api/image-proxy/${encodeURIComponent(randomImage)}`;
 
-      // Generate mock NFT token ID and transaction hash
-      const nftTokenId = `nft_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
+      // Generate mock receipt ID and transaction hash
+      const receiptId = `receipt_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
       const transactionHash = `0x${Math.random().toString(16).substr(2, 64)}`;
 
       // Create encrypted receipt metadata (simulated)
@@ -206,14 +206,14 @@ class POSIntegrationService {
         encrypted: true // Indicates this would be encrypted with Threshold
       };
 
-      logger.info(`[pos] Minted receipt NFT ${nftTokenId} for ${customerPhone} at ${merchantName}`);
+      logger.info(`[pos] Created digital receipt ${receiptId} for ${customerPhone} at ${merchantName}`);
       logger.info(`[pos] Customer earned ${rewards.totalPoints} points`);
 
       return {
         success: true,
-        walletAddress: wallet.address,
-        nftTokenId,
-        nftImageUrl,
+        walletAddress: account.address,
+        receiptId,
+        receiptImageUrl,
         transactionHash,
         rewardPoints: rewards.totalPoints,
         basePoints: rewards.basePoints,
@@ -222,16 +222,16 @@ class POSIntegrationService {
       };
 
     } catch (error) {
-      logger.error(`[pos] Failed to mint receipt NFT:`, error);
+      logger.error(`[pos] Failed to create digital receipt:`, error);
       
-      // Return basic wallet info even if minting fails
+      // Return basic account info even if creation fails
       const customerId = this.generateCustomerId(customerPhone);
-      const wallet = this.createOrGetCustomerWallet(customerId);
+      const account = this.createOrGetCustomerAccount(customerId);
       
       return {
         success: false,
-        walletAddress: wallet.address,
-        nftImageUrl: '/api/image-proxy/Hot%20Coffee.png',
+        walletAddress: account.address,
+        receiptImageUrl: '/api/image-proxy/Hot%20Coffee.png',
         rewardPoints: 0,
         basePoints: 0,
         bonusPoints: 0,
@@ -241,17 +241,17 @@ class POSIntegrationService {
   }
 
   /**
-   * Get customer wallet info
+   * Get customer account info
    */
-  getCustomerWallet(customerId: string): CustomerWallet | undefined {
-    return this.customerWallets.get(customerId);
+  getCustomerAccount(customerId: string): CustomerAccount | undefined {
+    return this.customerAccounts.get(customerId);
   }
 
   /**
-   * Get all customer wallets (for admin purposes)
+   * Get all customer accounts (for admin purposes)
    */
-  getAllCustomerWallets(): CustomerWallet[] {
-    return Array.from(this.customerWallets.values());
+  getAllCustomerAccounts(): CustomerAccount[] {
+    return Array.from(this.customerAccounts.values());
   }
 }
 
