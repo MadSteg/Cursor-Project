@@ -83,7 +83,7 @@ export default function CustomerMobile() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-white">BlockReceipt</h1>
-            <p className="text-sm text-slate-400">Your digital wallet</p>
+            <p className="text-sm text-slate-400">Your digital receipt manager</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">

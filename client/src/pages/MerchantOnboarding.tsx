@@ -320,7 +320,7 @@ export default function MerchantOnboarding() {
           onClick={() => {
             toast({
               title: "Test Transaction Successful",
-              description: "BlockReceipt NFT minted successfully for test customer",
+              description: "Digital receipt created successfully for test customer",
             });
             setCurrentStep(3);
           }}
@@ -345,14 +345,14 @@ export default function MerchantOnboarding() {
         <div className="bg-green-900/30 border border-green-700 p-4 rounded-lg">
           <h4 className="font-semibold text-green-400 mb-2">Setup Complete</h4>
           <p className="text-sm text-green-300">
-            Your BlockReceipt integration is ready. You can now start accepting digital receipts.
+            Your digital receipt integration is ready. You can now start offering digital receipts to customers.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-slate-700 p-3 rounded-lg text-center">
             <div className="text-2xl font-bold text-white">$0.005</div>
-            <div className="text-sm text-slate-400">Cost per NFT</div>
+            <div className="text-sm text-slate-400">Cost per receipt</div>
           </div>
           <div className="bg-slate-700 p-3 rounded-lg text-center">
             <div className="text-2xl font-bold text-white">94%</div>
@@ -364,7 +364,7 @@ export default function MerchantOnboarding() {
           onClick={() => {
             toast({
               title: "Merchant Account Activated",
-              description: "Welcome to BlockReceipt! Start offering digital receipts today.",
+              description: "Welcome to digital receipt management! Start offering digital receipts today.",
             });
           }}
           className="w-full bg-green-600 hover:bg-green-700"
@@ -391,7 +391,7 @@ export default function MerchantOnboarding() {
             Merchant Onboarding
           </h1>
           <p className="text-xl text-slate-300">
-            Get started with BlockReceipt in just a few simple steps
+            Get started with digital receipt management in just a few simple steps
           </p>
         </div>
 

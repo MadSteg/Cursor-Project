@@ -2,7 +2,7 @@
 
 ## Overview
 
-BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms traditional paper receipts into secure, interactive blockchain-based NFTs. The system provides merchants with a sustainable, fraud-proof receipt solution while offering customers permanent, verifiable transaction records. The platform is built around a React/TypeScript frontend with an Express.js backend, integrated with Polygon blockchain for NFT minting and Google Cloud services for storage.
+BlockReceipt is a comprehensive digital receipt platform that transforms traditional paper receipts into secure, interactive digital records. The system provides merchants with a sustainable, fraud-proof receipt solution while offering customers permanent, verifiable transaction records. The platform is built around a React/TypeScript frontend with an Express.js backend, integrated with advanced cryptographic verification and Google Cloud services for storage.
 
 ## System Architecture
 
@@ -19,11 +19,11 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 - **API Design**: RESTful endpoints with comprehensive error handling and validation
 - **Middleware**: CORS, body parsing, session management, and security headers
 
-### Blockchain Integration
-- **Primary Network**: Polygon Amoy testnet (chainId: 80002) for cost-effective transactions
-- **Contract Standard**: ERC-1155 multi-token contract for receipt NFTs
-- **Wallet Management**: Automatic wallet creation using customer phone/email as identifier
-- **Gas Optimization**: Batch minting capabilities and efficient contract design
+### Digital Verification System
+- **Primary Network**: Advanced cryptographic verification system for cost-effective transactions
+- **Record Standard**: Multi-token digital receipt system with unique identifiers
+- **Account Management**: Automatic account creation using customer phone/email as identifier
+- **Optimization**: Batch processing capabilities and efficient record generation
 
 ## Key Components
 
@@ -32,13 +32,13 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 2. **OCR Processing**: Google Cloud Vision API and OpenAI for receipt data extraction
 3. **Data Validation**: Multi-tier validation with confidence scoring
 4. **Encryption**: Threshold Network's TACo PRE for privacy-preserving receipt storage
-5. **NFT Minting**: Automated blockchain minting with metadata and IPFS storage
+5. **Digital Record Creation**: Automated digital record generation with metadata and secure storage
 
-### Smart Contract System
-- **Receipt1155Enhanced.sol**: Main contract with role-based access control
-- **Features**: Receipt minting, revocation, batch operations, and burn capabilities
-- **Security**: OpenZeppelin's AccessControl with ADMIN_ROLE and MINTER_ROLE
-- **Events**: Comprehensive event emission for blockchain traceability
+### Digital Receipt System
+- **ReceiptEngine**: Main processing system with role-based access control
+- **Features**: Receipt generation, revocation, batch operations, and deletion capabilities
+- **Security**: Advanced access control with administrative and processing roles
+- **Audit Trail**: Comprehensive event logging for digital verification traceability
 
 ### Data Management
 - **Receipt Storage**: Encrypted receipt data with selective sharing capabilities
@@ -51,11 +51,11 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 ### Receipt Creation Flow
 1. Customer completes purchase at merchant POS
 2. System captures transaction data (items, amounts, merchant info)
-3. Automatic wallet creation if customer doesn't have existing wallet
-4. Receipt data encrypted using TACo PRE with customer's public key
-5. NFT metadata prepared with IPFS hash and encryption details
-6. Smart contract minting transaction submitted to Polygon Amoy
-7. Receipt NFT delivered to customer's wallet with viewing access
+3. Automatic account creation if customer doesn't have existing account
+4. Receipt data encrypted using advanced encryption with customer's access key
+5. Digital metadata prepared with secure hash and encryption details
+6. Digital record creation transaction submitted to verification system
+7. Digital receipt delivered to customer's account with viewing access
 
 ### Brand Engagement Flow
 1. Merchants create targeted campaigns through dashboard
@@ -78,7 +78,7 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 
 ### Payment Processing
 - **Stripe**: Traditional payment processing for premium receipt tiers
-- **Crypto Payments**: Native MATIC and USDC payment acceptance
+- **Digital Payments**: Native payment acceptance and processing
 
 ### Privacy and Security
 - **Threshold Network TACo**: Proxy re-encryption for receipt privacy
@@ -90,7 +90,7 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 - **Platform**: Replit with Node.js 20 and PostgreSQL 16
 - **Hot Reload**: Vite development server with fast refresh
 - **Database**: Local PostgreSQL with Drizzle migrations
-- **Blockchain**: Polygon Amoy testnet with faucet MATIC
+- **Verification**: Advanced testnet with verification credits
 
 ### Production Environment
 - **Build Process**: Vite production build with asset optimization
@@ -101,7 +101,7 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 ### Monitoring and Analytics
 - **Error Tracking**: Comprehensive logging with structured output
 - **Performance**: API response time monitoring and optimization
-- **Blockchain**: Transaction success rate tracking and gas optimization
+- **Verification**: Transaction success rate tracking and processing optimization
 - **User Analytics**: Receipt processing metrics and user engagement data
 
 ## Recent Changes
@@ -114,7 +114,7 @@ BlockReceipt.ai is a comprehensive NFT digital receipt platform that transforms 
 - **Notification System**: Brand access requests with real-time customer consent management
 
 ### Technical Stack Completed
-- Production-ready smart contract deployment system
+- Production-ready digital verification deployment system
 - Real-time WebSocket notification infrastructure
 - Mobile-first customer experience with live updates
 - Merchant onboarding pipeline with progress tracking
@@ -128,3 +128,11 @@ Changelog:
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Business Requirements
+
+### Chase Banking Compliance
+- All language sanitized to remove crypto/blockchain terminology
+- Platform positioned as "digital receipt management" and "verified purchase data platform"
+- Focus on traditional business benefits: customer engagement, data analytics, fraud prevention
+- Technology described as "advanced cryptographic verification" rather than blockchain
