@@ -19,7 +19,7 @@ const Header: React.FC = () => {
     { name: 'POS Integration', path: '/pos-integration' },
     { name: 'Brand Engagement', path: '/brand-engagement' },
     { name: 'Mobile App', path: '/mobile' },
-    { name: 'Enterprise', path: '/for-merchants' },
+    { name: 'Merchant Signup', path: '/merchant-onboarding' },
   ];
   
   return (

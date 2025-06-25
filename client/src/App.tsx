@@ -24,6 +24,7 @@ const MerchantPortal = React.lazy(() => import("./pages/MerchantPortalSimple"));
 const POSIntegration = React.lazy(() => import("./pages/POSIntegration"));
 const BrandEngagement = React.lazy(() => import("./pages/BrandEngagement"));
 const MobileInterface = React.lazy(() => import("./components/MobileInterface"));
+const MerchantOnboarding = React.lazy(() => import("./pages/MerchantOnboarding"));
 
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -96,6 +97,10 @@ const AppContent: React.FC = () => {
           
           <Route path="/mobile">
             <MobileInterface />
+          </Route>
+          
+          <Route path="/merchant-onboarding">
+            <MerchantOnboarding />
           </Route>
           
           <Route>

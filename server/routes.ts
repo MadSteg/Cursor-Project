@@ -1,7 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { setupWebSocket } from "./websocket";
 import { posIntegrationService } from "./services/posIntegrationService";
 import { notificationService } from "./services/notificationService";
+import { merchantOnboardingService } from "./services/merchantOnboarding";
 import { storage } from "./storage";
 import { validateBody, mintSchema, stripePaymentSchema, verifyReceiptSchema } from "./middleware/validation";
 import stripeWebhook from "./routes/stripeWebhook";
@@ -310,6 +312,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       res.json({ success: true, notification });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Register merchant onboarding routes
+  app.post('/api/merchants/apply', async (req, res) => {
+    try {
+      const application = await merchantOnboardingService.submitApplication(req.body);
+      res.json({ success: true, application });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/merchants/applications', (req, res) => {
+    try {
+      const { status } = req.query;
+      const applications = merchantOnboardingService.getApplications(status as any);
+      res.json({ success: true, applications });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/merchants/:merchantId/onboarding', (req, res) => {
+    try {
+      const { merchantId } = req.params;
+      const progress = merchantOnboardingService.getOnboardingProgress(merchantId);
+      res.json({ success: true, progress });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/merchants/:merchantId/onboarding/:stepId/complete', (req, res) => {
+    try {
+      const { merchantId, stepId } = req.params;
+      const success = merchantOnboardingService.completeOnboardingStep(merchantId, stepId);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/merchants/:merchantId/analytics', (req, res) => {
+    try {
+      const { merchantId } = req.params;
+      const analytics = merchantOnboardingService.getMerchantAnalytics(merchantId);
+      res.json({ success: true, analytics });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }
@@ -768,6 +820,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create HTTP server
   const httpServer = createServer(app);
+  
+  // Setup WebSocket for real-time notifications
+  setupWebSocket(httpServer);
 
   return httpServer;
 }

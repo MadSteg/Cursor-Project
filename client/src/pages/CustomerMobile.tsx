@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Smartphone, 
@@ -21,6 +22,7 @@ import {
 export default function CustomerMobile() {
   const [currentUserId] = useState('customer_123'); // In production, get from auth
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(currentUserId);
+  const { isConnected, connectionError } = useWebSocket(currentUserId);
   const { toast } = useToast();
   
   const [receipts] = useState([
@@ -85,7 +87,7 @@ export default function CustomerMobile() {
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Bell className="h-6 w-6 text-slate-400" />
+              <Bell className={`h-6 w-6 ${isConnected ? 'text-green-400' : 'text-slate-400'}`} />
               {unreadCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {unreadCount}
