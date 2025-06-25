@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { posIntegrationService } from "./services/posIntegrationService";
+import { notificationService } from "./services/notificationService";
 import { storage } from "./storage";
 import { validateBody, mintSchema, stripePaymentSchema, verifyReceiptSchema } from "./middleware/validation";
 import stripeWebhook from "./routes/stripeWebhook";
@@ -231,6 +232,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactionId
       );
       
+      // Create reward notification if points were earned
+      if (result.rewardPoints > 0) {
+        const customerId = posIntegrationService.generateCustomerId(customerPhone);
+        await notificationService.createRewardNotification(
+          customerId,
+          result.rewardPoints,
+          merchantName,
+          result.nftTokenId || 'receipt'
+        );
+      }
+      
       res.json({
         success: true,
         data: result
@@ -241,6 +253,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         error: error.message
       });
+    }
+  });
+
+  // Register notification routes
+  app.get('/api/notifications/:userId', (req, res) => {
+    try {
+      const { userId } = req.params;
+      const notifications = notificationService.getUserNotifications(userId);
+      res.json({ success: true, notifications });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/notifications/:userId/unread-count', (req, res) => {
+    try {
+      const { userId } = req.params;
+      const count = notificationService.getUnreadCount(userId);
+      res.json({ success: true, count });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/notifications/:userId/:notificationId/read', (req, res) => {
+    try {
+      const { userId, notificationId } = req.params;
+      const success = notificationService.markAsRead(userId, notificationId);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/notifications/:userId/read-all', (req, res) => {
+    try {
+      const { userId } = req.params;
+      const count = notificationService.markAllAsRead(userId);
+      res.json({ success: true, markedCount: count });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/brands/:brandName/request-access', async (req, res) => {
+    try {
+      const { brandName } = req.params;
+      const { userId, receiptId, incentive } = req.body;
+      
+      const notification = await notificationService.createBrandAccessRequest(
+        userId,
+        brandName,
+        receiptId,
+        incentive
+      );
+      
+      res.json({ success: true, notification });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
     }
   });
   
