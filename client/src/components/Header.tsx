@@ -18,6 +18,7 @@ const Header: React.FC = () => {
     { name: 'BlockReceipt Vault', path: '/nft-browser' },
     { name: 'POS Integration', path: '/pos-integration' },
     { name: 'Brand Engagement', path: '/brand-engagement' },
+    { name: 'Mobile App', path: '/mobile' },
     { name: 'Enterprise', path: '/for-merchants' },
   ];
   
