@@ -1,17 +1,17 @@
 import React from 'react';
-import { useWallet } from '../contexts/WalletContext';
+import { useAuth } from '../contexts/WalletContext';
 import WalletInfo from '../components/WalletInfo';
 import { Link } from 'wouter';
 
 const Dashboard: React.FC = () => {
-  const { isConnected } = useWallet();
+  const { isLoggedIn } = useAuth();
 
   return (
     <div className="max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {isConnected ? (
+        {isLoggedIn ? (
           <>
             <div className="bg-card shadow-sm rounded-lg p-6 border">
               <h3 className="text-lg font-medium mb-2">Total Receipts</h3>

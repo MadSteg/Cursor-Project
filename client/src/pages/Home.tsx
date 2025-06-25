@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { useWallet } from '../contexts/WalletContext';
+import { useAuth } from '../contexts/WalletContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { sampleNFTs } from '../data/nftData';
 import PrivacyFeatureExplainer from '../components/PrivacyFeatureExplainer';
@@ -9,7 +9,7 @@ import LoadingSkeleton from '../components/LoadingSkeleton';
 import NFTReceiptModal from '../components/NFTReceiptModal';
 
 const Home: React.FC = () => {
-  const { isConnected } = useWallet();
+  const { isLoggedIn } = useAuth();
   const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFloatingNFT, setShowFloatingNFT] = useState(false);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWallet } from '../contexts/WalletContext';
+import { useAuth } from '../contexts/WalletContext';
 
 interface WalletInfoProps {
   className?: string;
@@ -7,22 +7,20 @@ interface WalletInfoProps {
 
 const WalletInfo: React.FC<WalletInfoProps> = ({ className = '' }) => {
   const { 
-    walletAddress, 
-    balance, 
-    network, 
-    isConnected, 
-    connect
-  } = useWallet();
+    userEmail, 
+    isLoggedIn, 
+    login
+  } = useAuth();
 
-  if (!isConnected) {
+  if (!isLoggedIn) {
     return (
       <div className={`p-6 border rounded-lg bg-card ${className}`}>
-        <h2 className="text-xl font-medium mb-4">Wallet</h2>
+        <h2 className="text-xl font-medium mb-4">Account</h2>
         <p className="text-muted-foreground mb-4">
-          Connect your wallet to view your account information and mint NFT receipts.
+          Log in to view your account information and manage digital receipts.
         </p>
         <button
-          onClick={() => connect()}
+          onClick={() => login('user@example.com')}
           className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white brand-gradient-bg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         >
           <svg 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useWallet } from '../contexts/WalletContext';
+import { useAuth } from '../contexts/WalletContext';
 
 interface WalletButtonProps {
   className?: string;
@@ -7,32 +7,33 @@ interface WalletButtonProps {
 
 const WalletButton: React.FC<WalletButtonProps> = ({ className = '' }) => {
   const { 
-    walletAddress, 
-    shortAddress, 
-    balance, 
-    status, 
-    isConnected, 
-    connect, 
-    disconnect, 
-    error 
-  } = useWallet();
+    userEmail, 
+    isLoggedIn, 
+    login, 
+    logout
+  } = useAuth();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
   
-  const handleConnect = async () => {
+  const handleLogin = async () => {
     try {
-      await connect('metamask');
+      if (emailInput.trim()) {
+        login(emailInput.trim());
+        setEmailInput('');
+        setIsDropdownOpen(false);
+      }
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      console.error('Failed to login:', error);
     }
   };
   
-  const handleDisconnect = async () => {
+  const handleLogout = async () => {
     try {
-      await disconnect();
+      logout();
       setIsDropdownOpen(false);
     } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
+      console.error('Failed to logout:', error);
     }
   };
   

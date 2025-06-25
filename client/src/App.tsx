@@ -56,8 +56,8 @@ const Router: React.FC = () => {
             <Dashboard />
           </Route>
           
-          <Route path="/wallet">
-            <Wallet />
+          <Route path="/account">
+            <Account />
           </Route>
           
           <Route path="/gallery">
@@ -127,12 +127,10 @@ const Router: React.FC = () => {
         </div>
       </footer>
       
-      {/* Display the NFT Tutorial for logged-in users */}
-      {isConnected && (
-        <Suspense fallback={<LoadingFallback message="Loading tutorial..." />}>
-          <NFTTutorial />
-        </Suspense>
-      )}
+      {/* NFT Tutorial available for all users */}
+      <Suspense fallback={<LoadingFallback message="Loading tutorial..." />}>
+        <NFTTutorial />
+      </Suspense>
     </div>
   );
 };
@@ -152,11 +150,11 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <WalletProvider>
+        <AuthProvider>
           <ToastProvider>
-            <AppContent />
+            <Router />
           </ToastProvider>
-        </WalletProvider>
+        </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
