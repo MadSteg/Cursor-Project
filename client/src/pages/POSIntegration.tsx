@@ -78,7 +78,7 @@ export default function POSIntegration() {
       if (result.success) {
         setReceiptResult(result.data);
         toast({
-          title: "BlockReceipt NFT Minted Successfully!",
+          title: "Digital Receipt Created Successfully!",
           description: `Customer earned ${result.data.rewardPoints} points`,
         });
       } else {
@@ -104,7 +104,7 @@ export default function POSIntegration() {
             POS Integration Demo
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-            Experience the future of receipts. Customers simply select "Mint BlockReceipt" at checkout 
+            Experience the future of receipts. Customers simply select "Create Digital Receipt" at checkout 
             for instant digital rewards and encrypted receipt storage.
           </p>
         </div>
@@ -122,16 +122,16 @@ export default function POSIntegration() {
           <Card className="bg-slate-800 border-slate-700">
             <CardContent className="pt-6 text-center">
               <Smartphone className="h-12 w-12 text-green-400 mx-auto mb-4" />
-              <h3 className="font-semibold mb-2 text-white">2. Select BlockReceipt</h3>
-              <p className="text-sm text-slate-400">Choose "Mint BlockReceipt" alongside email/paper option</p>
+              <h3 className="font-semibold mb-2 text-white">2. Select Digital Receipt</h3>
+              <p className="text-sm text-slate-400">Choose "Create Digital Receipt" alongside email/paper option</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-800 border-slate-700">
             <CardContent className="pt-6 text-center">
               <Wallet className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-              <h3 className="font-semibold mb-2 text-white">3. Auto Wallet Creation</h3>
-              <p className="text-sm text-slate-400">System creates secure wallet using phone/email</p>
+              <h3 className="font-semibold mb-2 text-white">3. Auto Account Creation</h3>
+              <p className="text-sm text-slate-400">System creates secure account using phone/email</p>
             </CardContent>
           </Card>
 
@@ -139,7 +139,7 @@ export default function POSIntegration() {
             <CardContent className="pt-6 text-center">
               <Award className="h-12 w-12 text-orange-400 mx-auto mb-4" />
               <h3 className="font-semibold mb-2 text-white">4. Instant Rewards</h3>
-              <p className="text-sm text-slate-400">Earn points automatically with encrypted receipt NFT</p>
+              <p className="text-sm text-slate-400">Earn points automatically with encrypted digital receipt</p>
             </CardContent>
           </Card>
         </div>

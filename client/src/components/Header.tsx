@@ -31,7 +31,7 @@ const Header: React.FC = () => {
             <div className="h-10 w-10 rounded-full overflow-hidden brand-gradient-bg flex items-center justify-center">
               <span className="text-white font-bold text-lg">BR</span>
             </div>
-            <span className="text-xl font-bold brand-gradient-text">BlockReceipt.ai</span>
+            <span className="text-xl font-bold brand-gradient-text">BlockReceipt</span>
           </Link>
           
           {/* Desktop Navigation */}

@@ -128,9 +128,9 @@ export default function NFTBrowser() {
     return (
       <>
         <SEOHead 
-          title="BlockReceipt Vault - BlockReceipt.ai"
-          description="Explore our collection of carbon-neutral NFT collectibles. Each digital receipt transforms into a unique, encrypted NFT powered by blockchain technology."
-          keywords="NFT gallery, digital collectibles, blockchain receipts, carbon-neutral NFTs, encrypted NFTs, Web3 collectibles"
+          title="Receipt Vault - BlockReceipt"
+          description="Explore your collection of carbon-neutral digital records. Each digital receipt transforms into a unique, encrypted record with verified purchase data."
+          keywords="digital receipts, receipt vault, purchase records, verified transactions, encrypted receipts, digital collectibles"
           url="/nft-browser"
         />
         <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700">
@@ -145,9 +145,9 @@ export default function NFTBrowser() {
   return (
     <>
       <SEOHead 
-        title="BlockReceipt Vault - BlockReceipt.ai"
-        description="Explore our collection of carbon-neutral NFT collectibles. Each digital receipt transforms into a unique, encrypted NFT powered by blockchain technology."
-        keywords="NFT gallery, digital collectibles, blockchain receipts, carbon-neutral NFTs, encrypted NFTs, Web3 collectibles"
+        title="Receipt Vault - BlockReceipt"
+        description="Explore your collection of carbon-neutral digital records. Each digital receipt transforms into a unique, encrypted record with verified purchase data."
+        keywords="digital receipts, receipt vault, purchase records, verified transactions, encrypted receipts, digital collectibles"
         url="/nft-browser"
       />
       

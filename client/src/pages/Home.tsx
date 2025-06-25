@@ -66,9 +66,9 @@ const Home: React.FC = () => {
   return (
     <>
       <SEOHead 
-        title="BlockReceipt.ai - Ditch Paper Pollution, Choose Carbon-Neutral NFT Collectibles"
-        description="Transform your receipts into secure, encrypted NFTs with BlockReceipt.ai. Carbon-neutral digital receipts powered by Threshold Network encryption and Polygon blockchain technology."
-        keywords="blockchain receipts, NFT receipts, carbon-neutral receipts, digital receipts, Threshold PRE, privacy-first receipts, Web3 receipts, encrypted receipts, sustainable receipts"
+        title="BlockReceipt - Digital Receipt Management Platform"
+        description="Transform your receipts into secure, encrypted digital records with BlockReceipt. Carbon-neutral digital receipts with advanced encryption and verified purchase data."
+        keywords="digital receipts, receipt management, purchase verification, customer data, encrypted receipts, sustainable receipts, verified transactions, digital records"
         url="/"
       />
       <div className="max-w-6xl mx-auto relative space-y-12">
@@ -80,14 +80,14 @@ const Home: React.FC = () => {
         
         <div className="relative z-10 px-6 py-16 md:py-24 text-white text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-100 animate-pulse-subtle">
-            BlockReceipt.ai
+            BlockReceipt
           </h1>
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
               Ditch paper pollution and antiquated systems.
             </h2>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
-              Choose carbon-neutral NFT collectibles.
+              Choose carbon-neutral digital records.
             </h2>
           </div>
           
@@ -191,7 +191,7 @@ const Home: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="font-bold text-white mb-1">Only you can access your receipts</h4>
-                      <p className="text-white/80">Protected by Threshold proxy re-encryption — your purchase history stays private, always.</p>
+                      <p className="text-white/80">Protected by advanced encryption — your purchase history stays private, always.</p>
                     </div>
                   </div>
                 </div>
