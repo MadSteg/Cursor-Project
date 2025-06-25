@@ -5,7 +5,10 @@ import { notificationService } from './services/notificationService';
 const logger = createLogger('websocket');
 
 export function setupWebSocket(server: any) {
-  const wss = new WebSocketServer({ server });
+  const wss = new WebSocketServer({ 
+    server,
+    path: '/ws' // Use specific path to avoid conflicts with Vite
+  });
 
   wss.on('connection', (ws, req) => {
     logger.info('[websocket] New WebSocket connection established');
