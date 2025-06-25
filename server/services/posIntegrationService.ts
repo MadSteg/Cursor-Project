@@ -3,18 +3,18 @@ import { ethers } from 'ethers';
 
 const logger = createLogger('pos-integration');
 
-export interface CustomerWallet {
+export interface CustomerAccount {
   address: string;
   privateKey: string;
   customerId: string;
   createdAt: string;
 }
 
-export interface ReceiptNFTResult {
+export interface ReceiptResult {
   success: boolean;
   walletAddress: string;
-  nftTokenId?: string;
-  nftImageUrl: string;
+  receiptId?: string;
+  receiptImageUrl: string;
   transactionHash?: string;
   rewardPoints: number;
   basePoints: number;
@@ -34,7 +34,7 @@ export interface ReceiptItem {
 }
 
 class POSIntegrationService {
-  private customerWallets = new Map<string, CustomerWallet>();
+  private customerAccounts = new Map<string, CustomerAccount>();
   private receiptImages = [
     'Hot Coffee.png',
     'Chocolate Donut.png',
@@ -45,11 +45,11 @@ class POSIntegrationService {
   ];
 
   constructor() {
-    // Initialize with some sample customer wallets
-    this.initializeSampleWallets();
+    // Initialize with some sample customer accounts
+    this.initializeSampleAccounts();
   }
 
-  private initializeSampleWallets() {
+  private initializeSampleAccounts() {
     const sampleCustomers = [
       { phone: '+1234567890', points: 2500 },
       { phone: '+1555123456', points: 1800 },
@@ -60,7 +60,7 @@ class POSIntegrationService {
       const customerId = this.generateCustomerId(customer.phone);
       const wallet = ethers.Wallet.createRandom();
       
-      this.customerWallets.set(customerId, {
+      this.customerAccounts.set(customerId, {
         address: wallet.address,
         privateKey: wallet.privateKey,
         customerId,
@@ -79,26 +79,26 @@ class POSIntegrationService {
   /**
    * Create or retrieve wallet for customer
    */
-  createOrGetCustomerWallet(customerId: string): CustomerWallet {
-    const existingWallet = this.customerWallets.get(customerId);
-    if (existingWallet) {
-      logger.info(`[pos] Retrieved existing wallet for customer ${customerId}: ${existingWallet.address}`);
-      return existingWallet;
+  createOrGetCustomerAccount(customerId: string): CustomerAccount {
+    const existingAccount = this.customerAccounts.get(customerId);
+    if (existingAccount) {
+      logger.info(`[pos] Retrieved existing account for customer ${customerId}: ${existingAccount.address}`);
+      return existingAccount;
     }
 
-    // Create new wallet
+    // Create new account
     const wallet = ethers.Wallet.createRandom();
-    const customerWallet: CustomerWallet = {
+    const customerAccount: CustomerAccount = {
       address: wallet.address,
       privateKey: wallet.privateKey,
       customerId,
       createdAt: new Date().toISOString()
     };
 
-    this.customerWallets.set(customerId, customerWallet);
-    logger.info(`[pos] Created new wallet for customer ${customerId}: ${wallet.address}`);
+    this.customerAccounts.set(customerId, customerAccount);
+    logger.info(`[pos] Created new account for customer ${customerId}: ${wallet.address}`);
     
-    return customerWallet;
+    return customerAccount;
   }
 
   /**
@@ -169,14 +169,14 @@ class POSIntegrationService {
   /**
    * Process receipt minting at POS
    */
-  async mintReceiptNFT(
+  async createDigitalReceipt(
     merchantId: string,
     merchantName: string,
     customerPhone: string,
     totalAmount: number,
     items: ReceiptItem[],
     transactionId: string
-  ): Promise<ReceiptNFTResult> {
+  ): Promise<ReceiptResult> {
     try {
       const customerId = this.generateCustomerId(customerPhone);
       

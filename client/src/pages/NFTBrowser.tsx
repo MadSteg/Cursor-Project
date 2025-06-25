@@ -166,10 +166,10 @@ export default function NFTBrowser() {
           <div className="container mx-auto px-4 py-16 relative z-10">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                BlockReceipt Vault
+                Digital Receipt Vault
               </h1>
               <p className="text-xl md:text-2xl text-purple-100 max-w-3xl mx-auto mb-8">
-                Your collection of carbon-neutral NFT receipts. Each NFT contains encrypted purchase data including merchant information, transaction history, and verification details.
+                Your collection of carbon-neutral digital receipts. Each record contains encrypted purchase data including merchant information, transaction history, and verification details.
               </p>
             </div>
           </div>

@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { merchantId, merchantName, customerPhone, totalAmount, items, transactionId } = req.body;
       
-      const result = await posIntegrationService.mintReceiptNFT(
+      const result = await posIntegrationService.createDigitalReceipt(
         merchantId,
         merchantName,
         customerPhone,
