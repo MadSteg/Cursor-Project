@@ -54,28 +54,51 @@ const Header: React.FC = () => {
           {/* Wallet Connect (Desktop) */}
           <div className="hidden md:flex items-center space-x-4">
 
-            {/* Wallet Connect */}
-            {isConnected && walletAddress ? (
+            {/* Login/Logout */}
+            {isLoggedIn && userEmail ? (
               <div className="flex items-center">
                 <div className="mr-4 px-4 py-2 bg-muted rounded-md">
                   <span className="text-sm font-medium">
-                    {formatWalletAddress(walletAddress)}
+                    {userEmail}
                   </span>
                 </div>
                 <button
-                  onClick={disconnect}
+                  onClick={logout}
                   className="px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted transition-colors"
                 >
-                  Disconnect
+                  Logout
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => connect('metamask')}
-                className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg transition-colors"
-              >
-                Connect Wallet
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowLoginForm(!showLoginForm)}
+                  className="interactive-button px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg transition-colors"
+                >
+                  Login
+                </button>
+                {showLoginForm && (
+                  <div className="absolute right-0 top-12 bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-64 z-50">
+                    <form onSubmit={handleLogin}>
+                      <label className="block text-sm font-medium mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="Enter your email"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="w-full mt-3 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                      >
+                        Login
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           

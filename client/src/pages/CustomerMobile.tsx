@@ -118,7 +118,7 @@ export default function CustomerMobile() {
             </div>
             <div className="flex items-center justify-between text-sm opacity-80">
               <span>≈ ${(totalPoints * 0.01).toFixed(2)} value</span>
-              <span>Wallet: {receipts[0]?.walletAddress.slice(0, 8)}...</span>
+              <span>Account: {receipts[0]?.walletAddress.slice(0, 8)}...</span>
             </div>
           </CardContent>
         </Card>

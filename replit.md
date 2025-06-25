@@ -11,7 +11,7 @@ BlockReceipt is a comprehensive digital receipt platform that transforms traditi
 - **UI Components**: shadcn/ui components with Radix UI primitives for consistent design
 - **Styling**: Tailwind CSS with custom dark theme support and responsive design
 - **State Management**: TanStack Query for server state management and caching
-- **Authentication**: Web3 wallet integration (MetaMask, WalletConnect)
+- **Authentication**: Simple email-based authentication system
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework using ES modules
@@ -112,6 +112,7 @@ BlockReceipt is a comprehensive digital receipt platform that transforms traditi
 - **Merchant Onboarding**: Complete merchant signup flow with step-by-step guidance
 - **Production APIs**: Merchant application processing, analytics, and onboarding progress tracking
 - **Notification System**: Brand access requests with real-time customer consent management
+- **Banking Compliance**: Removed all crypto/blockchain terminology and wallet integrations for Chase banking approval
 
 ### Technical Stack Completed
 - Production-ready digital verification deployment system
@@ -119,6 +120,8 @@ BlockReceipt is a comprehensive digital receipt platform that transforms traditi
 - Mobile-first customer experience with live updates
 - Merchant onboarding pipeline with progress tracking
 - Comprehensive API endpoints for all core functionality
+- Banking-compliant authentication system replacing wallet connectivity
+- Complete removal of crypto/blockchain terminology and MetaMask/WalletConnect integrations
 
 ## Changelog
 
