@@ -7,7 +7,7 @@ import { useAnalytics } from './hooks/use-analytics';
 
 // Lazy load pages for better performance
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
-const Wallet = React.lazy(() => import("./pages/Wallet"));
+const Account = React.lazy(() => import("./pages/Account"));
 const Gallery = React.lazy(() => import("./pages/Gallery"));
 const NFTBrowser = React.lazy(() => import("./pages/NFTBrowser"));
 const NFTDetail = React.lazy(() => import("./pages/NFTDetail"));
@@ -26,7 +26,7 @@ const BrandEngagement = React.lazy(() => import("./pages/BrandEngagement"));
 const MobileInterface = React.lazy(() => import("./components/MobileInterface"));
 const MerchantOnboarding = React.lazy(() => import("./pages/MerchantOnboarding"));
 
-import { WalletProvider, useWallet } from './contexts/WalletContext';
+import { AuthProvider } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ToastProvider } from './hooks/use-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -34,9 +34,8 @@ import { queryClient } from './lib/queryClient';
 
 // Removed CloudStorage references
 
-// Inner component that uses the wallet context
-const AppContent: React.FC = () => {
-  const { isConnected } = useWallet();
+// Router component
+const Router: React.FC = () => {
   
   // Track page views when routes change
   useAnalytics();

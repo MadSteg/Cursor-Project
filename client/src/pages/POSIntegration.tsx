@@ -261,7 +261,7 @@ export default function POSIntegration() {
                       <span className="font-semibold text-green-400">Transaction Complete</span>
                     </div>
                     <p className="text-sm text-green-300">
-                      BlockReceipt NFT minted successfully with encrypted receipt data
+                      Digital receipt created successfully with encrypted receipt data
                     </p>
                   </div>
 
@@ -272,12 +272,12 @@ export default function POSIntegration() {
                       alt="Receipt NFT" 
                       className="w-32 h-32 mx-auto rounded-lg border-2 border-slate-600"
                     />
-                    <p className="text-sm text-slate-400 mt-2">Your Receipt NFT</p>
+                    <p className="text-sm text-slate-400 mt-2">Your Digital Receipt</p>
                   </div>
 
-                  {/* Wallet Info */}
+                  {/* Account Info */}
                   <div className="bg-blue-900/30 border border-blue-700 p-4 rounded-lg">
-                    <h4 className="font-semibold text-blue-400 mb-2">Wallet Created</h4>
+                    <h4 className="font-semibold text-blue-400 mb-2">Account Created</h4>
                     <p className="text-xs font-mono text-blue-300 break-all">
                       {receiptResult.walletAddress}
                     </p>
@@ -324,7 +324,7 @@ export default function POSIntegration() {
                     Complete a transaction to see BlockReceipt in action
                   </p>
                   <p className="text-sm text-slate-500">
-                    Demonstrates instant wallet creation and NFT minting at POS
+                    Demonstrates instant account creation and digital receipt generation at POS
                   </p>
                 </div>
               )}
@@ -340,7 +340,7 @@ export default function POSIntegration() {
               <DollarSign className="h-12 w-12 text-green-400 mx-auto mb-4" />
               <h3 className="font-semibold mb-2 text-white">Cost Savings</h3>
               <p className="text-sm text-slate-300">
-                $0.005 per NFT vs $0.08 for paper receipts. Massive savings for high-volume stores.
+                $0.005 per digital receipt vs $0.08 for paper receipts. Massive savings for high-volume stores.
               </p>
             </div>
             

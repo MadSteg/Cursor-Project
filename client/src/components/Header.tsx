@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { useWallet } from '../contexts/WalletContext';
+import { useAuth } from '../contexts/WalletContext';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
-  const { isConnected, walletAddress, connect, disconnect } = useWallet();
-  
-  // Format wallet address for display
-  const formatWalletAddress = (address: string) => {
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  const { isLoggedIn, userEmail, login, logout } = useAuth();
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      login(emailInput.trim());
+      setShowLoginForm(false);
+      setEmailInput("");
+    }
   };
+  
+
   
   // Navigation links
   const navLinks = [
@@ -51,10 +59,8 @@ const Header: React.FC = () => {
             ))}
           </nav>
           
-          {/* Wallet Connect (Desktop) */}
+          {/* Login/Logout (Desktop) */}
           <div className="hidden md:flex items-center space-x-4">
-
-            {/* Login/Logout */}
             {isLoggedIn && userEmail ? (
               <div className="flex items-center">
                 <div className="mr-4 px-4 py-2 bg-muted rounded-md">
@@ -155,35 +161,45 @@ const Header: React.FC = () => {
               ))}
             </nav>
             
-            {/* Wallet Connect Button (Mobile) */}
+            {/* Login/Logout (Mobile) */}
             <div className="pt-2 border-t">
-              {isConnected && walletAddress ? (
-                <div className="flex flex-col space-y-2">
-                  <div className="px-4 py-2 bg-muted rounded-md">
+              {isLoggedIn && userEmail ? (
+                <div className="mb-4">
+                  <div className="mb-2 px-4 py-2 bg-muted rounded-md">
                     <span className="text-sm font-medium">
-                      {formatWalletAddress(walletAddress)}
+                      {userEmail}
                     </span>
                   </div>
                   <button
                     onClick={() => {
-                      disconnect();
+                      logout();
                       setIsOpen(false);
                     }}
                     className="px-4 py-2 border border-border rounded-md text-sm font-medium hover:bg-muted"
                   >
-                    Disconnect
+                    Logout
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => {
-                    connect('metamask');
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
-                >
-                  Connect Wallet
-                </button>
+                <div className="mb-4">
+                  <form onSubmit={(e) => { handleLogin(e); setIsOpen(false); }}>
+                    <label className="block text-sm font-medium mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-3"
+                      placeholder="Enter your email"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      className="w-full px-4 py-2 rounded-md text-sm font-medium text-white brand-gradient-bg"
+                    >
+                      Login
+                    </button>
+                  </form>
+                </div>
               )}
             </div>
           </div>
