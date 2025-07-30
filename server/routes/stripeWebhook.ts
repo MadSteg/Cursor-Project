@@ -3,12 +3,21 @@ import Stripe from 'stripe';
 import bodyParser from 'body-parser';
 import { mintReceiptFromPayment } from '../services/nftMintService';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2022-11-15' });
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Initialize Stripe with fallback for development
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_development';
+const stripe = new Stripe(stripeSecretKey, { apiVersion: '2022-11-15' });
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_dummy_secret_for_development';
+
 const router = Router();
 
 // Use raw body parser for webhooks
 router.post('/', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
+  // Skip webhook processing in development if no real Stripe keys
+  if (stripeSecretKey === 'sk_test_dummy_key_for_development') {
+    console.log('Skipping Stripe webhook processing in development mode');
+    return res.json({ received: true, development: true });
+  }
+
   const sig = req.headers['stripe-signature'] as string;
   let event: Stripe.Event;
   

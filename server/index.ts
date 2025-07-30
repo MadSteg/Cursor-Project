@@ -5,7 +5,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeStripeService } from "./services/stripeService";
+// Stripe service removed - will be added back later when needed
 import { thresholdClient } from "./services/tacoService";
 import * as dotenv from "dotenv-safe";
 dotenv.config({
@@ -101,8 +101,7 @@ log("Using Threshold Client encryption service...");
 // ThresholdClient is already initialized in its module
 log("Threshold Client service ready", "taco");
 
-log("Initializing Stripe payment service...");
-initializeStripeService();
+// Stripe service initialization removed - will be added back later when needed
 
 (async () => {
   const server = await registerRoutes(app);

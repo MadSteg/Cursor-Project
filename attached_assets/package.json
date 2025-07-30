@@ -1,22 +1,71 @@
 {
-  "name": "memorychain-poc",
-  "version": "0.1.0",
-  "description": "Proof of concept for MemoryChain receipt NFTs",
-  "main": "index.js",
-  "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
-    "deploy": "npx hardhat run scripts/deploy.js --network mumbai"
+  "name": "blockreceipt-ai",
+  "version": "1.0.0",
+  "description": "Transform paper receipts into verifiable digital NFTs on the Polygon blockchain",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
-  "dependencies": {
-    "body-parser": "^1.20.2",
-    "dotenv": "^16.4.0",
-    "ethers": "^6.10.2",
-    "express": "^4.19.2",
-    "ipfs-http-client": "^64.1.2"
+  "workspaces": [
+    "client",
+    "server",
+    "contracts"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "test": "npm run test:client && npm run test:server && npm run test:contracts",
+    "test:client": "cd client && npm run test",
+    "test:server": "cd server && npm run test",
+    "test:contracts": "cd contracts && npm run test",
+    "lint": "npm run lint:client && npm run lint:server",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "lint:fix": "npm run lint:fix:client && npm run lint:fix:server",
+    "lint:fix:client": "cd client && npm run lint:fix",
+    "lint:fix:server": "cd server && npm run lint:fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "install:all": "npm install && npm run install:client && npm run install:server && npm run install:contracts",
+    "install:client": "cd client && npm install",
+    "install:server": "cd server && npm install",
+    "install:contracts": "cd contracts && npm install",
+    "clean": "npm run clean:client && npm run clean:server",
+    "clean:client": "cd client && rm -rf dist node_modules",
+    "clean:server": "cd server && rm -rf dist node_modules",
+    "deploy:contracts": "cd contracts && npm run deploy",
+    "verify:contracts": "cd contracts && npm run verify",
+    "compile:contracts": "cd contracts && npm run compile",
+    "start": "cd server && npm start",
+    "preview": "cd client && npm run preview"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
-    "nodemon": "^3.0.3"
+    "concurrently": "^8.2.2",
+    "prettier": "^3.1.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "blockchain",
+    "nft",
+    "receipts",
+    "polygon",
+    "web3",
+    "defi",
+    "cryptocurrency"
+  ],
+  "author": "BlockReceipt.ai Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MadSteg/Cursor-Project.git"
+  },
+  "homepage": "https://blockreceipt.ai",
+  "bugs": {
+    "url": "https://github.com/MadSteg/Cursor-Project/issues"
   }
 }

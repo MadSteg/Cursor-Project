@@ -5,8 +5,7 @@ import { posIntegrationService } from "./services/posIntegrationService";
 import { notificationService } from "./services/notificationService";
 import { merchantOnboardingService } from "./services/merchantOnboarding";
 import { storage } from "./storage";
-import { validateBody, mintSchema, stripePaymentSchema, verifyReceiptSchema } from "./middleware/validation";
-import stripeWebhook from "./routes/stripeWebhook";
+import { validateBody, mintSchema, verifyReceiptSchema } from "./middleware/validation";
 // Removed legacy Mumbai blockchain routes
 import blockchainAmoyRoutes from "./routes/blockchain-amoy";
 import multiBlockchainRoutes from "./routes/multi-blockchain";
@@ -86,8 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   // All routes are prefixed with /api
   
-  // Stripe webhook must be registered BEFORE JSON parser middleware
-  app.use('/api/webhook', stripeWebhook);
+  // Stripe webhook removed - will be added back later when needed
   
   // Mumbai blockchain routes have been removed completely
   
