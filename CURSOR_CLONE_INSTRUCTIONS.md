@@ -1,19 +1,19 @@
 # Cursor IDE Clone Instructions
 
 ## GitHub Repository
-**URL**: https://github.com/MadSteg/BlockReceiptai
+**URL**: https://github.com/MadSteg/Curso-export
 
 ## Option 1: Clone Main Branch (Current)
 ```bash
-git clone https://github.com/MadSteg/BlockReceiptai.git
-cd BlockReceiptai
+git clone https://github.com/MadSteg/Curso-export.git
+cd Curso-export
 ```
 
 ## Option 2: Wait for Updated Push
 After resolving git conflicts, clone the latest version:
 ```bash
-git clone https://github.com/MadSteg/BlockReceiptai.git
-cd BlockReceiptai
+git clone https://github.com/MadSteg/Curso-export.git
+cd Curso-export
 git checkout cursor-migration-v1  # if using new branch approach
 ```
 
