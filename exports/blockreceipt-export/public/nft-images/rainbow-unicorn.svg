@@ -1,0 +1,88 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="unicornGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#f0f0f0"/>
+    </linearGradient>
+    <linearGradient id="rainbowMane" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b6b"/>
+      <stop offset="16%" style="stop-color:#ff8e53"/>
+      <stop offset="33%" style="stop-color:#ffd93d"/>
+      <stop offset="50%" style="stop-color:#6bcf7f"/>
+      <stop offset="66%" style="stop-color:#4dabf7"/>
+      <stop offset="83%" style="stop-color:#9775fa"/>
+      <stop offset="100%" style="stop-color:#f783ac"/>
+    </linearGradient>
+    <radialGradient id="hornGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffd93d"/>
+      <stop offset="100%" style="stop-color:#ff8e53"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="#e8f5e8"/>
+  
+  <!-- Rainbow clouds -->
+  <ellipse cx="80" cy="80" rx="30" ry="15" fill="#ff6b6b" opacity="0.3"/>
+  <ellipse cx="320" cy="100" rx="25" ry="12" fill="#4dabf7" opacity="0.3"/>
+  <ellipse cx="350" cy="300" rx="28" ry="14" fill="#9775fa" opacity="0.3"/>
+  
+  <!-- Unicorn Body -->
+  <ellipse cx="200" cy="280" rx="90" ry="70" fill="url(#unicornGradient)" stroke="#ddd" stroke-width="3"/>
+  
+  <!-- Unicorn Head -->
+  <ellipse cx="200" cy="180" rx="60" ry="75" fill="url(#unicornGradient)" stroke="#ddd" stroke-width="3"/>
+  
+  <!-- Unicorn Mane -->
+  <path d="M 150 150 Q 120 120 140 90 Q 160 110 180 100 Q 200 80 220 100 Q 240 110 260 90 Q 280 120 250 150 Q 230 140 210 150 Q 190 140 170 150 Z" fill="url(#rainbowMane)" opacity="0.8"/>
+  
+  <!-- Unicorn Horn -->
+  <polygon points="200,100 190,150 210,150" fill="url(#hornGlow)" stroke="#ff8e53" stroke-width="2"/>
+  <line x1="195" y1="120" x2="205" y2="120" stroke="#ff6b6b" stroke-width="2"/>
+  <line x1="197" y1="130" x2="203" y2="130" stroke="#ff6b6b" stroke-width="2"/>
+  <line x1="198" y1="140" x2="202" y2="140" stroke="#ff6b6b" stroke-width="2"/>
+  
+  <!-- Horn Sparkles -->
+  <circle cx="185" cy="110" r="3" fill="#ffd93d" opacity="0.8"/>
+  <circle cx="215" cy="115" r="2" fill="#ffd93d" opacity="0.8"/>
+  <circle cx="190" cy="125" r="2.5" fill="#ffd93d" opacity="0.8"/>
+  
+  <!-- Unicorn Eyes -->
+  <ellipse cx="180" cy="170" rx="12" ry="15" fill="#333"/>
+  <ellipse cx="220" cy="170" rx="12" ry="15" fill="#333"/>
+  <ellipse cx="180" cy="168" rx="6" ry="8" fill="white"/>
+  <ellipse cx="220" cy="168" rx="6" ry="8" fill="white"/>
+  <circle cx="182" cy="166" r="3" fill="#333"/>
+  <circle cx="222" cy="166" r="3" fill="#333"/>
+  
+  <!-- Unicorn Nose -->
+  <ellipse cx="200" cy="200" rx="8" ry="5" fill="#ffb3ba"/>
+  
+  <!-- Unicorn Mouth -->
+  <path d="M 200 210 Q 190 220 185 215" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M 200 210 Q 210 220 215 215" stroke="#333" stroke-width="2" fill="none"/>
+  
+  <!-- Unicorn Legs -->
+  <rect x="160" y="340" width="20" height="50" rx="10" fill="url(#unicornGradient)" stroke="#ddd" stroke-width="2"/>
+  <rect x="190" y="340" width="20" height="50" rx="10" fill="url(#unicornGradient)" stroke="#ddd" stroke-width="2"/>
+  <rect x="220" y="340" width="20" height="50" rx="10" fill="url(#unicornGradient)" stroke="#ddd" stroke-width="2"/>
+  
+  <!-- Unicorn Hooves -->
+  <ellipse cx="170" cy="395" rx="12" ry="6" fill="#333"/>
+  <ellipse cx="200" cy="395" rx="12" ry="6" fill="#333"/>
+  <ellipse cx="230" cy="395" rx="12" ry="6" fill="#333"/>
+  
+  <!-- Rainbow Tail -->
+  <path d="M 290 280 Q 320 270 340 290 Q 360 310 340 330 Q 320 320 310 300 Q 300 290 290 280" fill="url(#rainbowMane)" opacity="0.7"/>
+  
+  <!-- Magic Sparkles -->
+  <circle cx="120" cy="180" r="4" fill="#ffd93d" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="280" cy="200" r="3" fill="#9775fa" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="150" cy="250" r="2.5" fill="#4dabf7" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

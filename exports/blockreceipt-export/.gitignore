@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Ignore build artifacts and logs
+artifacts/
+attached_assets/
+semgrep.log
+
+# Ignore Git and temp files
+.git/
+*.env.*

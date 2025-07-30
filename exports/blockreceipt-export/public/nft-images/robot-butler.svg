@@ -1,0 +1,67 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="robotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ecdc4"/>
+      <stop offset="100%" style="stop-color:#44a08d"/>
+    </linearGradient>
+    <radialGradient id="eyeGradient" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#0099cc"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="#f0f8ff"/>
+  
+  <!-- Robot Body -->
+  <rect x="150" y="220" width="100" height="120" rx="20" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  
+  <!-- Robot Head -->
+  <rect x="160" y="140" width="80" height="90" rx="25" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  
+  <!-- Robot Eyes -->
+  <circle cx="180" cy="170" r="15" fill="url(#eyeGradient)" stroke="#0099cc" stroke-width="2"/>
+  <circle cx="220" cy="170" r="15" fill="url(#eyeGradient)" stroke="#0099cc" stroke-width="2"/>
+  <circle cx="180" cy="170" r="8" fill="white"/>
+  <circle cx="220" cy="170" r="8" fill="white"/>
+  <circle cx="182" cy="168" r="4" fill="#333"/>
+  <circle cx="222" cy="168" r="4" fill="#333"/>
+  
+  <!-- Robot Antenna -->
+  <line x1="185" y1="140" x2="185" y2="110" stroke="#ff6b35" stroke-width="4"/>
+  <line x1="215" y1="140" x2="215" y2="115" stroke="#ff6b35" stroke-width="4"/>
+  <circle cx="185" cy="108" r="6" fill="#ff6b35"/>
+  <circle cx="215" cy="113" r="6" fill="#ff6b35"/>
+  
+  <!-- Robot Mouth -->
+  <rect x="190" y="200" width="20" height="8" rx="4" fill="#333"/>
+  
+  <!-- Robot Arms -->
+  <rect x="120" y="240" width="30" height="60" rx="15" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  <rect x="250" y="240" width="30" height="60" rx="15" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  
+  <!-- Robot Hands -->
+  <circle cx="135" cy="315" r="18" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  <circle cx="265" cy="315" r="18" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  
+  <!-- Robot Legs -->
+  <rect x="170" y="340" width="20" height="40" rx="10" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  <rect x="210" y="340" width="20" height="40" rx="10" fill="url(#robotGradient)" stroke="#2c8577" stroke-width="3"/>
+  
+  <!-- Robot Feet -->
+  <ellipse cx="180" cy="385" rx="15" ry="8" fill="#2c8577"/>
+  <ellipse cx="220" cy="385" rx="15" ry="8" fill="#2c8577"/>
+  
+  <!-- Butler Bow Tie -->
+  <polygon points="200,215 190,225 200,235 210,225" fill="#ff6b35"/>
+  
+  <!-- Control Panel -->
+  <rect x="170" y="250" width="60" height="30" rx="5" fill="#333" opacity="0.8"/>
+  <circle cx="185" cy="265" r="3" fill="#00ff00"/>
+  <circle cx="200" cy="265" r="3" fill="#ffff00"/>
+  <circle cx="215" cy="265" r="3" fill="#ff0000"/>
+  
+  <!-- Service Tray -->
+  <ellipse cx="135" cy="310" rx="25" ry="8" fill="#silver" opacity="0.8"/>
+  <rect x="125" y="305" width="20" height="3" fill="#gold"/>
+</svg>

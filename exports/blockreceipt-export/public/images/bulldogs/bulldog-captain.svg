@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#f0f5ff"/>
+  <!-- Base bulldog -->
+  <circle cx="150" cy="120" r="60" fill="#c4b091"/>
+  <!-- Captain hat -->
+  <path d="M 110 75 Q 150 60 190 75 L 195 85 Q 150 70 105 85 Z" fill="#00205b"/>
+  <path d="M 105 85 L 195 85 L 185 95 L 115 95 Z" fill="white"/>
+  <path d="M 115 95 L 185 95 L 175 105 L 125 105 Z" fill="#00205b"/>
+  <!-- Gold emblem -->
+  <circle cx="150" cy="85" r="10" fill="#ffd700"/>
+  <path d="M 150 80 L 153 88 L 162 88 L 155 93 L 158 100 L 150 95 L 142 100 L 145 93 L 138 88 L 147 88 Z" fill="#00205b"/>
+  <!-- Naval uniform -->
+  <rect x="120" y="165" width="60" height="40" fill="#00205b"/>
+  <path d="M 120 175 h 60 M 120 185 h 60 M 120 195 h 60" stroke="#ffd700" stroke-width="2"/>
+  <!-- Gold buttons -->
+  <circle cx="135" cy="175" r="3" fill="#ffd700"/>
+  <circle cx="165" cy="175" r="3" fill="#ffd700"/>
+  <circle cx="135" cy="185" r="3" fill="#ffd700"/>
+  <circle cx="165" cy="185" r="3" fill="#ffd700"/>
+  <!-- Face features -->
+  <circle cx="120" cy="110" r="10" fill="white"/>
+  <circle cx="180" cy="110" r="10" fill="white"/>
+  <circle cx="120" cy="110" r="5" fill="black"/>
+  <circle cx="180" cy="110" r="5" fill="black"/>
+  <ellipse cx="150" cy="140" rx="25" ry="10" fill="#333"/>
+  <ellipse cx="110" cy="80" rx="20" ry="15" fill="#c4b091"/>
+  <ellipse cx="190" cy="80" rx="20" ry="15" fill="#c4b091"/>
+  <text x="150" y="230" font-family="Arial" font-size="20" text-anchor="middle" fill="#333">Captain Bulldog</text>
+  <text x="150" y="260" font-family="Arial" font-size="16" text-anchor="middle" fill="#8a2be2">Epic</text>
+</svg>
