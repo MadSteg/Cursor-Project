@@ -1,7 +1,7 @@
 # GitHub Push Guide for Cursor IDE Migration
 
 ## Current Repository Status
-- **GitHub Repository**: https://github.com/MadSteg/BlockReceiptNEW
+- **GitHub Repository**: https://github.com/MadSteg/BlockReceiptai
 - **Current Branch**: main
 - **Git User**: MadSteg (steven.donoghue@icloud.com)
 - **Latest Commit**: "Prepare project for transfer to Cursor IDE with comprehensive export packages"
@@ -14,9 +14,13 @@ Your local repository has diverged from GitHub (263 local commits vs 1 remote co
 ### Step 1: Manual GitHub Update (Recommended)
 Since there are git conflicts, I recommend manually updating your GitHub repository:
 
-1. **Create a fresh repository branch** or **create a new repository** for the Cursor-ready version
-2. **Upload files directly** through GitHub's web interface
-3. This ensures no regression and gives you a clean migration path
+1. Go to **https://github.com/MadSteg/BlockReceiptai**
+2. **Create a new branch** called `cursor-ready-v1`
+3. **Upload your entire project structure** through GitHub's web interface:
+   - Create folders: `client/`, `server/`, `shared/`, `public/`
+   - Upload all files from each folder
+   - Include: `package.json`, `package-lock.json`, all config files
+4. This ensures no regression and gives you a clean migration path
 
 ### Step 2: Alternative - Force Push (Use with Caution)
 If you want to overwrite the GitHub repository with your current version:
@@ -53,10 +57,33 @@ git push origin cursor-migration-v1
 ```
 
 ### Step 4: Manual File Upload Method (Safest)
-1. Go to https://github.com/MadSteg/BlockReceiptNEW
-2. Create a new branch called `cursor-ready`
+1. Go to https://github.com/MadSteg/BlockReceiptai
+2. Create a new branch called `cursor-ready-v1`
 3. Upload key directories: `client/`, `server/`, `shared/`, `package.json`, etc.
 4. Cursor can then clone this specific branch
+
+### Step 5: Command Line Alternative (If Git Issues Resolved)
+You can try this in your terminal to push to the correct repository:
+
+```bash
+# Change remote URL to correct repository
+git remote set-url origin https://github.com/MadSteg/BlockReceiptai.git
+
+# Check if it worked
+git remote -v
+
+# Create fresh branch
+git checkout -b main-cursor-ready
+
+# Add all files
+git add .
+
+# Commit current state
+git commit -m "Banking compliant BlockReceipt ready for Cursor IDE"
+
+# Push to new repository
+git push -u origin main-cursor-ready
+```
 
 ## For Cursor IDE Setup
 

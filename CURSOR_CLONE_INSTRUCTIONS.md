@@ -1,19 +1,19 @@
 # Cursor IDE Clone Instructions
 
 ## GitHub Repository
-**URL**: https://github.com/MadSteg/BlockReceiptNEW
+**URL**: https://github.com/MadSteg/BlockReceiptai
 
 ## Option 1: Clone Main Branch (Current)
 ```bash
-git clone https://github.com/MadSteg/BlockReceiptNEW.git
-cd BlockReceiptNEW
+git clone https://github.com/MadSteg/BlockReceiptai.git
+cd BlockReceiptai
 ```
 
 ## Option 2: Wait for Updated Push
 After resolving git conflicts, clone the latest version:
 ```bash
-git clone https://github.com/MadSteg/BlockReceiptNEW.git
-cd BlockReceiptNEW
+git clone https://github.com/MadSteg/BlockReceiptai.git
+cd BlockReceiptai
 git checkout cursor-migration-v1  # if using new branch approach
 ```
 
