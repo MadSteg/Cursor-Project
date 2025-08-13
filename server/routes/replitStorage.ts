@@ -7,12 +7,17 @@ const router = Router();
 let replitClient: Client | null = null;
 let isConnected = false;
 
-try {
-  replitClient = new Client();
-  isConnected = true;
-  console.log('[replit-storage] Connected to Replit Object Storage successfully');
-} catch (error) {
-  console.error('[replit-storage] Failed to connect:', error);
+// Only try to connect if we're on Replit
+if (process.env.REPL_ID) {
+  try {
+    replitClient = new Client();
+    isConnected = true;
+    console.log('[replit-storage] Connected to Replit Object Storage successfully');
+  } catch (error) {
+    console.error('[replit-storage] Failed to connect:', error);
+  }
+} else {
+  console.log('[replit-storage] Not on Replit, skipping object storage initialization');
 }
 
 /**

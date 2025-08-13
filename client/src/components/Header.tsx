@@ -16,7 +16,9 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems: NavItem[] = [
-    { label: 'Dashboard', path: '/' },
+    { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Analytics', path: '/analytics' },
+    { label: 'Loyalty', path: '/loyalty' },
     { label: 'Gallery', path: '/gallery' },
     { label: 'Merchants', path: '/merchants' },
     { label: 'How It Works', path: '/how-it-works' },

@@ -25,6 +25,8 @@ const POSIntegration = React.lazy(() => import("./pages/POSIntegration"));
 const BrandEngagement = React.lazy(() => import("./pages/BrandEngagement"));
 const MobileInterface = React.lazy(() => import("./components/MobileInterface"));
 const MerchantOnboarding = React.lazy(() => import("./pages/MerchantOnboarding"));
+const Analytics = React.lazy(() => import("./pages/Analytics"));
+const Loyalty = React.lazy(() => import("./pages/Loyalty"));
 
 import { AuthProvider } from './contexts/WalletContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -54,6 +56,14 @@ const Router: React.FC = () => {
           
           <Route path="/dashboard">
             <Dashboard />
+          </Route>
+          
+          <Route path="/analytics">
+            <Analytics />
+          </Route>
+          
+          <Route path="/loyalty">
+            <Loyalty />
           </Route>
           
           <Route path="/account">

@@ -3,6 +3,9 @@
  * Simple mock implementation to replace Stripe functionality
  */
 
+// Check if mock payment service is available
+export const isAvailable = true;
+
 export async function createPaymentIntent(
   amount: number,
   currency: string = 'usd',

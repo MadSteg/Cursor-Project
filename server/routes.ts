@@ -819,8 +819,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
   
-  // Setup WebSocket for real-time notifications
-  setupWebSocket(httpServer);
+  // Setup WebSocket for real-time notifications (temporarily disabled for local development)
+  // setupWebSocket(httpServer);
 
   return httpServer;
 }

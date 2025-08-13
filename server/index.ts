@@ -103,6 +103,23 @@ log("Threshold Client service ready", "taco");
 
 // Stripe service initialization removed - will be added back later when needed
 
+// Health check endpoint
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Import new routes
+import analyticsRoutes from './routes/analytics';
+import loyaltyRoutes from './routes/loyalty';
+
+// Register new routes
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/loyalty', loyaltyRoutes);
+
 (async () => {
   const server = await registerRoutes(app);
 
@@ -140,14 +157,13 @@ log("Threshold Client service ready", "taco");
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 3000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 5000;
+  const port = 3000;
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: "127.0.0.1",
   }, () => {
     log(`serving on port ${port}`);
   });

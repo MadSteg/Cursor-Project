@@ -255,6 +255,10 @@ export const useWallet = (): WalletContextType => {
   return context;
 };
 
+// Export aliases for backward compatibility
+export const AuthProvider = WalletProvider;
+export const useAuth = useWallet;
+
 // Type declarations for window.ethereum
 declare global {
   interface Window {

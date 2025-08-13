@@ -19,19 +19,21 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "wouter": "^2.12.1",
-    "react-query": "^3.39.3",
-    "zustand": "^4.4.7",
-    "tailwindcss": "^3.3.6",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "autoprefixer": "^10.4.16",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.0.0",
-    "class-variance-authority": "^0.7.0",
-    "lucide-react": "^0.294.0"
+    "lucide-react": "^0.294.0",
+    "postcss": "^8.4.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
+    "tailwindcss": "^3.3.6",
+    "wouter": "^2.12.1",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -39,14 +41,14 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^1.0.4",
+    "@vitest/ui": "^1.0.4",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "vitest": "^1.0.4",
-    "@vitest/ui": "^1.0.4",
-    "@vitest/coverage-v8": "^1.0.4"
+    "vitest": "^1.0.4"
   },
   "keywords": [
     "react",
@@ -59,4 +61,4 @@
   ],
   "author": "BlockReceipt.ai Team",
   "license": "MIT"
-} 
+}
