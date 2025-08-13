@@ -10,7 +10,7 @@ import {
   createPaymentIntent,
   createMockPayment,
   retrievePayment 
-} from "../services/mockPaymentService";
+} from "../services/stripeService";
 
 const router = Router();
 

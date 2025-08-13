@@ -5,12 +5,11 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-// Stripe service removed - will be added back later when needed
+import { initializeStripeService } from "./services/stripeService";
 import { thresholdClient } from "./services/tacoService";
-import * as dotenv from "dotenv-safe";
-dotenv.config({
-  allowEmptyValues: true
-}); // allows empty environment variables
+// Temporarily disable strict env checking to resolve startup issues
+import * as dotenv from "dotenv";
+dotenv.config(); // Standard dotenv without strict checking
 
 // PRE encryption functionality enabled
 
@@ -101,24 +100,8 @@ log("Using Threshold Client encryption service...");
 // ThresholdClient is already initialized in its module
 log("Threshold Client service ready", "taco");
 
-// Stripe service initialization removed - will be added back later when needed
-
-// Health check endpoint
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Import new routes
-import analyticsRoutes from './routes/analytics';
-import loyaltyRoutes from './routes/loyalty';
-
-// Register new routes
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/loyalty', loyaltyRoutes);
+log("Initializing Stripe payment service...");
+initializeStripeService();
 
 (async () => {
   const server = await registerRoutes(app);
@@ -157,13 +140,14 @@ app.use('/api/loyalty', loyaltyRoutes);
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 3000
+  // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 3000;
+  const port = 5000;
   server.listen({
     port,
-    host: "127.0.0.1",
+    host: "0.0.0.0",
+    reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
   });

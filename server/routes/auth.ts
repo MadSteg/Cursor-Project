@@ -9,7 +9,7 @@
  */
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import { insertUserSchema } from "../../shared/schema";
+import { insertUserSchema } from "@shared/schema";
 import { AuthService } from "../services/authService";
 import { thresholdClient } from "../services/tacoService";
 import { WalletService } from "../services/walletService";

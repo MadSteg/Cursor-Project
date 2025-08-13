@@ -14,7 +14,6 @@ run = ["sh", "-c", "NODE_ENV=production node dist/index.js"]
 [[ports]]
 localPort = 3000
 externalPort = 3000
-exposeLocalhost = true
 
 [[ports]]
 localPort = 4000
@@ -60,6 +59,3 @@ args = "npm run build"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-fcdafc46-9a10-4e8d-a990-858c2d8220c5"
-
-[agent]
-integrations = ["javascript_openai==1.0.0", "javascript_stripe==1.0.0", "javascript_google_analytics==1.0.0"]

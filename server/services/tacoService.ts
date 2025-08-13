@@ -6,22 +6,22 @@
  */
 
 import * as taco from '@nucypher/taco';
-import * as ethers from 'ethers';
+import { ethers } from 'ethers';
 import { Domain } from '@nucypher/shared';
 import { logger } from '../utils/logger';
 
 // Will be defined later in the file
 
-// Create a provider instance (commented out for now to fix startup issues)
-// const provider = new ethers.providers.JsonRpcProvider(
-//   process.env.POLYGON_MUMBAI_RPC_URL || 'https://mumbai.rpc.thirdweb.com/'
-// );
+// Create a provider instance
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.POLYGON_MUMBAI_RPC_URL || 'https://mumbai.rpc.thirdweb.com/'
+);
 
-// Create a wallet with the private key (commented out for now)
-// const wallet = new ethers.Wallet(
-//   process.env.BLOCKCHAIN_PRIVATE_KEY || 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890', 
-//   provider
-// );
+// Create a wallet with the private key
+const wallet = new ethers.Wallet(
+  process.env.BLOCKCHAIN_PRIVATE_KEY || 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890', 
+  provider
+);
 
 // For simplicity in this implementation, we'll use a mock client that wraps the taco functions
 export const thresholdClient = {

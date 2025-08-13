@@ -4,8 +4,9 @@ import { setupWebSocket } from "./websocket";
 import { posIntegrationService } from "./services/posIntegrationService";
 import { notificationService } from "./services/notificationService";
 import { merchantOnboardingService } from "./services/merchantOnboarding";
-import { simpleStorage } from "./storage-simple";
-import { validateBody, mintSchema, verifyReceiptSchema } from "./middleware/validation";
+import { storage } from "./storage";
+import { validateBody, mintSchema, stripePaymentSchema, verifyReceiptSchema } from "./middleware/validation";
+import stripeWebhook from "./routes/stripeWebhook";
 // Removed legacy Mumbai blockchain routes
 import blockchainAmoyRoutes from "./routes/blockchain-amoy";
 import multiBlockchainRoutes from "./routes/multi-blockchain";
@@ -85,7 +86,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   // All routes are prefixed with /api
   
-  // Stripe webhook removed - will be added back later when needed
+  // Stripe webhook must be registered BEFORE JSON parser middleware
+  app.use('/api/webhook', stripeWebhook);
   
   // Mumbai blockchain routes have been removed completely
   
@@ -819,8 +821,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
   
-  // Setup WebSocket for real-time notifications (temporarily disabled for local development)
-  // setupWebSocket(httpServer);
+  // Setup WebSocket for real-time notifications
+  setupWebSocket(httpServer);
 
   return httpServer;
 }

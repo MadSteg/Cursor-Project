@@ -15,7 +15,7 @@ let mockMode = false;
 export function initializeStripeService() {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   
-  if (stripeKey && stripeKey !== 'sk_test_dummy_key_for_development') {
+  if (stripeKey) {
     try {
       stripeClient = new Stripe(stripeKey, {
         apiVersion: '2022-11-15',
@@ -27,7 +27,7 @@ export function initializeStripeService() {
       log('Falling back to mock payment mode', 'payments');
     }
   } else {
-    log('Missing or dummy Stripe secret key, using mock payment mode', 'payments');
+    log('Missing Stripe secret key, using mock payment mode', 'payments');
     mockMode = true;
   }
 }

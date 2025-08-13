@@ -12,7 +12,7 @@ import {
   isAvailable, 
   createMockPayment,
   retrievePayment
-} from '../services/mockPaymentService';
+} from '../services/stripeService';
 import { encryptedPaymentService } from '../services/encryptedPaymentService';
 import { thresholdReceiptService } from '../services/thresholdReceiptService';
 

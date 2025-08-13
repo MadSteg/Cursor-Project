@@ -7,9 +7,8 @@
 
 import express, { Request, Response } from 'express';
 import { z } from 'zod';
-// Database temporarily disabled - using mock data
-// import { db } from '../db';
-// import { merchants, apiKeys } from '@shared/schema';
+import { db } from '../db';
+import { merchants, apiKeys } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 const router = express.Router();
@@ -23,15 +22,22 @@ const validateApiKey = async (req: Request, res: Response, next: Function) => {
   }
   
   try {
-    // Mock API key validation since database is temporarily disabled
-    const mockApiKeys = ['demo-api-key-123', 'test-merchant-456'];
+    // Look up the API key in the database
+    const [keyRecord] = await db.select()
+      .from(apiKeys)
+      .where(eq(apiKeys.key, apiKey));
     
-    if (!mockApiKeys.includes(apiKey)) {
+    if (!keyRecord) {
       return res.status(401).json({ error: 'Invalid API key' });
     }
     
-    // Mock merchant ID assignment
-    req.body.authenticatedMerchantId = 1;
+    // Check if key is active
+    if (!keyRecord.isActive) {
+      return res.status(401).json({ error: 'API key is not active' });
+    }
+    
+    // Add merchantId to the request for use in route handlers
+    req.body.authenticatedMerchantId = keyRecord.merchantId;
     next();
   } catch (error) {
     console.error('Error validating API key:', error);
@@ -63,28 +69,21 @@ router.post('/api-keys', async (req: Request, res: Response) => {
     
     const { merchantId, name } = validationResult.data;
     
-    // Verify the merchant exists
-    const [merchant] = await db.select()
-      .from(merchants)
-      .where(eq(merchants.id, merchantId));
-    
-    if (!merchant) {
-      return res.status(404).json({ error: 'Merchant not found' });
-    }
+    // Mock merchant verification since database is temporarily disabled
+    const mockMerchant = { id: merchantId, name: 'Demo Merchant' };
     
     // Generate a unique API key
     const generatedKey = `br_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
     
-    // Save the API key to the database
-    const [apiKey] = await db.insert(apiKeys)
-      .values({
-        merchantId,
-        key: generatedKey,
-        name,
-        isActive: true,
-        createdAt: new Date(),
-      })
-      .returning();
+    // Mock API key creation
+    const apiKey = {
+      id: Math.floor(Math.random() * 1000),
+      key: generatedKey,
+      name,
+      merchantId,
+      isActive: true,
+      createdAt: new Date(),
+    };
     
     res.status(201).json({
       id: apiKey.id,
@@ -113,15 +112,23 @@ router.get('/api-keys', async (req: Request, res: Response) => {
     }
     
     // Fetch the API keys for the merchant
-    const keys = await db.select({
-      id: apiKeys.id,
-      name: apiKeys.name,
-      createdAt: apiKeys.createdAt,
-      lastUsed: apiKeys.lastUsed,
-      isActive: apiKeys.isActive,
-    })
-    .from(apiKeys)
-    .where(eq(apiKeys.merchantId, merchantId));
+    // Mock API keys list since database is temporarily disabled
+    const keys = [
+      {
+        id: 1,
+        name: 'Demo API Key',
+        createdAt: new Date(),
+        lastUsed: null,
+        isActive: true,
+      },
+      {
+        id: 2, 
+        name: 'Test Integration Key',
+        createdAt: new Date(),
+        lastUsed: new Date(),
+        isActive: true,
+      }
+    ];
     
     res.json(keys);
   } catch (error) {

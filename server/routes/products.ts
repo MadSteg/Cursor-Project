@@ -12,7 +12,7 @@ import {
   getProductsByMerchant,
   getProductsByCategory,
   ProductCategory
-} from '../../shared/products';
+} from '@shared/products';
 
 const router = express.Router();
 
