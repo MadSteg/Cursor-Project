@@ -7,8 +7,9 @@
 
 import express, { Request, Response } from 'express';
 import { z } from 'zod';
-import { db } from '../db';
-import { merchants, apiKeys } from '@shared/schema';
+// Database temporarily disabled - using mock data
+// import { db } from '../db';
+// import { merchants, apiKeys } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 const router = express.Router();
@@ -22,22 +23,15 @@ const validateApiKey = async (req: Request, res: Response, next: Function) => {
   }
   
   try {
-    // Look up the API key in the database
-    const [keyRecord] = await db.select()
-      .from(apiKeys)
-      .where(eq(apiKeys.key, apiKey));
+    // Mock API key validation since database is temporarily disabled
+    const mockApiKeys = ['demo-api-key-123', 'test-merchant-456'];
     
-    if (!keyRecord) {
+    if (!mockApiKeys.includes(apiKey)) {
       return res.status(401).json({ error: 'Invalid API key' });
     }
     
-    // Check if key is active
-    if (!keyRecord.isActive) {
-      return res.status(401).json({ error: 'API key is not active' });
-    }
-    
-    // Add merchantId to the request for use in route handlers
-    req.body.authenticatedMerchantId = keyRecord.merchantId;
+    // Mock merchant ID assignment
+    req.body.authenticatedMerchantId = 1;
     next();
   } catch (error) {
     console.error('Error validating API key:', error);

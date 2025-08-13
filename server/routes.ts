@@ -4,7 +4,7 @@ import { setupWebSocket } from "./websocket";
 import { posIntegrationService } from "./services/posIntegrationService";
 import { notificationService } from "./services/notificationService";
 import { merchantOnboardingService } from "./services/merchantOnboarding";
-import { storage } from "./storage";
+import { simpleStorage } from "./storage-simple";
 import { validateBody, mintSchema, verifyReceiptSchema } from "./middleware/validation";
 // Removed legacy Mumbai blockchain routes
 import blockchainAmoyRoutes from "./routes/blockchain-amoy";

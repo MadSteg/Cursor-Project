@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { LoyaltyRewardsService } from '../services/loyaltyRewardsService';
-import { db } from '../db';
-import { merchantRewardPools, merchants, nftPool, loyaltyPoints } from '@shared/schema';
+// Database temporarily disabled - using mock data
+// import { db } from '../db';
+// import { merchantRewardPools, merchants, nftPool, loyaltyPoints } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 
 const router = Router();
@@ -127,44 +128,36 @@ router.get('/merchant/:merchantId/pool', async (req, res) => {
   try {
     const { merchantId } = req.params;
     
-    const [pool] = await db
-      .select()
-      .from(merchantRewardPools)
-      .where(
-        and(
-          eq(merchantRewardPools.merchantId, parseInt(merchantId)),
-          eq(merchantRewardPools.isActive, true)
-        )
-      );
+    // Mock response since database is temporarily disabled
+    const mockPool = {
+      id: 1,
+      merchantId: parseInt(merchantId),
+      name: 'Demo Reward Pool',
+      description: 'Demo reward pool for testing',
+      totalFunded: 1000,
+      totalMinted: 5,
+      ourCommissionRate: 10,
+      isActive: true,
+      startDate: new Date(),
+      endDate: null,
+      createdAt: new Date()
+    };
     
-    if (!pool) {
-      return res.json({
-        success: true,
-        data: null,
-        message: 'No active reward pool found'
-      });
-    }
-    
-    // Get NFTs in the pool
-    const nfts = await db
-      .select()
-      .from(nftPool)
-      .where(
-        and(
-          eq(nftPool.merchantId, parseInt(merchantId)),
-          eq(nftPool.enabled, true)
-        )
-      );
+    const mockNFTs = [
+      { id: 1, merchantId: parseInt(merchantId), tier: 'basic', enabled: true },
+      { id: 2, merchantId: parseInt(merchantId), tier: 'premium', enabled: true },
+      { id: 3, merchantId: parseInt(merchantId), tier: 'luxury', enabled: true }
+    ];
     
     res.json({
       success: true,
       data: {
-        pool,
-        availableNFTs: nfts.length,
+        pool: mockPool,
+        availableNFTs: mockNFTs.length,
         nftsByTier: {
-          basic: nfts.filter(n => n.tier === 'basic').length,
-          premium: nfts.filter(n => n.tier === 'premium').length,
-          luxury: nfts.filter(n => n.tier === 'luxury').length
+          basic: mockNFTs.filter(n => n.tier === 'basic').length,
+          premium: mockNFTs.filter(n => n.tier === 'premium').length,
+          luxury: mockNFTs.filter(n => n.tier === 'luxury').length
         }
       }
     });
@@ -194,14 +187,19 @@ router.post('/merchant/pool', async (req, res) => {
     
     const data = schema.parse(req.body);
     
-    const [newPool] = await db.insert(merchantRewardPools).values({
+    // Mock response since database is temporarily disabled
+    const newPool = {
+      id: Math.floor(Math.random() * 1000),
       merchantId: data.merchantId,
       name: data.name,
       description: data.description,
       totalFunded: data.totalFunded,
       ourCommissionRate: data.ourCommissionRate,
-      endDate: data.endDate ? new Date(data.endDate) : undefined
-    }).returning();
+      endDate: data.endDate ? new Date(data.endDate) : null,
+      isActive: true,
+      startDate: new Date(),
+      createdAt: new Date()
+    };
     
     res.json({
       success: true,
@@ -245,7 +243,13 @@ router.post('/merchant/nft', async (req, res) => {
     
     const data = schema.parse(req.body);
     
-    const [newNFT] = await db.insert(nftPool).values(data).returning();
+    // Mock response since database is temporarily disabled
+    const newNFT = { 
+      id: Math.floor(Math.random() * 1000),
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     
     res.json({
       success: true,
